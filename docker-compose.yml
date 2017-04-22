@@ -1,0 +1,84 @@
+version: '2'
+
+services:
+
+  # proxy routes OAuth2 requests (/auth, /code) to auth service,
+  # and the rest to main http-handlers.  TODO: add load balancing with multiple handlers.
+  proxy:
+    image: library/nginx
+    container_name: proxy
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./proxy/nginx.conf:/etc/nginx.conf
+      - ./proxy/dev-sites-enabled/:/etc/nginx/sites-enabled/
+      - ./proxy/dev-certs/:/certs/
+    environment:
+      - NODE_ENV=development
+
+  # http-handler is in charge of maintaining connectiongs to clients and starting
+  # the first message for a request into Kafka
+  http-handler:
+    image: mhart/alpine-node:latest
+    container_name: http-handler
+    volumes:
+      - code_data:/code
+    environment: 
+      - NODE_ENV="development"
+    # command: cd /code && npm run start
+
+  # Arango is the main backend where core data and graph is stored
+  arangodb:
+    image: arangodb
+    container_name: arangodb
+    volumes:
+      - arangodb_data:/var/lib/arangodb3
+      - arangodb_data:/var/lib/arangodb3-apps
+    ports:
+      - "8529"
+    environment:
+      # - ARANGO_RANDOM_ROOT_PASSWORD=1
+      - ARANGO_NO_AUTH=1
+
+  # admin container has all the service names and volumes mapped, so you
+  # can interact with them easily from this service.
+  admin:
+    build: ./admin
+    volumes:
+      - arangodb_data:/volumes/arangodb
+      - arangodb_apps_data:/volumes/arangodb_apps
+      - zookeeper_data:/volumes/zookeeper
+      - kafka_data:/volumes/kafka
+      - ./code:/code
+    command: bash
+
+
+  # zookeeper and kafka entries are based on:
+  # from https://github.com/wurstmeister/kafka-docker/blob/master/docker-compose.yml
+  zookeeper:
+    image: wurstmeister/zookeeper
+    ports:
+      - "2181"
+    volumes:
+      - zookeeper_data:/var/lib/zookeeper
+
+  kafka:
+    image: wurstmeister/kafka
+    ports:
+      - "9092"
+    environment:
+      KAFKA_ADVERTISED_HOST_NAME: "kafka"  # NOTE: this only allows services inside this docker network
+      KAFKA_ADVERTISED_PORT: "9092"        # to connect to kafka.  Set to machine's IP if you want external.
+      KAFKA_ZOOKEEPER_CONNECT: "zookeeper:2181"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - kafka_data:/var/lib/kafka
+
+volumes:
+  arangodb_data:
+  arangodb_apps_data:
+  kafka_data: 
+  zookeeper_data:
+  code_data:
