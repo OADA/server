@@ -1,0 +1,3 @@
+[submodule "auth/oada-ref-auth-js"]
+	path = auth/oada-ref-auth-js
+	url = git@github.com:OADA/oada-ref-auth-js.git
