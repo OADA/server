@@ -51,7 +51,7 @@ services:
       - arangodb_apps_data:/volumes/arangodb_apps
       - zookeeper_data:/volumes/zookeeper
       - kafka_data:/volumes/kafka
-      - ./code:/code
+      - ./auth:/code/auth
     command: bash
 
 

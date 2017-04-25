@@ -37,9 +37,11 @@ RUN wget -qO- https://raw.githubusercontent.com/creationix/nvm/v0.30.2/install.s
     && nvm install v7.0 \
     && nvm alias default v7.0
 RUN . /root/.nvm/nvm.sh \
-    && nvm use v7.0 
+    && nvm use v7.0  \
+    && npm install -g mocha
     # You can put any global NPM installs here
 
+COPY "./.vimrc" "/root/.vimrc"
 
-WORKDIR "/volumes"
+WORKDIR "/code"
 CMD bash

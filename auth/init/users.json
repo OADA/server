@@ -1,0 +1,13 @@
+[
+  {
+    "_key": "123frank",
+    "username": "frank",
+    "password": "test",
+    "name": "Farmer Frank",
+    "family_name": "Frank",
+    "given_name": "Farmer",
+    "middle_name": "",
+    "nickname": "Frankie",
+    "email": "frank@openag.io"
+  }
+]
