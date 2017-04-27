@@ -18,6 +18,19 @@ services:
     environment:
       - NODE_ENV=development
 
+  auth:
+    build: ./auth
+    container_name: auth
+    restart: always
+    ports:
+      - "80"
+    volumes:
+      - ./auth:/code/auth
+    environment:
+      - NODE_ENV=development
+    command:
+      - /entrypoint.sh
+
   # http-handler is in charge of maintaining connectiongs to clients and starting
   # the first message for a request into Kafka
   http-handler:
