@@ -37,7 +37,7 @@ services:
     build: ./http-handler
     container_name: http-handler
     volumes:
-      - ./http-handler/oada-srvc-http-handler:/code/http-handler
+      - ./http-handler:/code/http-handler
     environment: 
       - NODE_ENV="development"
 
@@ -45,7 +45,7 @@ services:
     build: ./token-lookup
     container_name: token-lookup
     volumes:
-      - ./token-lookup/oada-srvc-token-lookup:/code/token-lookup
+      - ./token-lookup:/code/token-lookup
     environment: 
       - NODE_ENV="development"
 
@@ -53,7 +53,7 @@ services:
     build: ./graph-lookup
     container_name: graph-lookup
     volumes:
-      - ./graph-lookup/oada-srvc-graph-lookup:/code/graph-lookup
+      - ./graph-lookup:/code/graph-lookup
     environment: 
       - NODE_ENV="development"
 
