@@ -34,13 +34,30 @@ services:
   # http-handler is in charge of maintaining connectiongs to clients and starting
   # the first message for a request into Kafka
   http-handler:
-    image: mhart/alpine-node:latest
+    build: ./http-handler
     container_name: http-handler
     volumes:
-      - code_data:/code
+      - ./http-handler/oada-srvc-http-handler:/code/http-handler
     environment: 
       - NODE_ENV="development"
-    # command: cd /code && npm run start
+
+  token-lookup:
+    build: ./token-lookup
+    container_name: token-lookup
+    volumes:
+      - ./token-lookup/oada-srvc-token-lookup:/code/token-lookup
+    environment: 
+      - NODE_ENV="development"
+
+  graph-lookup:
+    build: ./graph-lookup
+    container_name: graph-lookup
+    volumes:
+      - ./graph-lookup/oada-srvc-graph-lookup:/code/graph-lookup
+    environment: 
+      - NODE_ENV="development"
+
+
 
   # Arango is the main backend where core data and graph is stored
   arangodb:
@@ -94,4 +111,3 @@ volumes:
   arangodb_apps_data:
   kafka_data: 
   zookeeper_data:
-  code_data:
