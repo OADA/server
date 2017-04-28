@@ -12,7 +12,7 @@ services:
       - "80:80"
       - "443:443"
     volumes:
-      - ./proxy/nginx.conf:/etc/nginx.conf
+      - ./proxy/nginx.conf:/etc/nginx/nginx.conf
       - ./proxy/dev-sites-enabled/:/etc/nginx/sites-enabled/
       - ./proxy/dev-certs/:/certs/
     environment:
@@ -36,6 +36,8 @@ services:
   http-handler:
     build: ./http-handler
     container_name: http-handler
+    ports:
+      - "80"
     volumes:
       - ./http-handler:/code/http-handler
     environment: 
