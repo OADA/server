@@ -16,8 +16,7 @@ server {
     resolver 127.0.0.11;
     set $proxy "http://auth:80";
     proxy_pass $proxy;
-    # Don't need the rewrite anymore because server knows about prefixes
-    # rewrite ^/oadaauth/(.*) /$1 break;
+    rewrite ^/oadaauth/(.*) /$1 break;
   }
 
   location / {

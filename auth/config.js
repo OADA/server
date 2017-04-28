@@ -11,7 +11,7 @@ module.exports = {
     publicUri: "https://localhost" // but to nginx proxy, it's https://localhost in dev
   },
   // Prefix should match nginx proxy's prefix for the auth service
-  endpointsPrefix: "/oadaauth",
+  //endpointsPrefix: "/oadaauth",
   keys: {
     signPems: path.join(__dirname,"sign/"),
   },
