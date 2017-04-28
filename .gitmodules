@@ -7,3 +7,6 @@
 [submodule "http-handler/oada-srvc-http-handler"]
 	path = http-handler/oada-srvc-http-handler
 	url = git@github.com:OADA/oada-srvc-http-handler.git
+[submodule "graph-lookup/oada-srvc-graph-lookup"]
+	path = graph-lookup/oada-srvc-graph-lookup
+	url = https://github.com/OADA/oada-srvc-graph-lookup.git
