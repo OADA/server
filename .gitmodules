@@ -10,3 +10,6 @@
 [submodule "graph-lookup/oada-srvc-graph-lookup"]
 	path = graph-lookup/oada-srvc-graph-lookup
 	url = https://github.com/OADA/oada-srvc-graph-lookup.git
+[submodule "token-lookup/oada-srvc-token-lookup"]
+	path = token-lookup/oada-srvc-token-lookup
+	url = git@github.com:OADA/oada-srvc-token-lookup.git
