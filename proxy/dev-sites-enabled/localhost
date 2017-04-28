@@ -14,7 +14,7 @@ server {
     proxy_set_header Host $host;
     # 127.0.0.11 is the docker DNS server
     resolver 127.0.0.11;
-    set $proxy "http://auth:4000";
+    set $proxy "http://auth:80";
     proxy_pass $proxy;
     # rewrite ^/oadaauth/(.*) /$1 break;
   }
@@ -30,7 +30,7 @@ server {
     proxy_set_header X-Forwarded-Proto $scheme;
     proxy_set_header Host $host;
     resolver 127.0.0.11;
-    set $proxy "http://http-handler:3000";
+    set $proxy "http://http-handler:80";
     proxy_pass $proxy;
   }
 }
