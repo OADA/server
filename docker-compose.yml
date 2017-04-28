@@ -82,6 +82,10 @@ services:
       - zookeeper_data:/volumes/zookeeper
       - kafka_data:/volumes/kafka
       - ./auth:/code/auth
+      - ./example:/code/example
+      - ./graph-lookup:/code/graph-lookup
+      - ./token-lookup:/code/token-lookup
+      - ./http-handler:/code/http-handler
     command: bash
 
 
