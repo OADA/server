@@ -1,3 +1,6 @@
 [submodule "auth/oada-ref-auth-js"]
 	path = auth/oada-ref-auth-js
 	url = git@github.com:OADA/oada-ref-auth-js.git
+[submodule "oada-srvc-tests"]
+	path = oada-srvc-tests
+	url = https://github.com/OADA/oada-srvc-tests.git
