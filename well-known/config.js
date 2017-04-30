@@ -26,8 +26,8 @@ const server = {
 module.exports = {
   server: server,
   mergeSubServices: [
-    { resource:   'oada-configuration', base: 'http://auth', addPrefix: 'oadaauth/' },
-    { resource: 'openid-configuration', base: 'http://auth', addPrefix: 'oadaauth/' },
+    { resource:   'oada-configuration', base: 'http://auth', },
+    { resource: 'openid-configuration', base: 'http://auth', },
   ],
   "oada-configuration": {
     well_known_version: '1.0.0',

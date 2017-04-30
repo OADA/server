@@ -10,6 +10,7 @@ module.exports = {
     domain: "localhost", // in docker it's port 80 localhost
     publicUri: "https://localhost" // but to nginx proxy, it's https://localhost in dev
   },
+  endpointsPrefix: '/oadaauth',
   // Prefix should match nginx proxy's prefix for the auth service
   //endpointsPrefix: "/oadaauth",
   keys: {
