@@ -59,6 +59,15 @@ services:
     environment: 
       - NODE_ENV="development"
 
+  well-known:
+    build: ./well-known
+    container_name: well-known
+    volumes:
+      - ./well-known:/code/well-known
+    ports:
+      - "80"
+    environment:
+      - NODE_ENV="development"
 
 
   # Arango is the main backend where core data and graph is stored
@@ -88,6 +97,7 @@ services:
       - ./graph-lookup:/code/graph-lookup
       - ./token-lookup:/code/token-lookup
       - ./http-handler:/code/http-handler
+      - ./well-known:/code/well-known
     command: bash
 
 

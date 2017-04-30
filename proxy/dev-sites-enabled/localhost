@@ -19,6 +19,17 @@ server {
     rewrite ^/oadaauth/(.*) /$1 break;
   }
 
+  location /.well-known {
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $remote_addr;
+    proxy_set_header X-Forwarded-Proto $scheme;
+    proxy_set_header Host $host;
+    # 127.0.0.11 is the docker DNS server
+    resolver 127.0.0.11;
+    set $proxy "http://well-known:80";
+    proxy_pass $proxy;
+  }
+
   location / {
     # need these three lines for web sockets:
     proxy_http_version 1.1;
