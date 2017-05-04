@@ -1,4 +1,5 @@
 #! /bin/sh
 
+# Use the same config file as auth to get proper db/collections names
 cd /code/token-lookup/oada-srvc-token-lookup && \
-  npm run start
+  DEBUG="*" npm run start -- --config='../config.js' --authconfig='../../../auth/config.js'
