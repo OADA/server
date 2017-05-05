@@ -40,7 +40,7 @@ services:
       - "80"
     volumes:
       - ./http-handler:/code/http-handler
-    environment: 
+    environment:
       - NODE_ENV="development"
 
   token-lookup:
@@ -48,7 +48,7 @@ services:
     container_name: token-lookup
     volumes:
       - ./token-lookup:/code/token-lookup
-    environment: 
+    environment:
       - NODE_ENV="development"
 
   graph-lookup:
@@ -56,7 +56,7 @@ services:
     container_name: graph-lookup
     volumes:
       - ./graph-lookup:/code/graph-lookup
-    environment: 
+    environment:
       - NODE_ENV="development"
 
   well-known:
@@ -69,6 +69,13 @@ services:
     environment:
       - NODE_ENV="development"
 
+  tests:
+    build: ./tests
+    container_name: tests
+    volumes:
+      - ./tests:/code/tests
+    environment:
+      - NODE_ENV="development"
 
   # Arango is the main backend where core data and graph is stored
   arangodb:
@@ -98,6 +105,7 @@ services:
       - ./token-lookup:/code/token-lookup
       - ./http-handler:/code/http-handler
       - ./well-known:/code/well-known
+      - ./tests:/code/tests
     command: bash
 
 
@@ -125,5 +133,5 @@ services:
 volumes:
   arangodb_data:
   arangodb_apps_data:
-  kafka_data: 
+  kafka_data:
   zookeeper_data:
