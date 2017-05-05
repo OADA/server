@@ -52,3 +52,52 @@ server {
   server_name localhost;
   rewrite ^/(.*) https://localhost/$1 permanent;
 }
+
+server {
+  listen 80;
+
+  # for internal services:
+  server_name proxy;
+
+  location /oadaauth {
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $remote_addr;
+    proxy_set_header X-Forwarded-Proto $scheme;
+    proxy_set_header Host $host;
+    # 127.0.0.11 is the docker DNS server
+    resolver 127.0.0.11;
+    set $proxy "http://auth:80";
+    proxy_pass $proxy;
+    # Don't rewrite oadaauth because auth service knows about prefix
+    # rewrite ^/oadaauth/(.*) /$1 break;
+  }
+
+  location /.well-known {
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $remote_addr;
+    proxy_set_header X-Forwarded-Proto $scheme;
+    proxy_set_header Host $host;
+    # 127.0.0.11 is the docker DNS server
+    resolver 127.0.0.11;
+    set $proxy "http://well-known:80";
+    proxy_pass $proxy;
+  }
+
+  location / {
+    # need these three lines for web sockets:
+    proxy_http_version 1.1;
+    proxy_set_header Upgrade $http_upgrade;
+    proxy_set_header Connection "upgrade";
+    # end web sockets addition
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $remote_addr;
+    proxy_set_header X-Forwarded-Proto $scheme;
+    proxy_set_header Host $host;
+    resolver 127.0.0.11;
+    set $proxy "http://http-handler:80";
+    proxy_pass $proxy;
+  }
+}
+
+
+
