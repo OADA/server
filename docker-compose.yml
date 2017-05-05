@@ -107,6 +107,7 @@ services:
       - ./well-known:/code/well-known
       - ./tests:/code/tests
       - ./admin:/code/admin
+      - ./oada-lib-arangodb:/code/oada-lib-arangodb
     command: bash
 
 
