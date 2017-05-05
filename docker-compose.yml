@@ -106,6 +106,7 @@ services:
       - ./http-handler:/code/http-handler
       - ./well-known:/code/well-known
       - ./tests:/code/tests
+      - ./admin:/code/admin
     command: bash
 
 

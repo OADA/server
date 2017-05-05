@@ -16,3 +16,6 @@
 [submodule "well-known/oada-srvc-well-known"]
 	path = well-known/oada-srvc-well-known
 	url = git@github.com:OADA/oada-srvc-well-known.git
+[submodule "admin/oada-lib-arangodb"]
+	path = admin/oada-lib-arangodb
+	url = git@github.com:OADA/oada-lib-arangodb.git
