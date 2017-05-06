@@ -6,13 +6,19 @@
 	url = git@github.com:OADA/oada-srvc-http-handler.git
 [submodule "graph-lookup/oada-srvc-graph-lookup"]
 	path = graph-lookup/oada-srvc-graph-lookup
-	url = https://github.com/OADA/oada-srvc-graph-lookup.git
+	url = git@github.com:OADA/oada-srvc-graph-lookup.git
 [submodule "token-lookup/oada-srvc-token-lookup"]
 	path = token-lookup/oada-srvc-token-lookup
 	url = git@github.com:OADA/oada-srvc-token-lookup.git
 [submodule "tests/oada-srvc-tests"]
 	path = tests/oada-srvc-tests
-	url = https://github.com/OADA/oada-srvc-tests.git
+	url = git@github.com:OADA/oada-srvc-tests.git
 [submodule "well-known/oada-srvc-well-known"]
 	path = well-known/oada-srvc-well-known
 	url = git@github.com:OADA/oada-srvc-well-known.git
+[submodule "admin/oada-lib-arangodb"]
+	path = admin/oada-lib-arangodb
+	url = git@github.com:OADA/oada-lib-arangodb.git
+[submodule "oada-lib-arangodb"]
+	path = oada-lib-arangodb
+	url = git@github.com:oada/oada-lib-arangodb.git
