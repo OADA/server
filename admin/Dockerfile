@@ -38,8 +38,8 @@ RUN wget -qO- https://raw.githubusercontent.com/creationix/nvm/v0.30.2/install.s
     && nvm alias default v7.0
 RUN . /root/.nvm/nvm.sh \
     && nvm use v7.0  \
-    && npm install -g mocha \
-    && npm install -g yarn
+    && npm install -g yarn \
+    && yarn global add mocha
     # You can put any global NPM installs here
 
 COPY "./.vimrc" "/root/.vimrc"
