@@ -43,6 +43,7 @@ RUN . /root/.nvm/nvm.sh \
     # You can put any global NPM installs here
 
 COPY "./.vimrc" "/root/.vimrc"
+COPY "./do-yarn-install.sh" "/bin/do-yarn-install.sh"
 
 WORKDIR "/code"
 CMD bash

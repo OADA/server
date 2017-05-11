@@ -19,6 +19,3 @@
 [submodule "admin/oada-lib-arangodb"]
 	path = admin/oada-lib-arangodb
 	url = git@github.com:OADA/oada-lib-arangodb.git
-[submodule "oada-lib-arangodb"]
-	path = oada-lib-arangodb
-	url = git@github.com:oada/oada-lib-arangodb.git
