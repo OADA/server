@@ -79,8 +79,8 @@ module.exports = {
   },
   wellKnown: {
     server: {
-      port: 443,
-      mode: 'https',
+      port: 80,
+      mode: 'http',
       domain: 'localhost',
     },
     mergeSubServices: [
