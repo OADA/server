@@ -1,4 +1,4 @@
-version: '2'
+version: '2.1'
 
 services:
 
@@ -14,6 +14,7 @@ services:
       - "80"
     volumes:
       - ./startup:/code/startup
+      - ./oada-srvc-docker-config.js:/oada-srvc-docker-config.js
     environment:
       - NODE_ENV=${NODE_ENV:-development}
 
@@ -35,6 +36,7 @@ services:
       - ./proxy/dev-sites-enabled/:/etc/nginx/sites-enabled/
       - ./proxy/dev-certs/:/certs/
       - ./proxy:/code/proxy
+      - ./oada-srvc-docker-config.js:/oada-srvc-docker-config.js
     environment:
       - NODE_ENV=${NODE_ENV:-development}
     command:
@@ -50,6 +52,7 @@ services:
       - "80"
     volumes:
       - ./auth:/code/auth
+      - ./oada-srvc-docker-config.js:/oada-srvc-docker-config.js
     environment:
       - NODE_ENV=${NODE_ENV:-development}
     command:
@@ -67,6 +70,7 @@ services:
       - "80"
     volumes:
       - ./http-handler:/code/http-handler
+      - ./oada-srvc-docker-config.js:/oada-srvc-docker-config.js
     environment:
       - NODE_ENV=${NODE_ENV:-development}
 
@@ -78,6 +82,7 @@ services:
     container_name: token-lookup
     volumes:
       - ./token-lookup:/code/token-lookup
+      - ./oada-srvc-docker-config.js:/oada-srvc-docker-config.js
     environment:
       - NODE_ENV=${NODE_ENV:-development}
 
@@ -89,6 +94,7 @@ services:
     container_name: graph-lookup
     volumes:
       - ./graph-lookup:/code/graph-lookup
+      - ./oada-srvc-docker-config.js:/oada-srvc-docker-config.js
     environment:
       - NODE_ENV=${NODE_ENV:-development}
 
@@ -100,6 +106,7 @@ services:
     container_name: well-known
     volumes:
       - ./well-known:/code/well-known
+      - ./oada-srvc-docker-config.js:/oada-srvc-docker-config.js
     ports:
       - "80"
     environment:
@@ -112,6 +119,7 @@ services:
     container_name: tests
     volumes:
       - ./tests:/code/tests
+      - ./oada-srvc-docker-config.js:/oada-srvc-docker-config.js
     environment:
       - NODE_ENV=${NODE_ENV:-development}
 
@@ -120,6 +128,7 @@ services:
   admin:
     build: ./admin
     volumes:
+      - ./oada-srvc-docker-config.js:/oada-srvc-docker-config.js
       - arangodb_data:/volumes/arangodb
       - arangodb_apps_data:/volumes/arangodb_apps
       - zookeeper_data:/volumes/zookeeper
