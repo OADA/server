@@ -8,6 +8,7 @@ services:
       - kafka
       - arangodb
     build: ./startup
+    restart: always
     container_name: startup
     ports: 
       - "80"
@@ -60,6 +61,7 @@ services:
     depends_on:
       - startup
     build: ./http-handler
+    restart: always
     container_name: http-handler
     ports:
       - "80"
@@ -72,6 +74,7 @@ services:
     depends_on:
       - startup
     build: ./token-lookup
+    restart: always
     container_name: token-lookup
     volumes:
       - ./token-lookup:/code/token-lookup
@@ -82,6 +85,7 @@ services:
     depends_on:
       - startup
     build: ./graph-lookup
+    restart: always
     container_name: graph-lookup
     volumes:
       - ./graph-lookup:/code/graph-lookup
@@ -92,6 +96,7 @@ services:
     depends_on:
       - startup
     build: ./well-known
+    restart: always
     container_name: well-known
     volumes:
       - ./well-known:/code/well-known
@@ -114,6 +119,7 @@ services:
   arangodb:
     image: arangodb
     container_name: arangodb
+    restart: always
     volumes:
       - arangodb_data:/var/lib/arangodb3
       - arangodb_data:/var/lib/arangodb3-apps
@@ -149,6 +155,7 @@ services:
   # from https://github.com/wurstmeister/kafka-docker/blob/master/docker-compose.yml
   zookeeper:
     image: wurstmeister/zookeeper
+    restart: always
     ports:
       - "2181"
     volumes:
@@ -160,6 +167,7 @@ services:
       - zookeeper
     ports:
       - "9092"
+    restart: always
     environment:
       KAFKA_ADVERTISED_HOST_NAME: "kafka"  # NOTE: this only allows services inside this docker network
       KAFKA_ADVERTISED_PORT: "9092"        # to connect to kafka.  Set to machine's IP if you want external.
