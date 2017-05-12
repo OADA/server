@@ -22,3 +22,6 @@
 [submodule "startup/oada-srvc-startup"]
 	path = startup/oada-srvc-startup
 	url = git@github.com:OADA/oada-srvc-startup.git
+[submodule "admin/oada-lib-config"]
+	path = admin/oada-lib-config
+	url = git@github.com:OADA/oada-lib-config.git
