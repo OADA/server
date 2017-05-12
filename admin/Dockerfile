@@ -44,6 +44,7 @@ RUN . /root/.nvm/nvm.sh \
 
 COPY "./.vimrc" "/root/.vimrc"
 COPY "./do-yarn-install.sh" "/bin/do-yarn-install.sh"
+COPY "./do-yarn-upgrade.sh" "/bin/do-yarn-upgrade.sh"
 
 WORKDIR "/code"
 CMD bash

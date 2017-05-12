@@ -1,11 +1,31 @@
-version: '2'
+version: '2.1'
 
 services:
+
+  startup:
+    depends_on:
+      - zookeeper
+      - kafka
+      - arangodb
+    build: ./startup
+    restart: always
+    container_name: startup
+    ports: 
+      - "80"
+    volumes:
+      - ./startup:/code/startup
+      - ./oada-srvc-docker-config.js:/oada-srvc-docker-config.js
+    environment:
+      - NODE_ENV=${NODE_ENV:-development}
 
   # proxy routes OAuth2 requests (/auth, /code) to auth service,
   # and the rest to main http-handlers.  TODO: add load balancing with multiple handlers.
   proxy:
-    image: library/nginx
+    depends_on: 
+      - auth
+      - http-handler
+      - well-known
+    build: ./proxy
     container_name: proxy
     restart: always
     ports:
@@ -15,10 +35,16 @@ services:
       - ./proxy/nginx.conf:/etc/nginx/nginx.conf
       - ./proxy/dev-sites-enabled/:/etc/nginx/sites-enabled/
       - ./proxy/dev-certs/:/certs/
+      - ./proxy:/code/proxy
+      - ./oada-srvc-docker-config.js:/oada-srvc-docker-config.js
     environment:
-      - NODE_ENV=development
+      - NODE_ENV=${NODE_ENV:-development}
+    command:
+      - /entrypoint.sh
 
   auth:
+    depends_on:
+      - startup
     build: ./auth
     container_name: auth
     restart: always
@@ -26,75 +52,83 @@ services:
       - "80"
     volumes:
       - ./auth:/code/auth
+      - ./oada-srvc-docker-config.js:/oada-srvc-docker-config.js
     environment:
-      - NODE_ENV=development
+      - NODE_ENV=${NODE_ENV:-development}
     command:
       - /entrypoint.sh
 
   # http-handler is in charge of maintaining connectiongs to clients and starting
   # the first message for a request into Kafka
   http-handler:
+    depends_on:
+      - startup
     build: ./http-handler
+    restart: always
     container_name: http-handler
     ports:
       - "80"
     volumes:
       - ./http-handler:/code/http-handler
+      - ./oada-srvc-docker-config.js:/oada-srvc-docker-config.js
     environment:
-      - NODE_ENV="development"
+      - NODE_ENV=${NODE_ENV:-development}
 
   token-lookup:
+    depends_on:
+      - startup
     build: ./token-lookup
+    restart: always
     container_name: token-lookup
     volumes:
       - ./token-lookup:/code/token-lookup
+      - ./oada-srvc-docker-config.js:/oada-srvc-docker-config.js
     environment:
-      - NODE_ENV="development"
+      - NODE_ENV=${NODE_ENV:-development}
 
   graph-lookup:
+    depends_on:
+      - startup
     build: ./graph-lookup
+    restart: always
     container_name: graph-lookup
     volumes:
       - ./graph-lookup:/code/graph-lookup
+      - ./oada-srvc-docker-config.js:/oada-srvc-docker-config.js
     environment:
-      - NODE_ENV="development"
+      - NODE_ENV=${NODE_ENV:-development}
 
   well-known:
+    depends_on:
+      - startup
     build: ./well-known
+    restart: always
     container_name: well-known
     volumes:
       - ./well-known:/code/well-known
+      - ./oada-srvc-docker-config.js:/oada-srvc-docker-config.js
     ports:
       - "80"
     environment:
-      - NODE_ENV="development"
+      - NODE_ENV=${NODE_ENV:-development}
 
   tests:
+    depends_on:
+      - startup
     build: ./tests
     container_name: tests
     volumes:
       - ./tests:/code/tests
+      - ./oada-srvc-docker-config.js:/oada-srvc-docker-config.js
     environment:
-      - NODE_ENV="development"
-
-  # Arango is the main backend where core data and graph is stored
-  arangodb:
-    image: arangodb
-    container_name: arangodb
-    volumes:
-      - arangodb_data:/var/lib/arangodb3
-      - arangodb_data:/var/lib/arangodb3-apps
-    ports:
-      - "8529:8529"
-    environment:
-      # - ARANGO_RANDOM_ROOT_PASSWORD=1
-      - ARANGO_NO_AUTH=1
+      - NODE_ENV=${NODE_ENV:-development}
 
   # admin container has all the service names and volumes mapped, so you
   # can interact with them easily from this service.
   admin:
     build: ./admin
     volumes:
+      - ./oada-srvc-docker-config.js:/oada-srvc-docker-config.js
       - arangodb_data:/volumes/arangodb
       - arangodb_apps_data:/volumes/arangodb_apps
       - zookeeper_data:/volumes/zookeeper
@@ -107,14 +141,32 @@ services:
       - ./well-known:/code/well-known
       - ./tests:/code/tests
       - ./admin:/code/admin
+      - ./startup:/code/startup
       - ./oada-lib-arangodb:/code/oada-lib-arangodb
     command: bash
+    environment:
+      - NODE_ENV=${NODE_ENV:-development}
+
+  # Arango is the main backend where core data and graph is stored
+  arangodb:
+    image: arangodb
+    container_name: arangodb
+    restart: always
+    volumes:
+      - arangodb_data:/var/lib/arangodb3
+      - arangodb_data:/var/lib/arangodb3-apps
+    ports:
+      - "8529:8529"
+    environment:
+      # - ARANGO_RANDOM_ROOT_PASSWORD=1
+      - ARANGO_NO_AUTH=1
 
 
   # zookeeper and kafka entries are based on:
   # from https://github.com/wurstmeister/kafka-docker/blob/master/docker-compose.yml
   zookeeper:
     image: wurstmeister/zookeeper
+    restart: always
     ports:
       - "2181"
     volumes:
@@ -122,8 +174,11 @@ services:
 
   kafka:
     image: wurstmeister/kafka
+    depends_on:
+      - zookeeper
     ports:
       - "9092"
+    restart: always
     environment:
       KAFKA_ADVERTISED_HOST_NAME: "kafka"  # NOTE: this only allows services inside this docker network
       KAFKA_ADVERTISED_PORT: "9092"        # to connect to kafka.  Set to machine's IP if you want external.

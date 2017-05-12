@@ -1,5 +1,6 @@
 #! /bin/sh
 
-# Use the same config file as auth to get proper db/collections names
-cd /code/token-lookup/oada-srvc-token-lookup && \
-  DEBUG="*" npm run start
+chmod u+x /code/token-lookup/wait-for-it.sh && \
+  /code/token-lookup/wait-for-it.sh startup:80 -t 0 && \
+  cd /code/token-lookup/oada-srvc-token-lookup && \
+  DEBUG="*" npm run start -- --config=/oada-srvc-docker-config.js
