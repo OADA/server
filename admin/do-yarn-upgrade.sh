@@ -3,6 +3,12 @@
 CDIR=`pwd`
 
 echo "----------"
+echo "startup"
+echo "----------"
+cd /code/startup/oada-srvc-startup
+yarn upgrade
+
+echo "----------"
 echo "well-known"
 echo "----------"
 cd /code/well-known/oada-srvc-well-known

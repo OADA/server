@@ -15,7 +15,7 @@ services:
     volumes:
       - ./startup:/code/startup
     environment:
-      - NODE_ENV=development
+      - NODE_ENV=${NODE_ENV:-development}
 
   # proxy routes OAuth2 requests (/auth, /code) to auth service,
   # and the rest to main http-handlers.  TODO: add load balancing with multiple handlers.
@@ -36,7 +36,7 @@ services:
       - ./proxy/dev-certs/:/certs/
       - ./proxy:/code/proxy
     environment:
-      - NODE_ENV=development
+      - NODE_ENV=${NODE_ENV:-development}
     command:
       - /entrypoint.sh
 
@@ -51,7 +51,7 @@ services:
     volumes:
       - ./auth:/code/auth
     environment:
-      - NODE_ENV=development
+      - NODE_ENV=${NODE_ENV:-development}
     command:
       - /entrypoint.sh
 
@@ -68,7 +68,7 @@ services:
     volumes:
       - ./http-handler:/code/http-handler
     environment:
-      - NODE_ENV="development"
+      - NODE_ENV=${NODE_ENV:-development}
 
   token-lookup:
     depends_on:
@@ -79,7 +79,7 @@ services:
     volumes:
       - ./token-lookup:/code/token-lookup
     environment:
-      - NODE_ENV="development"
+      - NODE_ENV=${NODE_ENV:-development}
 
   graph-lookup:
     depends_on:
@@ -90,7 +90,7 @@ services:
     volumes:
       - ./graph-lookup:/code/graph-lookup
     environment:
-      - NODE_ENV="development"
+      - NODE_ENV=${NODE_ENV:-development}
 
   well-known:
     depends_on:
@@ -103,7 +103,7 @@ services:
     ports:
       - "80"
     environment:
-      - NODE_ENV="development"
+      - NODE_ENV=${NODE_ENV:-development}
 
   tests:
     depends_on:
@@ -113,21 +113,7 @@ services:
     volumes:
       - ./tests:/code/tests
     environment:
-      - NODE_ENV="development"
-
-  # Arango is the main backend where core data and graph is stored
-  arangodb:
-    image: arangodb
-    container_name: arangodb
-    restart: always
-    volumes:
-      - arangodb_data:/var/lib/arangodb3
-      - arangodb_data:/var/lib/arangodb3-apps
-    ports:
-      - "8529:8529"
-    environment:
-      # - ARANGO_RANDOM_ROOT_PASSWORD=1
-      - ARANGO_NO_AUTH=1
+      - NODE_ENV=${NODE_ENV:-development}
 
   # admin container has all the service names and volumes mapped, so you
   # can interact with them easily from this service.
@@ -149,6 +135,22 @@ services:
       - ./startup:/code/startup
       - ./oada-lib-arangodb:/code/oada-lib-arangodb
     command: bash
+    environment:
+      - NODE_ENV=${NODE_ENV:-development}
+
+  # Arango is the main backend where core data and graph is stored
+  arangodb:
+    image: arangodb
+    container_name: arangodb
+    restart: always
+    volumes:
+      - arangodb_data:/var/lib/arangodb3
+      - arangodb_data:/var/lib/arangodb3-apps
+    ports:
+      - "8529:8529"
+    environment:
+      # - ARANGO_RANDOM_ROOT_PASSWORD=1
+      - ARANGO_NO_AUTH=1
 
 
   # zookeeper and kafka entries are based on:
