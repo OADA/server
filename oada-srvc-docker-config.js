@@ -17,19 +17,17 @@
 var path = require('path');
 var fs = require('fs');
 
-const isProduction = (process.env.NODE_ENV === 'production');
-
 module.exports = {
 
   // By default, this checks for NODE_ENV===production 
   // to determine if is production.  
   // set to true to use the production database name
   // and prevent init.cleanup() from being called.
-  isProduction: isProduction,
+  isProduction: (process.env.NODE_ENV === 'production'),
 
   arangodb: {
     connectionString: 'http://arangodb:8529',
-    database: 'oada-ref-auth',
+    database: 'oada',
     collections: {
            users: { name: 'users',      indexes: [ 'username' ], defaults: './libs/exampledocs/users'      },
          clients: { name: 'clients',    indexes: [ 'clientId' ], defaults: './libs/exampledocs/clients'    },
@@ -49,6 +47,7 @@ module.exports = {
     topics: {
       tokenRequest: 'token_request',
       graphRequest: 'graph_request',
+      writeRequest: 'write_request',
       httpResponse: 'http_response',
     },
   },
