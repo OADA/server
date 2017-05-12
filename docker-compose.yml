@@ -2,10 +2,28 @@ version: '2'
 
 services:
 
+  startup:
+    depends_on:
+      - zookeeper
+      - kafka
+      - arangodb
+    build: ./startup
+    container_name: startup
+    ports: 
+      - "80"
+    volumes:
+      - ./startup:/code/startup
+    environment:
+      - NODE_ENV=development
+
   # proxy routes OAuth2 requests (/auth, /code) to auth service,
   # and the rest to main http-handlers.  TODO: add load balancing with multiple handlers.
   proxy:
-    image: library/nginx
+    depends_on: 
+      - auth
+      - http-handler
+      - well-known
+    build: ./proxy
     container_name: proxy
     restart: always
     ports:
@@ -15,10 +33,15 @@ services:
       - ./proxy/nginx.conf:/etc/nginx/nginx.conf
       - ./proxy/dev-sites-enabled/:/etc/nginx/sites-enabled/
       - ./proxy/dev-certs/:/certs/
+      - ./proxy:/code/proxy
     environment:
       - NODE_ENV=development
+    command:
+      - /entrypoint.sh
 
   auth:
+    depends_on:
+      - startup
     build: ./auth
     container_name: auth
     restart: always
@@ -34,6 +57,8 @@ services:
   # http-handler is in charge of maintaining connectiongs to clients and starting
   # the first message for a request into Kafka
   http-handler:
+    depends_on:
+      - startup
     build: ./http-handler
     container_name: http-handler
     ports:
@@ -44,6 +69,8 @@ services:
       - NODE_ENV="development"
 
   token-lookup:
+    depends_on:
+      - startup
     build: ./token-lookup
     container_name: token-lookup
     volumes:
@@ -52,6 +79,8 @@ services:
       - NODE_ENV="development"
 
   graph-lookup:
+    depends_on:
+      - startup
     build: ./graph-lookup
     container_name: graph-lookup
     volumes:
@@ -60,6 +89,8 @@ services:
       - NODE_ENV="development"
 
   well-known:
+    depends_on:
+      - startup
     build: ./well-known
     container_name: well-known
     volumes:
@@ -70,6 +101,8 @@ services:
       - NODE_ENV="development"
 
   tests:
+    depends_on:
+      - startup
     build: ./tests
     container_name: tests
     volumes:
@@ -107,6 +140,7 @@ services:
       - ./well-known:/code/well-known
       - ./tests:/code/tests
       - ./admin:/code/admin
+      - ./startup:/code/startup
       - ./oada-lib-arangodb:/code/oada-lib-arangodb
     command: bash
 
@@ -122,6 +156,8 @@ services:
 
   kafka:
     image: wurstmeister/kafka
+    depends_on:
+      - zookeeper
     ports:
       - "9092"
     environment:
