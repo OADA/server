@@ -6,3 +6,7 @@ Install directions
 3. `docker-compose build`
 4. `docker-compose run --rm admin do-yarn-install.sh`
 5. `docker-compose up -d`
+
+Upgrade packages
+================
+`docker-compose run --rm admin do-yarn-upgrade.sh`
