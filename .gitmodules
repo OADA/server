@@ -19,3 +19,6 @@
 [submodule "admin/oada-lib-arangodb"]
 	path = admin/oada-lib-arangodb
 	url = git@github.com:OADA/oada-lib-arangodb.git
+[submodule "startup/oada-srvc-startup"]
+	path = startup/oada-srvc-startup
+	url = git@github.com:OADA/oada-srvc-startup.git
