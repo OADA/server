@@ -78,16 +78,18 @@ module.exports = {
     },
   },
   wellKnown: {
-    server: server,
+    server: {
+      port: 443,
+      mode: 'https',
+      domain: 'localhost',
+    },
     mergeSubServices: [
       { resource:   'oada-configuration', base: 'http://auth', },
       { resource: 'openid-configuration', base: 'http://auth', },
     ],
     "oada-configuration": {
       well_known_version: '1.0.0',
-      oada_base_uri: server.mode+'//'+server.domain
-                    +(server.port ? ':'+server.port : '' )
-                    +(server.path_prefix ? server.path_prefix : ''),
+      oada_base_uri: 'https://localhost:443',
       scopes_supported: [
         {
           name: 'oada.all.1', // can do anything the user can do
