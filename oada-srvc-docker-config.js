@@ -55,6 +55,7 @@ module.exports = {
     host: 'zookeeper:2181',
   },
   auth: {
+    // Prefix should match nginx proxy's prefix for the auth service
     endpointsPrefix: '/oadaauth',
     server: {
       // Replace these in production with things that are actually secret...
@@ -65,11 +66,8 @@ module.exports = {
       domain: "localhost", // in docker it's port 80 localhost
       publicUri: "https://localhost" // but to nginx proxy, it's https://localhost in dev
     },
-    endpointsPrefix: '/oadaauth',
-    // Prefix should match nginx proxy's prefix for the auth service
-    //endpointsPrefix: "/oadaauth",
     keys: {
-      signPems: path.join(__dirname,"sign/"),
+      signPems: "/code/auth/sign/",
     },
     datastoresDriver: 'arango',
     hint: {
@@ -89,7 +87,7 @@ module.exports = {
     ],
     "oada-configuration": {
       well_known_version: '1.0.0',
-      oada_base_uri: 'https://localhost:443',
+      oada_base_uri: 'https://localhost',
       scopes_supported: [
         {
           name: 'oada.all.1', // can do anything the user can do
