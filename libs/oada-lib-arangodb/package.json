@@ -1,0 +1,44 @@
+{
+  "name": "oada-lib-arangodb",
+  "version": "0.0.2",
+  "description": "All OADA Arango interface code in one place.",
+  "main": "index.js",
+  "scripts": {
+    "init": "node init.js",
+    "test": "DEBUG='*' mocha"
+  },
+  "contributors": [
+    "Andrew Balmos <andrew@balmos.org> (https://github.com/abalmos)"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/OADA/oada-lib-arangodb.git"
+  },
+  "keywords": [
+    "oada",
+    "arangodb",
+    "lib"
+  ],
+  "author": "Aaron Ault <aultac@gmail.com> (https://github.com/aultac)",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/OADA/oada-lib-arangodb/issues"
+  },
+  "homepage": "https://github.com/OADA/oada-lib-arangodb#readme",
+  "dependencies": {
+    "arangojs": "^5.6.1",
+    "bcryptjs": "^2.4.3",
+    "bluebird": "^3.5.0",
+    "chai": "^3.5.0",
+    "chai-as-promised": "^6.0.0",
+    "debug": "^2.6.6",
+    "json-pointer": "^0.6.0",
+    "lodash": "^4.17.4",
+    "md5": "^2.2.1",
+    "mocha": "^3.3.0",
+    "moment": "^2.18.1",
+    "nconf": "^0.8.4",
+    "oada-lib-config": "oada/oada-lib-config",
+    "uuid": "^3.0.1"
+  }
+}

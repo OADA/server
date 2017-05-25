@@ -13,7 +13,7 @@ services:
     ports:
       - "80"
     volumes:
-      - ./startup:/code/startup
+      - .:/code
       - ./oada-srvc-docker-config.js:/oada-srvc-docker-config.js
     environment:
       - NODE_ENV=${NODE_ENV:-development}
@@ -35,7 +35,7 @@ services:
       - ./proxy/nginx.conf:/etc/nginx/nginx.conf
       - ./proxy/dev-sites-enabled/:/etc/nginx/sites-enabled/
       - ./proxy/dev-certs/:/certs/
-      - ./proxy:/code/proxy
+      - .:/code
       - ./oada-srvc-docker-config.js:/oada-srvc-docker-config.js
     environment:
       - NODE_ENV=${NODE_ENV:-development}
@@ -51,7 +51,7 @@ services:
     ports:
       - "80"
     volumes:
-      - ./auth:/code/auth
+      - .:/code
       - ./oada-srvc-docker-config.js:/oada-srvc-docker-config.js
     environment:
       - NODE_ENV=${NODE_ENV:-development}
@@ -69,7 +69,7 @@ services:
     ports:
       - "80"
     volumes:
-      - ./http-handler:/code/http-handler
+      - .:/code
       - ./oada-srvc-docker-config.js:/oada-srvc-docker-config.js
     environment:
       - NODE_ENV=${NODE_ENV:-development}
@@ -81,7 +81,7 @@ services:
     restart: always
     container_name: token-lookup
     volumes:
-      - ./token-lookup:/code/token-lookup
+      - .:/code
       - ./oada-srvc-docker-config.js:/oada-srvc-docker-config.js
     environment:
       - NODE_ENV=${NODE_ENV:-development}
@@ -93,7 +93,7 @@ services:
     restart: always
     container_name: graph-lookup
     volumes:
-      - ./graph-lookup:/code/graph-lookup
+      - .:/code
       - ./oada-srvc-docker-config.js:/oada-srvc-docker-config.js
     environment:
       - NODE_ENV=${NODE_ENV:-development}
@@ -105,7 +105,7 @@ services:
     restart: always
     container_name: well-known
     volumes:
-      - ./well-known:/code/well-known
+      - .:/code
       - ./oada-srvc-docker-config.js:/oada-srvc-docker-config.js
     ports:
       - "80"
@@ -118,7 +118,7 @@ services:
     build: ./tests
     container_name: tests
     volumes:
-      - ./tests:/code/tests
+      - .:/code
       - ./oada-srvc-docker-config.js:/oada-srvc-docker-config.js
     environment:
       - NODE_ENV=${NODE_ENV:-development}
@@ -133,16 +133,7 @@ services:
       - arangodb_apps_data:/volumes/arangodb_apps
       - zookeeper_data:/volumes/zookeeper
       - kafka_data:/volumes/kafka
-      - ./auth:/code/auth
-      - ./example:/code/example
-      - ./graph-lookup:/code/graph-lookup
-      - ./token-lookup:/code/token-lookup
-      - ./http-handler:/code/http-handler
-      - ./well-known:/code/well-known
-      - ./tests:/code/tests
-      - ./admin:/code/admin
-      - ./startup:/code/startup
-      - ./oada-lib-arangodb:/code/oada-lib-arangodb
+      - .:/code
     command: bash
     environment:
       - NODE_ENV=${NODE_ENV:-development}
