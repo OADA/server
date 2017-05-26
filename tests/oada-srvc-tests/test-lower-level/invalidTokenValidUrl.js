@@ -5,7 +5,7 @@
     - The scenario for invalid token + valid URL.
  */
 
-// const config = require('../config');
+const config = require('../config');
 // config.set('isTest', true);
 
 const debug = require('debug');

@@ -170,6 +170,8 @@ _server.app.use(function graphHandler(req, res, next) {
 /////////////////////////////////////////////////////////////////
 // Setup the body parser and associated error handler:
 _server.app.use(bodyParser.json({
+    strict: false,
+    type: '+json',
     limit: '10mb',
 }));
 
@@ -209,7 +211,10 @@ _server.app.get('/resources/*', function getResource(req, res, next) {
         .call('next')
         .then(function checkOwner(owner) {
             if (owner !== req.user.doc['user_id']) {
-                throw new OADAError('Not Authorized', 403);
+                debug(req.user.doc['user_id'] +
+                    ' tried to GET resource owned by ' + owner);
+                throw new OADAError('Not Authorized', 403,
+                        'User does not own this resource');
             }
         });
 
@@ -219,7 +224,8 @@ _server.app.get('/resources/*', function getResource(req, res, next) {
         .then(checkScopes.bind(null, req.user.doc.scope))
         .then(function scopesAllowed(allowed) {
             if (!allowed) {
-                throw new OADAError('Not Authorized', 403);
+                throw new OADAError('Not Authorized', 403,
+                        'Token does not have required scope');
             }
         });
 
@@ -233,7 +239,7 @@ _server.app.get('/resources/*', function getResource(req, res, next) {
             return doc.next();
         })
         .then(function returnDoc(doc) {
-            if (!doc) {
+            if (doc === undefined) {
                 throw new OADAError('Not Found', 404);
             }
 
@@ -274,7 +280,8 @@ _server.app.post('/resources/*', function postResource(req, res, next) {
 
 _server.app.put('/resources/*', function putResource(req, res, next) {
     if (!checkScopes(req.user.doc.scope, req.get('Content-Type'))) {
-        return next(new OADAError('Not Authorized', 403));
+        return next(new OADAError('Not Authorized', 403,
+                'Token does not have required scope'));
     }
 
     return kafkaRequest(req.id, config.get('kafka:topics:writeRequest'), {
