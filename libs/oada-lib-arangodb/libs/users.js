@@ -6,7 +6,7 @@ const Promise = require('bluebird');
 
 /*
   user {
-    "_key": "123frank",
+    "_id": "users/123frank",
     "username": "frank",
     "password": "test",
     "name": "Farmer Frank",
