@@ -1,6 +1,8 @@
 'use strict'
 const db = require('../db');
-const debug = require('debug')('resources');
+const debug = require('debug');
+const info = debug('info:arangodb#resources');
+const trace = debug('trace:arangodb#resources');
 const _ = require('lodash');
 const Promise = require('bluebird');
 const uuidV4 = require('uuid/v4');
@@ -45,7 +47,7 @@ function upsert(req) {
     graphcol = config.get('arangodb:collections:graphNodes');
 
     if (!req.body) {
-      debug('req._body required but not given');
+      info('req._body required but not given');
       throw new Error({ code: 'MISSING_BODY' });
     }
 
@@ -56,19 +58,19 @@ function upsert(req) {
     }
     // Can't create a resource without specifying the _key for arango
     if (!req.body._key) {
-      debug('req.body._id (oada _id) or req.body._key required, but neither was given.');
+      info('req.body._id (oada _id) or req.body._key required, but neither was given.');
       throw new Error({ code: 'MISSING_ID'});
     }
     if (!req.body._type) {
-      debug('req.body._type required, but not given.');
+      info('req.body._type required, but not given.');
       throw new Error({ code: 'MISSING_TYPE'});
     }
     if (!req.user || !req.user._id) {
-      debug('req.user and req.user._id required, but not given');
+      info('req.user and req.user._id required, but not given');
       throw new Error({ code: 'MISSING_USER'});
     }
     if (!req.revPrefix) {
-      debug('req.revPrefix is required, but not given');
+      info('req.revPrefix is required, but not given');
       throw new Error({ code: 'MISSING_REVPREFIX'});
     }
     // This library sets up meta and rev, so get rid of any from outside:
@@ -161,7 +163,7 @@ function lookupFromUrl(url) {
       value0: pieces.length-2, // need to not count first two entries since they are in startNode
       value1: startNode,
     }
-    pieces.splice(0, 1)
+    pieces.splice(0, 2)
   // Create a filter for each segment of the url
     const filters = pieces.map((urlPiece, i) => {
       let bindVarA = 'value' + (2+(i*2)).toString()
@@ -175,31 +177,39 @@ function lookupFromUrl(url) {
         edges
         ${filters}
         RETURN p`
+    trace('lookupFromUrl('+url+'): running query: ', query, ', bindVars = ', bindVars);
     return db.query({query, bindVars})
       .then((cursor) => {
+        trace('lookupFromUrl('+url+'): query result = ', JSON.stringify(cursor._result,false,'  '));
         let resource_id = ''
         let path_leftover = ''
 
         if (cursor._result.length < 1) {
+          trace('lookupFromUrl('+url+'): cursor._result.length < 1');
           return {resource_id, path_leftover}
         }
 
         // Check for a traversal that did not finish (aka not found)
         if (cursor._result[cursor._result.length-1].vertices[0] === null) {
+          trace('lookupFromUrl('+url+'): cursor._result[end].vertices[0] === null');
           return {resource_id, path_leftover}
         }
 
-        let res =_.reduce(cursor._result, (result, value, key) => {
+        // find the longest path:
+        let res = _.reduce(cursor._result, (result, value, key) => {
           if (result.vertices.length > value.vertices.length) return result
           return value
-        })
+        },{vertices: -1});
+        trace('lookupFromUrl('+url+'): longest path has '+res.vertices.length+' vertices');
         resource_id = res.vertices[res.vertices.length-1].resource_id;
         // If the desired url has more pieces than the longest path, the
         // path_leftover is the extra pieces
         if (res.vertices.length-1 < pieces.length) {
+          trace('lookupFromUrl('+url+'): more URL pieces than vertices, computing path');
           let extras = pieces.length - (res.vertices.length-1)
           path_leftover = pointer.compile(pieces.slice(0-extras))
         } else {
+          trace('lookupFromUrl('+url+'): same number URL pieces as vertices, path is whatever is on graphNode');
           path_leftover = res.vertices[res.vertices.length-1].path || ''
         }
 

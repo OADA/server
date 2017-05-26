@@ -51,7 +51,7 @@ module.exports = [
   //------------------------------------------------------
   // Rocks document:
   {
-    "_key": "resources/default:resources_rocks_123",
+    "_id": "resources/default:resources_rocks_123",
     "_oada_rev": "1-abc",
     "_type": "application/vnd.oada.rocks.1+json",
     "_meta": { 
@@ -102,7 +102,7 @@ module.exports = [
   //-----------------------------------------------------------------
   // Rock document
   {
-    "_key": "resources/default:resources_rock_123",
+    "_id": "resources/default:resources_rock_123",
     "_oada_rev": "1-abc",
     "_type": "application/vnd.oada.rock.1+json",
     "_meta": { 

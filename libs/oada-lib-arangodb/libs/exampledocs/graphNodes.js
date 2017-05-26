@@ -23,7 +23,7 @@ module.exports = [
   },
   { // This is an example of a node internal to a resource
     _id: 'graphNodes/resources:default:resources_rocks_123:rocks-index',
-    resource_id: 'default:resources_rocks_123',
+    resource_id: 'resources/default:resources_rocks_123',
     is_resource: false,
     path: '/rocks-index',
   },

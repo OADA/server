@@ -78,16 +78,16 @@ module.exports = {
           const indexname = (typeof ci === 'string') ? ci : ci.name;
           const unique = (typeof ci === 'string') ? true: ci.unique;
           const sparse = (typeof ci === 'string') ? true: ci.sparse;
-          if (_.find(dbindexes, dbi => _.isEqual(dbi.fields, [ ci ]))) {
-            return trace('Index '+ci+' exists on collection '+c.name);
+          if (_.find(dbindexes, dbi => _.isEqual(dbi.fields, [ indexname ]))) {
+            return trace('Index '+indexname+' exists on collection '+c.name);
           }
           // Otherwise, create the index
           if (c.edgeCollection) {
             return db.edgeCollection(c.name).createHashIndex(indexname,{unique, sparse})
-            .then(() => trace('Created '+ci+' index on '+c.name));
+            .then(() => trace('Created '+indexname+' index on '+c.name));
           } else {
-            return db.collection(c.name).createHashIndex(ci,{unique, sparse})
-            .then(() => trace('Created '+ci+' index on '+c.name));
+            return db.collection(c.name).createHashIndex(indexname,{unique, sparse})
+            .then(() => trace('Created '+indexname+' index on '+c.name));
           }
         });
       })
@@ -100,18 +100,20 @@ module.exports = {
       const colinfo = config.get('arangodb:collections')[colname];
       if (typeof colinfo.defaults !== 'string') return; // nothing to import for this colname
       const data = require(colinfo.defaults);
-
       
       return Promise.map(data, doc => {
+        if (!doc || !doc._id) trace('WARNING: doc is undefined for collection '+colinfo.name);
+        // Have to use _key if we want the key to be our key:
+        if (!doc._key) doc._key = doc._id.replace(/^[^\/]*\//,'');
         if (colname === 'users') {
           doc.password = users.hashPw(doc.password);
         }
-        return db.collection(colname).document(doc._key)
-        .then(() => trace('Default data document '+doc._key+' already exists on collection '+colname))
+        return db.collection(colname).document(doc._id)
+        .then(() => trace('Default data document '+doc._id+' already exists on collection '+colname))
         .catch(err => {
-          trace('Document '+doc._key+' does not exist in collection '+colname+'.  Creating...');
+          trace('Document '+doc._id+' does not exist in collection '+colname+'.  Creating...');
           return db.collection(colname).save(doc)
-          .then(() => { trace('Document '+doc._key+' successfully creatd in collection '+colname); })
+          .then(() => { trace('Document '+doc._id+' successfully creatd in collection '+colname); })
         });
       })
     }).catch(err => {

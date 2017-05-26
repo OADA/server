@@ -29,14 +29,14 @@ module.exports = {
     connectionString: 'http://arangodb:8529',
     database: 'oada',
     collections: {
-           users: { name: 'users',      indexes: [ 'username' ], defaults: './libs/exampledocs/users'      },
-         clients: { name: 'clients',    indexes: [ 'clientId' ], defaults: './libs/exampledocs/clients'    },
-          tokens: { name: 'tokens',     indexes: [ 'token'    ], defaults: './libs/exampledocs/tokens'     },
-           codes: { name: 'codes',      indexes: [ 'code'     ], defaults: './libs/exampledocs/codes'      },
-       resources: { name: 'resources',  indexes: [            ], defaults: './libs/exampledocs/resources'  },
-      graphNodes: { name: 'graphNodes', indexes: [            ], defaults: './libs/exampledocs/graphNodes' },
-           edges: { name: 'edges',      indexes: [ { name: 'name', unique: false } ], defaults: './libs/exampledocs/edges',
-                    edgeCollection: true },
+               users: { name: 'users',          indexes: [ 'username' ], defaults: './libs/exampledocs/users'      },
+             clients: { name: 'clients',        indexes: [ 'clientId' ], defaults: './libs/exampledocs/clients'    },
+      authorizations: { name: 'authorizations', indexes: [ 'token'    ], defaults: './libs/exampledocs/authorizations' },
+               codes: { name: 'codes',          indexes: [ 'code'     ], defaults: './libs/exampledocs/codes'      },
+           resources: { name: 'resources',      indexes: [            ], defaults: './libs/exampledocs/resources'  },
+          graphNodes: { name: 'graphNodes',     indexes: [            ], defaults: './libs/exampledocs/graphNodes' },
+               edges: { name: 'edges',          indexes: [ { name: 'name', unique: false } ], defaults: './libs/exampledocs/edges',
+                        edgeCollection: true },
     },
     init: {
       // NOTE: passwordSalt HAS to match the one in auth

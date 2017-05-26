@@ -22,16 +22,16 @@ const config = require('../config');
 
 // TODO: Would be nice to just expose these examples on oadaLib itself --- feel
 // like we will want them for all of the microservice tests
-const exampleTokens = require('../libs/exampledocs/tokens.js');
+const exampleTokens = require('../libs/exampledocs/authorizations.js');
 const exampleUsers = require('../libs/exampledocs/users.js');
 
 describe('token lib', () => {
-  before(() => oadaLib.init.run());
+  before(oadaLib.init.run);
 
   it('should find a token', () => {
     const token = exampleTokens[0];
 
-    return oadaLib.tokens.findByToken(token.token)
+    return oadaLib.authorizations.findByToken(token.token)
       .then((t) => {
         expect(t.token).to.equal(token.token);
         expect(t.createTime).to.equal(token.createTime);
@@ -46,14 +46,14 @@ describe('token lib', () => {
     const token = exampleTokens[0];
     const user = exampleUsers[0];
 
-    return oadaLib.tokens.save(Object.assign({}, token, {
+    return oadaLib.authorizations.save(Object.assign({}, token, {
         _key: token._key + '-no-duplicates',
         token: 'abc-no-duplicates',
         user: {
           _id: user._id
         }
       }))
-      .then(() => oadaLib.tokens.findByToken('abc-no-duplicates'))
+      .then(() => oadaLib.authorizations.findByToken('abc-no-duplicates'))
       .then(function checkNewToken(t) {
         expect(t.token).to.equal('abc-no-duplicates');
         expect(t.createTime).to.equal(token.createTime);
@@ -64,5 +64,5 @@ describe('token lib', () => {
       });
   });
 
-  after(() => oadaLib.init.cleanup());
+  after(oadaLib.init.cleanup);
 });

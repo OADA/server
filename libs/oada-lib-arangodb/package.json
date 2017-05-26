@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "init": "node init.js",
-    "test": "DEBUG='*' mocha"
+    "test": "DEBUG='info:*' mocha",
+    "test-debug": "DEBUG='*' mocha"
   },
   "contributors": [
     "Andrew Balmos <andrew@balmos.org> (https://github.com/abalmos)"

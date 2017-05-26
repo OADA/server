@@ -8,7 +8,7 @@ const users = require('./users.js');
 
 function findByToken(token) {
   return db.query(aql`
-      FOR t IN ${db.collection(config.get('arangodb:collections:tokens:name'))}
+      FOR t IN ${db.collection(config.get('arangodb:collections:authorizations:name'))}
       FILTER t.token == ${token}
       RETURN t`
     )
@@ -30,7 +30,7 @@ function findByToken(token) {
 }
 
 function save(token) {
-  return db.collection(config.get('arangodb:collections:tokens:name'))
+  return db.collection(config.get('arangodb:collections:authorizations:name'))
     .save(token)
     .then(() => findByToken(token.token));
 }

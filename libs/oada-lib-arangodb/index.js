@@ -7,5 +7,5 @@ module.exports = {
   resources: require('./libs/resources.js'),
   clients: require('./libs/clients.js'),
   codes: require('./libs/codes.js'),
-  tokens: require('./libs/tokens.js')
+  authorizations: require('./libs/authorizations.js')
 }
