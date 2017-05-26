@@ -1,0 +1,43 @@
+{
+  "name": "oada-srvc-http-handler",
+  "version": "1.0.0",
+  "description": "",
+  "main": "server.js",
+  "scripts": {
+    "test": "mocha",
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/OADA/oada-srvc-http-handler.git"
+  },
+  "author": "awlayton",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/OADA/oada-srvc-http-handler/issues"
+  },
+  "homepage": "https://github.com/OADA/oada-srvc-http-handler#readme",
+  "dependencies": {
+    "arangojs": "^5.6.1",
+    "bluebird": "^3.5.0",
+    "body-parser": "^1.17.1",
+    "cors": "^2.8.3",
+    "debug": "^2.6.6",
+    "express": "^4.15.2",
+    "express-promise": "^0.4.0",
+    "kafka-node": "^1.6.0",
+    "nconf": "^0.8.4",
+    "oada-error": "^1.1.1",
+    "oada-lib-arangodb": "../../libs/oada-lib-arangodb",
+    "oada-lib-config": "../../libs/oada-lib-config",
+    "uuid": "^3.0.1",
+    "well-known-json": "^0.2.0"
+  },
+  "devDependencies": {
+    "chai": "^3.5.0",
+    "mocha": "^3.3.0",
+    "mocha-steps": "^1.0.2",
+    "mock-require": "^2.0.2",
+    "supertest": "^3.0.0"
+  }
+}
