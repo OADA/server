@@ -22,12 +22,12 @@ const eName = config.get('arangodb:collections:edges:name')
 // req should look like:
 // {
 //   body: {                        // body is REQUIRED
-//     _id: 'kjf20i3kfl3f2j',
+//     _id: 'resources/kjf20i3kfl3f2j',
 //     _type: 'application/vnd.oada.bookmarks.1+json',
 //   },
 //   revPrefix: 154,                 // revPrefix is REQUIRED: it's the integer part on the front of the _rev.  Use the offset from Kafka partition.
-//   user: { _id: "kjf02ij3fkls" },  // user is REQUIRED
-//   client: 'kdf02ijklsjfo23ik32k", // client is OPTIONAL if not created from an API request
+//   userid: "users/kjf02ij3fkls",  // user is REQUIRED
+//   authorizationid: 'authorizations/kdf02ijklsjfo23ik32k", // authorizationid is OPTIONAL if not created from an API request
 // }
 function upsert(req) {
   /*
@@ -152,14 +152,14 @@ function upsert(req) {
 
 function lookupFromUrl(url) {
   return Promise.try(() => {
-    let resource = db.collection('resources');
-    let graphNodes = db.collection('graphNodes');
-    let edges = db.collection('edges');
+    let resource = db.collection(resName);
+    let graphNodes = db.collection(gnName);
+    let edges = db.collection(eName);
     let pieces = pointer.parse(url)
-    pieces.splice(0, 1)
+    var startNode = 'graphNodes/' + pieces[0] + ':' + pieces[1]; // resources/123 => graphNodes/resources:123
     let bindVars = {
-      value0: pieces.length-1,
-      value1: 'graphNodes/'+pieces[0],
+      value0: pieces.length-2, // need to not count first two entries since they are in startNode
+      value1: startNode,
     }
     pieces.splice(0, 1)
   // Create a filter for each segment of the url
@@ -224,7 +224,7 @@ function getResource(id, path) {
 
   return db.query({
     query: `FOR r IN resources
-        FILTER r._key == @id
+        FILTER r._id == @id
         RETURN r${returnPath}`,
     bindVars
   })

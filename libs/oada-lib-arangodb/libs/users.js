@@ -24,7 +24,8 @@ function findById(id) {
     .collection(config.get('arangodb:collections:users:name'))
     .document(id)
     .then((user) => {
-      user._id = user._key;
+      // no longer needed now that oada _id === arango _id
+      //user._id = user._key;
 
       return user;
     })
@@ -43,7 +44,8 @@ function findByUsername(username) {
         return null;
       }
 
-      user._id = user._key;
+      // no longer needed now that oada _id === arango _id
+      //user._id = user._key;
 
       return user;
     });

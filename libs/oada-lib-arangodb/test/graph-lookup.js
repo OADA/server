@@ -14,8 +14,8 @@ const lookupFromUrl = require('../libs/resources').lookupFromUrl
 // Tests for the arangodb driver:
 
 let rockUrl = '/resources/default:resources_bookmarks_123/rocks/rocks-index/90j2klfdjss'
-let rockResourceId = 'default:resources_rock_123'
-let rockMetaId = 'default:meta_rock_123'
+let rockResourceId = 'resources/default:resources_rock_123'
+let rockMetaId = 'resources/default:resources_rock_123/_meta'
 let rockPathLeft = ''
 
 let rocksIndexUrl = '/resources/default:resources_bookmarks_123/rocks/rocks-index'

@@ -50,7 +50,7 @@ describe('token lib', () => {
         _key: token._key + '-no-duplicates',
         token: 'abc-no-duplicates',
         user: {
-          _id: user._key
+          _id: user._id
         }
       }))
       .then(() => oadaLib.tokens.findByToken('abc-no-duplicates'))
@@ -59,7 +59,7 @@ describe('token lib', () => {
         expect(t.createTime).to.equal(token.createTime);
         expect(t.expiresIn).to.equal(token.expiresIn);
         expect(t.user).to.be.a('object');
-        expect(t.user._id).to.equal(user._key);
+        expect(t.user._id).to.equal(user._id);
         expect(t.clientId).to.equal(token.clientId);
       });
   });

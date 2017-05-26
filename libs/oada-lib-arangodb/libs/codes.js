@@ -18,7 +18,8 @@ function findByCode(code) {
         return null;
       }
 
-      c._id = c._key;
+      // removed this since we now have arango's _id === oada's _id
+      //c._id = c._key;
 
       return users.findById(c.code)
         .then((user) => {

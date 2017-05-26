@@ -1,10 +1,10 @@
 module.exports = [
   {
-    "_key": "default:codes_xyz_123",
+    "_id": "codes/default:codes_xyz_123",
     "code": "xyz",
     "scope": [],
     "nonce": "",
-    "user": { "_id": "123frank" },
+    "user": { "_id": "users/123frank" },
     "createTime": 1413831649937,
     "expiresIn": 60,
     "redeemed": true,

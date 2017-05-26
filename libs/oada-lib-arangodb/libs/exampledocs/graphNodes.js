@@ -1,25 +1,29 @@
+// NOTE: in the graphNode's, the id of the graph node is supposed to be
+// the same as the resource.  Now that the resource's id is resources/123
+// instead of just 123, we have to make a hack to get it to be predictable
+// because arango won't let us use the "/" in the graphNode's key.  
+//
+// Therefore, replace the "/" in the original with a colon.  Now you have
+// the graphNode key for a resource, user, authorization, etc.
 module.exports = [ 
   //------------------------------------------------
   // Bookmarks document:
   { 
-    "_key": "default:resources_bookmarks_123",
-    resource_id: 'default:resources_bookmarks_123',
+    _id: "graphNodes/resources:default:resources_bookmarks_123",
+    resource_id: 'resources/default:resources_bookmarks_123',
     is_resource: true,
-    meta_id: "default:meta_bookmarks_123",
   },
 
   //------------------------------------------------------
   // Rocks document:
   {
-    "_key": "default:resources_rocks_123",
-    resource_id: 'default:resources_rocks_123',
+    _id: "graphNodes/resources:default:resources_rocks_123",
+    resource_id: 'resources/default:resources_rocks_123',
     is_resource: true,
-    meta_id: "default:meta_rocks_123",
   },
   { // This is an example of a node internal to a resource
-    _key: 'default:resources_rocks_123:rocks-index',
+    _id: 'graphNodes/resources:default:resources_rocks_123:rocks-index',
     resource_id: 'default:resources_rocks_123',
-    meta_id: 'default:meta_rocks_123',
     is_resource: false,
     path: '/rocks-index',
   },
@@ -28,10 +32,9 @@ module.exports = [
   //-----------------------------------------------------------------
   // Rock document
   {
-    "_key": "default:resources_rock_123",
-    resource_id: 'default:resources_rock_123',
+    _id: "graphNodes/resources:default:resources_rock_123",
+    resource_id: 'resources/default:resources_rock_123',
     is_resource: true,
-    meta_id: 'default:meta_rock_123',
   },
 
 ];

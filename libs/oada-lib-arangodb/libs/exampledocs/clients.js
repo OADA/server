@@ -1,6 +1,6 @@
 module.exports = [
   {
-    "_key": "default:clients-123",
+    "_id": "clients/default:clients-123",
     "clientId": "3klaxu838akahf38acucaix73@identity.oada-dev.com",
     "name": "OADA Reference Implementation",
     "contact": "info@openag.io",
@@ -24,7 +24,7 @@ module.exports = [
     }]
   },
   {
-    "_key": "default:clients-124",
+    "_id": "clients/default:clients-124",
     "clientId": "389kxhcnjmashlsxd8@identity.oada-dev.com",
     "redirectUrls": [
       "https://example.org/redirect"
