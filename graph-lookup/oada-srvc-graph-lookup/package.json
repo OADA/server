@@ -1,0 +1,31 @@
+{
+  "name": "oada-srvc-graph-lookup",
+  "version": "1.0.0",
+  "description": "oada-srvc-graph-lookup",
+  "main": "server/index.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "start": "node main.js",
+    "test": "mocha test/index.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "arangojs": "^5.6.1",
+    "bluebird": "^3.5.0",
+    "chai": "^3.5.0",
+    "debug": "^2.6.6",
+    "expect": "^1.20.2",
+    "json-pointer": "^0.6.0",
+    "kafka-node": "^1.6.2",
+    "lodash": "^4.17.4",
+    "mocha": "^3.3.0",
+    "moment": "^2.18.1",
+    "nconf": "^0.8.4",
+    "oada-lib-arangodb": "../../libs/oada-lib-arangodb",
+    "oada-lib-config": "../../libs/oada-lib-config",
+    "uuid": "^3.0.1"
+  }
+}
