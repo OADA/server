@@ -233,7 +233,7 @@ _server.app.get('/resources/*', function getResource(req, res, next) {
             return doc.next();
         })
         .then(function returnDoc(doc) {
-            if (!doc) {
+            if (doc === undefined) {
                 throw new OADAError('Not Found', 404);
             }
 
