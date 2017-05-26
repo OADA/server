@@ -1,6 +1,6 @@
 module.exports = [
   {
-    "_key": "default:users_frank_123",
+    "_key": "default:users-frank-123",
     "username": "frank",
     "password": "test",
     "name": "Farmer Frank",

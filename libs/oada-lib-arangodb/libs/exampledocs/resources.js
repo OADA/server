@@ -10,11 +10,11 @@ module.exports = [
       "_id": "default:resources_bookmarks_123/_meta",
       "_rev": "1-abc",
       "_type": "application/vnd.oada.bookmarks.1+json",
-      "_owner": "default:users_frank_123",
+      "_owner": "default:users-frank-123",
       "stats": { // stats on meta is exempt from _changes because that would generate loop of rev updates with resource
-        "createdBy": "default:users_frank_123",
+        "createdBy": "default:users-frank-123",
         "created": 1494133055,
-        "modifiedBy": "default:users_frank_123",
+        "modifiedBy": "default:users-frank-123",
         "modified": 1494133055
       },
       "_changes": { 
@@ -28,11 +28,11 @@ module.exports = [
               "_id": "default:resources_bookmarks_123/_meta",
               "_rev": "1-abc",
               "_type": "application/vnd.oada.bookmarks.1+json",
-              "_owner": "default:users_frank_123",
+              "_owner": "default:users-frank-123",
               "stats": { // stats on meta is exempt from _changes because that would generate loop of rev updates with resource
-                "createdBy": "default:users_frank_123",
+                "createdBy": "default:users-frank-123",
                 "created": 1494133055,
-                "modifiedBy": "default:users_frank_123",
+                "modifiedBy": "default:users-frank-123",
                 "modified": 1494133055
               },
               // leave out _changes in the _changes itself
@@ -40,7 +40,7 @@ module.exports = [
             "rocks": { "_id": "default:resources_rocks_123", "_rev": "1-abc" }
 
           },
-          userid: 'default:users_frank_123',
+          userid: 'default:users-frank-123',
           clientid: 'default:clients_123',
         },
       },
@@ -58,11 +58,11 @@ module.exports = [
       "_id": "default:resources_rocks_123/_meta",
       "_rev": "1-abc",
       "_type": "application/vnd.oada.rocks.1+json",
-      "_owner": "default:users_frank_123",
+      "_owner": "default:users-frank-123",
       "stats": {
-        "createdBy": "default:users_frank_123",
+        "createdBy": "default:users-frank-123",
         "created": 1494133055,
-        "modifiedBy": "default:users_frank_123",
+        "modifiedBy": "default:users-frank-123",
         "modified": 1494133055
       },
       "_changes": { 
@@ -76,11 +76,11 @@ module.exports = [
               "_id": "default:resources_rocks_123/_meta",
               "_rev": "1-abc",
               "_type": "application/vnd.oada.rocks.1+json",
-              "_owner": "default:users_frank_123",
+              "_owner": "default:users-frank-123",
               "stats": {
-                "createdBy": "default:users_frank_123",
+                "createdBy": "default:users-frank-123",
                 "created": 1494133055,
-                "modifiedBy": "default:users_frank_123",
+                "modifiedBy": "default:users-frank-123",
                 "modified": 1494133055
               },
             },
@@ -88,7 +88,7 @@ module.exports = [
               "90j2klfdjss": { "_id": "default:resources_rock_123", "_rev": "1-abc" }
             }
           },
-          userid: 'default:users_frank_123',
+          userid: 'default:users-frank-123',
           clientid: 'default:clients_123',
         },
       },
@@ -109,12 +109,12 @@ module.exports = [
       _id: 'default:resources_rock_123/_meta',
       _rev: '1-abc',
       "_type": "application/vnd.oada.rock.1+json",
-      "_owner": "default:users_frank_123",
+      "_owner": "default:users-frank-123",
       "_changes": { "_id": "default:changes_meta_rock_123" },
       "stats": {
-        "createdBy": "default:users_frank_123",
+        "createdBy": "default:users-frank-123",
         "created": 1494133055,
-        "modifiedBy": "default:users_frank_123",
+        "modifiedBy": "default:users-frank-123",
         "modified": 1494133055
       },
 
@@ -130,18 +130,18 @@ module.exports = [
               _id: 'default:resources_rock_123/_meta',
               _rev: '1-abc',
               "_type": "application/vnd.oada.rock.1+json",
-              "_owner": "default:users_frank_123",
+              "_owner": "default:users-frank-123",
               "stats": {
-                "createdBy": "default:users_frank_123",
+                "createdBy": "default:users-frank-123",
                 "created": 1494133055,
-                "modifiedBy": "default:users_frank_123",
+                "modifiedBy": "default:users-frank-123",
                 "modified": 1494133055
               },
             },
             "location": { "latitude": "-40.1231242", "longitude": "82.192089123" },
             "picked_up": false
           },
-          userid: 'default:users_frank_123',
+          userid: 'default:users-frank-123',
           clientid: 'default:clients_123',
         },
       },
