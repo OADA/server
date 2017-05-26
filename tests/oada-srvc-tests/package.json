@@ -19,8 +19,9 @@
   "scripts": {
     "selftestserver": "IP=localhost PORT=80 node server",
     "selftest": "NODE_ENV=selftest DEBUG='*' mocha selftest",
-    "debug": "DEBUG='tests:*' isTest=true mocha 'test-lower-level/*.js'",
-    "start": "NODE_ENV=production mocha"
+    "debuglow": "DEBUG='tests:*' isTest=true mocha 'test-lower-level/*.js'",
+    "debug": "DEBUG='tests:*' isTest=true mocha 'test/*.js'",
+    "start": "NODE_ENV=production isTest=true mocha 'test/*.js'"
   },
   "author": "Yaguang Zhang",
   "license": "Apache-2.0"

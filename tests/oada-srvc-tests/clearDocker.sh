@@ -11,6 +11,5 @@ echo "Removing volumes..."
 echo ""
 docker volume rm $(docker volume ls -q)
 echo "----------------------"
-echo "Done! Press any key to exit."
+echo "Done! 
 echo "----------------------"
-read -n1 -r -p "" key
