@@ -1,7 +1,7 @@
 'use strict';
 
 var Promise = require('bluebird');
-const oadaLib = require('oada-lib-arangodb');
+const oadaLib = require('../../libs/oada-lib-arangodb');
 const express = require('express');
 const expressPromise = require('express-promise');
 const uuid = require('uuid');
@@ -150,7 +150,7 @@ _server.app.use(function tokenHandler(req, res, next) {
 // Rewrite the URL if it starts with /bookmarks
 _server.app.use(function handleBookmarks(req, res, next) {
     req.url = req.url.replace(/^\/bookmarks/,
-      `/resources/${req.user.doc['bookmarks_id']}`);
+      `/${req.user.doc['bookmarks_id']}`);
     next();
 });
 
@@ -160,7 +160,7 @@ _server.app.use(function graphHandler(req, res, next) {
         'url': req.url,
     })
     .then(function handleGraphRes(resp) {
-        req.url = `/resources/${resp['resource_id']}`;
+        req.url = `/${resp['resource_id']}`;
         // TODO: Just use express parameters rather than graph thing?
         req.oadaGraph = resp;
     })
@@ -250,6 +250,11 @@ _server.app.get('/resources/*', function getResource(req, res, next) {
 
 // TODO: This was a quick make it work. Do what you want with it.
 function unflattenMeta(doc) {
+    if (doc === null) {
+        // Object.keys does not like null
+        return null;
+    }
+
     Object.keys(doc).forEach((key) => {
         if (doc[key]._id) {
             if (doc[key]['_oada_rev']) {

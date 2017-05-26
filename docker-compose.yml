@@ -74,6 +74,18 @@ services:
     environment:
       - NODE_ENV=${NODE_ENV:-development}
 
+  write-handler:
+    depends_on:
+      - startup
+    build: ./write-handler
+    restart: always
+    container_name: write-handler
+    volumes:
+      - .:/code
+      - ./oada-srvc-docker-config.js:/oada-srvc-docker-config.js
+    environment:
+      - NODE_ENV=${NODE_ENV:-development}
+
   token-lookup:
     depends_on:
       - startup

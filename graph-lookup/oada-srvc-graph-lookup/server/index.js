@@ -6,7 +6,7 @@ const kf = require('kafka-node');
 const debug = require('debug')('graph-lookup');
 const trace = require('debug')('graph-lookup:trace');
 const warning = require('debug')('graph-lookup:warning');
-const oadaLib = require('oada-lib-arangodb')
+const oadaLib = require('../../../libs/oada-lib-arangodb')
 const config = require('../config')
 
 function start() {
