@@ -1,8 +1,8 @@
 'use strict'
 
 /*
-  Testing script 1:
-    - The scenario for invalid token + valid URL.
+  Testing script 4:
+    - The scenario for one single PUT with invalid token + valid URL.
  */
 
 const config = require('../config');
@@ -30,7 +30,7 @@ let setDatabaseP = oadaLib.init.run()
   });
 
 // Real tests.
-info(debugMark + 'Starting tests... (for getInvalid)');
+info(debugMark + 'Starting tests... (for putInvalid)');
 const FOO_INVALID_TOKEN = 'fooInvalidToken-tests';
 
 const tokenToUse = FOO_INVALID_TOKEN;
@@ -104,8 +104,9 @@ describe('GET (Invalid Token with Valid URL)', () => {
   });
 
   after(() => {
-    info("config = " + config);
-    info("config.isTest = " + config.get("isTest"));
+    info(debugMark + "in after()")
+    info("    config = " + config);
+    info("    config.isTest = " + config.get("isTest"));
     return oadaLib.init.cleanup();
   });
 });
