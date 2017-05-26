@@ -170,6 +170,8 @@ _server.app.use(function graphHandler(req, res, next) {
 /////////////////////////////////////////////////////////////////
 // Setup the body parser and associated error handler:
 _server.app.use(bodyParser.json({
+    strict: false,
+    type: '+json',
     limit: '10mb',
 }));
 
