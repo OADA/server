@@ -1,0 +1,37 @@
+{
+  "name": "oada-srvc-well-known",
+  "version": "1.0.0",
+  "description": "Microservice for serving well-known at an OADA cloud.  Plays nicely with oada-ref-auth-js.",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/oada/oada-srvc-well-known.git"
+  },
+  "keywords": [
+    "oada",
+    "well-known"
+  ],
+  "author": "",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/oada/oada-srvc-well-known/issues"
+  },
+  "homepage": "https://github.com/oada/oada-srvc-well-known#readme",
+  "dependencies": {
+    "bluebird": "^3.5.0",
+    "cors": "^2.8.3",
+    "debug": "^2.6.6",
+    "express": "^4.15.2",
+    "express-promise": "^0.4.0",
+    "lodash": "^4.17.4",
+    "nconf": "^0.8.4",
+    "oada-error": "^1.1.1",
+    "oada-lib-config": "../../libs/oada-lib-config",
+    "request": "^2.81.0",
+    "well-known-json": "^0.2.0"
+  }
+}
