@@ -1,0 +1,32 @@
+{
+  "name": "oada-srvc-startup",
+  "version": "0.0.1",
+  "description": "Handles startup of services for docker in OADA docker implementation.",
+  "main": "index.js",
+  "scripts": {
+    "start": "DEBUG='*' node index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/oada/oada-srvc-startup.git"
+  },
+  "keywords": [
+    "oada",
+    "startup",
+    "docker"
+  ],
+  "author": "Aaron Ault",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/oada/oada-srvc-startup/issues"
+  },
+  "homepage": "https://github.com/oada/oada-srvc-startup#readme",
+  "dependencies": {
+    "bluebird": "^3.5.0",
+    "debug": "^2.6.6",
+    "express": "^4.15.2",
+    "oada-lib-arangodb": "../../libs/oada-lib-arangodb",
+    "oada-lib-config": "../../libs/oada-lib-config"
+  }
+}
