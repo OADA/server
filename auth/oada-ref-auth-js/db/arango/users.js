@@ -17,7 +17,7 @@
 var bcrypt = require('bcryptjs');
 
 var config = require('../../config');
-var oadaLib = require('oada-lib-arangodb');
+var oadaLib = require('../../../../libs/oada-lib-arangodb');
 var trace = require('debug')('arango:user/trace');
 
 function findById(id, cb) {

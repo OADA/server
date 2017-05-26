@@ -16,7 +16,7 @@
 
 var _ = require('lodash');
 var trace = require('debug')('arango:codes/trace');
-var oadaLib = require('oada-lib-arangodb');
+var oadaLib = require('../../../../libs/oada-lib-arangodb');
 
 function findByCode(code, cb) {
   trace('findByCode: searching for code ', code);

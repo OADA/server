@@ -19,7 +19,7 @@
 global.isLibrary = !(require.main === module);
 
 var _ = require('lodash');
-var trace = require('debug')('auth#index:trace');
+var trace = require('debug')('trace:auth#index');
 var config = require('./config');
 // If there is an endpointsPrefix, update all the endpoints to include the
 // prefix before doing anything else

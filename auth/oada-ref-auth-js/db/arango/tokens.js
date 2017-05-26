@@ -14,14 +14,13 @@
  */
 'use strict';
 
-var db = require('./db.js');
 var _ = require('lodash');
 var trace = require('debug')('arango:token/trace');
-var oadaLib = require('oada-lib-arangodb');
+var oadaLib = require('../../../../libs/oada-lib-arangodb');
 
 function findByToken(token, cb) {
   trace('findByToken: searching for token ', token);
-  oadaLib.tokens.findByToken(token).asCallback(cb);
+  oadaLib.authorizations.findByToken(token).asCallback(cb);
 }
 
 function save(token, cb) {
@@ -29,7 +28,7 @@ function save(token, cb) {
   // Link user
   token.user = {_id: token.user._id};
   trace('save: saving token ', token);
-  oadaLib.tokens.save(token).asCallback(cb);
+  oadaLib.authorizations.save(token).asCallback(cb);
 }
 
 module.exports = {

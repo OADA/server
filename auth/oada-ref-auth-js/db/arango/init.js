@@ -1,3 +1,5 @@
+// NOTE: THIS IS DEPRECATED.  USE THE oada-lib-arangodb INIT INSTEAD
+
 // This file exports a function which can be used to initialize the database
 // with `npm run init` in oada-ref-auth-js
 
