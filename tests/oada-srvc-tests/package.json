@@ -1,0 +1,27 @@
+{
+  "name": "oada-srvc-tests",
+  "version": "1.0.0",
+  "description": "Generate dummy messages to test different oada-srvc micro services.",
+  "main": "",
+  "dependencies": {
+    "axios": "^0.16.1",
+    "bluebird": "^3.5.0",
+    "chai": "^3.5.0",
+    "debug": "^2.6.6",
+    "kafka-node": "^1.6.1",
+    "mocha": "^3.3.0",
+    "oada-lib-arangodb": "../../libs/oada-lib-arangodb",
+    "validator": "^7.0.0"
+  },
+  "devDependencies": {
+    "express": "^4.15.2"
+  },
+  "scripts": {
+    "selftestserver": "IP=localhost PORT=80 node server",
+    "selftest": "NODE_ENV=selftest DEBUG='*' mocha selftest",
+    "debug": "DEBUG='tests:*' isTest=true mocha 'test-lower-level/*.js'",
+    "start": "NODE_ENV=production mocha"
+  },
+  "author": "Yaguang Zhang",
+  "license": "Apache-2.0"
+}
