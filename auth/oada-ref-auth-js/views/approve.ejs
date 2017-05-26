@@ -1,0 +1,115 @@
+<!-- Copyright 2014 Open Ag Data Alliance
+
+  Licensed under the Apache License, Version 2.0 (the 'License');
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an 'AS IS' BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+-->
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>OADA Account Access Approval</title>
+    <link href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css" rel="stylesheet">
+  </head>
+  <body>
+    <div class="container">
+      <br />
+      <div class="header">
+        <img style="width: 50px;" src="<%= logo_url %>" alt="OADA Logo" />
+        Open Ag Data Alliance
+      </div>
+      <br />
+
+      <div class="jumbotron">
+        <p><strong><%= client.client_name %></strong> is requesting access to:</p>
+
+        <ul class="list-group">
+          <% scope.forEach(function(s) { %>
+          <li class="list-group-item"><%= s %></li>
+          <% }) %>
+        </ul>
+
+        <% if(trusted) { %>
+          <strong style="color: green;">
+            Client IS registered with a trusted provider.
+          </strong>
+        <% } else { %>
+          <strong style="color: red;">
+            Client is NOT registered with a trusted provider.
+            <br />
+            Therefore, the below infomation may be incorrect.
+          </strong>
+        <% } %>
+
+        <br />
+        <br />
+
+        <% if(client.policy_uri === undefined && client.tos_uri === undefined) { %>
+          <strong style="color: red;">
+            No published Privacy and Data Use Principles
+          </strong>
+        <% } else { %>
+          <% if(client.policy_uri !== undefined) { %>
+            <a href="<%= client.policy_uri %>">Client Policy Statement</a>
+          <% } else { %>
+            <strong style="color: red;">
+              No policy statement.
+            </strong>
+          <% } %>
+          <br />
+          <% if(client.tos_uri !== undefined) { %>
+            <a href="<%= client.tos_uri %>">Client TOS Statement</a>
+          <% } else { %>
+            <strong style="color: red;">
+              No TOS statement.
+            </strong>
+          <% } %>
+
+        <% } %>
+
+        <br />
+        <br />
+        Supported License(s):
+          <ul>
+          <% if(client.licenses && client.licenses.forEach) {
+            client.licenses.forEach(function(lic) { %>
+            <li><%= lic.name %></li>
+          <% })
+          } %>
+          </ul>
+        <br />
+        <br />
+
+        <form action="<%= decision_url%>" method="post">
+          <input name="transaction_id" type="hidden"
+            value="<%= transactionID %>" />
+          <% scope.forEach(function(s) { %>
+            <input name="scope[]" type="hidden" value="<%= s %>" />
+          <% }) %>
+
+          <div class="input-group input-group-lg">
+            <p>
+              <input type="submit" class="btn btn-lg btn-success" role="button"
+                value="Allow" id="allow" />
+              <input type="submit" class="btn btn-lg btn-failure" role="button"
+                value="Deny" name="cancel" id="deny" />
+            </p>
+          </div>
+        </form>
+
+        <small>
+          © 2014 <a href="http://openag.io">Open Ag Data Alliance</a>
+        </small>
+      </div>
+    </div>
+  </body>
+</html>
