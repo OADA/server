@@ -22,7 +22,7 @@ const error = debug('token-lookup:error');
 
 const Promise = require('bluebird');
 const kf = require('kafka-node');
-const oadaLib = require('oada-lib-arangodb');
+const oadaLib = require('../../libs/oada-lib-arangodb');
 const config = require('./config');
 
 //---------------------------------------------------------
@@ -39,9 +39,9 @@ const consumer = new kf.ConsumerGroup({
 }, [config.get('kafka:topics:tokenRequest')]);
 let producer = new kf.Producer(client, {partitionerType: 0});
 
-process.on('exit', () => {console.log('ere'); client.close()});
-process.on('SIGINT', () => {console.log('ere'); client.close(); process.exit(2);});
-process.on('uncaughtException', (a) => {console.log('ere', a); client.close(); process.exit(99);});
+process.on('exit', () => {info('process exit'); client.close()});
+process.on('SIGINT', () => {info('SIGINT'); client.close(); process.exit(2);});
+process.on('uncaughtException', (a) => {info('uncaughtException: ', a); client.close(); process.exit(99);});
 
 
 consumer.on('message', (msg) => {
@@ -63,6 +63,7 @@ consumer.on('message', (msg) => {
         partition: req.resp_partition,
         connection_id: req.connection_id,
         doc: {
+          authorizationid: null,
           user_id: null,
           scope: [],
           bookmarks_id: null,
@@ -72,11 +73,15 @@ consumer.on('message', (msg) => {
 
       // Get token from db.  Later on, we should speed this up
       // by getting everything in one query.
-      return oadaLib.tokens.findByToken(req.token.trim().replace(/^Bearer /,''))
+      return oadaLib.authorizations.findByToken(req.token.trim().replace(/^Bearer /,''))
         .then(t => {
           if(!t) {
             info('WARNING: token '+req.token+' does not exist.');
             return res;
+          }
+
+          if (!t._id) {
+            info('WARNING: _id for token does not exist in response');
           }
 
           if(!t.user) {
@@ -90,6 +95,8 @@ consumer.on('message', (msg) => {
           }
 
           res.token_exists = true;
+          trace('received authorization, _id = ', t._id);
+          res.doc.authorizationid = t._id;
           res.doc.client_id = t.clientId;
           res.doc.user_id = t.user._id || res.doc.user_id;
           res.doc.bookmarks_id = t.user.bookmarks._id || res.doc.bookmarks_id;

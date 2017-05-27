@@ -18,7 +18,8 @@ function findByToken(token) {
         return null;
       }
 
-      t._id = t._key;
+      // no longer needed with new _id scheme
+      //t._id = t._key;
 
       return users.findById(t.user._id)
         .then((user) => {

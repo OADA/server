@@ -1,5 +1,5 @@
 const Promise = require('bluebird');
-const arangolib = require('oada-lib-arangodb');
+const arangolib = require('../../libs/oada-lib-arangodb');
 const app = require('express')();
 const debug = require('debug');
 const trace = debug('startup:trace');

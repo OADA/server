@@ -21,14 +21,16 @@ const Promise = require('bluebird');
 const bcrypt = require('bcryptjs');
 const randomstring = require("randomstring");
 const kf = require('kafka-node');
-const oadaLib = require('oada-lib-arangodb');
+const oadaLib = require('../../../libs/oada-lib-arangodb');
 const config = require('../config');
+const debug = require('debug');
+const trace = debug('trace:token-lookup#test');
 
 // To test the token lookup, have to make a test database and populate it
 // with token and user
 let db = oadaLib.arango;
 let cols = config.get('arango:collections');
-let frankid = null;
+let frankid = oadaLib.examples('users')[0]._id;
 
 // kafka topics
 const	consTopic = config.get('kafka:topics:httpResponse');
@@ -40,20 +42,20 @@ let groupid;
 
 describe('token lookup service', () => {
   before((done) => {
-		client = new kf.Client("zookeeper:2181", "token_lookup");
+		client = new kf.Client("zookeeper:2181", "test-token_lookup");
 
 		producer = new kf.Producer(client, {
 			partitionerType: 0
     });
 
-    consumer = new kf.Consumer(client, [ {topic: consTopic} ], {
+    const consumer = new kf.Consumer(client, [ {topic: consTopic} ], {
       autoCommit: true
     });
 
     producer.on('ready', done);
   });
 
-  before(() => oadaLib.init.run());
+  before(oadaLib.init.run);
 
   //--------------------------------------------------
   // The tests!
@@ -63,27 +65,41 @@ describe('token lookup service', () => {
 			// make token_request message
 			let t = {
         resp_partition: 0,
-        connection_id: '123abc',
+        connection_id: '123abc' + randomstring.generate(7),
         token: 'xyz'
       };
 
-      producer.send([{topic: prodTopic, messages: JSON.stringify(t)}], (a) => {
-        consumer.on('message', msg => {
-          const httpMsg = JSON.parse(msg.value);
+      const consumer = new kf.Consumer(client, [ {topic: consTopic} ], {
+        autoCommit: true
+      });
 
-          expect(httpMsg.type).to.equal('http_response')
-          expect(httpMsg.token).to.equal('xyz');
-          expect(httpMsg.token_exists).is.ok;
-          expect(httpMsg.partition).to.equal(0);
-          expect(httpMsg.connection_id).to.equal('123abc')
-          expect(httpMsg.doc.userid).to.equal('default:users-frank-123');
-          expect(httpMsg.doc.scope).to.be.instanceof(Array);
-          expect(httpMsg.doc.scope).to.be.empty;
-          expect(httpMsg.doc.bookmarksid).to.equal('default:resources_bookmarks_123');
-          expect(httpMsg.doc.clientid).to.equal('jf93caauf3uzud7f308faesf3@provider.oada-dev.com');
+      consumer.on('error', err => { throw err } );
+      // create the listener:
+      consumer.on('message', msg => {
+        const httpMsg = JSON.parse(msg.value);
 
-          done();
+        trace('received message: ', httpMsg);
+        expect(httpMsg.type).to.equal('http_response')
+        expect(httpMsg.token).to.equal('xyz');
+        expect(httpMsg.token_exists).is.ok;
+        expect(httpMsg.partition).to.equal(0);
+        expect(httpMsg.connection_id).to.equal('123abc');
+        expect(httpMsg.doc.authorizationid).to.equal(oadaLib.examples('authorizations')[0]._id);
+        expect(httpMsg.doc.user_id).to.equal(frankid);
+        expect(httpMsg.doc.scope).to.be.instanceof(Array);
+        expect(httpMsg.doc.scope).to.be.empty;
+        expect(httpMsg.doc.bookmarksid).to.equal('resources/default:resources_bookmarks_123');
+        expect(httpMsg.doc.clientid).to.equal('jf93caauf3uzud7f308faesf3@provider.oada-dev.com');
+       
+        // the "true" forces commit before close
+        consumer.close(true, () => {
+          done()
         });
+      });
+
+      // now produce the message:
+      producer.send([{topic: prodTopic, messages: JSON.stringify(t)}], (a) => {
+        console.log('message produced, awaiting response')
       });
     });
 
@@ -94,31 +110,38 @@ describe('token lookup service', () => {
         token: 'not-valid'
       };
 
-      producer.send([{topic: prodTopic, messages: JSON.stringify(t)}], (a) => {
-        consumer.on('message', msg => {
-          const httpMsg = JSON.parse(msg.value);
 
-          expect(httpMsg.type).to.equal('http_response')
-          expect(httpMsg.token).to.equal('not-valid');
-          expect(httpMsg.token_exists).is.not.ok;
-          expect(httpMsg.partition).to.equal(0);
-          expect(httpMsg.connection_id).to.equal('abc123')
-          expect(httpMsg.doc.userid).to.equal(null);
-          expect(httpMsg.doc.scope).to.be.instanceof(Array);
-          expect(httpMsg.doc.scope).to.be.empty;
-          expect(httpMsg.doc.bookmarksid).to.equal(null);
-          expect(httpMsg.doc.clientid).to.equal(null);
+      const consumer = new kf.Consumer(client, [ {topic: consTopic} ], {
+        autoCommit: true
+      });
+      consumer.on('error', err => { throw err } );
+      // create the listener:
+      consumer.on('message', msg => {
+        const httpMsg = JSON.parse(msg.value);
 
+        expect(httpMsg.type).to.equal('http_response')
+        expect(httpMsg.token).to.equal('not-valid');
+        expect(httpMsg.token_exists).is.not.ok;
+        expect(httpMsg.partition).to.equal(0);
+        expect(httpMsg.connection_id).to.equal('abc123')
+        expect(httpMsg.doc.authorizationid).to.equal(null);
+        expect(httpMsg.doc.user_id).to.equal(null);
+        expect(httpMsg.doc.scope).to.be.instanceof(Array);
+        expect(httpMsg.doc.scope).to.be.empty;
+        expect(httpMsg.doc.bookmarksid).to.equal(null);
+        expect(httpMsg.doc.clientid).to.equal(null);
+
+        consumer.close(() => {
           done();
         });
       });
+
+      producer.send([{topic: prodTopic, messages: JSON.stringify(t)}], (a) => { console.log('2nd message produced, awaiting response'); });
     });
 	});
 
   //-------------------------------------------------------
   // After tests are done, get rid of our temp database
   //-------------------------------------------------------
-  after(() => {
-		return oadaLib.init.cleanup();
-  });
+  //after(oadaLib.init.cleanup);
 });
