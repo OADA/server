@@ -11,6 +11,7 @@ const aql = require('arangojs').aqlQuery;
 const md5 = require('md5');
 const pointer = require('json-pointer')
 const config = require('../config')
+const util = require('../util');
 config.set('isTest', true)
 const resName = config.get('arangodb:collections:resources:name')
 const gnName = config.get('arangodb:collections:graphNodes:name')
@@ -237,7 +238,8 @@ function getResource(id, path) {
         FILTER r._id == @id
         RETURN r${returnPath}`,
     bindVars
-  })
+  }).then(result => result.next())
+  .then(util.sanitizeResult)
   .catch({
       isArangoError: true,
       errorMessage: 'invalid traversal depth (while instantiating plan)'

@@ -17,7 +17,7 @@ before(function mockDb() {
                         res = res[part];
                     });
 
-                    return {next: () => res};
+                    return res;
                 });
             },
 

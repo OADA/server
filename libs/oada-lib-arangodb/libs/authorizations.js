@@ -3,6 +3,7 @@
 const config = require('../config');
 const db = require('../db');
 const aql = require('arangojs').aql;
+const util = require('../util');
 
 const users = require('./users.js');
 
@@ -25,7 +26,7 @@ function findByToken(token) {
         .then((user) => {
           t.user = user;
 
-          return t;
+          return util.sanitizeResult(t);
         });
     });
 }

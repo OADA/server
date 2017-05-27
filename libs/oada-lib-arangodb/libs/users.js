@@ -3,6 +3,7 @@ const db = require('../db.js');
 const aql = require('arangojs').aql;
 const bcrypt = require('bcryptjs');
 const Promise = require('bluebird');
+const util = require('../util');
 
 /*
   user {
@@ -23,12 +24,7 @@ function findById(id) {
   return db
     .collection(config.get('arangodb:collections:users:name'))
     .document(id)
-    .then((user) => {
-      // no longer needed now that oada _id === arango _id
-      //user._id = user._key;
-
-      return user;
-    })
+    .then(util.sanitizeResult)
     .catch({code: 404}, () => null);
 }
 
@@ -44,10 +40,7 @@ function findByUsername(username) {
         return null;
       }
 
-      // no longer needed now that oada _id === arango _id
-      //user._id = user._key;
-
-      return user;
+      return util.sanitizeResult(user);
     });
 }
 

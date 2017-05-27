@@ -3,6 +3,7 @@
 const config = require('../config');
 const db = require('../db');
 const aql = require('arangojs').aql;
+const util = require('../util');
 
 function findById(id) {
   return db.query(aql`
@@ -16,9 +17,7 @@ function findById(id) {
         return null;
       }
 
-      client._id = client._key;
-
-      return client;
+      return util.sanitizeResult(client);
     });
 }
 

@@ -3,6 +3,7 @@
 const config = require('../config');
 const db = require('../db');
 const aql = require('arangojs').aql;
+const util = require('../util');
 
 const users = require('./users.js');
 
@@ -24,7 +25,7 @@ function findByCode(code) {
       return users.findById(c.code)
         .then((user) => {
           c.user = user;
-          return c;
+          return util.sanitizeResult(c);
         });
     });
 }

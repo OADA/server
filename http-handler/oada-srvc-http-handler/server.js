@@ -208,7 +208,6 @@ _server.app.get('/resources/*', function getResource(req, res, next) {
     //       results. I think we can do that in one arango query
     var owned = oadaLib.resources
         .getResource(req.oadaGraph['resource_id'], '_meta/_owner')
-        .call('next')
         .then(function checkOwner(owner) {
             if (owner !== req.user.doc['user_id']) {
                 debug(req.user.doc['user_id'] +
@@ -220,7 +219,6 @@ _server.app.get('/resources/*', function getResource(req, res, next) {
 
     var scoped = oadaLib.resources
         .getResource(req.oadaGraph['resource_id'], '_meta/_type')
-        .call('next')
         .then(checkScopes.bind(null, req.user.doc.scope))
         .then(function scopesAllowed(allowed) {
             if (!allowed) {
@@ -232,13 +230,13 @@ _server.app.get('/resources/*', function getResource(req, res, next) {
     var doc = oadaLib.resources.getResource(
             req.oadaGraph['resource_id'],
             req.oadaGraph['path_leftover']
-    );
+    ).then(res => {
+      console.log('doc that was returned from getResource = ', res);
+      return res;
+    });
 
     return Promise
-        .join(doc, owned, scoped, function(doc) {
-            return doc.next();
-        })
-        .then(function returnDoc(doc) {
+        .join(doc, owned, scoped, function returnDoc(doc) {
             if (doc === undefined) {
                 throw new OADAError('Not Found', 404);
             }
@@ -254,13 +252,24 @@ function unflattenMeta(doc) {
         // Object.keys does not like null
         return null;
     }
-
+    if (doc._meta) {
+      doc._meta = {
+        _id: doc._meta._id,
+        _rev: doc._meta._rev,
+      };
+    }
+    if (doc._changes) {
+      doc._changes = {
+        _id: doc._changes._id,
+        _rev: doc._changes._rev,
+      };
+    }/*
     Object.keys(doc).forEach((key) => {
         if (doc[key]._id) {
             if (doc[key]['_oada_rev']) {
                 doc[key] = {
                     '_id': doc[key]._id,
-                    '_oada_rev': doc[key]['_oada_rev']
+                    '_rev': doc[key]['_oada_rev']
                 };
             } else {
                 doc[key] = {_id: doc[key]._id};
@@ -271,7 +280,7 @@ function unflattenMeta(doc) {
             }
         }
     });
-
+    */
     return doc;
 }
 
