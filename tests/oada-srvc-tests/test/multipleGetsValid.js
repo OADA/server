@@ -6,69 +6,69 @@
     - We will HTTP GET all resources listed in our dummy data base one by one.
  */
 
-const config = require('../config');
-// config.set('isTest', true);
-
-const debug = require('debug');
-const trace = debug('tests:trace');
-const info = debug('tests:info');
-const error = debug('tests:error');
-const debugMark = " => ";
-
-const expect = require('chai').expect;
-const axios = require('axios');
-const Promise = require('bluebird');
-const validator = require('validator');
-
-// To test the token lookup, we need a dummy data base. Note that isTest has
-// been set to true in package.json so that oadalib will populate the database
-// according to exmpledocs for us.
-const oadaLib = require('oada-lib-arangodb');
-// Also get the dummy data that will be get for comparison.
-const oriResources = require('../../../libs/oada-lib-arangodb/libs/exampledocs/resources');
-info(debugMark + 'Original resources has been loaded.');
-trace(debugMark + 'oriResources:');
-trace(oriResources);
-// Used to create the database and populate it with the default testing data.
-let setDatabaseP = oadaLib.init.run()
-  .catch(err => {
-    error(err);
-  });
-
-// Real tests.
-info(debugMark + 'Starting tests... (for getValid)');
-const VALID_TOKEN = 'xyz';
-const tokenToUse = VALID_TOKEN;
-
-// Conctruct the list of valid URLs according to oriResources.
-trace(debugMark + 'VALID_GET_REQ_URLS:');
-const VALID_GET_REQ_URLS = oriResources.map((obj) => {
-  let url = '/' + obj._id + '/';
-  trace(url);
-  return url;
-});
-let urls = VALID_GET_REQ_URLS.map((reqUrl) => ('http://proxy' + reqUrl));
-trace(debugMark + 'urls:');
-urls.forEach((url) => trace(url));
-// Construct results to compare. First, get rid of fields that may change / not
-// required in the response.
-const FIELDS_TO_DELETE = ['_key', '_oada_rev'];
-let expectedObjects = oriResources.map((obj) => {
-  FIELDS_TO_DELETE.forEach((field) => {
-    delete obj[field];
-  });
-  return obj;
-});
-// For _meta, only keep the _id field.
-expectedObjects = expectedObjects.map((obj) => {
-  let meta = {
-    _id: obj._meta._id
-  };
-  obj._meta = meta;
-  return obj;
-});
-
 describe('GETs (Valid Token with Valid URL)', () => {
+  const config = require('../config');
+  // config.set('isTest', true);
+
+  const debug = require('debug');
+  const trace = debug('tests:trace');
+  const info = debug('tests:info');
+  const error = debug('tests:error');
+  const debugMark = " => ";
+
+  const expect = require('chai').expect;
+  const axios = require('axios');
+  const Promise = require('bluebird');
+  const validator = require('validator');
+
+  // To test the token lookup, we need a dummy data base. Note that isTest has
+  // been set to true in package.json so that oadalib will populate the database
+  // according to exmpledocs for us.
+  const oadaLib = require('../../../libs/oada-lib-arangodb');
+  // Also get the dummy data that will be get for comparison.
+  const oriResources = require('../../../libs/oada-lib-arangodb/libs/exampledocs/resources');
+  info(debugMark + 'Original resources has been loaded.');
+  trace(debugMark + 'oriResources:');
+  trace(oriResources);
+  // Used to create the database and populate it with the default testing data.
+  let setDatabaseP = oadaLib.init.run()
+    .catch(err => {
+      error(err);
+    });
+
+  // Real tests.
+  info(debugMark + 'Starting tests... (for getValid)');
+  const VALID_TOKEN = 'xyz';
+  const tokenToUse = VALID_TOKEN;
+
+  // Conctruct the list of valid URLs according to oriResources.
+  trace(debugMark + 'VALID_GET_REQ_URLS:');
+  const VALID_GET_REQ_URLS = oriResources.map((obj) => {
+    let url = '/' + obj._id + '/';
+    trace(url);
+    return url;
+  });
+  let urls = VALID_GET_REQ_URLS.map((reqUrl) => ('http://proxy' + reqUrl));
+  trace(debugMark + 'urls:');
+  urls.forEach((url) => trace(url));
+  // Construct results to compare. First, get rid of fields that may change / not
+  // required in the response.
+  const FIELDS_TO_DELETE = ['_key', '_oada_rev'];
+  let expectedObjects = oriResources.map((obj) => {
+    FIELDS_TO_DELETE.forEach((field) => {
+      delete obj[field];
+    });
+    return obj;
+  });
+  // For _meta, only keep the _id field.
+  expectedObjects = expectedObjects.map((obj) => {
+    let meta = {
+      _id: obj._meta._id
+    };
+    obj._meta = meta;
+    return obj;
+  });
+
   //--------------------------------------------------
   // Task - HTTP response
   //--------------------------------------------------
@@ -78,23 +78,17 @@ describe('GETs (Valid Token with Valid URL)', () => {
     http_get_error_responses = new Array(urls.length).fill(null);
 
   before((done) => {
+    const token = tokenToUse;
+
     // Embed the token for all HTTP request.
-    axios.interceptors.request.use(function(config) {
-      const token = tokenToUse; // cookie.get(__TOKEN_KEY__);
-
-      if (token != null) {
-        config.headers.Authorization = `Bearer ${token}`;
-      }
-
-      return config;
-    }, function(errEmbedToken) {
-      return Promise.reject(errEmbedToken);
+    let axiosInst = axios.create({
+      headers: {'Authorization': `Bearer ${token}`}
     });
 
     // Hit the server when everything is set up correctly.
     setDatabaseP.then(() => {
       Promise.each(urls, (url, idx) => {
-        return axios.get(url)
+        return axiosInst.get(url)
           .then(function(response) {
             trace('HTTP GET Response: ' + response);
             http_get_responses[idx] = response;
@@ -197,6 +191,8 @@ describe('GETs (Valid Token with Valid URL)', () => {
     info(debugMark + "in after()")
     info("    config = " + config);
     info("    config.isTest = " + config.get("isTest"));
-    return oadaLib.init.cleanup();
+    return oadaLib.init.cleanup().catch(err => {
+      error(err)
+    });
   });
 });

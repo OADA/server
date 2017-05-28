@@ -48,7 +48,7 @@ Write-Host
 Write-Host "================================"
 Write-Host "Yarn install stuff ..."
 Write-Host "================================"
-# docker-compose run --rm admin do-yarn-install.sh
+docker-compose run --rm admin do-yarn-install.sh
 docker-compose run --rm admin do-yarn-upgrade.sh
 
 Write-Host

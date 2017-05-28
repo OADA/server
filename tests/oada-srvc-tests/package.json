@@ -14,14 +14,15 @@
     "validator": "^7.0.0"
   },
   "devDependencies": {
-    "express": "^4.15.2"
+    "express": "^4.15.2",
+    "axios-debug": "0.0.4"
   },
   "scripts": {
     "selftestserver": "IP=localhost PORT=80 node server",
     "selftest": "NODE_ENV=selftest DEBUG='*' mocha selftest",
     "debuglow": "DEBUG='tests:*' isTest=true mocha 'test-lower-level/*.js'",
     "debug": "DEBUG='tests:*' isTest=true mocha 'test/*.js'",
-    "start": "NODE_ENV=production isTest=true mocha 'test/*.js'"
+    "start": "NODE_ENV=production isTest=true mocha"
   },
   "author": "Yaguang Zhang",
   "license": "Apache-2.0"

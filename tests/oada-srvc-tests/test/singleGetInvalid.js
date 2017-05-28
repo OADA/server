@@ -5,39 +5,44 @@
     - The scenario for one single GET request with invalid token + valid URL.
  */
 
-const config = require('../config');
-// config.set('isTest', true);
-
-const debug = require('debug');
-const trace = debug('tests:trace');
-const info = debug('tests:info');
-const error = debug('tests:error');
-const debugMark = " => ";
-
-const expect = require('chai').expect;
-const axios = require('axios');
-const Promise = require('bluebird');
-const validator = require('validator');
-
-// To test the token lookup, we need a dummy data base. Note that isTest has
-// been set to true in package.json so that oadalib will populate the database
-// according to exmpledocs for us.
-const oadaLib = require('oada-lib-arangodb');
-// Used to create the database and populate it with the default testing data.
-let setDatabaseP = oadaLib.init.run()
-  .catch(err => {
-    error(err);
-  });
-
-// Real tests.
-info(debugMark + 'Starting tests... (for getInvalid)');
-const FOO_INVALID_TOKEN = 'fooInvalidToken-tests';
-
-const tokenToUse = FOO_INVALID_TOKEN;
-const VALID_GET_REQ_URL = '/bookmarks/rocks/rocks-index/90j2klfdjss';
-let url = 'http://proxy' + VALID_GET_REQ_URL;
-
 describe('GET (Invalid Token with Valid URL)', () => {
+  const config = require('../config');
+  // config.set('isTest', true);
+
+  const debug = require('debug');
+  const trace = debug('tests:trace');
+  const info = debug('tests:info');
+  const error = debug('tests:error');
+  const debugMark = " => ";
+
+  const expect = require('chai').expect;
+  const axios = require('axios');
+  // For debugging: Pass axios to the imported 'axios-debug' function.
+  // require('axios-debug')(axios);
+
+  const Promise = require('bluebird');
+  const validator = require('validator');
+
+  // To test the token lookup, we need a dummy data base. Note that isTest has
+  // been set to true in package.json so that oadalib will populate the database
+  // according to exmpledocs for us.
+  const oadaLib = require('oada-lib-arangodb');
+  // Used to create the database and populate it with the default testing data.
+  let setDatabaseP = oadaLib.init.run()
+    .catch(err => {
+      error(err);
+    });
+
+  // Real tests.
+  info(debugMark + 'Starting tests... (for getInvalid)');
+  const FOO_INVALID_TOKEN = 'fooInvalidToken-tests';
+
+  const tokenToUse = FOO_INVALID_TOKEN;
+  // For debugging.
+  const VALID_GET_REQ_URL = '/resources/default:resources_bookmarks_123';
+  //const VALID_GET_REQ_URL = '/bookmarks/rocks/rocks-index/90j2klfdjss';
+  let url = 'http://proxy' + VALID_GET_REQ_URL;
+
   //--------------------------------------------------
   // Task - HTTP response
   //--------------------------------------------------
@@ -47,24 +52,21 @@ describe('GET (Invalid Token with Valid URL)', () => {
     http_get_error_response = null;
 
   before((done) => {
+    const token = tokenToUse;
+
     // Embed the token for all HTTP request.
-    axios.interceptors.request.use(function(config) {
-      const token = tokenToUse; // cookie.get(__TOKEN_KEY__);
-
-      if (token != null) {
-        config.headers.Authorization = `Bearer ${token}`;
-      }
-
-      return config;
-    }, function(errEmbedToken) {
-      return Promise.reject(errEmbedToken);
+    let axiosInst = axios.create({
+      headers: {'Authorization': `Bearer ${token}`}
     });
 
     // Hit the server when everything is set up correctly.
     setDatabaseP.then(() => {
-      axios.get(url)
+      axiosInst.get(url)
         .then(function(response) {
           trace('HTTP GET Response: ' + response);
+          trace('HTTP GET Response Status: ' + response.status);
+          trace('HTTP GET Response Data String: ' + JSON.stringify(response.data));
+          trace('HTTP GET Response Keys: ' + Object.keys(response));
           http_get_response = response;
           done();
         })
@@ -107,6 +109,8 @@ describe('GET (Invalid Token with Valid URL)', () => {
     info(debugMark + "in after()")
     info("    config = " + config);
     info("    config.isTest = " + config.get("isTest"));
-    return oadaLib.init.cleanup();
+    return oadaLib.init.cleanup().catch(err => {
+      error(err)
+    });
   });
 });
