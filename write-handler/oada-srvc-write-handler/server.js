@@ -75,7 +75,7 @@ function handleMsg(msg) {
             'modifiedBy': req['user_id'],
             'modified': ts
         };
-        Object.assign(obj['_meta'], meta);
+        obj['_meta'] = Object.assign(obj['_meta'] || {}, meta);
 
         // Precompute new rev
         var rev = msg.offset + '-' + hash(obj, {algorithm: 'md5'});
