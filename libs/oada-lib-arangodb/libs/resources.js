@@ -1,4 +1,4 @@
-'use strict'
+'use strict';
 const db = require('../db');
 const debug = require('debug');
 const info = debug('info:arangodb#resources');
@@ -158,17 +158,17 @@ function lookupFromUrl(url) {
     let resource = db.collection(resName);
     let graphNodes = db.collection(gnName);
     let edges = db.collection(eName);
-    let pieces = pointer.parse(url)
+    let pieces = pointer.parse(url);
     var startNode = 'graphNodes/' + pieces[0] + ':' + pieces[1]; // resources/123 => graphNodes/resources:123
     let bindVars = {
       value0: pieces.length-2, // need to not count first two entries since they are in startNode
       value1: startNode,
     }
-    pieces.splice(0, 2)
+    let id = pieces.splice(0, 2);
   // Create a filter for each segment of the url
     const filters = pieces.map((urlPiece, i) => {
-      let bindVarA = 'value' + (2+(i*2)).toString()
-      let bindVarB = 'value' + (2+(i*2)+1).toString()
+      let bindVarA = 'value' + (2+(i*2)).toString();
+      let bindVarB = 'value' + (2+(i*2)+1).toString();
       bindVars[bindVarA] = i;
       bindVars[bindVarB] = urlPiece;
       return `FILTER p.edges[@${bindVarA}].name == @${bindVarB} || p.edges[@${bindVarA}].name == null`
@@ -182,18 +182,18 @@ function lookupFromUrl(url) {
     return db.query({query, bindVars})
       .then((cursor) => {
         trace('lookupFromUrl('+url+'): query result = ', JSON.stringify(cursor._result,false,'  '));
-        let resource_id = ''
-        let path_leftover = ''
+        let resource_id = '';
+        let path_leftover = pointer.compile(id.concat(pieces));
 
         if (cursor._result.length < 1) {
           trace('lookupFromUrl('+url+'): cursor._result.length < 1');
-          return {resource_id, path_leftover}
+          return {resource_id, path_leftover};
         }
 
         // Check for a traversal that did not finish (aka not found)
         if (cursor._result[cursor._result.length-1].vertices[0] === null) {
           trace('lookupFromUrl('+url+'): cursor._result[end].vertices[0] === null');
-          return {resource_id, path_leftover}
+          return {resource_id, path_leftover};
         }
 
         // find the longest path:
@@ -253,8 +253,8 @@ function getParents(to_resource_id) {
 	let bindVars = {
 		to_resource_id: to_resource_id
 	};
-	
-	let query = `FOR v, e IN 0..1 
+
+	let query = `FOR v, e IN 0..1
 			INBOUND @to_resource_id
 			edges
 			FILTER e.versioned == true
@@ -294,6 +294,23 @@ function getParents(to_resource_id) {
     () => null); // Treat non-existing path has not-found
 }
 
+function putResource(id, obj) {
+  // Fix rev
+  obj['_oada_rev'] = obj['_rev'];
+  obj['_rev'] = undefined;
+
+  // TODO: Sanitize OADA keys?
+
+  // TODO: Handling updating links
+  obj['_key'] = id;
+  return db.query(aql`
+    UPSERT { '_key': ${id} }
+    INSERT ${obj}
+    UPDATE ${obj}
+    IN resources
+  `);
+}
+
 function upsertMeta(req) {
 }
 
@@ -304,5 +321,6 @@ module.exports = {
   upsert,
   lookupFromUrl,
   getResource,
-	getParents
+  putResource,
+  getParents
 };
