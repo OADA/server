@@ -129,6 +129,14 @@ _server.app.use(function requestId(req, res, next) {
     next();
 });
 
+// Turn POSTs into PUTs at random id
+_server.app.post('/resources/*', function postResource(req, res, next) {
+    req.url += '/' + uuid(); // TODO: Is this a good way to generate new id?
+    req.method = 'PUT';
+
+    next();
+});
+
 _server.app.use(function tokenHandler(req, res, next) {
     return kafkaRequest(req.id, config.get('kafka:topics:tokenRequest'), {
         'token': req.get('authorization'),
@@ -283,14 +291,6 @@ function unflattenMeta(doc) {
     */
     return doc;
 }
-
-_server.app.post('/resources/*', function postResource(req, res, next) {
-    // Turn POST into PUT at random id
-    req.url += '/' + uuid(); // TODO: Is this a good way to generate new id?
-    req.method = 'PUT';
-
-    next();
-});
 
 _server.app.put('/resources/*', function putResource(req, res, next) {
     if (!checkScopes(req.user.doc.scope, req.get('Content-Type'))) {
