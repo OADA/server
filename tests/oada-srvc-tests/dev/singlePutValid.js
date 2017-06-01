@@ -1,6 +1,6 @@
 'use strict'
 
 /*
-  Testing script 4:
+  Testing script 5:
     - The scenario for one single PUT with invalid token + valid URL.
  */

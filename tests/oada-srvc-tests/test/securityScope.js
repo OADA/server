@@ -1,11 +1,12 @@
 'use strict'
 
 /*
-  Testing script 2:
-    - The scenario for one single GET request with valid token + valid URL.
+  Testing script 6:
+    - The scenario for one single GET request with valid token + valid URL, but
+      the token doesn't have the scope for the requested resource.
  */
 
-describe('GET (Valid Token with Valid URL)', () => {
+describe('GET (Valid Token with Valid URL but Out of Scope)', () => {
 
   const config = require('../config');
   // config.set('isTest', true);
@@ -37,9 +38,9 @@ describe('GET (Valid Token with Valid URL)', () => {
   // Real tests.
   info(debugMark + 'Starting tests... (for ' +
     path.win32.basename(__filename) + ')');
-  const VALID_TOKEN = 'xyz';
+  const VALID_TOKEN_OUT_OF_SCOPE = 'abc';
 
-  const tokenToUse = VALID_TOKEN;
+  const tokenToUse = VALID_TOKEN_OUT_OF_SCOPE;
   const VALID_GET_REQ_URL = '/bookmarks/rocks/rocks-index/90j2klfdjss';
   let url = 'http://proxy' + VALID_GET_REQ_URL;
 
@@ -56,7 +57,9 @@ describe('GET (Valid Token with Valid URL)', () => {
 
     // Embed the token for all HTTP request.
     let axiosInst = axios.create({
-      headers: {'Authorization': `Bearer ${token}`}
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
     });
 
     // Hit the server when everything is set up correctly.
@@ -82,51 +85,22 @@ describe('GET (Valid Token with Valid URL)', () => {
 
   // Tests.
   describe('Task: HTTP response for the GET request', () => {
-    describe('http_get_error_response', () => {
-      it('should be null', () => {
-        trace("http_get_error_response: " + http_get_error_response);
-        expect(http_get_error_response).to.be.null;
-      });
-    });
-
     describe('http_get_response', () => {
-      it('should be a non-empty object', () => {
-        trace("http_get_response: " + http_get_response);
-        expect(http_get_response).to.be.an('Object').that.is.not.empty;
-      });
-      it('should contain the status 200 OK', () => {
-        trace("http_get_response.status: " + http_get_response.status);
-        expect(http_get_response).to.have.property('status')
-          .that.equals(200);
+      it('should be null', () => {
+        trace("http_get_response:" + http_get_response);
+        expect(http_get_response).to.be.null;
       });
     });
 
-    describe('http_get_response.data', () => {
+    describe('http_get_error_response', () => {
       it('should be a non-empty object', () => {
-        trace("http_get_response.data: " + http_get_response.data);
-        expect(http_get_response.data).to.be.an('Object').that.is.not.empty;
+        trace("http_get_error_response:" + http_get_error_response);
+        expect(http_get_error_response).to.be.an('Object').that.is.not.empty;
       });
-      // it('should contain the correct _key', () => {
-      //   trace("http_get_response.data._key: " + http_get_response.data._key);
-      //   expect(http_get_response.data).to.have.property('_key')
-      //     .that.is.a('String')
-      //     .that.equals('default:resources_rock_123');
-      // });
-      it('should contain the correct _id', () => {
-        trace("http_get_response.data._id: " + http_get_response.data._id);
-        expect(http_get_response.data).to.have.property('_id')
-          .that.is.a('String')
-          .that.equals('resources/default:resources_rock_123');
-      });
-      it('should contain the correct location', () => {
-        trace("http_get_response.data.location: " +
-          http_get_response.data.location);
-        expect(http_get_response.data).to.have.property('location')
-          .that.is.an('Object')
-          .that.deep.equals({
-            "latitude": "-40.1231242",
-            "longitude": "82.192089123"
-          });
+      it('should contain the status 403 Forbidden', () => {
+        trace("http_get_error_response.status:" + http_get_error_response.code);
+        expect(http_get_error_response).to.have.property('status')
+          .that.equals(403);
       });
     });
   });

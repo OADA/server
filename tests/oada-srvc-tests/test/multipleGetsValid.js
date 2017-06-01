@@ -6,9 +6,10 @@
     - We will HTTP GET all resources listed in our dummy data base one by one.
  */
 
-describe('GETs (Valid Token with Valid URL)', () => {
+describe('GETs (Valid Token with Valid URLs)', () => {
   const config = require('../config');
   // config.set('isTest', true);
+  const path = require('path');
 
   const debug = require('debug');
   const trace = debug('tests:trace');
@@ -37,7 +38,8 @@ describe('GETs (Valid Token with Valid URL)', () => {
     });
 
   // Real tests.
-  info(debugMark + 'Starting tests... (for getValid)');
+  info(debugMark + 'Starting tests... (for ' +
+    path.win32.basename(__filename) + ')');
   const VALID_TOKEN = 'xyz';
   const tokenToUse = VALID_TOKEN;
 

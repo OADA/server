@@ -8,6 +8,7 @@
 describe('GET (Invalid Token with Valid URL)', () => {
   const config = require('../config');
   // config.set('isTest', true);
+  const path = require('path');
 
   const debug = require('debug');
   const trace = debug('tests:trace');
@@ -34,7 +35,8 @@ describe('GET (Invalid Token with Valid URL)', () => {
     });
 
   // Real tests.
-  info(debugMark + 'Starting tests... (for getInvalid)');
+  info(debugMark + 'Starting tests... (for ' +
+    path.win32.basename(__filename) + ')');
   const FOO_INVALID_TOKEN = 'fooInvalidToken-tests';
 
   const tokenToUse = FOO_INVALID_TOKEN;
@@ -97,7 +99,7 @@ describe('GET (Invalid Token with Valid URL)', () => {
         trace("http_get_error_response:" + http_get_error_response);
         expect(http_get_error_response).to.be.an('Object').that.is.not.empty;
       });
-      it('should contain the status 401 unauthorized', () => {
+      it('should contain the status 401 Unauthorized', () => {
         trace("http_get_error_response.status:" + http_get_error_response.code);
         expect(http_get_error_response).to.have.property('status')
           .that.equals(401);
