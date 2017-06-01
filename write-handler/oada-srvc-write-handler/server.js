@@ -35,7 +35,7 @@ function handleMsg(msg) {
     // TODO: Handle new resource
     return Promise.try(function() {
         var path = req['path_leftover'].replace(/\/*$/, '');
-        var id = req['resource_id'];
+        var id = req['resource_id'].replace(/^\/?resources\//, '');
         var obj = {};
         var ts = Date.now();
 
@@ -45,8 +45,8 @@ function handleMsg(msg) {
         if (!id) {
             let parts = pointer.parse(path);
 
-            id = parts[0];
-            path = pointer.compile(parts.slice(1));
+            id = parts[1];
+            path = pointer.compile(parts.slice(2));
 
             // Initialize resource stuff
             obj = {
@@ -104,7 +104,7 @@ function handleMsg(msg) {
                     partition: req['resp_partition'],
                     messages: JSON.stringify({
                         'code': 'success',
-                        'resource_id': id,
+                        'resource_id': 'resources/' + id,
                         '_rev': rev,
                         'connection_id': req['connection_id'],
                     })
