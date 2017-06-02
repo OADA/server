@@ -284,7 +284,7 @@ function getParents(to_resource_id) {
 			parent.path = cursor._result[i].v.path + '/' + cursor._result[i].e.name;
 			parents.splice(i, 0, parent);
 		}
-		
+
 		return Promise.map(parents, parent => {
 			return db.query(aql`
 				FOR r in resources
@@ -317,13 +317,10 @@ function insertResource(id, obj) {
 
   obj['_key'] = id.replace(/^resources\//, '');
 
-  // TODO: Handle _rev of links
-  var links = addLinks(obj);
-
-  var doc = db.query(aql`
+  var doc = addLinks(obj).then(obj => db.query(aql`
     INSERT ${obj}
     IN resources
-  `);
+  `));
   var node = db.query(aql`
     INSERT {
       '_key': ${'resources:' + obj['_key']},
@@ -356,6 +353,7 @@ function addLinks(res) {
     });
   }
 
+  // TODO: Use fewer queries or something?
   return forLinks(res, function(link, path) {
     var id = link['_id'].replace(/^resources\//, '');
     var nodeIds = [res['_key']]
@@ -393,6 +391,7 @@ function addLinks(res) {
       }, () => {}); // Node was already there, so ignore the error
     });
 
+    // TODO: Check if edges already exist
     trace(`Adding edge ${path.slice(-1)[0]}`
         + ` from ${nodeIds.slice(-2, -1)[0]} to ${nodeIds.slice(-1)[0]}`);
     var edge = db.query(aql`
@@ -405,8 +404,16 @@ function addLinks(res) {
       IN edges
     `);
 
-    return Promise.join(edge, fakeLinks).return(res);
-  });
+    var rev;
+    if (link.hasOwnProperty('_rev')) {
+      rev = getResource(link['_id'], '_oada_rev')
+        .then(function updateRev(rev) {
+          link['_rev'] = rev;
+        });
+    }
+
+    return Promise.join(edge, fakeLinks, rev);
+  }).then(() => res);
 }
 
 function updateResource(id, obj) {
@@ -416,18 +423,12 @@ function updateResource(id, obj) {
 
   // TODO: Sanitize OADA keys?
 
-  // TODO: Handling updating links
   obj['_key'] = id.replace(/^resources\//, '');
 
-  // TODO: Handle _rev of links
-  var links = addLinks(obj);
-
-  var doc = db.query(aql`
+  return addLinks(obj).then(obj => db.query(aql`
     UPDATE ${obj}
     IN resources
-  `);
-
-  return Promise.join(doc, links);
+  `));
 }
 
 function upsertMeta(req) {
