@@ -23,6 +23,7 @@ const config = require('../config');
 // TODO: Would be nice to just expose these examples on oadaLib itself --- feel
 // like we will want them for all of the microservice tests
 const exampleEdges = require('../libs/exampledocs/edges.js');
+const exampleResources = require('../libs/exampledocs/resources.js');
 const exampleGraphNodes = require('../libs/exampledocs/graphNodes.js');
 
 describe('resources lib', () => {
@@ -34,7 +35,9 @@ describe('resources lib', () => {
 
     return oadaLib.resources.getParents(edge._to)
       .then((p) => {
-        expect(p[0].path).to.equal(graphNode.path);
+				expect(p[0].path).to.equal(graphNode.path + '/90j2klfdjss');
+				expect(p[0].resource_id).to.equal('resources/default:resources_rocks_123');
+				expect(p[0].contentType).to.equal('application/vnd.oada.rocks.1+json');
       });
   });
 

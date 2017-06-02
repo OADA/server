@@ -249,43 +249,57 @@ function getResource(id, path) {
 
 function getParents(to_resource_id) {
   let edges = db.collection('edges');
+	let resources = db.collection('resources');
 
 	let bindVars = {
 		to_resource_id: to_resource_id
 	};
 
-	let query = `FOR v, e IN 0..1
+	let parents = [];
+	let parent = {
+		resource_id: null,
+		path: null,
+		contentType: null
+	};
+
+	let parent_query = `FOR v, e IN 0..1
 			INBOUND @to_resource_id
 			edges
 			FILTER e.versioned == true
 			RETURN {v:v, e:e}`
 
   return db.query({
-    query: query,
+    query: parent_query,
     bindVars
   })
 	.then((cursor) => {
-		let parents = [];
-		let resource_id = '';
-		let path = '';
-		let name = '';
 		let i = 0;
 
-		//console.log(cursor._result[0].v);
-		//console.log(cursor._result[0].e);
-		trace('getParents'+'('+to_resource_id+')'+' parents length is '+cursor._result.length);
-
+		// console.log(cursor._result);
 		let length = cursor._result.length;
+		trace('getParents'+'('+to_resource_id+')'+' parents length is '+length);
 
 		for (i = 0; i < length; i++) {
-			let parent = {
-				resource_id: 'graphNodes/' + cursor._result[i].v.resource_id,
-				path: cursor._result[i].v.path + '/' + cursor._result[i].e.name,
-			};
+			parent.resource_id = cursor._result[i].v.resource_id;
+			parent.path = cursor._result[i].v.path + '/' + cursor._result[i].e.name;
 			parents.splice(i, 0, parent);
-		};
-
-		return parents;
+		}
+		
+		return Promise.map(parents, parent => {
+			return db.query(aql`
+				FOR r in resources
+				FILTER r._id == ${parent.resource_id}
+				RETURN r._type`)
+				.then(cursor => cursor.next())
+				.then(result => {
+					// console.log(parent);
+					parent.contentType = result;
+				})
+		})
+		.then(() => {
+			// all done
+			return parents;
+		});
 	})
   .catch({
       isArangoError: true,
