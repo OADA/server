@@ -294,7 +294,7 @@ function getParents(to_resource_id) {
     () => null); // Treat non-existing path has not-found
 }
 
-function putResource(id, obj) {
+function insertResource(id, obj) {
   // Fix rev
   obj['_oada_rev'] = obj['_rev'];
   obj['_rev'] = undefined;
@@ -302,10 +302,33 @@ function putResource(id, obj) {
   // TODO: Sanitize OADA keys?
 
   // TODO: Handling updating links
-  obj['_key'] = id;
-  return db.query(aql`
-    UPSERT { '_key': ${id} }
+  obj['_key'] = id.replace(/^resources\//, '');
+  var doc = db.query(aql`
     INSERT ${obj}
+    IN resources
+  `);
+  var node = db.query(aql`
+    INSERT {
+      '_key': ${'resources:' + obj['_key']},
+      'is_resource': true,
+      'resource_id': ${id}
+    }
+    IN graphNodes
+  `);
+
+  return Promise.join(doc, node);
+}
+
+function updateResource(id, obj) {
+  // Fix rev
+  obj['_oada_rev'] = obj['_rev'];
+  obj['_rev'] = undefined;
+
+  // TODO: Sanitize OADA keys?
+
+  // TODO: Handling updating links
+  obj['_key'] = id.replace(/^resources\//, '');
+  return db.query(aql`
     UPDATE ${obj}
     IN resources
   `);
@@ -321,6 +344,7 @@ module.exports = {
   upsert,
   lookupFromUrl,
   getResource,
-  putResource,
+  insertResource,
+  updateResource,
   getParents
 };
