@@ -252,7 +252,7 @@ function getParents(to_resource_id) {
 	let resources = db.collection('resources');
 
 	let bindVars = {
-		to_resource_id: to_resource_id
+		to_resource_id: 'graphNodes' + to_resource_id 
 	};
 
 	let parents = [];

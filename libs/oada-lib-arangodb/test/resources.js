@@ -33,9 +33,9 @@ describe('resources lib', () => {
     const edge = exampleEdges[2];
     const graphNode = exampleGraphNodes[2];
 
-    return oadaLib.resources.getParents(edge._to)
+		return oadaLib.resources.getParents('/resources:default:resources_rock_123')
       .then((p) => {
-				expect(p[0].path).to.equal(graphNode.path + '/90j2klfdjss');
+				expect(p[0].path).to.equal('/rocks-index/90j2klfdjss');
 				expect(p[0].resource_id).to.equal('resources/default:resources_rocks_123');
 				expect(p[0].contentType).to.equal('application/vnd.oada.rocks.1+json');
       });

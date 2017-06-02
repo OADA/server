@@ -104,6 +104,19 @@ services:
       - NODE_ENV=${NODE_ENV:-development}
       - DEBUG=${DEBUG:-""}
 
+  rev-graph-update:
+    depends_on:
+      - startup
+    build: ./rev-graph-update
+    restart: always
+    container_name: rev-graph-update
+    volumes:
+      - .:/code
+      - ./oada-srvc-docker-config.js:/oada-srvc-docker-config.js
+    environment:
+      - NODE_ENV=${NODE_ENV:-development}
+      - DEBUG=${DEBUG:-""}
+
   graph-lookup:
     depends_on:
       - startup
