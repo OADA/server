@@ -315,8 +315,11 @@ function insertResource(id, obj) {
 
   // TODO: Sanitize OADA keys?
 
-  // TODO: Handling updating links
   obj['_key'] = id.replace(/^resources\//, '');
+
+  // TODO: Handling updating links
+  var links = addLinks(obj);
+
   var doc = db.query(aql`
     INSERT ${obj}
     IN resources
@@ -330,7 +333,77 @@ function insertResource(id, obj) {
     IN graphNodes
   `);
 
-  return Promise.join(doc, node);
+  return Promise.join(doc, node, links);
+}
+
+function addLinks(res) {
+  function forLinks(res, cb, path) {
+    path = path || [];
+
+
+    return Promise.map(Object.keys(res), key => {
+      // Just ignore _meta for now TODO: Allow links in _meta?
+      if (key === '_meta') {
+          return;
+      }
+
+      if (res[key] && res[key].hasOwnProperty('_id')) {
+        return cb(res[key], path.concat(key));
+      } else if (typeof res[key] === 'object' && res[key] !== null) {
+        return forLinks(res[key], cb, path.concat(key));
+      }
+    });
+  }
+
+  return forLinks(res, function(link, path) {
+    var id = link['_id'].replace(/^resources\//, '');
+    var nodeIds = [res['_key']]
+        .concat(path.slice(0, -1))
+        .map(function(p, i, a) {
+          return ['graphNodes/resources'].concat(a.slice(0, i+1)).join(':');
+        })
+        .concat('graphNodes/resources:' + id);
+
+    var fakeLinks = Promise.map(path.slice(0, -1), function(p, i) {
+      trace(`Adding edge ${p} from ${nodeIds[i]} to ${nodeIds[i+1]}`);
+      var ppath = path.slice(0, i+1);
+
+      var edge = db.query(aql`
+        INSERT {
+          '_from': ${nodeIds[i]},
+          '_to': ${nodeIds[i+1]},
+          'name': ${p},
+          'versioned': false
+        }
+        IN edges
+      `);
+      var node = db.query(aql`
+        INSERT {
+          '_key': ${['resources'].concat(res['_key']).concat(ppath).join(':')},
+          'is_resource': false,
+          'path': ${pointer.compile(ppath)},
+          'resource_id': ${'resources/' + res['_key']}
+        }
+        IN graphNodes
+      `);
+
+      return Promise.join(edge, node);
+    });
+
+    trace(`Adding edge ${path.slice(-1)[0]}`
+        + ` from ${nodeIds.slice(-2, -1)[0]} to ${nodeIds.slice(-1)[0]}`);
+    var edge = db.query(aql`
+      INSERT {
+        '_from': ${nodeIds.slice(-2, -1)[0]},
+        '_to': ${nodeIds.slice(-1)[0]},
+        'name': ${path.slice(-1)[0]},
+        'versioned': ${link.hasOwnProperty('_rev')}
+      }
+      IN edges
+    `);
+
+    return Promise.join(edge, fakeLinks).return(res);
+  });
 }
 
 function updateResource(id, obj) {
