@@ -1,12 +1,12 @@
 'use strict'
 
 /*
-  Testing script 5:
-    - The scenario for one single PUT with valid token + valid URL (referring to
-  an existing resource).
+  Testing script 6 - 2:
+    - The scenario for one single POST with valid token + valid URL (referring
+    to a non-existing resource).
  */
 
-describe('PUT (Valid Token with Valid URL of an Existing Res)', () => {
+describe('Create a Non-Existing Res Using POST', () => {
 
   const config = require('../config');
   // config.set('isTest', true);
@@ -22,6 +22,8 @@ describe('PUT (Valid Token with Valid URL of an Existing Res)', () => {
   const axios = require('axios');
   const Promise = require('bluebird');
   const validator = require('validator');
+
+  const uuidV4 = require('uuid/v4');
 
   // To test the token lookup, we need a dummy data base. Note that isTest has
   // been set to true in package.json so that oadalib will populate the database
@@ -41,9 +43,12 @@ describe('PUT (Valid Token with Valid URL of an Existing Res)', () => {
   const VALID_TOKEN = 'xyz';
 
   const tokenToUse = VALID_TOKEN;
-  const VALID_GET_REQ_URL = '/bookmarks/rocks/rocks-index/90j2klfdjss';
-  let url = 'http://proxy' + VALID_GET_REQ_URL;
+  // Use uuid to generate the id to make sure the resource is not already there.
+  let id_to_use = 'default:resources_rock_' + uuidV4();
+  let url = 'http://proxy/resources/default:resources_rock_' + id_to_use;
 
+  // Use a random Boolean value to create the resource.
+  let picked_up_to_set = Math.random() >= 0.5;
   //--------------------------------------------------
   // Task - HTTP response
   //--------------------------------------------------
@@ -51,11 +56,12 @@ describe('PUT (Valid Token with Valid URL of an Existing Res)', () => {
   // response message.
   let http_get_response_before = null,
     http_get_error_response_before = null,
-    picked_up_intial = null,
-    http_put_response = null,
-    http_put_error_response = null,
+    http_create_response = null,
+    http_create_error_response = null,
     http_get_response_after = null,
     http_get_error_response_after = null;
+
+  let rand_id_assigned = null;
 
   before((done) => {
     // Embed the token for all HTTP request.
@@ -69,10 +75,9 @@ describe('PUT (Valid Token with Valid URL of an Existing Res)', () => {
     setDatabaseP.then(() => {
       return axiosInst.get(url)
         .then(function(response) {
-          trace(debugMark + 'Before PUT');
+          trace(debugMark + 'Before creating the resource...');
           trace('HTTP GET Response: ' + response);
           http_get_response_before = response;
-          picked_up_intial = http_get_response_before.data.picked_up;
         })
         .catch(function(error) {
           info('HTTP GET Error: ' + error);
@@ -84,15 +89,16 @@ describe('PUT (Valid Token with Valid URL of an Existing Res)', () => {
           }
         });
     }).then(() => {
-      return axiosInst.put(url, {
-          'picked_up': !picked_up_intial
+      return axiosInst.post(url, {
+          'picked_up': picked_up_to_set
         }, {
           'headers': {
             'Content-Type': 'application/vnd.oada.rock.1+json'
           }
         }).then(function(response) {
-          trace('HTTP PUT Response: ' + response);
-          http_put_response = response;
+          trace('HTTP create Response: ' + response);
+          http_create_response = response;
+          rand_id_assigned = response.headers.location;
         })
         .catch(function(error) {
           info('HTTP Put Error: ' + error);
@@ -100,13 +106,13 @@ describe('PUT (Valid Token with Valid URL of an Existing Res)', () => {
             info('data: ', error.response.data);
             info('status: ', error.response.status);
             info('headers: ', error.response.headers);
-            http_put_error_response = error.response;
+            http_create_error_response = error.response;
           }
         });
     }).then(() => {
       return axiosInst.get(url)
         .then(function(response) {
-          trace(debugMark + 'After PUT');
+          trace(debugMark + 'After creating the resource...');
           trace('HTTP GET Response: ' + response);
           http_get_response_after = response;
           done();
@@ -125,62 +131,67 @@ describe('PUT (Valid Token with Valid URL of an Existing Res)', () => {
   })
 
   // Tests.
-  describe('Task: HTTP responses for the PUT request', () => {
-    describe('http_get_error_response_before', () => {
-      it('should be null', () => {
-        trace("http_get_error_response_before: " +
-          http_get_error_response_before);
-        expect(http_get_error_response_before).to.be.null;
-      });
-    });
-
+  describe('Task: HTTP responses for the POST request', () => {
     describe('http_get_response_before', () => {
-      it('should be a non-empty object', () => {
-        trace("http_get_response_before: " + http_get_response_before);
-        expect(http_get_response_before).to.be.an('Object').that.is.not.empty;
-      });
-      it('should contain the status 200 OK', () => {
-        trace("http_get_response_before.status: " +
-          http_get_response_before.status);
-        expect(http_get_response_before).to.have.property('status')
-          .that.equals(200);
-      });
-    });
-
-    describe('http_get_response_before.data', () => {
-      it('should be a non-empty object', () => {
-        trace("http_get_response_before.data: " +
-          http_get_response_before.data);
-        expect(http_get_response_before.data).to.be.an('Object')
-          .that.is.not.empty;
-      });
-      it('should contain the field picked_up', () => {
-        trace("http_get_response_before.data.picked_up: " +
-          http_get_response_before.data.picked_up);
-        expect(http_get_response_before.data).to.have.property('picked_up')
-          .that.is.a('Boolean');
-      });
-    });
-
-    describe('http_put_error_response', () => {
       it('should be null', () => {
-        trace("http_put_error_response: " +
-          http_put_error_response);
-        expect(http_put_error_response).to.be.null;
+        trace("http_get_response_before:" + http_get_response_before);
+        expect(http_get_response_before).to.be.null;
       });
     });
 
-    describe('http_put_response', () => {
+    describe('http_get_error_response_before', () => {
       it('should be a non-empty object', () => {
-        trace("http_put_response: " + http_put_response);
-        expect(http_put_response).to.be.an('Object').that.is.not.empty;
+        trace("http_get_error_response_before:" + http_get_error_response_before);
+        expect(http_get_error_response_before).to.be.an('Object').that.is.not.empty;
+      });
+      it('should contain the status 404 Not Found', () => {
+        trace("http_get_error_response_before.status:" + http_get_error_response_before.code);
+        expect(http_get_error_response_before).to.have.property('status')
+          .that.equals(404);
+      });
+    });
+
+    describe('http_create_error_response', () => {
+      it('should be null', () => {
+        trace("http_create_error_response: " +
+          http_create_error_response);
+        expect(http_create_error_response).to.be.null;
+      });
+    });
+
+    describe('http_create_response', () => {
+      it('should be a non-empty object', () => {
+        trace("http_create_response: " + http_create_response);
+        expect(http_create_response).to.be.an('Object').that.is.not.empty;
       });
       it('should contain the status 204 No Content', () => {
-        trace("http_put_response.status: " +
-          http_put_response.status);
-        expect(http_put_response).to.have.property('status')
+        trace("http_create_response.status: " +
+          http_create_response.status);
+        expect(http_create_response).to.have.property('status')
           .that.equals(204);
       });
+    });
+
+    describe('http_create_response.headers', () => {
+      it('should be a non-empty object', () => {
+        trace("http_create_response.headers: " +
+          http_create_response.headers);
+        expect(http_create_response.headers).to.be.an('Object')
+        .that.is.not.empty;
+      });
+      it('should contain a non-empty location field (indicating the assigned random id)',
+      () => {
+        trace("http_create_response.headers.location: " +
+          http_create_response.headers.location);
+        expect(http_create_response.headers).to.have.property('location')
+          .that.is.not.empty;
+      });
+    });
+
+    it('', () => {
+
+      expect(http_create_response).to.have.property('status')
+        .that.equals(204);
     });
 
     describe('http_get_error_response_after', () => {
@@ -215,7 +226,7 @@ describe('PUT (Valid Token with Valid URL of an Existing Res)', () => {
         trace("http_get_response_after.data.picked_up: " +
           http_get_response_after.data.picked_up);
         expect(http_get_response_after.data).to.have.property('picked_up')
-          .that.is.a('Boolean').that.equals(!picked_up_intial);
+          .that.is.a('Boolean').that.equals(picked_up_to_set);
       });
     });
   });

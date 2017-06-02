@@ -11,6 +11,7 @@
     "kafka-node": "^1.6.1",
     "mocha": "^3.3.0",
     "oada-lib-arangodb": "../../libs/oada-lib-arangodb",
+    "uuid": "^3.0.1",
     "validator": "^7.0.0"
   },
   "devDependencies": {

@@ -1,11 +1,11 @@
 'use strict'
 
 /*
-  Testing script 1:
-    - The scenario for one single GET request with invalid token + valid URL.
+  Testing script 1 - 2:
+    - The scenario for one single GET request with valid token + invalid URL.
  */
 
-describe('GET (Invalid Token with Valid URL)', () => {
+describe('GET (Valid Token with Valid URL for a Non-Existing Res)', () => {
   const config = require('../config');
   // config.set('isTest', true);
   const path = require('path');
@@ -37,13 +37,12 @@ describe('GET (Invalid Token with Valid URL)', () => {
   // Real tests.
   info(debugMark + 'Starting tests... (for ' +
     path.win32.basename(__filename) + ')');
-  const FOO_INVALID_TOKEN = 'fooInvalidToken-tests';
+  const VALID_TOKEN = 'xyz';
 
-  const tokenToUse = FOO_INVALID_TOKEN;
+  const tokenToUse = VALID_TOKEN;
   // For debugging.
-  const VALID_GET_REQ_URL = '/resources/default:resources_bookmarks_123';
-  //const VALID_GET_REQ_URL = '/bookmarks/rocks/rocks-index/90j2klfdjss';
-  let url = 'http://proxy' + VALID_GET_REQ_URL;
+  const INVALID_GET_REQ_URL = '/resources/default:resources_bookmarks_foo_invalid';
+  let url = 'http://proxy' + INVALID_GET_REQ_URL;
 
   //--------------------------------------------------
   // Task - HTTP response
@@ -58,7 +57,9 @@ describe('GET (Invalid Token with Valid URL)', () => {
 
     // Embed the token for all HTTP request.
     let axiosInst = axios.create({
-      headers: {'Authorization': `Bearer ${token}`}
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
     });
 
     // Hit the server when everything is set up correctly.
@@ -99,10 +100,10 @@ describe('GET (Invalid Token with Valid URL)', () => {
         trace("http_get_error_response:" + http_get_error_response);
         expect(http_get_error_response).to.be.an('Object').that.is.not.empty;
       });
-      it('should contain the status 401 Unauthorized', () => {
+      it('should contain the status 404 Not Found', () => {
         trace("http_get_error_response.status:" + http_get_error_response.code);
         expect(http_get_error_response).to.have.property('status')
-          .that.equals(401);
+          .that.equals(404);
       });
     });
   });

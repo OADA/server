@@ -1,12 +1,11 @@
 'use strict'
 
 /*
-  Testing script 2:
-    - The scenario for one single GET request with valid token + valid URL.
+  Testing script 1 - 1:
+    - The scenario for one single GET request with invalid token + valid URL.
  */
 
-describe('GET (Valid Token with Valid URL)', () => {
-
+describe('GET (Invalid Token with Valid URL)', () => {
   const config = require('../config');
   // config.set('isTest', true);
   const path = require('path');
@@ -19,6 +18,9 @@ describe('GET (Valid Token with Valid URL)', () => {
 
   const expect = require('chai').expect;
   const axios = require('axios');
+  // For debugging: Pass axios to the imported 'axios-debug' function.
+  // require('axios-debug')(axios);
+
   const Promise = require('bluebird');
   const validator = require('validator');
 
@@ -26,8 +28,6 @@ describe('GET (Valid Token with Valid URL)', () => {
   // been set to true in package.json so that oadalib will populate the database
   // according to exmpledocs for us.
   const oadaLib = require('oada-lib-arangodb');
-  // // Also get the dummy data that will be get for comparison.
-  // const expectedObject = require('oada-lib-arangodb/libs/exampledocs/resources');
   // Used to create the database and populate it with the default testing data.
   let setDatabaseP = oadaLib.init.run()
     .catch(err => {
@@ -37,10 +37,12 @@ describe('GET (Valid Token with Valid URL)', () => {
   // Real tests.
   info(debugMark + 'Starting tests... (for ' +
     path.win32.basename(__filename) + ')');
-  const VALID_TOKEN = 'xyz';
+  const FOO_INVALID_TOKEN = 'fooInvalidToken-tests';
 
-  const tokenToUse = VALID_TOKEN;
-  const VALID_GET_REQ_URL = '/bookmarks/rocks/rocks-index/90j2klfdjss';
+  const tokenToUse = FOO_INVALID_TOKEN;
+  // For debugging.
+  const VALID_GET_REQ_URL = '/resources/default:resources_bookmarks_123';
+  //const VALID_GET_REQ_URL = '/bookmarks/rocks/rocks-index/90j2klfdjss';
   let url = 'http://proxy' + VALID_GET_REQ_URL;
 
   //--------------------------------------------------
@@ -66,6 +68,9 @@ describe('GET (Valid Token with Valid URL)', () => {
       axiosInst.get(url)
         .then(function(response) {
           trace('HTTP GET Response: ' + response);
+          trace('HTTP GET Response Status: ' + response.status);
+          trace('HTTP GET Response Data String: ' + JSON.stringify(response.data));
+          trace('HTTP GET Response Keys: ' + Object.keys(response));
           http_get_response = response;
           done();
         })
@@ -84,51 +89,22 @@ describe('GET (Valid Token with Valid URL)', () => {
 
   // Tests.
   describe('Task: HTTP response for the GET request', () => {
-    describe('http_get_error_response', () => {
-      it('should be null', () => {
-        trace("http_get_error_response: " + http_get_error_response);
-        expect(http_get_error_response).to.be.null;
-      });
-    });
-
     describe('http_get_response', () => {
-      it('should be a non-empty object', () => {
-        trace("http_get_response: " + http_get_response);
-        expect(http_get_response).to.be.an('Object').that.is.not.empty;
-      });
-      it('should contain the status 200 OK', () => {
-        trace("http_get_response.status: " + http_get_response.status);
-        expect(http_get_response).to.have.property('status')
-          .that.equals(200);
+      it('should be null', () => {
+        trace("http_get_response:" + http_get_response);
+        expect(http_get_response).to.be.null;
       });
     });
 
-    describe('http_get_response.data', () => {
+    describe('http_get_error_response', () => {
       it('should be a non-empty object', () => {
-        trace("http_get_response.data: " + http_get_response.data);
-        expect(http_get_response.data).to.be.an('Object').that.is.not.empty;
+        trace("http_get_error_response:" + http_get_error_response);
+        expect(http_get_error_response).to.be.an('Object').that.is.not.empty;
       });
-      // it('should contain the correct _key', () => {
-      //   trace("http_get_response.data._key: " + http_get_response.data._key);
-      //   expect(http_get_response.data).to.have.property('_key')
-      //     .that.is.a('String')
-      //     .that.equals('default:resources_rock_123');
-      // });
-      it('should contain the correct _id', () => {
-        trace("http_get_response.data._id: " + http_get_response.data._id);
-        expect(http_get_response.data).to.have.property('_id')
-          .that.is.a('String')
-          .that.equals('resources/default:resources_rock_123');
-      });
-      it('should contain the correct location', () => {
-        trace("http_get_response.data.location: " +
-          http_get_response.data.location);
-        expect(http_get_response.data).to.have.property('location')
-          .that.is.an('Object')
-          .that.deep.equals({
-            "latitude": "-40.1231242",
-            "longitude": "82.192089123"
-          });
+      it('should contain the status 401 Unauthorized', () => {
+        trace("http_get_error_response.status:" + http_get_error_response.code);
+        expect(http_get_error_response).to.have.property('status')
+          .that.equals(401);
       });
     });
   });

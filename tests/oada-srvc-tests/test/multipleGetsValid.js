@@ -84,7 +84,9 @@ describe('GETs (Valid Token with Valid URLs)', () => {
 
     // Embed the token for all HTTP request.
     let axiosInst = axios.create({
-      headers: {'Authorization': `Bearer ${token}`}
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
     });
 
     // Hit the server when everything is set up correctly.
@@ -125,7 +127,7 @@ describe('GETs (Valid Token with Valid URLs)', () => {
           http_get_response = http_get_responses[idx],
           expectedObject = expectedObjects[idx];
 
-        describe('URL #' + (idx+1) + ': ' + urls[idx],
+        describe('URL #' + (idx + 1) + ': ' + urls[idx],
           () => {
             describe('http_get_error_response #' + idx, () => {
               it('should be null', () => {
