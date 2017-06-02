@@ -260,7 +260,8 @@ _server.app.get('/resources(/*)?', function getResource(req, res, next) {
 
     return Promise
         .join(doc, owned, scoped, function returnDoc(doc) {
-            if (doc === undefined) {
+            // TODO: Allow null values in OADA?
+            if (doc === undefined || doc === null) {
                 throw new OADAError('Not Found', 404);
             }
 
