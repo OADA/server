@@ -131,7 +131,12 @@ _server.app.use(function requestId(req, res, next) {
 
 // Turn POSTs into PUTs at random id
 _server.app.post('/resources/*', function postResource(req, res, next) {
-    req.url += '/' + uuid(); // TODO: Is this a good way to generate new id?
+    // TODO: Is this a good way to generate new id?
+    if (req.url.endsWith('/')) {
+        req.url += uuid();
+    } else {
+        req.url += '/' + uuid();
+    }
     req.method = 'PUT';
 
     next();
@@ -317,7 +322,7 @@ _server.app.put('/resources/*', function putResource(req, res, next) {
     .then(function(resp) {
         return res
             .set('X-OADA-Rev', resp['_rev'])
-            .location('/resources/' + resp['resource_id'])
+            .location('/' + resp['resource_id'])
             .sendStatus(204);
     })
     .catch(next);

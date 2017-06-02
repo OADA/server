@@ -63,6 +63,7 @@ function handleMsg(msg) {
             };
         }
 
+        debug(`PUTing to "${path}" in resource "${id}"`);
         // Create object to recursively merge into the resource
         if (path) {
             pointer.set(obj, path, req.body);
