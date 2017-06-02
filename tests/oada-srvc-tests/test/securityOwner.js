@@ -1,9 +1,9 @@
 'use strict'
 
 /*
-  Testing script 6 - 1:
-    - The scenario for one single GET request with valid token + valid URL, but
-      the token doesn't have the scope for the requested resource.
+  Testing script 6 - 2:
+    - The scenario for one single GET request with valid token (with valid
+    scope) + valid URL (for a resource not owned by the user).
  */
 
 describe('GET (Valid Token with Valid URL but Out of Scope)', () => {
@@ -38,7 +38,7 @@ describe('GET (Valid Token with Valid URL but Out of Scope)', () => {
   // Real tests.
   info(debugMark + 'Starting tests... (for ' +
     path.win32.basename(__filename) + ')');
-  const VALID_TOKEN_OUT_OF_SCOPE = 'abc';
+  const VALID_TOKEN_OUT_OF_SCOPE = 'def';
 
   const tokenToUse = VALID_TOKEN_OUT_OF_SCOPE;
   const VALID_GET_REQ_URL = '/bookmarks/rocks/rocks-index/90j2klfdjss';
