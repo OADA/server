@@ -129,8 +129,15 @@ _server.app.use(function requestId(req, res, next) {
     next();
 });
 
+_server.app.use(function sanitizeUrl(req, res, next) {
+    // OADA doesn't care about trailing slash
+    req.url = req.url.replace(/\/$/, '');
+
+    next();
+});
+
 // Turn POSTs into PUTs at random id
-_server.app.post('/resources/*', function postResource(req, res, next) {
+_server.app.post('/resources(/*)?', function postResource(req, res, next) {
     // TODO: Is this a good way to generate new id?
     if (req.url.endsWith('/')) {
         req.url += uuid();
@@ -218,7 +225,7 @@ function checkScopes(scope, contentType) {
                 scopePerm(perm, 'read');
     });
 }
-_server.app.get('/resources/*', function getResource(req, res, next) {
+_server.app.get('/resources(/*)?', function getResource(req, res, next) {
     // TODO: Should it not get the whole meta document?
     // TODO: Make getResource accept an array of paths and return an array of
     //       results. I think we can do that in one arango query
@@ -300,7 +307,7 @@ function unflattenMeta(doc) {
     return doc;
 }
 
-_server.app.put('/resources/*', function putResource(req, res, next) {
+_server.app.put('/resources(/*)?', function putResource(req, res, next) {
     if (!checkScopes(req.user.doc.scope, req.get('Content-Type'))) {
         return next(new OADAError('Not Authorized', 403,
                 'Token does not have required scope'));
