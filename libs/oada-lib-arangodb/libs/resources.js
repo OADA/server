@@ -330,7 +330,7 @@ function insertResource(id, obj) {
     IN graphNodes
   `);
 
-  return Promise.join(doc, node, links);
+  return Promise.join(doc, node);
 }
 
 // TODO: Remove links as well
