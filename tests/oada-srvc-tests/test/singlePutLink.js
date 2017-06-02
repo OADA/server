@@ -1,12 +1,12 @@
 'use strict'
 
 /*
-  Testing script 6 - 1:
-    - The scenario for one single PUT with valid token + valid URL (referring to
-  a non-existing rock resource).
+  Testing script 7:
+    - The scenario for one single PUT with valid token + valid URL to create a
+    link to an existing resource.
  */
 
-describe('Create a Non-Existing Res Using PUT', () => {
+describe('Create a Link for a Non-Existing Res Using PUT', () => {
 
   const config = require('../config');
   // config.set('isTest', true);
@@ -41,12 +41,16 @@ describe('Create a Non-Existing Res Using PUT', () => {
   info(debugMark + 'Starting tests... (for ' +
     path.win32.basename(__filename) + ')');
   const VALID_TOKEN = 'xyz';
-
   const tokenToUse = VALID_TOKEN;
-  // Use uuid to generate the id to make sure the resource is not already there.
-  let id_to_use = 'default:resources_rock_' + uuidV4();
-  let url = 'http://proxy/resources/default:resources_rock_' + id_to_use;
 
+  // Use uuid to generate the id for the rocks res to make sure the resource is
+  // not already there.
+  let id_to_use = 'resources/' + uuidV4();
+  let url = 'http://proxy/' + id_to_use;
+  info('URL for the link to be added: ' + url);
+
+  let VALID_ROCK_ID = 'resources/default:resources_rock_123';
+  let REF_ROCK_URL = 'http://proxy/' + VALID_ROCK_ID;
   // Use a random Boolean value to create the resource.
   let picked_up_to_set = Math.random() >= 0.5;
   //--------------------------------------------------
@@ -60,6 +64,12 @@ describe('Create a Non-Existing Res Using PUT', () => {
     http_create_error_response = null,
     http_get_response_after = null,
     http_get_error_response_after = null;
+
+  let resultedRockId = null,
+    resultedRev = null;
+
+  let http_get_ref_rock_res = null,
+    http_get_ref_rock_err = null;
 
   before((done) => {
     // Embed the token for all HTTP request.
@@ -88,10 +98,13 @@ describe('Create a Non-Existing Res Using PUT', () => {
         });
     }).then(() => {
       return axiosInst.put(url, {
-          'picked_up': picked_up_to_set
+          'rock': {
+            '_id': VALID_ROCK_ID,
+            '_rev': '0-0'
+          }
         }, {
           'headers': {
-            'Content-Type': 'application/vnd.oada.rock.1+json'
+            'Content-Type': 'application/vnd.oada.rocks.1+json'
           }
         }).then(function(response) {
           trace('HTTP create Response: ' + response);
@@ -112,7 +125,8 @@ describe('Create a Non-Existing Res Using PUT', () => {
           trace(debugMark + 'After creating the resource...');
           trace('HTTP GET Response: ' + response);
           http_get_response_after = response;
-          done();
+          resultedRockId = response.data.rock._id;
+          resultedRev = response.data.rock._rev;
         })
         .catch(function(error) {
           info('HTTP GET Error: ' + error);
@@ -121,6 +135,23 @@ describe('Create a Non-Existing Res Using PUT', () => {
             info('status: ', error.response.status);
             info('headers: ', error.response.headers);
             http_get_error_response_after = error.response;
+          }
+        });
+    }).then(() => {
+      // Also GET the rock for comparison.
+      return axiosInst.get(REF_ROCK_URL)
+        .then(function(response) {
+          trace('HTTP GET Ref Rock Response: ' + response);
+          http_get_ref_rock_res = response;
+          done();
+        })
+        .catch(function(error) {
+          info('HTTP GET Error: ' + error);
+          if (error.response) {
+            info('data: ', error.response.data);
+            info('status: ', error.response.status);
+            info('headers: ', error.response.headers);
+            http_get_ref_rock_err = error.response;
           }
           done();
         });
@@ -169,6 +200,40 @@ describe('Create a Non-Existing Res Using PUT', () => {
       });
     });
 
+    describe('http_get_ref_rock_res', () => {
+      it('should be a non-empty object', () => {
+        trace("http_get_ref_rock_res: " + http_get_ref_rock_res);
+        expect(http_get_ref_rock_res).to.be.an('Object').that.is.not.empty;
+      });
+      it('should contain the status 200 OK', () => {
+        trace("http_get_ref_rock_res.status: " +
+          http_get_ref_rock_res.status);
+        expect(http_get_ref_rock_res).to.have.property('status')
+          .that.equals(200);
+      });
+    });
+
+    describe('http_get_ref_rock_res.data', () => {
+      it('should be a non-empty object', () => {
+        trace("http_get_ref_rock_res.data: " + http_get_ref_rock_res.data);
+        expect(http_get_ref_rock_res.data).to.be.an('Object').that.is.not.empty;
+      });
+      it('should contain a non-empty _rev field', () => {
+        trace("http_get_ref_rock_res.data._rev: " +
+          http_get_ref_rock_res.data._rev);
+        expect(http_get_ref_rock_res.data).to.have.property('_rev')
+          .that.is.a('String').that.is.not.empty;
+      });
+    });
+
+    describe('http_get_ref_rock_err', () => {
+      it('should be null', () => {
+        trace("http_get_ref_rock_err: " +
+          http_get_ref_rock_err);
+        expect(http_get_ref_rock_err).to.be.null;
+      });
+    });
+
     describe('http_get_error_response_after', () => {
       it('should be null', () => {
         trace("http_get_error_response_after: " +
@@ -197,11 +262,32 @@ describe('Create a Non-Existing Res Using PUT', () => {
         expect(http_get_response_after.data).to.be.an('Object')
           .that.is.not.empty;
       });
-      it('should contain the correct picked_up value', () => {
+      it('should contain a non-empty rock field', () => {
         trace("http_get_response_after.data.picked_up: " +
           http_get_response_after.data.picked_up);
-        expect(http_get_response_after.data).to.have.property('picked_up')
-          .that.is.a('Boolean').that.equals(picked_up_to_set);
+        expect(http_get_response_after.data).to.have.property('rock')
+          .that.is.an('Object').that.is.not.empty;
+      });
+    });
+
+    describe('http_get_response_after.data.rock', () => {
+      it('should be a non-empty object', () => {
+        trace("http_get_response_after.data: " +
+          http_get_response_after.data);
+        expect(http_get_response_after.data).to.be.an('Object')
+          .that.is.not.empty;
+      });
+      it('should contain the correct _id field', () => {
+        trace("http_get_response_after.data.rock._id: " +
+          http_get_response_after.data.rock._id);
+        expect(http_get_response_after.data.rock).to.have.property('_id')
+          .that.is.a('String').that.equals(VALID_ROCK_ID);
+      });
+      it('should contain the correct _rev field', () => {
+        trace("http_get_response_after.data.rock._rev: " +
+          http_get_response_after.data.rock._rev);
+        expect(http_get_response_after.data.rock).to.have.property('_rev')
+          .that.is.a('String').that.equals(http_get_ref_rock_res.data._rev);
       });
     });
   });

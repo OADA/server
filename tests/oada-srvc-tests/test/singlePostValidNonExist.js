@@ -3,7 +3,7 @@
 /*
   Testing script 6 - 2:
     - The scenario for one single POST with valid token + valid URL (referring
-    to a non-existing resource).
+    to a non-existing rock resource).
  */
 
 describe('Create a Non-Existing Res Using POST', () => {
@@ -61,7 +61,8 @@ describe('Create a Non-Existing Res Using POST', () => {
     http_get_response_after = null,
     http_get_error_response_after = null;
 
-  let rand_id_assigned = null;
+  let location_assigned = null,
+    rand_id_assigned = null;
 
   before((done) => {
     // Embed the token for all HTTP request.
@@ -98,7 +99,13 @@ describe('Create a Non-Existing Res Using POST', () => {
         }).then(function(response) {
           trace('HTTP create Response: ' + response);
           http_create_response = response;
-          rand_id_assigned = response.headers.location;
+          location_assigned = response.headers.location;
+          trace('HTTP create Response location_assigned: ' +
+            location_assigned);
+          rand_id_assigned = /\/([\w-]+)$/.exec(location_assigned);
+          rand_id_assigned = rand_id_assigned[1];
+          trace('HTTP create Response rand_id_assigned: ' +
+            rand_id_assigned);
         })
         .catch(function(error) {
           info('HTTP Put Error: ' + error);
@@ -177,21 +184,15 @@ describe('Create a Non-Existing Res Using POST', () => {
         trace("http_create_response.headers: " +
           http_create_response.headers);
         expect(http_create_response.headers).to.be.an('Object')
-        .that.is.not.empty;
-      });
-      it('should contain a non-empty location field (indicating the assigned random id)',
-      () => {
-        trace("http_create_response.headers.location: " +
-          http_create_response.headers.location);
-        expect(http_create_response.headers).to.have.property('location')
           .that.is.not.empty;
       });
-    });
-
-    it('', () => {
-
-      expect(http_create_response).to.have.property('status')
-        .that.equals(204);
+      it('should contain a non-empty location field (indicating the assigned random id)',
+        () => {
+          trace("http_create_response.headers.location: " +
+            http_create_response.headers.location);
+          expect(http_create_response.headers).to.have.property('location')
+            .that.is.not.empty;
+        });
     });
 
     describe('http_get_error_response_after', () => {
@@ -222,10 +223,20 @@ describe('Create a Non-Existing Res Using POST', () => {
         expect(http_get_response_after.data).to.be.an('Object')
           .that.is.not.empty;
       });
-      it('should contain the updated picked_up', () => {
-        trace("http_get_response_after.data.picked_up: " +
-          http_get_response_after.data.picked_up);
-        expect(http_get_response_after.data).to.have.property('picked_up')
+      it('should contain one field referred to by rand_id_assigned', () => {
+        trace("http_get_response_after.data.[rand_id_assigned]: " +
+          http_get_response_after.data[rand_id_assigned]);
+        expect(http_get_response_after.data).to.have.property(rand_id_assigned)
+          .that.is.a('Object').that.is.not.empty;
+      });
+    });
+
+    describe('http_get_response_after.data[rand_id_assigned]', () => {
+      it('should contain the correct picked_up value', () => {
+        trace("http_get_response_after.data[rand_id_assigned].picked_up: " +
+          http_get_response_after.data[rand_id_assigned].picked_up);
+        expect(http_get_response_after.data[rand_id_assigned])
+          .to.have.property('picked_up')
           .that.is.a('Boolean').that.equals(picked_up_to_set);
       });
     });
