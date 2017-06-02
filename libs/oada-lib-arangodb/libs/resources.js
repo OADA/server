@@ -317,7 +317,7 @@ function insertResource(id, obj) {
 
   obj['_key'] = id.replace(/^resources\//, '');
 
-  // TODO: Handling updating links
+  // TODO: Handle _rev of links
   var links = addLinks(obj);
 
   var doc = db.query(aql`
@@ -336,6 +336,7 @@ function insertResource(id, obj) {
   return Promise.join(doc, node, links);
 }
 
+// TODO: Remove links as well
 function addLinks(res) {
   function forLinks(res, cb, path) {
     path = path || [];
@@ -368,16 +369,7 @@ function addLinks(res) {
       trace(`Adding edge ${p} from ${nodeIds[i]} to ${nodeIds[i+1]}`);
       var ppath = path.slice(0, i+1);
 
-      var edge = db.query(aql`
-        INSERT {
-          '_from': ${nodeIds[i]},
-          '_to': ${nodeIds[i+1]},
-          'name': ${p},
-          'versioned': false
-        }
-        IN edges
-      `);
-      var node = db.query(aql`
+      return db.query(aql`
         INSERT {
           '_key': ${['resources'].concat(res['_key']).concat(ppath).join(':')},
           'is_resource': false,
@@ -385,9 +377,20 @@ function addLinks(res) {
           'resource_id': ${'resources/' + res['_key']}
         }
         IN graphNodes
-      `);
-
-      return Promise.join(edge, node);
+      `).then(function fakeEdge() {
+        return db.query(aql`
+          INSERT {
+            '_from': ${nodeIds[i]},
+            '_to': ${nodeIds[i+1]},
+            'name': ${p},
+            'versioned': false
+          }
+          IN edges
+        `);
+      }).catch({
+          isArangoError: true,
+          errorNum: 1210 // ERROR_ARANGO_UNIQUE_CONSTRAINT_VIOLATED
+      }, () => {}); // Node was already there, so ignore the error
     });
 
     trace(`Adding edge ${path.slice(-1)[0]}`
@@ -415,10 +418,16 @@ function updateResource(id, obj) {
 
   // TODO: Handling updating links
   obj['_key'] = id.replace(/^resources\//, '');
-  return db.query(aql`
+
+  // TODO: Handle _rev of links
+  var links = addLinks(obj);
+
+  var doc = db.query(aql`
     UPDATE ${obj}
     IN resources
   `);
+
+  return Promise.join(doc, links);
 }
 
 function upsertMeta(req) {
