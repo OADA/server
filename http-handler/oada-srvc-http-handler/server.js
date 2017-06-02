@@ -173,7 +173,10 @@ _server.app.use(function graphHandler(req, res, next) {
         'url': req.url,
     })
     .then(function handleGraphRes(resp) {
-        req.url = `/${resp['resource_id'] || 'resources/'}`;
+        if (resp['resource_id']) {
+            // Rewire URL to resource found by graph
+            req.url = `/${resp['resource_id']}${resp['path_leftover']}`;
+        }
         // TODO: Just use express parameters rather than graph thing?
         req.oadaGraph = resp;
     })
@@ -322,7 +325,7 @@ _server.app.put('/resources/*', function putResource(req, res, next) {
     .then(function(resp) {
         return res
             .set('X-OADA-Rev', resp['_rev'])
-            .location('/' + resp['resource_id'])
+            .location(req.url)
             .sendStatus(204);
     })
     .catch(next);
