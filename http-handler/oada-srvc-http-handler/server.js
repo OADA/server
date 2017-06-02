@@ -325,9 +325,15 @@ _server.app.put('/resources(/*)?', function putResource(req, res, next) {
         body: req.body
     })
     .tap(function checkWrite(resp) {
-        if (resp.code !== 'success') {
-            var err = new OADAError('write failed with code ' + resp.code);
-            return Promise.reject(err);
+        switch (resp.code) {
+            case 'success':
+                return;
+            case 'permission':
+                return Promise.reject(new OADAError('Not Authorized', 403,
+                        'User does not own this resource'));
+            default:
+                let err = new OADAError('write failed with code ' + resp.code);
+                return Promise.reject(err);
         }
     })
     .then(function(resp) {

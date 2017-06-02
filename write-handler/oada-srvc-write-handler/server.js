@@ -30,11 +30,20 @@ consumer.on('message', handleMsg);
 function handleMsg(msg) {
     // TODO: Check scope/permission?
     var req = JSON.parse(msg.value);
+    var id = req['resource_id'];
 
-    // TODO: Handle new resource
-    return Promise.try(function() {
+    return Promise.try(function checkPermissions() {
+        if (id) { // Only run checks if resource exists
+            // TODO: Support sharing (i.e., not just owner has permission)
+            return oadaLib.resources.getResource(id, '_meta/_owner')
+                .then(function checkOwner(owner) {
+                    if (owner !== req['user_id']) {
+                        return Promise.reject(new Error('permission'));
+                    }
+                });
+        }
+    }).then(function doUpsert() {
         var path = req['path_leftover'].replace(/\/*$/, '');
-        var id = req['resource_id'];
         var obj = {};
         var ts = Date.now();
 
@@ -118,7 +127,7 @@ function handleMsg(msg) {
             topic: config.get('kafka:topics:httpResponse'),
             partition: req['resp_partition'],
             messages: JSON.stringify({
-                'code': 'error',
+                'code': err.message || 'error',
                 'connection_id': req['connection_id'],
             })
         }]);
