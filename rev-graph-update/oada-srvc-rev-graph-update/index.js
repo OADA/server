@@ -21,107 +21,80 @@ const info = debug('rev-graph-update:info');
 const error = debug('rev-graph-update:error');
 
 const Promise = require('bluebird');
-const kf = require('kafka-node');
+// const kf = require('kafka-node');
+const kf = require('../../libs/oada-lib-kafka');
 const oadaLib = require('../../libs/oada-lib-arangodb');
 const config = require('./config');
 
 //---------------------------------------------------------
 // Kafka intializations:
-const client = new kf.Client(
-  config.get('zookeeper:host'),
-  config.get('zookeeper:revGraphUpdate')
-);
-const offset = new kf.Offset(client);
-const consumer = new kf.ConsumerGroup({
-  host: config.get('zookeeper:host'),
-  groupId: 'rev-graph-update',
-  fromOffset: 'latest'
-}, [config.get('kafka:topics:httpResponse')]);
-let producer = new kf.Producer(client, {partitionerType: 0});
+const responder = new kf.Responder(config.get('kafka:topics:httpResponse'),
+                                            config.get('kafka:topics:writeRequest'),
+                                            config.get('kafka:groupId'));
 
-process.on('exit', () => {info('Exiting'); client.close()});
-process.on('SIGINT', () => {info('Sigint'); client.close(); process.exit(2);});
-process.on('uncaughtException', (a) => {error(a); client.close(); process.exit(99);});
-
-consumer.on('message', (msg) => {
-  return Promise.try(() => {
-      return JSON.parse(msg.value);
-    })
-    .then((req) => {
-      if (!req || req.msgtype !== 'write-response') {
+responder.on('request', (req) => {
+    if (!req || req.msgtype !== 'write-response') {
         trace('Received message, but msgtype is not write-response to ignoring message');
         return []; // not a write-response message, ignore it
-      }
-      if (req.code != 'success') {
+    }
+    if (req.code !== 'success') {
         trace('Received write response message, but code was not "success" so ignoring message');
         return [];
-      }
-      if(typeof req.resource_id === "undefined" ||
-				 typeof req._rev === "undefined" ) {
+    }
+    if(typeof req.resource_id === "undefined" ||
+            typeof req._rev === "undefined" ) {
         throw new Error(`Invalid http_response: there is either no resource_id or _rev.  respose = ${JSON.stringify(req)}`);
-      }
+    }
+    if (typeof req.user_id === "undefined") {
+        trace('WARNING: received message does not have user_id');
+    }
+    if (typeof req.authorizationid === "undefined") {
+        trace('WARNING: received message does not have authorizationid');
+    }
 
-			if (typeof req.user_id === "undefined") {
-				trace('WARNING: received message does not have user_id');
-			}
-
-			if (typeof req.authorizationid === "undefined") {
-				trace('WARNING: received message does not have authorizationid');
-			}
-
-      const res = {
+    // setup the write_request msg
+    const write_request_msgs = [];
+    const res = {
         type: 'write_request',
-				resource_id: null,
-				path_leftover: null,
-				connection_id: req.connection_id,
-				contentType: null,
-				body: null,
-				url: "",
-				user_id: req.user_id,
-				authorizationid: req.authorizationid,
-        resp_partition: msg.partition,
-        source: 'rev-graph-update',
-      };
+        resource_id: null,
+        path: null,
+        connection_id: req.connection_id,
+        contentType: null,
+        body: null,
+        url: "",
+        user_id: req.doc.user_id,
+        authorizationid: req.doc.authorizationid
+    };
 
-			trace('find parents for resource_id = ', req.resource_id);
+    trace('find parents for resource_id = ', req.resource_id);
 
-			// find resource's parent
-			return oadaLib.resources.getParents(req.resource_id)
-				.then(p => {
-					if (p.length === 0) {
-						info('WARNING: resource_id '+req.resource_id+' does not have a parent.');
-						return [];
-					}
+    // find resource's parent
+    return oadaLib.resources.getParents(req.resource_id)
+        .then(p => {
+            if (!p) {
+                info('WARNING: resource_id'+req.resource_id+' does not have a parent.');
+                return res;
+            }
 
-					trace('the parents are: ', p);
+            let length = p.length;
+            let i = 0;
 
-					return Promise.map(p, item => {
-						trace('parent resource_id = ', item.resource_id);
-						res.resource_id = item.resource_id;
-						res.path_leftover = item.path + '/_rev';
-						res.contentType = item.contentType;
-						res.body = req._rev;
-							return Promise.fromCallback((done) => {
-								trace('kafka intends to produce: ', res);
-								// produce multiple kafka messages
-								producer.send([{
-									topic: config.get('kafka:topics:writeRequest'),
-									partitions: 0,
-									messages: JSON.stringify(res)
-								}], done);
-							});
-					});
-			});
-  })
-  .catch(err => {
-    error('%O', err);
-  })
-  .finally(() =>
-    offset.commit('rev-graph-update', [{
-      topic: config.get('kafka:topics:httpResponse'),
-      partition: msg.partition,
-      offset: msg.offset
-    }])
-  );
+            trace('the parents are: ', p);
+
+            for (i = 0; i < length; i++) {
+                res.resource_id = p[i].resource_id;
+                res.path = p[i].path + '/_rev';
+                trace('parent resource_id = ', p[i].resource_id);
+                res.contentType = p[i].contentType;
+                res.body = req._rev;
+                trace('the result msg is: ', res);
+                write_request_msgs.splice(i, 0, res);
+            }
+
+            return write_request_msgs;
+    })
+    .catch(err => {
+        error('%O', err);
+    });
 });
 

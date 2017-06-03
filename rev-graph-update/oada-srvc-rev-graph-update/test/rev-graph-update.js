@@ -20,46 +20,17 @@ const expect = require('chai').expect;
 const Promise = require('bluebird');
 const bcrypt = require('bcryptjs');
 const randomstring = require("randomstring");
-const kf = require('kafka-node');
+const kf = require('../../../libs/oada-lib-kafka');
 const oadaLib = require('../../../libs/oada-lib-arangodb');
 const config = require('../config');
 const debug = require('debug');
 const trace = debug('trace:rev-graph-update#test');
 
-// To test the token lookup, have to make a test database and populate it
-// with token and user
-let db = oadaLib.arango;
-let cols = config.get('arango:collections');
-let frankid = oadaLib.examples('users')[0]._id;
-
-// kafka topics
-const	consTopic = config.get('kafka:topics:writeRequest');
-const prodTopic = config.get('kafka:topics:httpResponse');
-let client;
-let consumer;
-let producer;
-let groupid;
+const requester = new kf.Requester(config.get('kafka:topics:writeRequest'),
+											config.get('kafka:topics:httpResponse'),
+											config.get('kafka:groupId')+'-test');
 
 describe('rev graph update service', () => {
-  before((done) => {
-		client = new kf.Client("zookeeper:2181", "test-rev_graph_update");
-
-		producer = new kf.Producer(client, {
-			partitionerType: 0
-    });
-
-		consumer = new kf.ConsumerGroup({
-						host: 'zookeeper:2181',
-						groupId: 'test-rev_graph_update',
-						fromOffset: 'latest'
-				}, [
-						config.get('kafka:topics:writeRequest')
-				]);
-
-		producer.on('ready', () => {console.log('producer ready');});
-		consumer.on('connect', done);
-  });
-
   before(oadaLib.init.run);
 
   //--------------------------------------------------
@@ -80,32 +51,25 @@ describe('rev graph update service', () => {
 
 			console.log('http_response message is: ', r);
 
-      consumer.on('error', err => { throw err } );
-      // create the listener:
-      consumer.on('message', msg => {
-				console.log(msg);
-        const wr_msg = JSON.parse(msg.value);
-
-        trace('received message: ', wr_msg);
-        expect(wr_msg.type).to.equal('write_request');
-				expect(wr_msg.path_leftover).to.equal('/rocks-index/90j2klfdjss/_rev');
-				expect(wr_msg.resource_id).to.equal('resources/default:resources_rocks_123');
-				expect(wr_msg.contentType).to.equal('application/vnd.oada.rocks.1+json');
-				expect(wr_msg.user_id).to.equal(r.user_id);
-				expect(wr_msg.authorizationid).to.equal(r.authorizationid);
-				expect(wr_msg.body).to.equal(r._rev);
-				expect(wr_msg.connection_id).to.equal(r.connection_id);
-				expect(wr_msg.url).to.equal('');
-       
-        // the "true" forces commit before close
-        consumer.close(true, () => {
-          done()
-        });
-      });
-
       // now produce the message:
-      producer.send([{topic: prodTopic, partitions: 0, messages: JSON.stringify(r)}], (a) => {
-        console.log('message produced, awaiting response')
+			requester.send(r, cb => {
+				console.log('test trying to produce: ', r);
+			});
+
+      // create the listener:
+      requester.on('response', msg => {
+        trace('received message: ', msg);
+        expect(msg.type).to.equal('write_request');
+				expect(msg.path).to.equal('/rocks-index/90j2klfdjss/_rev');
+				expect(msg.resource_id).to.equal('resources/default:resources_rocks_123');
+				expect(msg.contentType).to.equal('application/vnd.oada.rocks.1+json');
+				expect(msg.user_id).to.equal(r.doc.user_id);
+				expect(msg.authorizationid).to.equal(r.doc.authorizationid);
+				expect(msg.body).to.equal(r._rev);
+				expect(msg.connection_id).to.equal(r.connection_id);
+				expect(msg.url).to.equal('');
+
+				done();
       });
     });
 
