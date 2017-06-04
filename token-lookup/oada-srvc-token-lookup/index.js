@@ -29,7 +29,7 @@ const config = require('./config');
 // Kafka intializations:
 const client = new kf.Client(
   config.get('zookeeper:host'),
-  config.get('zookeeper:tokenRequest')
+  config.get('kafka:topics:tokenRequest')
 );
 const offset = new kf.Offset(client);
 const consumer = new kf.ConsumerGroup({

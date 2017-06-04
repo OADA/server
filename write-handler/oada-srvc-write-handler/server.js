@@ -30,10 +30,12 @@ consumer.on('message', handleMsg);
 function handleMsg(msg) {
     // TODO: Check scope/permission?
     var req = JSON.parse(msg.value);
+    req.source = req.source || '';
     var id = req['resource_id'];
 
     return Promise.try(function checkPermissions() {
         if (id) { // Only run checks if resource exists
+            if (req.source === 'rev-graph-update') return; // no need to check permission for rev graph updates
             // TODO: Support sharing (i.e., not just owner has permission)
             return oadaLib.resources.getResource(id, '_meta/_owner')
                 .then(function checkOwner(owner) {
@@ -114,6 +116,7 @@ function handleMsg(msg) {
                     topic: config.get('kafka:topics:httpResponse'),
                     partition: req['resp_partition'],
                     messages: JSON.stringify({
+                        'msgtype': 'write-response',
                         'code': 'success',
                         'resource_id': id,
                         '_rev': rev,
@@ -127,6 +130,7 @@ function handleMsg(msg) {
             topic: config.get('kafka:topics:httpResponse'),
             partition: req['resp_partition'],
             messages: JSON.stringify({
+                'msgtype': 'write-response',
                 'code': err.message || 'error',
                 'connection_id': req['connection_id'],
             })

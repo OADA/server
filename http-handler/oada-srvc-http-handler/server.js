@@ -57,7 +57,7 @@ function kafkaRequest(id, topic, message) {
         }]);
     })
     .then(function waitKafkaRes() {
-        return reqDone.timeout(1000, topic + ' timeout');
+        return reqDone.timeout(5000, topic + ' timeout');
     })
     .finally(function cleanupKafkaReq() {
         delete requests[id];
@@ -195,11 +195,12 @@ _server.app.use(function graphHandler(req, res, next) {
 _server.app.use(bodyParser.json({
     strict: false,
     type: '+json',
-    limit: '10mb',
+    limit: '20mb',
 }));
 
 // TODO: Is this scope stuff right/good?
 function checkScopes(scope, contentType) {
+    if (process.env.IGNORE_SCOPE === "yes") return true;
     const scopeTypes = {
         'oada.rocks': [
             'application/vnd.oada.bookmarks.1+json',

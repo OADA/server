@@ -48,28 +48,34 @@ consumer.on('message', (msg) => {
       return JSON.parse(msg.value);
     })
     .then((req) => {
-      if (!req ||
-				req.code != 'success' ||
-        typeof req.resource_id === "undefined" ||
-				typeof req._rev === "undefined" ||
-				typeof req.doc.user_id === "undefined" ||
-				typeof req.doc.authorizationid === "undefined" ||
-				typeof req.connection_id === "undefined" ) {
-        throw new Error(`Invalid http_response ${JSON.stringify(req)}`);
+      if (!req || req.msgtype !== 'write-response') {
+        trace('Received message, but msgtype is not write-response to ignoring message');
+        return []; // not a write-response message, ignore it
       }
+      if (req.code != 'success') {
+        trace('Received write response message, but code was not "success" so ignoring message');
+        return [];
+      }
+      if(typeof req.resource_id === "undefined" ||
+				 typeof req._rev === "undefined" ) {
+        throw new Error(`Invalid http_response: there is either no resource_id or _rev.  respose = ${JSON.stringify(req)}`);
+      }
+      req.doc = req.doc || {};
 
 			// setup the write_request msg
 			const write_request_msgs = [];
       const res = {
         type: 'write_request',
 				resource_id: null,
-				path: null,
+				path_leftover: null,
 				connection_id: req.connection_id,
 				contentType: null,
 				body: null,
 				url: "",
 				user_id: req.doc.user_id,
-				authorizationid: req.doc.authorizationid
+				authorizationid: req.doc.authorizationid,
+        resp_partition: msg.partition,
+        source: 'rev-graph-update',
       };
 			
 			trace('find parents for resource_id = ', req.resource_id);
@@ -89,7 +95,7 @@ consumer.on('message', (msg) => {
 
 					for (i = 0; i < length; i++) {
 						res.resource_id = p[i].resource_id;
-						res.path = p[i].path + '/_rev';
+						res.path_leftover = p[i].path + '/_rev';
 						trace('parent resource_id = ', p[i].resource_id);
 						res.contentType = p[i].contentType;
 						res.body = req._rev;

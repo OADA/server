@@ -251,8 +251,11 @@ function getParents(to_resource_id) {
   let edges = db.collection('edges');
 	let resources = db.collection('resources');
 
+  let collection = 'graphNodes';
+  if (!to_resource_id.match(/^\//)) collection += '/'; // if no leading slash on resourceid, add it to graphNodes
+
 	let bindVars = {
-		to_resource_id: 'graphNodes' + to_resource_id 
+		to_resource_id: collection + to_resource_id.replace(/resources\//, 'resources:'), // have to take out the slash on resources/ for arango to allow as key
 	};
 
 	let parents = [];
@@ -281,7 +284,9 @@ function getParents(to_resource_id) {
 
 		for (i = 0; i < length; i++) {
 			parent.resource_id = cursor._result[i].v.resource_id;
-			parent.path = cursor._result[i].v.path + '/' + cursor._result[i].e.name;
+      let path = cursor._result[i].v.path;
+      if (!path) path = '';
+			parent.path = path + '/' + cursor._result[i].e.name;
 			parents.splice(i, 0, parent);
 		}
 
