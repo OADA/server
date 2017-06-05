@@ -1,7 +1,7 @@
 'use strict'
 
 /*
-  Testing script 1 - 2:
+  Testing script 1 - 3:
     - The scenario for one single GET request with valid token + invalid URL.
  */
 
@@ -100,10 +100,10 @@ describe('GET (Valid Token with Valid URL for a Non-Existing Res)', () => {
         trace("http_get_error_response:" + http_get_error_response);
         expect(http_get_error_response).to.be.an('Object').that.is.not.empty;
       });
-      it('should contain the status 404 Not Found', () => {
+      it('should contain the status 403 Forbidden', () => {
         trace("http_get_error_response.status:" + http_get_error_response.code);
         expect(http_get_error_response).to.have.property('status')
-          .that.equals(404);
+          .that.equals(403);
       });
     });
   });
