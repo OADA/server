@@ -413,7 +413,7 @@ function addLinks(res) {
     if (link.hasOwnProperty('_rev')) {
       rev = getResource(link['_id'], '_oada_rev')
         .then(function updateRev(rev) {
-          link['_rev'] = rev;
+          link['_rev'] = rev || '0-0';
         });
     }
 

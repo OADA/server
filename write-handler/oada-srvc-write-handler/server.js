@@ -109,7 +109,6 @@ function handleMsg(msg) {
 
         // Update rev of meta?
         obj['_meta']['_rev'] = rev;
-
         return upsert(id, obj)
             .then(function respond() {
                 return producer.call('sendAsync', [{
