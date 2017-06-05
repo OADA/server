@@ -141,10 +141,10 @@ describe('Create a Non-Existing Res Using PUT', () => {
         trace("http_get_error_response_before:" + http_get_error_response_before);
         expect(http_get_error_response_before).to.be.an('Object').that.is.not.empty;
       });
-      it('should contain the status 404 Not Found', () => {
+      it('should contain the status 403 Forbidden', () => {
         trace("http_get_error_response_before.status:" + http_get_error_response_before.code);
         expect(http_get_error_response_before).to.have.property('status')
-          .that.equals(404);
+          .that.equals(403);
       });
     });
 
