@@ -35,7 +35,7 @@ function handleMsg(msg) {
 
     return Promise.props({
       // in parallel, get the put body from arango if there isn't one on the message:
-      putBodyStr: (req.bodyid ? oadaLib.putBodies.getPutBodyStr(req.bodyid) : req.body),
+      putBodyStr: (req.bodyid ? oadaLib.putBodies.getPutBodyStr(req.bodyid).then(JSON.parse) : req.body),
 
       // and get the meta to check the permissions:
       permissionCheck: Promise.try(function checkPermissions() {
@@ -55,7 +55,7 @@ function handleMsg(msg) {
         }
       }),
     }).then(function doUpsert(pre_results) {
-      req.body = JSON.parse(pre_results.putBodyStr);
+      req.body = pre_results.putBodyStr; // already JSON.parsed 
       delete pre_results.putBodyStr; // get the potentially big string out of memory as soon as possible
       
       // in parallel, delete the put body from arango and do the upsert:
