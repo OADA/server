@@ -18,7 +18,7 @@ var path = require('path');
 var fs = require('fs');
 
 module.exports = {
-  isTest: false, // set to true and random database will be created for you
+  //isProduction: false, // set to true and random database will be created for you
   arangodb: {
     connectionString: 'http://arangodb:8529',
     database: 'oada',

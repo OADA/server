@@ -18,6 +18,8 @@ services:
     environment:
       - NODE_ENV=${NODE_ENV:-development}
       - DEBUG=${DEBUG:-""}
+      # set RESETDATABASE to "yes" if you want to drop database on startup and recreate
+      - RESETDATABASE=${RESETDATABASE:-no}
 
   # proxy routes OAuth2 requests (/auth, /code) to auth service,
   # and the rest to main http-handlers.  TODO: add load balancing with multiple handlers.

@@ -32,12 +32,13 @@ module.exports = {
     .then(dbs => {
       dbs = _.filter(dbs, d => d === dbname);
       if (dbs.length > 0) {
-        if (config.get('isTest')) {
-          trace('isTest is true, dropping database and recreating');
+        if (!config.get('isProduction') && process.env.RESETDATABASE === "yes") {
+          trace('isProduction is false and process.env.RESETDATABASE is "yes", dropping database and recreating');
           db.useDatabase('_system');
           return db.dropDatabase(dbname)
           .then(() => db.createDatabase(dbname))
         }
+        info('isProduction is '+config.get('isProduction')+' and process.env.RESETDATABASE is '+process.env.RESETDATABASE+', not dropping database.');
         // otherwise, not test so don't drop database
         return trace('database '+dbname+' exists');
       }
@@ -128,8 +129,8 @@ module.exports = {
 
   // cleanup will delete the test database if in test mode
   cleanup: () => {
-    if (!config.get('isTest')) {
-      throw new Error('Cleanup called, but isTest is not true!  Cleanup only deletes the database when testing.');
+    if (config.get('isProduction')) {
+      throw new Error('Cleanup called, but isProduction is true!  Cleanup only deletes the database when testing.');
     }
     db.useDatabase('_system'); // arango only lets you drop databases from _system
     trace('Cleaning up by dropping test database '+config.get('arangodb:database'));
