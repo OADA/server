@@ -321,6 +321,7 @@ _server.app.put('/resources(/*)?', function putResource(req, res, next) {
         'path_leftover': req.oadaGraph['path_leftover'],
         'meta_id': req.oadaGraph['meta_id'],
         'user_id': req.user.doc['user_id'],
+        'authorizationid': req.user.doc['authorizationid'],
         'client_id': req.user.doc['client_id'],
         'content_type': req.get('Content-Type'),
         body: req.body

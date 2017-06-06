@@ -34,8 +34,12 @@ function handleMsg(msg) {
     var id = req['resource_id'];
 
     return Promise.try(function checkPermissions() {
+        if (req.source === 'rev-graph-update') {
+            // no need to check permission for rev graph updates
+            return;
+        }
+
         if (id) { // Only run checks if resource exists
-            if (req.source === 'rev-graph-update') return; // no need to check permission for rev graph updates
             // TODO: Support sharing (i.e., not just owner has permission)
             return oadaLib.resources.getResource(id, '_meta/_owner')
                 .then(function checkOwner(owner) {
@@ -102,7 +106,7 @@ function handleMsg(msg) {
             [rev]: {
                 'merge': Object.assign({}, obj),
                 'userId': req['user_id'],
-                'authorizationID': 'DEADBEEF' // TODO: Do this
+                'authorizationID': req['authorizationid']
             },
         };
         obj['_meta'] = Object.assign({'_changes': change}, obj['_meta']);
@@ -119,6 +123,8 @@ function handleMsg(msg) {
                         'code': 'success',
                         'resource_id': id,
                         '_rev': rev,
+                        'user_id': req['user_id'],
+                        'authorizationid': req['authorizationid'],
                         'connection_id': req['connection_id'],
                     })
                 }]);
@@ -131,6 +137,8 @@ function handleMsg(msg) {
             messages: JSON.stringify({
                 'msgtype': 'write-response',
                 'code': err.message || 'error',
+                'user_id': req['user_id'],
+                'authorizationid': req['authorizationid'],
                 'connection_id': req['connection_id'],
             })
         }]);
