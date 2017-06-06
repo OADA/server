@@ -40,7 +40,7 @@ services:
       - ./proxy/dev-certs/:/certs/
       - .:/code
       - ./oada-srvc-docker-config.js:/oada-srvc-docker-config.js
-      - letsencrypt_www_data:/var/www/letencrypt
+      - letsencrypt_www_data:/var/www/letsencrypt
     environment:
       - NODE_ENV=${NODE_ENV:-development}
       - DEBUG=${DEBUG:-""}
@@ -191,7 +191,7 @@ services:
       - DOMAINS=${DOMAIN:-localhost}
       - EMAIL=${LETSENCRYPTEMAIL:-info@openag.io}
       - WEBROOT_PATH=/var/www/letsencrypt
-      - CERTS_PATH=/certs
+      - CERTS_PATH=/certs/${DOMAIN:-nodomain}
       - CHECK_FREQ=7
     restart: unless-stopped
 
@@ -232,6 +232,7 @@ services:
       KAFKA_ADVERTISED_PORT: "9092"        # to connect to kafka.  Set to machine's IP if you want external.
       KAFKA_ZOOKEEPER_CONNECT: "zookeeper:2181"
       KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+      KAFKA_HEAP_OPTS: "-Xmx256M -Xms128M"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - kafka_data:/var/lib/kafka

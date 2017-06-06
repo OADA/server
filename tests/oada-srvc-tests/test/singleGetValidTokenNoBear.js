@@ -1,11 +1,12 @@
 'use strict'
 
 /*
-  Testing script 1 - 1:
-    - The scenario for one single GET request with invalid token + valid URL.
+  Testing script 1 - 2:
+    - The scenario for one single GET request with valid token (but no "Bear" in
+     the Authentication field) + valid URL.
  */
 
-describe('GET (Invalid Token with Valid URL)', () => {
+describe('GET (Valid Token without "Bear" with Valid URL)', () => {
   const config = require('../config');
   // config.set('isTest', true);
   const path = require('path');
@@ -37,9 +38,9 @@ describe('GET (Invalid Token with Valid URL)', () => {
   // Real tests.
   info(debugMark + 'Starting tests... (for ' +
     path.win32.basename(__filename) + ')');
-  const FOO_INVALID_TOKEN = 'fooInvalidToken-tests';
+  const VALID_TOKEN = 'xyz';
 
-  const tokenToUse = FOO_INVALID_TOKEN;
+  const tokenToUse = VALID_TOKEN;
   // For debugging.
   const VALID_GET_REQ_URL = '/resources/default:resources_bookmarks_123';
   //const VALID_GET_REQ_URL = '/bookmarks/rocks/rocks-index/90j2klfdjss';
@@ -54,12 +55,10 @@ describe('GET (Invalid Token with Valid URL)', () => {
     http_get_error_response = null;
 
   before((done) => {
-    const token = tokenToUse;
-
-    // Embed the token for all HTTP request.
+    // Embed the token (but without "Bear") for all HTTP request.
     let axiosInst = axios.create({
       headers: {
-        'Authorization': `Bearer ${token}`
+        'Authorization': `${tokenToUse}`
       }
     });
 
