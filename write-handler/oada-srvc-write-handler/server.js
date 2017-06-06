@@ -67,10 +67,8 @@ function handleMsg(msg) {
           var ts = Date.now();
           // TODO: Sanitize keys?
   
-          var upsert = oadaLib.resources.updateResource;
           // Create new resource
           if (!id) {
-              upsert = oadaLib.resources.insertResource;
               let parts = pointer.parse(path);
   
               id = 'resources/' + parts[1];
@@ -125,7 +123,7 @@ function handleMsg(msg) {
   
           // Update rev of meta?
           obj['_meta']['_rev'] = rev;
-          return upsert(id, obj)
+          return oadaLib.resources.putResource(id, obj)
           .then(function respond() {
             return producer.call('sendAsync', [{
               topic: config.get('kafka:topics:httpResponse'),

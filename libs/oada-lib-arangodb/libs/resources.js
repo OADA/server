@@ -313,7 +313,7 @@ function getParents(to_resource_id) {
     () => null); // Treat non-existing path has not-found
 }
 
-function insertResource(id, obj) {
+function putResource(id, obj) {
   // Fix rev
   obj['_oada_rev'] = obj['_rev'];
   obj['_rev'] = undefined;
@@ -322,20 +322,70 @@ function insertResource(id, obj) {
 
   obj['_key'] = id.replace(/^resources\//, '');
 
-  var doc = addLinks(obj).then(obj => db.query(aql`
-    INSERT ${obj}
-    IN resources
-  `));
-  var node = db.query(aql`
-    INSERT {
-      '_key': ${'resources:' + obj['_key']},
-      'is_resource': true,
-      'resource_id': ${id}
-    }
-    IN graphNodes
-  `);
+  return addLinks(obj).then(function docUpsert(links) {
+    debug(`Upserting resource ${obj['_key']}`);
+    debug(`Upserting links: ${JSON.stringify(links, null, 2)}`);
 
-  return Promise.join(doc, node);
+    // TODO: Should it check that graphNodes exist but are wrong?
+    return db.query(aql`
+      LET reskey = ${obj['_key']}
+      LET res = FIRST(
+        LET res = ${obj}
+        UPSERT { '_key': reskey }
+        INSERT res
+        UPDATE res
+        IN resources
+        RETURN NEW
+      )
+      FOR l IN ${links}
+        LET nodeids = FIRST(
+          LET nodeids = (
+            LET nodeids = APPEND([reskey], SLICE(l.path, 0, -1))
+            FOR i IN 1..LENGTH(nodeids)
+              LET path = CONCAT_SEPARATOR(':', SLICE(nodeids, 0, i))
+              RETURN CONCAT('resources:', path)
+          )
+          LET end = CONCAT('resources:', SUBSTRING(l._id, LENGTH('resources/')))
+          RETURN APPEND(nodeids, [end])
+        )
+        LET nodes = (
+          FOR i IN 0..LENGTH(l.path)
+            LET isresource = i IN [0, LENGTH(l.path)]
+            LET ppath = SLICE(l.path, 0, i)
+            UPSERT { '_key': nodeids[i] }
+            INSERT {
+              '_key': nodeids[i],
+              'is_resource': isresource,
+              'path': CONCAT_SEPARATOR('/', APPEND([''], ppath)),
+              'resource_id': CONCAT('resources/', reskey)
+            }
+            UPDATE {}
+            IN graphNodes
+            RETURN NEW
+        )
+        LET edges = (
+          FOR i IN 0..(LENGTH(l.path)-1)
+            UPSERT {
+              '_from': nodes[i]._id,
+              '_to': nodes[i+1]._id,
+              'name': l.path[i]
+            }
+            INSERT {
+              '_from': nodes[i]._id,
+              '_to': nodes[i+1]._id,
+              'name': l.path[i],
+              'versioned': nodes[i+1].is_resource && HAS(l, '_rev')
+            }
+            UPDATE {
+              'versioned': nodes[i+1].is_resource && HAS(l, '_rev')
+            }
+            IN edges
+            RETURN NEW
+        )
+        FOR edge IN edges
+          RETURN edge._key
+    `);
+  });
 }
 
 // TODO: Remove links as well
@@ -359,55 +409,8 @@ function addLinks(res) {
   }
 
   // TODO: Use fewer queries or something?
-  return forLinks(res, function(link, path) {
-    var id = link['_id'].replace(/^resources\//, '');
-    var nodeIds = [res['_key']]
-        .concat(path.slice(0, -1))
-        .map(function(p, i, a) {
-          return ['graphNodes/resources'].concat(a.slice(0, i+1)).join(':');
-        })
-        .concat('graphNodes/resources:' + id);
-
-    var fakeLinks = Promise.map(path.slice(0, -1), function(p, i) {
-      trace(`Adding edge ${p} from ${nodeIds[i]} to ${nodeIds[i+1]}`);
-      var ppath = path.slice(0, i+1);
-
-      return db.query(aql`
-        INSERT {
-          '_key': ${['resources'].concat(res['_key']).concat(ppath).join(':')},
-          'is_resource': false,
-          'path': ${pointer.compile(ppath)},
-          'resource_id': ${'resources/' + res['_key']}
-        }
-        IN graphNodes
-      `).then(function fakeEdge() {
-        return db.query(aql`
-          INSERT {
-            '_from': ${nodeIds[i]},
-            '_to': ${nodeIds[i+1]},
-            'name': ${p},
-            'versioned': false
-          }
-          IN edges
-        `);
-      }).catch({
-          isArangoError: true,
-          errorNum: 1210 // ERROR_ARANGO_UNIQUE_CONSTRAINT_VIOLATED
-      }, () => {}); // Node was already there, so ignore the error
-    });
-
-    // TODO: Check if edges already exist
-    trace(`Adding edge ${path.slice(-1)[0]}`
-        + ` from ${nodeIds.slice(-2, -1)[0]} to ${nodeIds.slice(-1)[0]}`);
-    var edge = db.query(aql`
-      INSERT {
-        '_from': ${nodeIds.slice(-2, -1)[0]},
-        '_to': ${nodeIds.slice(-1)[0]},
-        'name': ${path.slice(-1)[0]},
-        'versioned': ${link.hasOwnProperty('_rev')}
-      }
-      IN edges
-    `);
+  var links = [];
+  return forLinks(res, function processLinks(link, path) {
 
     var rev;
     if (link.hasOwnProperty('_rev')) {
@@ -417,23 +420,10 @@ function addLinks(res) {
         });
     }
 
-    return Promise.join(edge, fakeLinks, rev);
-  }).then(() => res);
-}
-
-function updateResource(id, obj) {
-  // Fix rev
-  obj['_oada_rev'] = obj['_rev'];
-  obj['_rev'] = undefined;
-
-  // TODO: Sanitize OADA keys?
-
-  obj['_key'] = id.replace(/^resources\//, '');
-
-  return addLinks(obj).then(obj => db.query(aql`
-    UPDATE ${obj}
-    IN resources
-  `));
+    return Promise.resolve(rev).then(function() {
+        links.push(Object.assign({path}, link));
+    })
+  }).then(() => links);
 }
 
 function upsertMeta(req) {
@@ -446,7 +436,6 @@ module.exports = {
   upsert,
   lookupFromUrl,
   getResource,
-  insertResource,
-  updateResource,
+  putResource,
   getParents
 };
