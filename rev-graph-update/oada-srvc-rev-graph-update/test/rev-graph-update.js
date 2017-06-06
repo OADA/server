@@ -69,14 +69,13 @@ describe('rev graph update service', () => {
 		it('should be able to produce a correct write_request message', (done) => {
 			// make http_response message
 			let r = {
+				msgtype: 'write-response',
 				code: "success",
 				resource_id: '/resources:default:resources_rock_123',
         connection_id: '123abc' + randomstring.generate(7),
 				_rev: randomstring.generate(7),
-				doc: {
-					user_id: 'franko123' + randomstring.generate(7),
-					authorizationid: 'tuco123' + randomstring.generate(7)
-				}
+				user_id: 'franko123' + randomstring.generate(7),
+				authorizationid: 'tuco123' + randomstring.generate(7)
       };
 
 			console.log('http_response message is: ', r);
@@ -89,11 +88,11 @@ describe('rev graph update service', () => {
 
         trace('received message: ', wr_msg);
         expect(wr_msg.type).to.equal('write_request');
-				expect(wr_msg.path).to.equal('/rocks-index/90j2klfdjss/_rev');
+				expect(wr_msg.path_leftover).to.equal('/rocks-index/90j2klfdjss/_rev');
 				expect(wr_msg.resource_id).to.equal('resources/default:resources_rocks_123');
 				expect(wr_msg.contentType).to.equal('application/vnd.oada.rocks.1+json');
-				expect(wr_msg.user_id).to.equal(r.doc.user_id);
-				expect(wr_msg.authorizationid).to.equal(r.doc.authorizationid);
+				expect(wr_msg.user_id).to.equal(r.user_id);
+				expect(wr_msg.authorizationid).to.equal(r.authorizationid);
 				expect(wr_msg.body).to.equal(r._rev);
 				expect(wr_msg.connection_id).to.equal(r.connection_id);
 				expect(wr_msg.url).to.equal('');
@@ -105,7 +104,7 @@ describe('rev graph update service', () => {
       });
 
       // now produce the message:
-      producer.send([{topic: prodTopic, messages: JSON.stringify(r)}], (a) => {
+      producer.send([{topic: prodTopic, partitions: 0, messages: JSON.stringify(r)}], (a) => {
         console.log('message produced, awaiting response')
       });
     });
