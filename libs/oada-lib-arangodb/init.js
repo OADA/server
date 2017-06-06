@@ -63,7 +63,8 @@ module.exports = {
           return db.edgeCollection(c.name).create()
           .then(() => trace('Edge collection '+c.name+' has been created'));
         } else {
-          return db.collection(c.name).create()
+          if (!c.createOptions) c.createOptions = {};
+          return db.collection(c.name).create(c.createOptions)
           .then(() => trace('Document collection '+c.name+' has been created'));
         }
       });

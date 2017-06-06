@@ -41,6 +41,7 @@ services:
     environment:
       - NODE_ENV=${NODE_ENV:-development}
       - DEBUG=${DEBUG:-""}
+      - DOMAIN=${DOMAIN:-"localhost"}
     command:
       - /entrypoint.sh
 

@@ -315,16 +315,24 @@ _server.app.put('/resources(/*)?', function putResource(req, res, next) {
                 'Token does not have required scope'));
     }
 
-    return kafkaRequest(req.id, config.get('kafka:topics:writeRequest'), {
-        url: req.url,
-        'resource_id': req.oadaGraph['resource_id'],
-        'path_leftover': req.oadaGraph['path_leftover'],
-        'meta_id': req.oadaGraph['meta_id'],
-        'user_id': req.user.doc['user_id'],
-        'authorizationid': req.user.doc['authorizationid'],
-        'client_id': req.user.doc['client_id'],
-        'content_type': req.get('Content-Type'),
-        body: req.body
+    // TODO: the JSON parser need not parse the JSON just so we can re-serialize
+    // it here......
+    // Put the request body into arango, then post the kafka message with the _id
+    // for the body that came back from arango:
+    return oadaLib.putBodies.savePutBodyStr(JSON.stringify(req.body))
+    .then(bodydoc => {
+      return kafkaRequest(req.id, config.get('kafka:topics:writeRequest'), {
+          url: req.url,
+          'resource_id': req.oadaGraph['resource_id'],
+          'path_leftover': req.oadaGraph['path_leftover'],
+          'meta_id': req.oadaGraph['meta_id'],
+          'user_id': req.user.doc['user_id'],
+          'authorizationid': req.user.doc['authorizationid'],
+          'client_id': req.user.doc['client_id'],
+          'content_type': req.get('Content-Type'),
+          bodyid: bodydoc._id,
+          //body: req.body
+      });
     })
     .tap(function checkWrite(resp) {
         switch (resp.code) {

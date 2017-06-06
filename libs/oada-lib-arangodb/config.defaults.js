@@ -31,6 +31,8 @@ module.exports = {
           graphNodes: { name: 'graphNodes',     indexes: [            ], defaults: './libs/exampledocs/graphNodes' },
                edges: { name: 'edges',          indexes: [ { name: 'name', unique: false } ], defaults: './libs/exampledocs/edges',
                         edgeCollection: true },
+           putBodies: { name: 'putBodies',      indexes: [ ], defaults: './libs/exampledocs/putBodies', 
+                        createOptions: { isVolatile: true } },
     },
     init: {
       // NOTE: passwordSalt HAS to match the one in auth

@@ -33,7 +33,12 @@ function handleMsg(msg) {
     req.source = req.source || '';
     var id = req['resource_id'];
 
-    return Promise.try(function checkPermissions() {
+    return Promise.props({
+      // in parallel, get the put body from arango:
+      putBodyStr: oadaLib.putBodies.getPutBodyStr(req.bodyid),
+
+      // and get the meta to check the permissions:
+      permissionCheck: Promise.try(function checkPermissions() {
         if (req.source === 'rev-graph-update') {
             // no need to check permission for rev graph updates
             return;
@@ -48,87 +53,96 @@ function handleMsg(msg) {
                     }
                 });
         }
-    }).then(function doUpsert() {
-        var path = req['path_leftover'].replace(/\/*$/, '');
-        var obj = {};
-        var ts = Date.now();
-
-        // TODO: Sanitize keys?
-
-        var upsert = oadaLib.resources.updateResource;
-        // Create new resource
-        if (!id) {
-            upsert = oadaLib.resources.insertResource;
-            let parts = pointer.parse(path);
-
-            id = 'resources/' + parts[1];
-            path = pointer.compile(parts.slice(2));
-
-            // Initialize resource stuff
-            obj = {
-                '_type': req['content_type'],
-                '_meta': {
-                    '_id': id + '/_meta',
-                    '_type': req['content_type'],
-                    '_owner': req['user_id'],
-                    'stats': {
-                        'createdBy': req['user_id'],
-                        'created': ts
-                    },
-                }
-            };
-        }
-
-        debug(`PUTing to "${path}" in resource "${id}"`);
-        // Create object to recursively merge into the resource
-        if (path) {
-            pointer.set(obj, path, req.body);
-        } else {
-            obj = Object.assign(req.body, obj);
-        }
-
-        // Update meta
-        var meta = {
-            'modifiedBy': req['user_id'],
-            'modified': ts
-        };
-        obj['_meta'] = Object.assign(obj['_meta'] || {}, meta);
-
-        // Precompute new rev
-        var rev = msg.offset + '-' + hash(obj, {algorithm: 'md5'});
-        obj['_rev'] = rev;
-        pointer.set(obj, '/_meta/_rev', rev);
-
-        // Compute new change
-        var change = {
-            '_id': id + '/_meta/_changes',
-            '_rev': rev,
-            [rev]: {
-                'merge': Object.assign({}, obj),
-                'userId': req['user_id'],
-                'authorizationID': req['authorizationid']
-            },
-        };
-        obj['_meta'] = Object.assign({'_changes': change}, obj['_meta']);
-
-        // Update rev of meta?
-        obj['_meta']['_rev'] = rev;
-        return upsert(id, obj)
-            .then(function respond() {
-                return producer.call('sendAsync', [{
-                    topic: config.get('kafka:topics:httpResponse'),
-                    partition: req['resp_partition'],
-                    messages: JSON.stringify({
-                        'msgtype': 'write-response',
-                        'code': 'success',
-                        'resource_id': id,
-                        '_rev': rev,
-                        'user_id': req['user_id'],
-                        'authorizationid': req['authorizationid'],
-                        'connection_id': req['connection_id'],
-                    })
-                }]);
-            });
+      }),
+    }).then(function doUpsert(pre_results) {
+      req.body = JSON.parse(pre_results.putBodyStr);
+      delete pre_results.putBodyStr; // get the potentially big string out of memory as soon as possible
+      
+      // in parallel, delete the put body from arango and do the upsert:
+      return Promise.all([
+        oadaLib.putBodies.removePutBody(req.bodyid),
+        Promise.try(() => {
+          var path = req['path_leftover'].replace(/\/*$/, '');
+          var obj = {};
+          var ts = Date.now();
+          // TODO: Sanitize keys?
+  
+          var upsert = oadaLib.resources.updateResource;
+          // Create new resource
+          if (!id) {
+              upsert = oadaLib.resources.insertResource;
+              let parts = pointer.parse(path);
+  
+              id = 'resources/' + parts[1];
+              path = pointer.compile(parts.slice(2));
+  
+              // Initialize resource stuff
+              obj = {
+                  '_type': req['content_type'],
+                  '_meta': {
+                      '_id': id + '/_meta',
+                      '_type': req['content_type'],
+                      '_owner': req['user_id'],
+                      'stats': {
+                          'createdBy': req['user_id'],
+                          'created': ts
+                      },
+                  }
+              };
+          }
+  
+          debug(`PUTing to "${path}" in resource "${id}"`);
+          // Create object to recursively merge into the resource
+          if (path) {
+              pointer.set(obj, path, req.body);
+          } else {
+              obj = Object.assign(req.body, obj);
+          }
+  
+          // Update meta
+          var meta = {
+              'modifiedBy': req['user_id'],
+              'modified': ts
+          };
+          obj['_meta'] = Object.assign(obj['_meta'] || {}, meta);
+  
+          // Precompute new rev
+          var rev = msg.offset + '-' + hash(obj, {algorithm: 'md5'});
+          obj['_rev'] = rev;
+          pointer.set(obj, '/_meta/_rev', rev);
+  
+          // Compute new change
+          var change = {
+              '_id': id + '/_meta/_changes',
+              '_rev': rev,
+              [rev]: {
+                  'merge': Object.assign({}, obj),
+                  'userId': req['user_id'],
+                  'authorizationID': req['authorizationid']
+              },
+          };
+          obj['_meta'] = Object.assign({'_changes': change}, obj['_meta']);
+  
+          // Update rev of meta?
+          obj['_meta']['_rev'] = rev;
+          return upsert(id, obj)
+          .then(function respond() {
+            return producer.call('sendAsync', [{
+              topic: config.get('kafka:topics:httpResponse'),
+              partition: req['resp_partition'],
+              messages: JSON.stringify({
+                'msgtype': 'write-response',
+                'code': 'success',
+                'resource_id': id,
+                '_rev': rev,
+                'user_id': req['user_id'],
+                'authorizationid': req['authorizationid'],
+                'connection_id': req['connection_id'],
+              })
+            }]);
+          });
+        })
+      ]); // end of Promise.all to remove put body and do upsert
     }).catch(function respondErr(err) {
         error(err);
         return producer.call('sendAsync', [{
