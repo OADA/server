@@ -34,8 +34,8 @@ function handleMsg(msg) {
     var id = req['resource_id'];
 
     return Promise.props({
-      // in parallel, get the put body from arango:
-      putBodyStr: oadaLib.putBodies.getPutBodyStr(req.bodyid),
+      // in parallel, get the put body from arango if there isn't one on the message:
+      putBodyStr: (req.bodyid ? oadaLib.putBodies.getPutBodyStr(req.bodyid) : req.body),
 
       // and get the meta to check the permissions:
       permissionCheck: Promise.try(function checkPermissions() {

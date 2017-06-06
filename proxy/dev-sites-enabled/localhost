@@ -1,11 +1,11 @@
 server {
   listen 443;
 
-  server_name localhost;
+  server_name ${DOMAIN};
 
   ssl on;
-  ssl_certificate /certs/localhost.crt;
-  ssl_certificate_key /certs/localhost.key;
+  ssl_certificate /certs/${DOMAIN}/fullchain.pem;
+  ssl_certificate_key /certs/${DOMAIN}/privkey.pem;
 
   location /oadaauth {
     proxy_set_header X-Real-IP $remote_addr;
@@ -49,8 +49,18 @@ server {
 
 server {
   listen 80;
-  server_name localhost;
-  rewrite ^/(.*) https://localhost/$1 permanent;
+  server_name ${DOMAIN};
+
+  # For let's encrypt, serve the web root that it will
+  # put things into:
+  location /.well-known/acme-configuration {
+    root /var/www/letsencrypt;
+  }
+
+  # Everything else rewrite to HTTPS
+  location / {
+    rewrite ^/(.*) https://${DOMAIN}/$1 permanent;
+  }
 }
 
 server {
