@@ -20,6 +20,10 @@ server {
     # rewrite ^/oadaauth/(.*) /$1 break;
   }
 
+  location /.well-known/acme-challenge {
+    root /var/www/letsencrypt;
+  }
+
   location /.well-known {
     proxy_set_header X-Real-IP $remote_addr;
     proxy_set_header X-Forwarded-For $remote_addr;
@@ -53,7 +57,7 @@ server {
 
   # For let's encrypt, serve the web root that it will
   # put things into:
-  location /.well-known/acme-configuration {
+  location /.well-known/acme-challenge {
     root /var/www/letsencrypt;
   }
 

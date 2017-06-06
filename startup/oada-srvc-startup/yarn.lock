@@ -552,7 +552,12 @@ oada-lib-arangodb@../../libs/oada-lib-arangodb:
     oada-lib-config oada/oada-lib-config
     uuid "^3.0.1"
 
-oada-lib-config@../../libs/oada-lib-config, oada-lib-config@oada/oada-lib-config:
+oada-lib-config@../../libs/oada-lib-config:
+  version "0.0.1"
+  dependencies:
+    nconf "^0.8.4"
+
+oada-lib-config@oada/oada-lib-config:
   version "0.0.1"
   resolved "https://codeload.github.com/oada/oada-lib-config/tar.gz/36b9a4011b5a7cf2e4e6a057040b4a6c3580cf93"
   dependencies:
