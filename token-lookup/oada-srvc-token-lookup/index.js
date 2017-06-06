@@ -29,7 +29,7 @@ const config = require('./config');
 // Kafka intializations:
 const client = new kf.Client(
   config.get('zookeeper:host'),
-  config.get('kafka:topics:tokenRequest')
+ 	'token-lookup' 
 );
 const offset = new kf.Offset(client);
 const consumer = new kf.ConsumerGroup({
@@ -42,7 +42,6 @@ let producer = new kf.Producer(client, {partitionerType: 0});
 process.on('exit', () => {info('process exit'); client.close()});
 process.on('SIGINT', () => {info('SIGINT'); client.close(); process.exit(2);});
 process.on('uncaughtException', (a) => {info('uncaughtException: ', a); client.close(); process.exit(99);});
-
 
 consumer.on('message', (msg) => {
   return Promise.try(() => {
@@ -109,6 +108,7 @@ consumer.on('message', (msg) => {
     return Promise.fromCallback((done) => {
       producer.send([{
         topic: config.get('kafka:topics:httpResponse'),
+				partitions: 0, 
         messages: JSON.stringify(res)
       }], done);
     });

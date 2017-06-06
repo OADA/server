@@ -60,7 +60,14 @@ consumer.on('message', (msg) => {
 				 typeof req._rev === "undefined" ) {
         throw new Error(`Invalid http_response: there is either no resource_id or _rev.  respose = ${JSON.stringify(req)}`);
       }
-      req.doc = req.doc || {};
+
+			if (typeof req.user_id === "undefined") {
+				trace('WARNING: received message does not have user_id');
+			}
+
+			if (typeof req.authorizationid === "undefined") {
+				trace('WARNING: received message does not have authorizationid');
+			}
 
 			// setup the write_request msg
 			const write_request_msgs = [];
@@ -72,8 +79,8 @@ consumer.on('message', (msg) => {
 				contentType: null,
 				body: null,
 				url: "",
-				user_id: req.doc.user_id,
-				authorizationid: req.doc.authorizationid,
+				user_id: req.user_id,
+				authorizationid: req.authorizationid,
         resp_partition: msg.partition,
         source: 'rev-graph-update',
       };
@@ -83,9 +90,9 @@ consumer.on('message', (msg) => {
 			// find resource's parent 
 			return oadaLib.resources.getParents(req.resource_id)
 				.then(p => {
-					if (!p) {
-						info('WARNING: resource_id'+req.resource_id+' does not have a parent.');
-						return res;
+					if (p.length === 0) {
+						info('WARNING: resource_id '+req.resource_id+' does not have a parent.');
+						return [];
 					}
 
 					let length = p.length;
@@ -103,21 +110,19 @@ consumer.on('message', (msg) => {
 						write_request_msgs.splice(i, 0, res);
 					}
 
-					return write_request_msgs;
+					return Promise.fromCallback((done) => {
+						trace('kafka intends to produce: ', write_request_msgs);
+						let msgs_str = write_request_msgs.map(msgs => {
+							return JSON.stringify(msgs);
+						});
+						// produce multiple kafka messages
+						producer.send([{
+							topic: config.get('kafka:topics:writeRequest'),
+							partitions: 0, 
+							messages: msgs_str
+						}], done);
+					});
 			});
-  })
-  .then((write_request_msgs) => {
-    return Promise.fromCallback((done) => {
-			trace('kafka intends to produce: ', write_request_msgs);
-			let msgs_str = write_request_msgs.map(msgs => {
-				return JSON.stringify(msgs);
-			});
-			// produce multiple kafka messages
-      producer.send([{
-        topic: config.get('kafka:topics:writeRequest'),
-        messages: msgs_str
-      }], done);
-    });
   })
   .catch(err => {
     error('%O', err);
