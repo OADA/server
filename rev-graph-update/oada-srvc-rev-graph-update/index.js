@@ -69,8 +69,6 @@ consumer.on('message', (msg) => {
 				trace('WARNING: received message does not have authorizationid');
 			}
 
-			// setup the write_request msg
-			const write_request_msgs = [];
       const res = {
         type: 'write_request',
 				resource_id: null,
@@ -95,32 +93,23 @@ consumer.on('message', (msg) => {
 						return [];
 					}
 
-					let length = p.length;
-					let i = 0;
-
 					trace('the parents are: ', p);
 
-					for (i = 0; i < length; i++) {
-						res.resource_id = p[i].resource_id;
-						res.path_leftover = p[i].path + '/_rev';
-						trace('parent resource_id = ', p[i].resource_id);
-						res.contentType = p[i].contentType;
+					return Promise.map(p, item => {
+						trace('parent resource_id = ', item.resource_id);
+						res.resource_id = item.resource_id;
+						res.path_leftover = item.path + '/_rev';
+						res.contentType = item.contentType;
 						res.body = req._rev;
-						trace('the result msg is: ', res);
-						write_request_msgs.splice(i, 0, res);
-					}
-
-					return Promise.fromCallback((done) => {
-						trace('kafka intends to produce: ', write_request_msgs);
-						let msgs_str = write_request_msgs.map(msgs => {
-							return JSON.stringify(msgs);
-						});
-						// produce multiple kafka messages
-						producer.send([{
-							topic: config.get('kafka:topics:writeRequest'),
-							partitions: 0, 
-							messages: msgs_str
-						}], done);
+							return Promise.fromCallback((done) => {
+								trace('kafka intends to produce: ', res);
+								// produce multiple kafka messages
+								producer.send([{
+									topic: config.get('kafka:topics:writeRequest'),
+									partitions: 0, 
+									messages: JSON.stringify(res) 
+								}], done);
+							});
 					});
 			});
   })

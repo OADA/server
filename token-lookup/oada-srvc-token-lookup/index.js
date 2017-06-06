@@ -50,9 +50,9 @@ consumer.on('message', (msg) => {
     .then((req) => {
       if (!req ||
         typeof req.resp_partition === "undefined" ||
-        typeof req.connection_id === "undefined" ||
-        typeof req.token === "undefined") {
-        throw new Error(`Invalid token_request ${JSON.stringify(req)}`);
+        typeof req.connection_id === "undefined") {
+        error('Invalid token_request for request: '+JSON.stringify(req));
+				return {};
       }
 
       const res = {
@@ -70,12 +70,18 @@ consumer.on('message', (msg) => {
         }
       };
 
+			if (typeof req.token === "undefined") {
+				trace('No token supplied with the request.');
+				return res;
+			}
+
       // Get token from db.  Later on, we should speed this up
       // by getting everything in one query.
       return oadaLib.authorizations.findByToken(req.token.trim().replace(/^Bearer /,''))
         .then(t => {
           if(!t) {
             info('WARNING: token '+req.token+' does not exist.');
+						res.token = null;
             return res;
           }
 
@@ -101,18 +107,18 @@ consumer.on('message', (msg) => {
           res.doc.bookmarks_id = t.user.bookmarks._id || res.doc.bookmarks_id;
           res.doc.scope = t.scope || res.doc.scope;
 
-          return res;
+					return res;
       });
   })
-  .then((res) => {
-    return Promise.fromCallback((done) => {
-      producer.send([{
-        topic: config.get('kafka:topics:httpResponse'),
+	.then((res) => {
+		return Promise.fromCallback((done) => {
+			producer.send([{
+				topic: config.get('kafka:topics:httpResponse'),
 				partitions: 0, 
-        messages: JSON.stringify(res)
-      }], done);
-    });
-  })
+				messages: JSON.stringify(res)
+			}], done);
+		});
+	})
   .catch(err => {
     error('%O', err);
   })
