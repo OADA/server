@@ -40,6 +40,7 @@ services:
       - ./proxy/dev-certs/:/certs/
       - .:/code
       - ./oada-srvc-docker-config.js:/oada-srvc-docker-config.js
+      - letsencrypt_www_data:/var/www/letencrypt
     environment:
       - NODE_ENV=${NODE_ENV:-development}
       - DEBUG=${DEBUG:-""}
@@ -177,6 +178,23 @@ services:
       - NODE_ENV=${NODE_ENV:-development}
       - DEBUG=${DEBUG:-""}
 
+  # letsencrypt will go get HTTPS certificates for you if DOMAIN is not localhost
+  letsencrypt:
+    build: ./letsencrypt
+    container_name: letsencrypt
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - letsencrypt_www_data:/var/www/letsencrypt
+      - ./proxy/dev-certs:/certs
+    environment:
+      - SERVER_CONTAINER=proxy
+      - DOMAINS=${DOMAIN:-localhost}
+      - EMAIL=${LETSENCRYPTEMAIL:-info@openag.io}
+      - WEBROOT_PATH=/var/www/letsencrypt
+      - CERTS_PATH=/certs
+      - CHECK_FREQ=7
+    restart: unless-stopped
+
   # Arango is the main backend where core data and graph is stored
   arangodb:
     image: arangodb
@@ -223,3 +241,4 @@ volumes:
   arangodb_apps_data:
   kafka_data:
   zookeeper_data:
+  letsencrypt_www_data:

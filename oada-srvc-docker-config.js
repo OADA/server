@@ -17,6 +17,8 @@
 var path = require('path');
 var fs = require('fs');
 
+const domain = process.env.DOMAIN || 'localhost';
+
 module.exports = {
 
   // By default, this checks for NODE_ENV===production 
@@ -65,8 +67,8 @@ module.exports = {
       passwordSalt: "$2a$06$xbh/gQcEgAX5eapjlCgMYO",
       port: 80,
       mode: "http",
-      domain: "localhost", // in docker it's port 80 localhost
-      publicUri: "https://localhost" // but to nginx proxy, it's https://localhost in dev
+      domain: domain, // in docker it's port 80 localhost
+      publicUri: "https://"+domain // but to nginx proxy, it's https://localhost in dev
     },
     keys: {
       signPems: "/code/auth/sign/",
@@ -81,7 +83,7 @@ module.exports = {
     server: {
       port: 80,
       mode: 'http',
-      domain: 'localhost',
+      domain: domain,
     },
     mergeSubServices: [
       { resource:   'oada-configuration', base: 'http://auth', },
@@ -89,7 +91,7 @@ module.exports = {
     ],
     "oada-configuration": {
       well_known_version: '1.0.0',
-      oada_base_uri: 'https://localhost',
+      oada_base_uri: 'https://domain',
       scopes_supported: [
         {
           name: 'oada.all.1', // can do anything the user can do
