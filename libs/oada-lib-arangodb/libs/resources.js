@@ -202,6 +202,13 @@ function lookupFromUrl(url) {
           return value
         },{vertices: -1});
         trace('lookupFromUrl('+url+'): longest path has '+res.vertices.length+' vertices');
+        if (!res.vertices[res.vertices.length-1]) {
+          resource_id = "";
+          path_leftover = res.edges[res.edges.length-1]._to
+              .replace(/^graphNodes\//, '/')
+              .replace(/resources:/, 'resources/')
+          return {resource_id, path_leftover};
+        }
         resource_id = res.vertices[res.vertices.length-1].resource_id;
         // If the desired url has more pieces than the longest path, the
         // path_leftover is the extra pieces
@@ -327,64 +334,92 @@ function putResource(id, obj) {
     debug(`Upserting links: ${JSON.stringify(links, null, 2)}`);
 
     // TODO: Should it check that graphNodes exist but are wrong?
-    return db.query(aql`
-      LET reskey = ${obj['_key']}
-      LET res = FIRST(
-        LET res = ${obj}
-        UPSERT { '_key': reskey }
-        INSERT res
-        UPDATE res
-        IN resources
-        RETURN NEW
-      )
-      FOR l IN ${links}
-        LET nodeids = FIRST(
-          LET nodeids = (
-            LET nodeids = APPEND([reskey], SLICE(l.path, 0, -1))
-            FOR i IN 1..LENGTH(nodeids)
-              LET path = CONCAT_SEPARATOR(':', SLICE(nodeids, 0, i))
-              RETURN CONCAT('resources:', path)
+    var q;
+    if (links.length > 0) {
+      q = db.query(aql`
+        LET reskey = ${obj['_key']}
+        LET res = FIRST(
+          LET res = ${obj}
+          UPSERT { '_key': reskey }
+          INSERT res
+          UPDATE res
+          IN resources
+          RETURN NEW
+        )
+        FOR l IN ${links}
+          LET lkey = SUBSTRING(l._id, LENGTH('resources/'))
+          LET nodeids = FIRST(
+            LET nodeids = (
+              LET nodeids = APPEND([reskey], SLICE(l.path, 0, -1))
+              FOR i IN 1..LENGTH(nodeids)
+                LET path = CONCAT_SEPARATOR(':', SLICE(nodeids, 0, i))
+                RETURN CONCAT('resources:', path)
+            )
+            LET end = CONCAT('resources:', lkey)
+            RETURN APPEND(nodeids, [end])
           )
-          LET end = CONCAT('resources:', SUBSTRING(l._id, LENGTH('resources/')))
-          RETURN APPEND(nodeids, [end])
+          LET nodes = APPEND((
+            FOR i IN 0..(LENGTH(l.path)-1)
+              LET isresource = i IN [0, LENGTH(l.path)]
+              LET ppath = SLICE(l.path, 0, i)
+              LET resid = i == LENGTH(l.path) ? lkey : reskey 
+              LET path = isresource ? null : CONCAT_SEPARATOR('/', APPEND([''], ppath))
+              UPSERT { '_key': nodeids[i] }
+              INSERT {
+                '_key': nodeids[i],
+                'is_resource': isresource,
+                'path': path,
+                'resource_id': res._id
+              }
+              UPDATE {}
+              IN graphNodes
+              RETURN NEW
+          ), { _id: CONCAT('graphNodes/', LAST(nodeids)), is_resource: true })
+          LET edges = (
+            FOR i IN 0..(LENGTH(l.path)-1)
+              UPSERT {
+                '_from': nodes[i]._id,
+                'name': l.path[i]
+              }
+              INSERT {
+                '_from': nodes[i]._id,
+                '_to': nodes[i+1]._id,
+                'name': l.path[i],
+                'versioned': nodes[i+1].is_resource && HAS(l, '_rev')
+              }
+              UPDATE {
+                '_to': nodes[i+1]._id,
+                'versioned': nodes[i+1].is_resource && HAS(l, '_rev')
+              }
+              IN edges
+              RETURN NEW
+          )
+          FOR edge IN edges
+            RETURN edge._key
+      `);
+    } else {
+      q = db.query(aql`
+        LET res = FIRST(
+          LET res = ${obj}
+          UPSERT { '_key': res._key }
+          INSERT res
+          UPDATE res
+          IN resources
+          return NEW
         )
-        LET nodes = (
-          FOR i IN 0..LENGTH(l.path)
-            LET isresource = i IN [0, LENGTH(l.path)]
-            LET ppath = SLICE(l.path, 0, i)
-            UPSERT { '_key': nodeids[i] }
-            INSERT {
-              '_key': nodeids[i],
-              'is_resource': isresource,
-              'path': CONCAT_SEPARATOR('/', APPEND([''], ppath)),
-              'resource_id': CONCAT('resources/', reskey)
-            }
-            UPDATE {}
-            IN graphNodes
-            RETURN NEW
-        )
-        LET edges = (
-          FOR i IN 0..(LENGTH(l.path)-1)
-            UPSERT {
-              '_from': nodes[i]._id,
-              '_to': nodes[i+1]._id,
-              'name': l.path[i]
-            }
-            INSERT {
-              '_from': nodes[i]._id,
-              '_to': nodes[i+1]._id,
-              'name': l.path[i],
-              'versioned': nodes[i+1].is_resource && HAS(l, '_rev')
-            }
-            UPDATE {
-              'versioned': nodes[i+1].is_resource && HAS(l, '_rev')
-            }
-            IN edges
-            RETURN NEW
-        )
-        FOR edge IN edges
-          RETURN edge._key
-    `);
+        LET nodekey = CONCAT('resources:', res._key)
+        UPSERT { '_key': nodekey }
+        INSERT {
+          '_key': nodekey,
+          'is_resource': true,
+          'resource_id': res._id
+        }
+        UPDATE {}
+        IN graphNodes
+      `);
+    }
+
+    return q;
   });
 }
 
