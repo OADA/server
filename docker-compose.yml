@@ -227,12 +227,14 @@ services:
     ports:
       - "9092"
     restart: always
+    hostname: kafka
     environment:
       KAFKA_ADVERTISED_HOST_NAME: "kafka"  # NOTE: this only allows services inside this docker network
       KAFKA_ADVERTISED_PORT: "9092"        # to connect to kafka.  Set to machine's IP if you want external.
       KAFKA_ZOOKEEPER_CONNECT: "zookeeper:2181"
       KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
-      KAFKA_HEAP_OPTS: "-Xmx256M -Xms128M"
+      KAFKA_HEAP_OPTS: "-Xmx1g -Xms512M"
+      KAFKA_BROKER_ID: 1
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - kafka_data:/var/lib/kafka
