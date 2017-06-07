@@ -50,8 +50,9 @@ function kafkaRequest(id, topic, message) {
         'resp_partition': 0, // TODO: Handle partitions
     });
 
-    return producer.then(function sendKafkaReq(prod) {
-        return prod.sendAsync([{
+    // Allow Promises in message
+    return Promise.props(message).then(function sendKafkaReq(message) {
+        return producer.call('sendAsync', [{
             topic: topic,
             messages: JSON.stringify(message)
         }]);
@@ -190,14 +191,6 @@ _server.app.use(function graphHandler(req, res, next) {
     .asCallback(next);
 });
 
-/////////////////////////////////////////////////////////////////
-// Setup the body parser and associated error handler:
-_server.app.use(bodyParser.json({
-    strict: false,
-    type: '+json',
-    limit: '20mb',
-}));
-
 // TODO: Is this scope stuff right/good?
 function checkScopes(scope, contentType) {
     if (process.env.IGNORE_SCOPE === "yes") return true;
@@ -226,7 +219,7 @@ function checkScopes(scope, contentType) {
                 scopePerm(perm, 'read');
     });
 }
-_server.app.get('/resources(/*)?', function getResource(req, res, next) {
+_server.app.get('/resources/*', function getResource(req, res, next) {
     // TODO: Should it not get the whole meta document?
     // TODO: Make getResource accept an array of paths and return an array of
     //       results. I think we can do that in one arango query
@@ -255,7 +248,7 @@ _server.app.get('/resources(/*)?', function getResource(req, res, next) {
             req.oadaGraph['resource_id'],
             req.oadaGraph['path_leftover']
     ).then(res => {
-      console.log('doc that was returned from getResource = ', res);
+      debug('doc that was returned from getResource = ', res);
       return res;
     });
 
@@ -309,30 +302,37 @@ function unflattenMeta(doc) {
     return doc;
 }
 
-_server.app.put('/resources(/*)?', function putResource(req, res, next) {
+_server.app.put('/resources/*', function chkPutScope(req, res, next) {
+    console.log('HERE1----------');
     if (!checkScopes(req.user.doc.scope, req.get('Content-Type'))) {
         return next(new OADAError('Not Authorized', 403,
                 'Token does not have required scope'));
     }
 
-    // TODO: the JSON parser need not parse the JSON just so we can re-serialize
-    // it here......
-    // Put the request body into arango, then post the kafka message with the _id
-    // for the body that came back from arango:
-    return oadaLib.putBodies.savePutBodyStr(JSON.stringify(req.body))
-    .then(bodydoc => {
-      return kafkaRequest(req.id, config.get('kafka:topics:writeRequest'), {
-          url: req.url,
-          'resource_id': req.oadaGraph['resource_id'],
-          'path_leftover': req.oadaGraph['path_leftover'],
-          'meta_id': req.oadaGraph['meta_id'],
-          'user_id': req.user.doc['user_id'],
-          'authorizationid': req.user.doc['authorizationid'],
-          'client_id': req.user.doc['client_id'],
-          'content_type': req.get('Content-Type'),
-          bodyid: bodydoc._id,
-          //body: req.body
-      });
+    return next();
+});
+
+_server.app.put('/resources/*', bodyParser.text({
+    strict: false,
+    type: '+json',
+    limit: '20mb',
+}));
+
+_server.app.put('/resources/*', function putResource(req, res, next) {
+    console.log('HERE2----------');
+    var bodyid = oadaLib.putBodies.savePutBody(req.body).get('_id');
+
+    return kafkaRequest(req.id, config.get('kafka:topics:writeRequest'), {
+        'url': req.url,
+        'resource_id': req.oadaGraph['resource_id'],
+        'path_leftover': req.oadaGraph['path_leftover'],
+        'meta_id': req.oadaGraph['meta_id'],
+        'user_id': req.user.doc['user_id'],
+        'authorizationid': req.user.doc['authorizationid'],
+        'client_id': req.user.doc['client_id'],
+        'content_type': req.get('Content-Type'),
+        'bodyid': bodyid,
+        //body: req.body
     })
     .tap(function checkWrite(resp) {
         switch (resp.code) {
