@@ -202,6 +202,13 @@ function lookupFromUrl(url) {
           return value
         },{vertices: -1});
         trace('lookupFromUrl('+url+'): longest path has '+res.vertices.length+' vertices');
+        if (!res.vertices[res.vertices.length-1]) {
+          resource_id = "";
+          path_leftover = res.edges[res.edges.length-1]._to
+              .replace(/^graphNodes\//, '/')
+              .replace(/resources:/, 'resources/')
+          return {resource_id, path_leftover};
+        }
         resource_id = res.vertices[res.vertices.length-1].resource_id;
         // If the desired url has more pieces than the longest path, the
         // path_leftover is the extra pieces
@@ -372,7 +379,6 @@ function putResource(id, obj) {
             FOR i IN 0..(LENGTH(l.path)-1)
               UPSERT {
                 '_from': nodes[i]._id,
-                '_to': nodes[i+1]._id,
                 'name': l.path[i]
               }
               INSERT {
@@ -382,6 +388,7 @@ function putResource(id, obj) {
                 'versioned': nodes[i+1].is_resource && HAS(l, '_rev')
               }
               UPDATE {
+                '_to': nodes[i+1]._id,
                 'versioned': nodes[i+1].is_resource && HAS(l, '_rev')
               }
               IN edges
