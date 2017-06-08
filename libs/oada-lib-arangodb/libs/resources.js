@@ -1,8 +1,8 @@
 'use strict';
 const db = require('../db');
 const debug = require('debug');
-const info = debug('info:arangodb#resources');
-const trace = debug('trace:arangodb#resources');
+const info = debug('arangodb#resources:info');
+const trace = debug('arangodb#resources:trace');
 const _ = require('lodash');
 const Promise = require('bluebird');
 const uuidV4 = require('uuid/v4');

@@ -19,7 +19,8 @@
 global.isLibrary = !(require.main === module);
 
 var _ = require('lodash');
-var trace = require('debug')('trace:auth#index');
+var trace = require('debug')('auth#index:trace');
+var info = require('debug')('auth#index:info');
 var config = require('./config');
 // If there is an endpointsPrefix, update all the endpoints to include the
 // prefix before doing anything else
@@ -240,12 +241,12 @@ if (require.main === module) {
   var server;
   if (config.get('auth:server:mode') === 'http') {
     var server = app.listen(config.get('auth:server:port'), function() {
-      console.log('Listening HTTP on port %d', server.address().port);
+      info('Listening HTTP on port %d', server.address().port);
     });
   } else {
     var server = https.createServer(config.get('auth:certs'), app);
     server.listen(config.get('auth:server:port'), function() {
-      console.log('Listening HTTPS on port %d', server.address().port);
+      info('Listening HTTPS on port %d', server.address().port);
     });
   }
 }

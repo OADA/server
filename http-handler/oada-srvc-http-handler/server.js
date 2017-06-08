@@ -303,8 +303,8 @@ function unflattenMeta(doc) {
 }
 
 _server.app.put('/resources/*', function chkPutScope(req, res, next) {
-    console.log('HERE1----------');
     if (!checkScopes(req.user.doc.scope, req.get('Content-Type'))) {
+      info('Checking PUT scope')
         return next(new OADAError('Not Authorized', 403,
                 'Token does not have required scope'));
     }
@@ -319,7 +319,7 @@ _server.app.put('/resources/*', bodyParser.text({
 }));
 
 _server.app.put('/resources/*', function putResource(req, res, next) {
-    console.log('HERE2----------');
+    info('Saving PUT body')
     var bodyid = oadaLib.putBodies.savePutBody(req.body).get('_id');
 
     return kafkaRequest(req.id, config.get('kafka:topics:writeRequest'), {

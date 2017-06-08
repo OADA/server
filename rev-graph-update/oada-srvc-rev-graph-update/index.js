@@ -39,9 +39,9 @@ const consumer = new kf.ConsumerGroup({
 }, [config.get('kafka:topics:httpResponse')]);
 let producer = new kf.Producer(client, {partitionerType: 0});
 
-process.on('exit', () => {console.log('ere'); client.close()});
-process.on('SIGINT', () => {console.log('ere'); client.close(); process.exit(2);});
-process.on('uncaughtException', (a) => {console.log('ere', a); client.close(); process.exit(99);});
+process.on('exit', () => {info('Exiting'); client.close()});
+process.on('SIGINT', () => {info('Sigint'); client.close(); process.exit(2);});
+process.on('uncaughtException', (a) => {error(a); client.close(); process.exit(99);});
 
 consumer.on('message', (msg) => {
   return Promise.try(() => {
@@ -82,10 +82,10 @@ consumer.on('message', (msg) => {
         resp_partition: msg.partition,
         source: 'rev-graph-update',
       };
-			
+
 			trace('find parents for resource_id = ', req.resource_id);
 
-			// find resource's parent 
+			// find resource's parent
 			return oadaLib.resources.getParents(req.resource_id)
 				.then(p => {
 					if (p.length === 0) {
@@ -106,8 +106,8 @@ consumer.on('message', (msg) => {
 								// produce multiple kafka messages
 								producer.send([{
 									topic: config.get('kafka:topics:writeRequest'),
-									partitions: 0, 
-									messages: JSON.stringify(res) 
+									partitions: 0,
+									messages: JSON.stringify(res)
 								}], done);
 							});
 					});
