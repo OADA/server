@@ -154,6 +154,9 @@ function handleMsg(msg) {
         }]);
     });
 
-    var cleanup = body.then(() => oadaLib.putBodies.removePutBody(req.bodyid));
+    var cleanup = body.then(() => {
+        // Remove putBody, if there was one
+        return req.bodyid && oadaLib.putBodies.removePutBody(req.bodyid);
+    });
     return Promise.join(upsert, cleanup);
 }
