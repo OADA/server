@@ -137,19 +137,6 @@ _server.app.use(function sanitizeUrl(req, res, next) {
     next();
 });
 
-// Turn POSTs into PUTs at random id
-_server.app.post('/resources(/*)?', function postResource(req, res, next) {
-    // TODO: Is this a good way to generate new id?
-    if (req.url.endsWith('/')) {
-        req.url += uuid();
-    } else {
-        req.url += '/' + uuid();
-    }
-    req.method = 'PUT';
-
-    next();
-});
-
 _server.app.use(function tokenHandler(req, res, next) {
     return kafkaRequest(req.id, config.get('kafka:topics:tokenRequest'), {
         'token': req.get('authorization'),
@@ -172,6 +159,19 @@ _server.app.use(function tokenHandler(req, res, next) {
 _server.app.use(function handleBookmarks(req, res, next) {
     req.url = req.url.replace(/^\/bookmarks/,
       `/${req.user.doc['bookmarks_id']}`);
+    next();
+});
+
+// Turn POSTs into PUTs at random id
+_server.app.post('/resources(/*)?', function postResource(req, res, next) {
+    // TODO: Is this a good way to generate new id?
+    if (req.url.endsWith('/')) {
+        req.url += uuid();
+    } else {
+        req.url += '/' + uuid();
+    }
+    req.method = 'PUT';
+
     next();
 });
 
