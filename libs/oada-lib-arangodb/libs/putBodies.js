@@ -4,13 +4,14 @@ const aql = require('arangojs').aql;
 
 const collection = db.collection(config.get('arangodb:collections:putBodies:name'));
 
-function savePutBodyStr(bodystr) {
+// Give string of JSON rather than object
+function savePutBody(body) {
   // the _id comes back in the response to save
-  return collection.save({ bodystr });
+  return collection.save(`{"body":${body}}`);
 }
 
-function getPutBodyStr(id) {
-  return collection.document(id).then(result => result.bodystr);
+function getPutBody(id) {
+  return collection.document(id).get('body');
 }
 
 function removePutBody(id) {
@@ -18,7 +19,7 @@ function removePutBody(id) {
 }
 
 module.exports = {
-  savePutBodyStr,
-  getPutBodyStr,
+  savePutBody,
+  getPutBody,
   removePutBody,
 };
