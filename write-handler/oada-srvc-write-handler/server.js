@@ -59,6 +59,8 @@ function handleMsg(msg) {
         }
     });
 
+    var start = new Date().getTime();
+    info(`PUTing to "${req['path_leftover']}" in resource "${id}"`);
     var upsert = Promise.join(body, permitted, function doUpsert(body) {
         var path = req['path_leftover'].replace(/\/*$/, '');
         var obj = {};
@@ -86,8 +88,6 @@ function handleMsg(msg) {
                 }
             };
         }
-        var start = new Date().getTime();
-        info(`PUTing to "${path}" in resource "${id}"`);
         // Create object to recursively merge into the resource
         if (path) {
             pointer.set(obj, path, body);
@@ -125,7 +125,7 @@ function handleMsg(msg) {
         return oadaLib.resources.putResource(id, obj).return(rev);
     }).then(function respond(rev) {
         var end = new Date().getTime();
-        info(`Finished PUTing to "${path}". + ${end-start}ms`);
+        info(`Finished PUTing to "${req['path_leftover']}". + ${end-start}ms`);
         return producer.call('sendAsync', [{
             topic: config.get('kafka:topics:httpResponse'),
             partition: req['resp_partition'],
