@@ -47,11 +47,11 @@ function handleMsg(msg) {
         if (id) { // Only run checks if resource exists
             // TODO: Support sharing (i.e., not just owner has permission)
             var start = new Date().getTime();
-            info(`Checking permissions of resource "${id}".`);
+            info(`Checking permissions of "${id}".`);
             return oadaLib.resources.getResource(id, '_meta/_owner')
                 .then(function checkOwner(owner) {
                   var end = new Date().getTime();
-                  info(`Got owner of resource "${id}" from arango. +${end-start}ms`);
+                  info(`Got owner of "${id}" from arango. +${end-start}ms`);
                     if (owner !== req['user_id']) {
                         return Promise.reject(new Error('permission'));
                     }
@@ -60,7 +60,7 @@ function handleMsg(msg) {
     });
 
     var start = new Date().getTime();
-    info(`PUTing to "${req['path_leftover']}" in resource "${id}"`);
+    info(`PUTing to "${req['path_leftover']}" in "${id}"`);
     var upsert = Promise.join(body, permitted, function doUpsert(body) {
         var path = req['path_leftover'].replace(/\/*$/, '');
         var obj = {};
