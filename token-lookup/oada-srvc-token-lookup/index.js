@@ -77,8 +77,12 @@ consumer.on('message', (msg) => {
 
       // Get token from db.  Later on, we should speed this up
       // by getting everything in one query.
+      var start = new Date().getTime();
+      info(`Arango finding by token`)
       return oadaLib.authorizations.findByToken(req.token.trim().replace(/^Bearer /,''))
         .then(t => {
+          var end = new Date().getTime();
+          info(`Arango found by token, +${end-start}ms`)
           if(!t) {
             info('WARNING: token '+req.token+' does not exist.');
 						res.token = null;

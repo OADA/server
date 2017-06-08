@@ -7,6 +7,7 @@ const pointer = require('json-pointer');
 const hash = require('object-hash');
 const debug = require('debug')('write-handler');
 const error = require('debug')('write-handler:error');
+const info = require('debug')('write-handler:info');
 
 var config = require('./config');
 
@@ -36,7 +37,7 @@ function handleMsg(msg) {
     // Get body and check permission in parallel
     var body = Promise.try(function getBody() {
         return req.body || oadaLib.putBodies.getPutBody(req.bodyid);
-    });
+    }); 
     var permitted = Promise.try(function checkPermissions() {
         if (req.source === 'rev-graph-update') {
             // no need to check permission for rev graph updates
@@ -45,8 +46,12 @@ function handleMsg(msg) {
 
         if (id) { // Only run checks if resource exists
             // TODO: Support sharing (i.e., not just owner has permission)
+            var start = new Date().getTime();
+            info(`Checking permissions of resource "${id}".`);
             return oadaLib.resources.getResource(id, '_meta/_owner')
                 .then(function checkOwner(owner) {
+                  var end = new Date().getTime();
+                  info(`Got owner of resource "${id}" from arango. +${end-start}ms`);
                     if (owner !== req['user_id']) {
                         return Promise.reject(new Error('permission'));
                     }
@@ -81,8 +86,8 @@ function handleMsg(msg) {
                 }
             };
         }
-
-        debug(`PUTing to "${path}" in resource "${id}"`);
+        var start = new Date().getTime();
+        info(`PUTing to "${path}" in resource "${id}"`);
         // Create object to recursively merge into the resource
         if (path) {
             pointer.set(obj, path, body);
@@ -119,6 +124,8 @@ function handleMsg(msg) {
 
         return oadaLib.resources.putResource(id, obj).return(rev);
     }).then(function respond(rev) {
+        var end = new Date().getTime();
+        info(`Finished PUTing to "${path}". + ${end-start}ms`);
         return producer.call('sendAsync', [{
             topic: config.get('kafka:topics:httpResponse'),
             partition: req['resp_partition'],

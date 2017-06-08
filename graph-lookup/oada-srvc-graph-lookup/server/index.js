@@ -5,6 +5,8 @@ const uuid = require('uuid');
 const kf = require('kafka-node');
 const debug = require('debug')('graph-lookup');
 const trace = require('debug')('graph-lookup:trace');
+const error = require('debug')('graph-lookup:error');
+const info = require('debug')('graph-lookup:info');
 const warning = require('debug')('graph-lookup:warning');
 const oadaLib = require('../../../libs/oada-lib-arangodb')
 const config = require('../config')
@@ -34,7 +36,12 @@ function start() {
     var requests = {};
     consumer.on('message', function(msg) {
       var resp = JSON.parse(msg.value);
+      var start = new Date().getTime(); 
+      info(`Performing arango lookup for url ${resp.url}`)
       return oadaLib.resources.lookupFromUrl(resp.url).then((result) => {
+        var end = new Date().getTime(); 
+        info(`Finished arango lookup for url ${resp.url} +${end-start}ms`)
+        trace(`lookup for url ${resp.url} returned:`, result)
         return producer.then(function sendTokReq(prod) {
           result.connection_id = resp.connection_id;
           return prod.sendAsync([{
@@ -51,7 +58,7 @@ function start() {
     trace('graph-lookup producer successfully started')
     return true
   }).catch((err) => {
-    console.log(err)
+    error(err)
   })
 }
 

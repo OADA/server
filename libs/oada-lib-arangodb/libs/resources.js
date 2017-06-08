@@ -179,8 +179,12 @@ function lookupFromUrl(url) {
         ${filters}
         RETURN p`
     trace('lookupFromUrl('+url+'): running query: ', query, ', bindVars = ', bindVars);
+    var start = new Date().getTime();
+    info('Performing arango query for url '+url);
     return db.query({query, bindVars})
       .then((cursor) => {
+        var end = new Date().getTime();
+        info(`Query for url ${url} returned ${cursor._result.length} results +${end-start}ms`);
         trace('lookupFromUrl('+url+'): query result = ', JSON.stringify(cursor._result,false,'  '));
         let resource_id = '';
         let path_leftover = pointer.compile(id.concat(pieces));
@@ -328,8 +332,11 @@ function putResource(id, obj) {
   // TODO: Sanitize OADA keys?
 
   obj['_key'] = id.replace(/^resources\//, '');
-
+  var start = new Date().getTime();
+  info(`Adding links for resource ${id}...`)
   return addLinks(obj).then(function docUpsert(links) {
+    var end = new Date().getTime();
+    info(`Links added for resource ${id}. Upserting. +${end-start}ms`)
     debug(`Upserting resource ${obj['_key']}`);
     debug(`Upserting links: ${JSON.stringify(links, null, 2)}`);
 
