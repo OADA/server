@@ -34,7 +34,9 @@ function handleMsg(msg) {
     var id = req['resource_id'];
 
     // Get body and check permission in parallel
-    var body = req.body || oadaLib.putBodies.getPutBody(req.bodyid);
+    var body = Promise.try(function getBody() {
+        return req.body || oadaLib.putBodies.getPutBody(req.bodyid);
+    });
     var permitted = Promise.try(function checkPermissions() {
         if (req.source === 'rev-graph-update') {
             // no need to check permission for rev graph updates
