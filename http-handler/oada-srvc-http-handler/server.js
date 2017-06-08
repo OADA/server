@@ -12,6 +12,7 @@ const oadaError = require('oada-error');
 const OADAError = oadaError.OADAError;
 const kf = require('kafka-node');
 const debug = require('debug')('http-handler');
+const info = require('debug')('http-handler:info');
 
 var config = require('./config');
 
