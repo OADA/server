@@ -254,6 +254,21 @@ function getResource(id, path) {
     () => null); // Treat non-existing path has not-found
 }
 
+function getResourceOwnerIdRev(id) {
+  return db.query({
+    query: `FOR r IN resources
+            FILTER r._id == @id
+            RETURN { _rev: r._oada_rev, _id: r._id, _meta: { _owner: r._meta._owner } }`,
+    bindVars: { id } // bind id to @id
+  }).then(result => result.next())
+  .catch({
+      isArangoError: true,
+      errorMessage: 'invalid traversal depth (while instantiating plan)'
+    },
+    () => null
+  ); // Treat non-existing path has not-found
+}
+
 function getParents(to_resource_id) {
   let edges = db.collection('edges');
 	let resources = db.collection('resources');
