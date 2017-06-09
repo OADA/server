@@ -76,8 +76,8 @@ describe('Check Rev Update for a Link Res (Parent Graph)', () => {
     http_update_rock_err = null;
   let http_get_updated_rock_res = null,
     http_get_updated_rock_err = null;
-  let MAX_NUM_TRAILS = 10,
-    TIME_TO_SLEEP_BETWEEN_TRIALS = 1;
+  let MAX_NUM_TRAILS = 1000,
+    TIME_TO_SLEEP_BETWEEN_TRIALS = 100; // In milliseconds
   let http_get_response_final = null,
     http_get_error_final = null;
 

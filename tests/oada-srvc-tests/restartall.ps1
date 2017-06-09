@@ -55,6 +55,7 @@ Write-Host
 Write-Host "================================"
 Write-Host "docker-compose up -d ..."
 Write-Host "================================"
+#set DEBUG='*' && 
 docker-compose up --force-recreate -d
 
 Write-Host

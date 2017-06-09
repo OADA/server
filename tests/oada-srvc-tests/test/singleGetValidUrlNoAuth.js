@@ -6,7 +6,7 @@
     field at all) + valid URL.
  */
 
-describe('GET (No Token with Valid URL)', () => {
+describe('GET (No Authentication with Valid URL)', () => {
   const config = require('../config');
   // config.set('isTest', true);
   const path = require('path');
@@ -57,6 +57,7 @@ describe('GET (No Token with Valid URL)', () => {
   before((done) => {
     const token = tokenToUse;
 
+    let axiosInst = axios.create();
     // // Embed the token for all HTTP request.
     // let axiosInst = axios.create({
     //   headers: {
