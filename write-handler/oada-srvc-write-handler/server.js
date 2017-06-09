@@ -8,6 +8,7 @@ const hash = require('object-hash');
 const debug = require('debug')('write-handler');
 const error = require('debug')('write-handler:error');
 const info = require('debug')('write-handler:info');
+const trace = require('debug')('write-handler:trace');
 
 var config = require('./config');
 
@@ -38,6 +39,7 @@ function handleMsg(msg) {
     var body = Promise.try(function getBody() {
         return req.body || oadaLib.putBodies.getPutBody(req.bodyid);
     }); 
+    let existing_resource_info = {};
     var permitted = Promise.try(function checkPermissions() {
         if (req.source === 'rev-graph-update') {
             // no need to check permission for rev graph updates
@@ -48,11 +50,12 @@ function handleMsg(msg) {
             // TODO: Support sharing (i.e., not just owner has permission)
             var start = new Date().getTime();
             info(`Checking permissions of "${id}".`);
-            return oadaLib.resources.getResource(id, '_meta/_owner')
-                .then(function checkOwner(owner) {
+            return oadaLib.resources.getResourceOwnerIdRev(id) // { _id, _rev, _meta._owner }
+                .then(results => {
+                  existing_resource_info = results;
                   var end = new Date().getTime();
-                  info(`Got owner of "${id}" from arango. +${end-start}ms`);
-                    if (owner !== req['user_id']) {
+                  info(`Got owner (${results._meta._owner}) of "${id}" from arango. +${end-start}ms`);
+                    if (existing_resource_info._meta._owner !== req['user_id']) {
                         return Promise.reject(new Error('permission'));
                     }
                 });
@@ -92,7 +95,7 @@ function handleMsg(msg) {
         if (path) {
             pointer.set(obj, path, body);
         } else {
-            obj = Object.assign(body, obj);
+            obj = Object.assign(obj, body);
         }
 
         // Update meta
@@ -102,8 +105,20 @@ function handleMsg(msg) {
         };
         obj['_meta'] = Object.assign(obj['_meta'] || {}, meta);
 
-        // Precompute new rev
-        var rev = msg.offset + '-' + hash(obj, {algorithm: 'md5'});
+        // Precompute new rev: using only the body so that subsequent PUT's 
+        var rev = msg.offset + '-' + hash(JSON.stringify(body), {algorithm: 'md5'});
+
+        // If the hash part of the rev is identical to last time, don't re-execute a PUT to keep it idempotent
+        existing_resource_info._rev = existing_resource_info._rev || '0-0';
+        const old_rev_hash = existing_resource_info._rev.split('-')[1];
+        const new_rev_hash = rev.split('-')[1];
+        if (old_rev_hash === new_rev_hash) {
+          info('PUT would result in same rev hash as the current one, skipping write.');
+          return rev;
+        } else {
+          trace('PUT is a new hash ('+new_rev_hash+', old = '+ old_rev_hash+ '), performing write');
+        }
+
         obj['_rev'] = rev;
         pointer.set(obj, '/_meta/_rev', rev);
 

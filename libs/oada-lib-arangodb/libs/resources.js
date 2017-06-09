@@ -261,7 +261,10 @@ function getResourceOwnerIdRev(id) {
             RETURN { _rev: r._oada_rev, _id: r._id, _meta: { _owner: r._meta._owner } }`,
     bindVars: { id } // bind id to @id
   }).then(result => result.next())
-  .catch({
+  .then(obj => {
+    trace('getResourceOwnerIdRev('+id+'): result = ', obj);
+    return obj;
+  }).catch({
       isArangoError: true,
       errorMessage: 'invalid traversal depth (while instantiating plan)'
     },
@@ -489,6 +492,7 @@ module.exports = {
   upsert,
   lookupFromUrl,
   getResource,
+  getResourceOwnerIdRev,
   putResource,
-  getParents
+  getParents,
 };
