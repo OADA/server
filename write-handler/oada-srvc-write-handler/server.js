@@ -69,7 +69,7 @@ function handleMsg(msg) {
 
         // Create new resource
         if (!id) {
-            id = 'resources/' + parts[1];
+            id = 'resources/' + path[1];
             path = path.slice(2);
 
             // Initialize resource stuff
@@ -94,7 +94,7 @@ function handleMsg(msg) {
             path.forEach(k => {
                 if (!(k in o)) {
                     // TODO: Support arrays better?
-                    o[k] = {}
+                    o[k] = {};
                 }
                 o = o[k];
             });
