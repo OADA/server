@@ -65,17 +65,15 @@ function handleMsg(msg) {
     var start = new Date().getTime();
     info(`PUTing to "${req['path_leftover']}" in "${id}"`);
     var upsert = Promise.join(body, permitted, function doUpsert(body) {
-        var path = req['path_leftover'].replace(/\/*$/, '');
+        var path = pointer.parse(req['path_leftover'].replace(/\/*$/, ''));
         var obj = {};
         var ts = Date.now();
         // TODO: Sanitize keys?
 
         // Create new resource
         if (!id) {
-            let parts = pointer.parse(path);
-
-            id = 'resources/' + parts[1];
-            path = pointer.compile(parts.slice(2));
+            id = 'resources/' + path[1];
+            path = path.slice(2);
 
             // Initialize resource stuff
             obj = {
@@ -92,8 +90,19 @@ function handleMsg(msg) {
             };
         }
         // Create object to recursively merge into the resource
-        if (path) {
-            pointer.set(obj, path, body);
+        if (path.length > 0) {
+            let o = obj;
+
+            let endk = path.pop();
+            path.forEach(k => {
+                if (!(k in o)) {
+                    // TODO: Support arrays better?
+                    o[k] = {};
+                }
+                o = o[k];
+            });
+
+            o[endk] = body;
         } else {
             obj = Object.assign(obj, body);
         }
