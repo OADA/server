@@ -399,6 +399,7 @@ function putResource(id, obj) {
           LET edges = (
             FOR i IN 0..(LENGTH(l.path)-1)
               UPSERT {
+                '_key': MD5(nodes[i]._id+nodes[i+1]._id),
                 '_from': nodes[i]._id,
                 'name': l.path[i]
               }
