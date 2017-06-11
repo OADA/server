@@ -1,4 +1,4 @@
-version: '2.1'
+version: '3'
 
 services:
 
@@ -10,6 +10,10 @@ services:
     build: ./startup
     restart: always
     container_name: startup
+    networks:
+      - kafka_net
+      - arango_net
+      - startup_net
     ports:
       - "80"
     volumes:
@@ -31,6 +35,8 @@ services:
     build: ./proxy
     container_name: proxy
     restart: always
+    networks:
+      - http_net
     ports:
       - "80:80"
       - "443:443"
@@ -54,6 +60,9 @@ services:
     build: ./auth
     container_name: auth
     restart: always
+    networks:
+      - http_net
+      - startup_net
     ports:
       - "80"
     volumes:
@@ -73,6 +82,11 @@ services:
     build: ./http-handler
     restart: always
     container_name: http-handler
+    networks:
+      - startup_net
+      - http_net
+      - kafka_net
+      - arango_net
     ports:
       - "80"
     volumes:
@@ -89,6 +103,10 @@ services:
     build: ./write-handler
     restart: always
     container_name: write-handler
+    networks:
+      - startup_net
+      - kafka_net
+      - arango_net
     volumes:
       - .:/code
       - ./oada-srvc-docker-config.js:/oada-srvc-docker-config.js
@@ -102,6 +120,10 @@ services:
     build: ./token-lookup
     restart: always
     container_name: token-lookup
+    networks:
+      - startup_net
+      - kafka_net
+      - arango_net
     volumes:
       - .:/code
       - ./oada-srvc-docker-config.js:/oada-srvc-docker-config.js
@@ -115,6 +137,10 @@ services:
     build: ./rev-graph-update
     restart: always
     container_name: rev-graph-update
+    networks:
+      - startup_net
+      - kafka_net
+      - arango_net
     volumes:
       - .:/code
       - ./oada-srvc-docker-config.js:/oada-srvc-docker-config.js
@@ -128,6 +154,10 @@ services:
     build: ./graph-lookup
     restart: always
     container_name: graph-lookup
+    networks:
+      - startup_net
+      - kafka_net
+      - arango_net
     volumes:
       - .:/code
       - ./oada-srvc-docker-config.js:/oada-srvc-docker-config.js
@@ -141,6 +171,9 @@ services:
     build: ./well-known
     restart: always
     container_name: well-known
+    networks:
+      - startup_net
+      - http_net
     volumes:
       - .:/code
       - ./oada-srvc-docker-config.js:/oada-srvc-docker-config.js
@@ -155,6 +188,11 @@ services:
       - startup
     build: ./tests
     container_name: tests
+    networks:
+      - startup_net
+      - kafka_net
+      - arango_net
+      - http_net
     volumes:
       - .:/code
       - ./oada-srvc-docker-config.js:/oada-srvc-docker-config.js
@@ -174,18 +212,30 @@ services:
       - kafka_data:/volumes/kafka
       - .:/code
     command: bash
+    networks:
+      - startup_net
+      - kafka_net
+      - arango_net
+      - http_net
     environment:
       - NODE_ENV=${NODE_ENV:-development}
       - DEBUG=${DEBUG:-""}
 
   # letsencrypt will go get HTTPS certificates for you if DOMAIN is not localhost
+  # NOTE: letsencrypt has a limit of 5 certificates per top domain per week,
+  # so you don't want this thing running often.  Once it runs, SAVE THE CERTIFICATES
+  # TO A SAFE PLACE.  Otherwise if you go over the request limit and lost the private
+  # key, you're just out of luck for 7 days.
   letsencrypt:
     build: ./letsencrypt
     container_name: letsencrypt
+    restart: "no"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - letsencrypt_www_data:/var/www/letsencrypt
       - ./proxy/dev-certs:/certs
+    networks:
+      - http_net
     environment:
       - SERVER_CONTAINER=proxy
       - DOMAINS=${DOMAIN:-localhost}
@@ -193,13 +243,14 @@ services:
       - WEBROOT_PATH=/var/www/letsencrypt
       - CERTS_PATH=/certs/${DOMAIN:-nodomain}
       - CHECK_FREQ=7
-    restart: unless-stopped
 
   # Arango is the main backend where core data and graph is stored
   arangodb:
     image: arangodb
     container_name: arangodb
     restart: always
+    networks:
+      - arango_net
     volumes:
       - arangodb_data:/var/lib/arangodb3
       - arangodb_data:/var/lib/arangodb3-apps
@@ -215,6 +266,8 @@ services:
   zookeeper:
     image: wurstmeister/zookeeper
     restart: always
+    networks:
+      - kafka_net
     ports:
       - "2181"
     volumes:
@@ -228,6 +281,8 @@ services:
       - "9092"
     restart: always
     hostname: kafka
+    networks:
+      - kafka_net
     environment:
       KAFKA_ADVERTISED_HOST_NAME: "kafka"  # NOTE: this only allows services inside this docker network
       KAFKA_ADVERTISED_PORT: "9092"        # to connect to kafka.  Set to machine's IP if you want external.
@@ -245,3 +300,9 @@ volumes:
   kafka_data:
   zookeeper_data:
   letsencrypt_www_data:
+
+networks:
+  arango_net:
+  kafka_net:
+  http_net:
+  startup_net:

@@ -59,7 +59,7 @@ function kafkaRequest(id, topic, message) {
         }]);
     })
     .then(function waitKafkaRes() {
-        return reqDone.timeout(5000, topic + ' timeout');
+        return reqDone.timeout(45000, topic + ' timeout');
     })
     .finally(function cleanupKafkaReq() {
         delete requests[id];
