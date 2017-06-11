@@ -11,8 +11,11 @@ const wellKnownJson = require('well-known-json');
 const oadaError = require('oada-error');
 const OADAError = oadaError.OADAError;
 const kf = require('kafka-node');
-const debug = require('debug')('http-handler');
+const debug = require('debug');
 const info = require('debug')('http-handler:info');
+const warn = require('debug')('http-handler:warn');
+const error = require('debug')('http-handler:error');
+const trace = require('debug')('http-handler:trace');
 
 var config = require('./config');
 
@@ -72,14 +75,14 @@ var _server = {
     // opts.nolisten = true|false // used mainly for testing
     start: function() {
         return Promise.fromCallback(function(done) {
-            debug('----------------------------------------------------------');
-            debug('Starting server...');
+            info('----------------------------------------------------------');
+            info('Starting server...');
 
             _server.app.set('port', config.get('server:port'));
             _server.app.listen(_server.app.get('port'), done);
         })
         .tap(() => {
-            debug('OADA Test Server started on port ' +
+            info('OADA Test Server started on port ' +
                     _server.app.get('port'));
         });
     },
@@ -94,9 +97,9 @@ _server.app.use(expressPromise());
 
 // Log all requests before anything else gets them for debugging:
 _server.app.use(function(req, res, next) {
-    debug('Received request: ' + req.method + ' ' + req.url);
-    debug('req.headers = ', req.headers);
-    debug('req.body = ', req.body);
+    info('Received request: ' + req.method + ' ' + req.url);
+    info('req.headers = ', req.headers);
+    info('req.body = ', req.body);
     next();
 });
 
@@ -128,6 +131,8 @@ _server.app.use(oada_ref_auth({
 */
 _server.app.use(function requestId(req, res, next) {
     req.id = uuid();
+
+    res.on('finish', () => info(`finished request ${req.id}`));
     next();
 });
 
@@ -212,7 +217,7 @@ function checkScopes(scope, contentType) {
         [type, perm] = scope.split(':');
 
         if (!scopeTypes[type]) {
-            debug('Unsupported scope type "' + type + '"');
+            warn('Unsupported scope type "' + type + '"');
             return false;
         }
 
@@ -228,7 +233,7 @@ _server.app.get('/resources/*', function getResource(req, res, next) {
         .getResource(req.oadaGraph['resource_id'], '_meta/_owner')
         .then(function checkOwner(owner) {
             if (owner !== req.user.doc['user_id']) {
-                debug(req.user.doc['user_id'] +
+                warn(req.user.doc['user_id'] +
                     ' tried to GET resource owned by ' + owner);
                 throw new OADAError('Not Authorized', 403,
                         'User does not own this resource');
@@ -248,9 +253,10 @@ _server.app.get('/resources/*', function getResource(req, res, next) {
     var doc = oadaLib.resources.getResource(
             req.oadaGraph['resource_id'],
             req.oadaGraph['path_leftover']
-    ).then(res => {
-      debug('doc that was returned from getResource = ', res);
-      return res;
+    ).tap(res => {
+        if (debug.enabled('http-handler:trace')) {
+            trace('doc that was returned from getResource = ', res);
+        }
     });
 
     return Promise
@@ -260,7 +266,9 @@ _server.app.get('/resources/*', function getResource(req, res, next) {
                 throw new OADAError('Not Found', 404);
             }
 
-            return res.json(unflattenMeta(doc));
+            doc = unflattenMeta(doc);
+            info('doc unflattened now');
+            return res.json(doc);
         })
         .catch(next);
 });
@@ -320,8 +328,10 @@ _server.app.put('/resources/*', bodyParser.text({
 }));
 
 _server.app.put('/resources/*', function putResource(req, res, next) {
-    info('Saving PUT body')
-    var bodyid = oadaLib.putBodies.savePutBody(req.body).get('_id');
+    info(`Saving PUT body for request ${req.id}`)
+    var bodyid = oadaLib.putBodies.savePutBody(req.body)
+        .tap(() => info(`PUT body saved for request ${req.id}`))
+        .get('_id');
 
     return kafkaRequest(req.id, config.get('kafka:topics:writeRequest'), {
         'url': req.url,
@@ -336,6 +346,7 @@ _server.app.put('/resources/*', function putResource(req, res, next) {
         //body: req.body
     })
     .tap(function checkWrite(resp) {
+        info(`Recieved write response for request ${req.id}`);
         switch (resp.code) {
             case 'success':
                 return;
@@ -377,7 +388,7 @@ _server.app.use(function(req) {
 
 ///////////////////////////////////////////////////
 // Use OADA middleware to catch errors and respond
-_server.app.use(oadaError.middleware(debug));
+_server.app.use(oadaError.middleware(error));
 
 if (require.main === module) {
     _server.start();
