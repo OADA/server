@@ -14,14 +14,15 @@
  */
 'use strict';
 
-var path = require('path');
-var fs = require('fs');
-
 module.exports = {
 	kafka: {
 		broker: 'kafka',
 		auto_commit: false,
-		auto_offset_reset: 'latest'
+		auto_offset_reset: 'latest',
+        timeouts: {
+            default: 5000,
+            writeRequest: 45000,
+        }
 	},
 	debug: 'all'
 };

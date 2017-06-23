@@ -52,10 +52,6 @@ describe('rev graph update service', () => {
 			console.log('http_response message is: ', r);
 
       // now produce the message:
-			requester.send(r, cb => {
-				console.log('test trying to produce: ', r);
-			});
-
       // create the listener:
       requester.on('response', msg => {
         trace('received message: ', msg);
@@ -71,6 +67,11 @@ describe('rev graph update service', () => {
 
 				done();
       });
+
+			requester.send(r, cb => {
+				console.log('test trying to produce: ', r);
+			});
+
     });
 
 		it('should error when http_response msg is not valid', (done) => {

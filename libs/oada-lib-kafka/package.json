@@ -1,15 +1,24 @@
 {
   "name": "oada-lib-kafka",
   "version": "1.0.0",
-  "description": "",
+  "description": "OADA Kafka library",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/OADA/oada-lib-kafka.git"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
     "bluebird": "^3.5.0",
-    "node-rdkafka": "^1.0.0"
+    "node-rdkafka": "^1.0.4",
+    "uuid": "^3.1.0"
+  },
+  "devDependencies": {
+    "chai": "^4.0.2",
+    "kafka-please": "^1.0.1"
   }
 }
