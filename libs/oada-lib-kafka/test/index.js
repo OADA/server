@@ -27,7 +27,7 @@ describe('Responder', () => {
 
     let prod;
     before(function makeTestProd(done) {
-        this.timeout(10000);
+        //this.timeout(10000);
 
         prod = new kf.Producer({
             'metadata.broker.list': config.get('kafka:broker')
@@ -46,7 +46,7 @@ describe('Responder', () => {
 
     let cons;
     before(function makeTestCons(done) {
-        this.timeout(10000);
+        //this.timeout(10000);
 
         cons = new kf.KafkaConsumer({
             'metadata.broker.list': config.get('kafka:broker'),
