@@ -15,14 +15,20 @@
 'use strict';
 
 module.exports = {
-	kafka: {
-		broker: 'kafka',
-		auto_commit: false,
-		auto_offset_reset: 'latest',
+    kafka: {
+        broker: 'kafka',
+        auto_commit: false,
+        auto_offset_reset: 'latest',
         timeouts: {
             default: 5000,
             writeRequest: 45000,
+        },
+        topics: {
+            tokenRequest: 'token_request',
+            graphRequest: 'graph_request',
+            writeRequest: 'write_request',
+            httpResponse: 'http_response',
         }
-	},
-	debug: 'all'
+    },
+    debug: 'all'
 };
