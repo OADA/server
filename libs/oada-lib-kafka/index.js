@@ -85,6 +85,7 @@ Responder.prototype.on = function on(event, callback) {
                 if (typeof part !== 'number') {
                     part = null;
                 }
+                info(`Received request ${id}`);
 
                 // Check for old messages
                 if (!this.opts.old && (Date.now() - req.time) >= this.timeout) {
@@ -228,7 +229,7 @@ Requester.prototype.send = function send(request) {
         .finally(() => {
             delete this.requests[id];
         });
-}
+};
 
 module.exports = {
     Responder,
