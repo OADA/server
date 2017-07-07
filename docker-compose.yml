@@ -295,6 +295,14 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
       - kafka_data:/var/lib/kafka
 
+  # hitman container will kill other containers using Pumba for resiliency test.
+  hitman:
+    image: gaiaadm/pumba:master
+    restart: always
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    command: pumba --random --interval 1h kill --signal SIGKILL
+
 volumes:
   arangodb_data:
   arangodb_apps_data:
