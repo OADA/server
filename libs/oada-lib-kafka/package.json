@@ -19,6 +19,7 @@
   },
   "devDependencies": {
     "chai": "^4.0.2",
+    "chai-as-promised": "^7.1.1",
     "kafka-please": "^1.0.1",
     "mocha": "^3.4.2"
   }

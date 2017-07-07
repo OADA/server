@@ -222,7 +222,7 @@ Requester.prototype.send = function send(request) {
             let value = new Buffer(payload);
             this.producer.produce(this.respTopic, null, value);
         })
-        .then(function waitKafkaReq() {
+        .then(() => {
             return reqDone
                 .timeout(this.timeout, this.listenTopic + ' timeout');
         })
