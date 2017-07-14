@@ -1043,7 +1043,12 @@ oada-lib-arangodb@../../libs/oada-lib-arangodb:
     oada-lib-config oada/oada-lib-config
     uuid "^3.0.1"
 
-oada-lib-config@../../libs/oada-lib-config, oada-lib-config@oada/oada-lib-config:
+oada-lib-config@../../libs/oada-lib-config:
+  version "0.0.1"
+  dependencies:
+    nconf "^0.8.4"
+
+oada-lib-config@oada/oada-lib-config:
   version "0.0.1"
   resolved "https://codeload.github.com/oada/oada-lib-config/tar.gz/05513cd3337d5602d9305f65bb50ba668eadbbe6"
   dependencies:
@@ -1070,7 +1075,7 @@ once@^1.3.0:
     wrappy "1"
 
 optional@^0.1.3:
-  version v0.1.3
+  version "0.1.3"
   resolved "https://registry.yarnpkg.com/optional/-/optional-0.1.3.tgz#f87537517b59a5e732cfd8f18e4f7eea7ab4761e"
 
 os-homedir@^1.0.0:
