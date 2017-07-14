@@ -47,5 +47,10 @@ COPY "./do-yarn.sh" "/bin/do-yarn.sh"
 COPY "./do-yarn-install.sh" "/bin/do-yarn-install.sh"
 COPY "./do-yarn-upgrade.sh" "/bin/do-yarn-upgrade.sh"
 
+#############################################################################################
+# Install Docker
+RUN apt-get update
+RUN apt-get -qq install -y docker.io --fix-missing
+
 WORKDIR "/code"
 CMD bash

@@ -10,6 +10,7 @@
     "debug": "^2.6.6",
     "kafka-node": "^1.6.1",
     "mocha": "^3.3.0",
+    "node-exec-promise": "^1.0.1",
     "oada-lib-arangodb": "../../libs/oada-lib-arangodb",
     "uuid": "^3.0.1",
     "validator": "^7.0.0"
@@ -21,9 +22,10 @@
   "scripts": {
     "selftestserver": "IP=localhost PORT=80 node server",
     "selftest": "NODE_ENV=selftest DEBUG='*' mocha selftest",
+    "debughost": "DEBUG='tests:*' isTest=true mocha 'test-host-level/*.js'",
     "debuglow": "DEBUG='tests:*' isTest=true mocha 'test-lower-level/*.js'",
     "debug": "DEBUG='tests:*' isTest=true mocha 'test/*.js'",
-    "start": "NODE_ENV=production isTest=true mocha"
+    "start": "NODE_ENV=production isTest=true mocha 'test/*.js'"
   },
   "author": "Yaguang Zhang",
   "license": "Apache-2.0"

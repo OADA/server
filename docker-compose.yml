@@ -185,8 +185,8 @@ services:
       - DEBUG=${DEBUG:-""}
 
   tests:
-    depends_on:
-      - startup
+    # depends_on:
+    #   - startup
     build: ./tests
     container_name: tests
     networks:
@@ -212,6 +212,7 @@ services:
       - zookeeper_data:/volumes/zookeeper
       - kafka_data:/volumes/kafka
       - .:/code
+      - /var/run/docker.sock:/var/run/docker.sock
     command: bash
     networks:
       - startup_net
@@ -298,6 +299,7 @@ services:
   # hitman container will kill other containers using Pumba for resiliency test.
   hitman:
     image: gaiaadm/pumba:master
+    container_name: hitman
     restart: always
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
