@@ -80,6 +80,7 @@ Responder.prototype.on = function on(event, callback) {
         case 'request':
             this.consumer.on('data', (data) => {
                 let req = JSON.parse(data.value);
+                delete data.value;
                 let id = req[REQ_ID_KEY];
                 let part = req['resp_partition'];
                 if (typeof part !== 'number') {
@@ -93,7 +94,7 @@ Responder.prototype.on = function on(event, callback) {
                     return;
                 }
 
-                let resp = callback(req);
+                let resp = callback(req, data);
                 this.ready.return(resp)
                     .then(resp => {
                         if (!Array.isArray(resp)) {
