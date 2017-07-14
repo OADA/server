@@ -222,6 +222,12 @@ services:
       - NODE_ENV=${NODE_ENV:-development}
       - DEBUG=${DEBUG:-""}
 
+  # Needed for installing native Node dependencies
+  yarn:
+    build: ./yarn
+    volumes:
+      - .:/code
+
   # letsencrypt will go get HTTPS certificates for you if DOMAIN is not localhost
   # NOTE: letsencrypt has a limit of 5 certificates per top domain per week,
   # so you don't want this thing running often.  Once it runs, SAVE THE CERTIFICATES

@@ -34,18 +34,15 @@ RUN wget https://github.com/outbrain/zookeepercli/releases/download/v1.0.10/zook
 ENV NVM_DIR=/root/.nvm
 RUN wget -qO- https://raw.githubusercontent.com/creationix/nvm/v0.30.2/install.sh | bash \
     && . /root/.nvm/nvm.sh \
-    && nvm install v7.0 \
-    && nvm alias default v7.0
+    && nvm install v8.1.4 \
+    && nvm alias default v8.1.4
 RUN . /root/.nvm/nvm.sh \
-    && nvm use v7.0  \
+    && nvm use v8.1.4  \
     && npm install -g yarn \
     && yarn global add mocha
     # You can put any global NPM installs here
 
 COPY "./.vimrc" "/root/.vimrc"
-COPY "./do-yarn.sh" "/bin/do-yarn.sh"
-COPY "./do-yarn-install.sh" "/bin/do-yarn-install.sh"
-COPY "./do-yarn-upgrade.sh" "/bin/do-yarn-upgrade.sh"
 
 WORKDIR "/code"
 CMD bash
