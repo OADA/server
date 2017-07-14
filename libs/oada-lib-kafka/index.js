@@ -146,6 +146,7 @@ function Requester(listenTopic, respTopic, groupId) {
     });
     let consumerReady = Promise.fromCallback(done => {
             this.consumer.on('ready', () => {
+                info('Requester\'s consumer ready');
                 done();
             });
         })
@@ -155,6 +156,7 @@ function Requester(listenTopic, respTopic, groupId) {
         });
     let producerReady = Promise.fromCallback(done => {
         this.producer.on('ready', () => {
+            info('Requester\'s producer ready');
             done();
         });
     });
@@ -171,7 +173,10 @@ function Requester(listenTopic, respTopic, groupId) {
         return done && done(null, resp);
     });
 
-    this.timeout = topicTimeout(this.respTopic);
+    this.timeouts = {};
+    if (this.respTopic) {
+        this.timeouts[this.respTopic] = topicTimeout(this.respTopic);
+    }
 }
 
 Requester.prototype.disconnect = function disconnect() {
@@ -205,8 +210,10 @@ Requester.prototype.on = function on(event, callback) {
     }
 };
 
-Requester.prototype.send = function send(request) {
+Requester.prototype.send = function send(request, topic) {
     let id = request[REQ_ID_KEY] || uuid();
+    topic = topic || this.respTopic;
+    let timeout = this.timeouts[topic] || topicTimeout(topic);
 
     request[REQ_ID_KEY] = id;
     request['time'] = Date.now();
@@ -220,11 +227,10 @@ Requester.prototype.send = function send(request) {
         .then(() => {
             let payload = JSON.stringify(request);
             let value = new Buffer(payload);
-            this.producer.produce(this.respTopic, null, value);
+            this.producer.produce(topic, null, value);
         })
         .then(() => {
-            return reqDone
-                .timeout(this.timeout, this.listenTopic + ' timeout');
+            return reqDone.timeout(timeout, topic + ' timeout');
         })
         .finally(() => {
             delete this.requests[id];
