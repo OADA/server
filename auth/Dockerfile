@@ -5,4 +5,4 @@ RUN chmod u+x /entrypoint.sh
 
 WORKDIR /code/auth
 
-CMD /entrypoint.sh
+CMD ['/entrypoint.sh']
