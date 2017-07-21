@@ -22,79 +22,85 @@ const error = debug('rev-graph-update:error');
 
 const Promise = require('bluebird');
 // const kf = require('kafka-node');
-const kf = require('../../libs/oada-lib-kafka');
+const Responder = require('../../libs/oada-lib-kafka').Responder;
 const oadaLib = require('../../libs/oada-lib-arangodb');
 const config = require('./config');
 
 //---------------------------------------------------------
 // Kafka intializations:
-const responder = new kf.Responder(config.get('kafka:topics:httpResponse'),
-                                            config.get('kafka:topics:writeRequest'),
-                                            config.get('kafka:groupId'));
+const responder = new Responder(
+			config.get('kafka:topics:writeRequest'),
+			config.get('kafka:topics:httpResponse'),
+			config.get('kafka:groupId'));
 
-responder.on('request', (req) => {
-    if (!req || req.msgtype !== 'write-response') {
-        trace('Received message, but msgtype is not write-response to ignoring message');
-        return []; // not a write-response message, ignore it
-    }
-    if (req.code !== 'success') {
-        trace('Received write response message, but code was not "success" so ignoring message');
-        return [];
-    }
-    if(typeof req.resource_id === "undefined" ||
-            typeof req._rev === "undefined" ) {
-        throw new Error(`Invalid http_response: there is either no resource_id or _rev.  respose = ${JSON.stringify(req)}`);
-    }
-    if (typeof req.user_id === "undefined") {
-        trace('WARNING: received message does not have user_id');
-    }
-    if (typeof req.authorizationid === "undefined") {
-        trace('WARNING: received message does not have authorizationid');
-    }
+module.exports = function stopResp() {
+	return responder.disconnect(); 
+};
 
-    // setup the write_request msg
-    const write_request_msgs = [];
-    const res = {
-        type: 'write_request',
-        resource_id: null,
-        path: null,
-        connection_id: req.connection_id,
-        contentType: null,
-        body: null,
-        url: "",
-        user_id: req.doc.user_id,
-        authorizationid: req.doc.authorizationid
-    };
+responder.on('request', function handleReq(req, msg) {
+	if (!req || req.msgtype !== 'write-response') {
+		trace('Received message, but msgtype is not write-response to ignoring message');
+		return []; // not a write-response message, ignore it
+	}
+	if (req.code !== 'success') {
+		trace('Received write response message, but code was not "success" so ignoring message');
+		return [];
+	}
+	if(typeof req.resource_id === "undefined" ||
+		 typeof req._rev === "undefined" ) {
+		throw new Error(`Invalid http_response: there is either no resource_id or _rev.  respose = ${JSON.stringify(req)}`);
+	}
+	if (typeof req.doc.user_id === "undefined") {
+		trace('WARNING: received message does not have user_id');
+	}
+	if (typeof req.authorizationid === "undefined") {
+		trace('WARNING: received message does not have authorizationid');
+	}
 
-    trace('find parents for resource_id = ', req.resource_id);
+	// setup the write_request msg
+	const write_request_msgs = [];
+	const res = {
+		type: 'write_request',
+		resource_id: null,
+		path: null,
+		connection_id: req.connection_id,
+		contentType: null,
+		body: null,
+		url: "",
+		user_id: req.doc.user_id,
+		authorizationid: req.doc.authorizationid
+	};
 
-    // find resource's parent
-    return oadaLib.resources.getParents(req.resource_id)
-        .then(p => {
-            if (!p) {
-                info('WARNING: resource_id'+req.resource_id+' does not have a parent.');
-                return res;
-            }
+	trace('find parents for resource_id = ', req.resource_id);
 
-            let length = p.length;
-            let i = 0;
+	// find resource's parent
+	return oadaLib.resources.getParents(req.resource_id)
+		.then(p => {
+			if (!p) {
+					info('WARNING: resource_id'+req.resource_id+' does not have a parent.');
+					return res;
+			}
 
-            trace('the parents are: ', p);
+			let length = p.length;
+			let i = 0;
 
-            for (i = 0; i < length; i++) {
-                res.resource_id = p[i].resource_id;
-                res.path = p[i].path + '/_rev';
-                trace('parent resource_id = ', p[i].resource_id);
-                res.contentType = p[i].contentType;
-                res.body = req._rev;
-                trace('the result msg is: ', res);
-                write_request_msgs.splice(i, 0, res);
-            }
+			trace('the parents are: ', p);
+		
+			return Promise.map(p, item => {
+					trace('parent resource_id = ', item.resource_id);
+					let msg = Object.assign({}, res);
+					msg.resource_id = item.resource_id;
+					msg.path_leftover = item.path + '/_rev';
+					msg.contentType = item.contentType;
+					msg.body = req._rev;
 
-            return write_request_msgs;
-    })
-    .catch(err => {
-        error('%O', err);
-    });
+					trace('trying to produce: ', msg);
+
+					return msg;
+			});
+	})
+	.catch(err => {
+		error(err);
+	});
 });
 
