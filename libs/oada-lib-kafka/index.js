@@ -217,7 +217,7 @@ Requester.prototype.send = function send(request, topic) {
     let timeout = this.timeouts[topic];
     if (!timeout) {
         timeout = topicTimeout(topic);
-        this.timeouts[topic] = topic;
+        this.timeouts[topic] = timeout;
     }
 
     request[REQ_ID_KEY] = id;
