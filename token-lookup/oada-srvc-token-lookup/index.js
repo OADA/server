@@ -59,11 +59,6 @@ responder.on('request', function handleReq(req, msg) {
 			return {};
 		}
 
-		if (typeof req.token === "undefined") {
-			trace('No token supplied with the request.');
-			return res;
-		}
-
 		const res = {
 			type: 'http_response',
 			token: req.token,
@@ -79,6 +74,10 @@ responder.on('request', function handleReq(req, msg) {
 			}
 		};
 
+		if (typeof req.token === "undefined") {
+			trace('No token supplied with the request.');
+			return res;
+		}
 			// Get token from db.  Later on, we should speed this up
 			// by getting everything in one query.
 		return oadaLib.authorizations.findByToken(req.token.trim().replace(/^Bearer /, ''))

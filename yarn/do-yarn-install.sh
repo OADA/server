@@ -1,4 +1,5 @@
 #!/bin/sh
 
-find /code -name package.json -exec dirname {} \; |
-  grep -v node_modules | xargs -n 1 do-yarn.sh install
+
+find /code -path *node_modules* -prune -o -name package.json -exec dirname {} \; |
+  xargs -n 1 do-yarn.sh install

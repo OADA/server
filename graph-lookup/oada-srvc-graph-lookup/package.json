@@ -2,12 +2,12 @@
   "name": "oada-srvc-graph-lookup",
   "version": "1.0.0",
   "description": "oada-srvc-graph-lookup",
-  "main": "server/index.js",
+  "main": "server.js",
   "directories": {
     "test": "test"
   },
   "scripts": {
-    "start": "node main.js",
+    "start": "node server.js",
     "test": "mocha test/index.js"
   },
   "author": "",
