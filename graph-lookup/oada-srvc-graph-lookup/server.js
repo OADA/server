@@ -7,6 +7,7 @@ const info = require('debug')('graph-lookup:info');
 const warning = require('debug')('graph-lookup:warning');
 const config = require('./config')
 const Responder = require('../../libs/oada-lib-kafka').Responder;
+const oadaLib = require('../../libs/oada-lib-arangodb');
 
 const responder = new Responder(
   config.get('kafka:topics:graphRequest'),
