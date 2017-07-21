@@ -15,7 +15,7 @@ function topicTimeout(topic) {
     let topics = config.get('kafka:topics');
     Object.keys(topics).forEach(topick => {
         if (topics[topick] === topic) {
-            timeout = config.get('kafka:timeouts:' + topick);
+            timeout = config.get('kafka:timeouts:' + topick) || timeout;
         }
     });
 
@@ -214,7 +214,11 @@ Requester.prototype.on = function on(event, callback) {
 Requester.prototype.send = function send(request, topic) {
     let id = request[REQ_ID_KEY] || uuid();
     topic = topic || this.respTopic;
-    let timeout = this.timeouts[topic] || topicTimeout(topic);
+    let timeout = this.timeouts[topic];
+    if (!timeout) {
+        timeout = topicTimeout(topic);
+        this.timeouts[topic] = topic;
+    }
 
     request[REQ_ID_KEY] = id;
     request['time'] = Date.now();
