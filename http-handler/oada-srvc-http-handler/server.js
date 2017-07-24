@@ -10,7 +10,7 @@ const cors = require('cors');
 const wellKnownJson = require('well-known-json');
 const oadaError = require('oada-error');
 const OADAError = oadaError.OADAError;
-const kf = require('kafka-node');
+const Requester = require('../../libs/oada-lib-kafka').Requester;
 const debug = require('debug');
 const info = require('debug')('http-handler:info');
 const warn = require('debug')('http-handler:warn');
@@ -19,55 +19,14 @@ const trace = require('debug')('http-handler:trace');
 
 var config = require('./config');
 
-var client = new kf.Client(config.get('kafka:broker'), 'http-handler');
-var offset = Promise.promisifyAll(new kf.Offset(client));
-var producer = Promise.promisifyAll(new kf.Producer(client, {
-    partitionerType: 0 //kf.Producer.PARTITIONER_TYPES.keyed
-}));
-var consumer = new kf.ConsumerGroup({
-    host: config.get('kafka:broker'),
-    groupId: 'http-handlers',
-    fromOffset: 'latest'
-}, [config.get('kafka:topics:httpResponse')]);
+// TODO: Is it better to have one requester per topic?
+var kafkaReq = new Requester(
+    config.get('kafka:topics:httpResponse'),
+    null,
+    'http-handlers'
+);
 
-producer = producer
-    .onAsync('ready')
-    .return(producer);
-
-var requests = {};
-consumer.on('message', function(msg) {
-    var resp = JSON.parse(msg.value);
-
-    var done = requests[resp['connection_id']];
-
-    offset.commit('http-handlers', [msg]);
-
-    return done && done(null, resp);
-});
-// Produce request, cosume response, then resolve to answer
-function kafkaRequest(id, topic, message) {
-    var reqDone = Promise.fromCallback(function(done) {
-        requests[id] = done;
-    });
-    message = Object.assign({}, message, {
-        'connection_id': id,
-        'resp_partition': 0, // TODO: Handle partitions
-    });
-
-    // Allow Promises in message
-    return Promise.props(message).then(function sendKafkaReq(message) {
-        return producer.call('sendAsync', [{
-            topic: topic,
-            messages: JSON.stringify(message)
-        }]);
-    })
-    .then(function waitKafkaRes() {
-        return reqDone.timeout(45000, topic + ' timeout');
-    })
-    .finally(function cleanupKafkaReq() {
-        delete requests[id];
-    });
-}
+console.log('------------------');
 
 var _server = {
     app: null,
@@ -144,9 +103,10 @@ _server.app.use(function sanitizeUrl(req, res, next) {
 });
 
 _server.app.use(function tokenHandler(req, res, next) {
-    return kafkaRequest(req.id, config.get('kafka:topics:tokenRequest'), {
+    return kafkaReq.send({
+        'connection_id': req.id,
         'token': req.get('authorization'),
-    })
+    }, config.get('kafka:topics:tokenRequest'))
     .tap(function checkTok(tok) {
         if (!tok['token_exists']) {
             throw new OADAError('Unauthorized', 401);
@@ -154,9 +114,6 @@ _server.app.use(function tokenHandler(req, res, next) {
     })
     .then(function handleTokRes(resp) {
         req.user = resp;
-    })
-    .finally(function cleanupTokReq() {
-        delete requests[req.id];
     })
     .asCallback(next);
 });
@@ -182,10 +139,11 @@ _server.app.post('/resources(/*)?', function postResource(req, res, next) {
 });
 
 _server.app.use(function graphHandler(req, res, next) {
-    return kafkaRequest(req.id, config.get('kafka:topics:graphRequest'), {
+    return kafkaReq.send({
+        'connection_id': req.id,
         'token': req.get('authorization'),
         'url': req.url,
-    })
+    }, config.get('kafka:topics:graphRequest'))
     .then(function handleGraphRes(resp) {
         if (resp['resource_id']) {
             // Rewire URL to resource found by graph
@@ -199,7 +157,9 @@ _server.app.use(function graphHandler(req, res, next) {
 
 // TODO: Is this scope stuff right/good?
 function checkScopes(scope, contentType) {
-    if (process.env.IGNORE_SCOPE === "yes") return true;
+    if (process.env.IGNORE_SCOPE === 'yes') {
+        return true;
+    }
     const scopeTypes = {
         'oada.rocks': [
             'application/vnd.oada.bookmarks.1+json',
@@ -280,16 +240,16 @@ function unflattenMeta(doc) {
         return null;
     }
     if (doc._meta) {
-      doc._meta = {
-        _id: doc._meta._id,
-        _rev: doc._meta._rev,
-      };
+        doc._meta = {
+            _id: doc._meta._id,
+            _rev: doc._meta._rev,
+        };
     }
     if (doc._changes) {
-      doc._changes = {
-        _id: doc._changes._id,
-        _rev: doc._changes._rev,
-      };
+        doc._changes = {
+            _id: doc._changes._id,
+            _rev: doc._changes._rev,
+        };
     }/*
     Object.keys(doc).forEach((key) => {
         if (doc[key]._id) {
@@ -313,7 +273,7 @@ function unflattenMeta(doc) {
 
 _server.app.put('/resources/*', function chkPutScope(req, res, next) {
     if (!checkScopes(req.user.doc.scope, req.get('Content-Type'))) {
-      info('Checking PUT scope')
+        info('Checking PUT scope');
         return next(new OADAError('Not Authorized', 403,
                 'Token does not have required scope'));
     }
@@ -328,12 +288,13 @@ _server.app.put('/resources/*', bodyParser.text({
 }));
 
 _server.app.put('/resources/*', function putResource(req, res, next) {
-    info(`Saving PUT body for request ${req.id}`)
+    info(`Saving PUT body for request ${req.id}`);
     var bodyid = oadaLib.putBodies.savePutBody(req.body)
         .tap(() => info(`PUT body saved for request ${req.id}`))
         .get('_id');
 
-    return kafkaRequest(req.id, config.get('kafka:topics:writeRequest'), {
+    return kafkaReq.send({
+        'connection_id': req.id,
         'url': req.url,
         'resource_id': req.oadaGraph['resource_id'],
         'path_leftover': req.oadaGraph['path_leftover'],
@@ -344,7 +305,7 @@ _server.app.put('/resources/*', function putResource(req, res, next) {
         'content_type': req.get('Content-Type'),
         'bodyid': bodyid,
         //body: req.body
-    })
+    }, config.get('kafka:topics:writeRequest'))
     .tap(function checkWrite(resp) {
         info(`Recieved write response for request ${req.id}`);
         switch (resp.code) {

@@ -33,8 +33,10 @@ describe('Components should be restarted after being killed', () => {
 
   const REQUIRED_CONTAINER_NAMES = ['arangodb', 'auth', 'graph-lookup',
     'http-handler', 'hitman', 'proxy', 'rev-graph-update', 'startup',
-    'token-lookup', 'well-known', 'write-handler'
-  ];
+    'token-lookup', 'well-known', 'write-handler'];
+  const TO_Kill_CONTAINER_NAMES = ['arangodb', 'auth', 'graph-lookup',
+    'http-handler', 'hitman', 'proxy', 'rev-graph-update', 'startup',
+    'token-lookup', 'well-known', 'write-handler'];
 
   let containersAreRunning = Array.apply(null, Array(REQUIRED_CONTAINER_NAMES.length))
     .map(Boolean, false);
@@ -49,7 +51,10 @@ describe('Components should be restarted after being killed', () => {
             trace('      isRunning: ' + isRunning);
             containersAreRunning[idx] = isRunning;
           });
-      }).catch(err => error(err))
+      }).then(
+        // Kill the containers specified.
+        return Promise.each();
+      ).catch(err => error(err))
       .asCallback(() => {
         trace('    containersAreRunning: ' + containersAreRunning);
         done();

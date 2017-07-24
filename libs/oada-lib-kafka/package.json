@@ -1,35 +1,26 @@
 {
   "name": "oada-lib-kafka",
-  "version": "0.0.1",
-  "description": "All OADA Kafka interface code in one place.",
+  "version": "1.0.0",
+  "description": "OADA Kafka library",
   "main": "index.js",
   "scripts": {
-    "init": "node init.js",
-    "test": "DEBUG='info:*' mocha",
-    "test-debug": "DEBUG='*' mocha"
+    "test": "mocha"
   },
-  "contributors": [
-    "Andrew Balmos <andrew@balmos.org> (https://github.com/abalmos)"
-  ],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/OADA/oada-lib-kafka.git"
   },
-  "keywords": [
-    "oada",
-    "arangodb",
-    "lib"
-  ],
-  "author": "Aaron Ault <aultac@gmail.com> (https://github.com/aultac)",
-  "license": "Apache-2.0",
-  "bugs": {
-    "url": "https://github.com/OADA/oada-lib-kafka/issues"
-  },
-  "homepage": "https://github.com/OADA/oada-lib-kafka#readme",
+  "author": "",
+  "license": "ISC",
   "dependencies": {
     "bluebird": "^3.5.0",
-    "debug": "^2.6.8",
-    "kafka-node": "^1.6.2",
-    "uuid": "^3.0.1"
+    "node-rdkafka": "^1.0.4",
+    "uuid": "^3.1.0"
+  },
+  "devDependencies": {
+    "chai": "^4.0.2",
+    "chai-as-promised": "^7.1.1",
+    "kafka-please": "^1.0.1",
+    "mocha": "^3.4.2"
   }
 }

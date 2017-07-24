@@ -32,6 +32,7 @@ module.exports = {
       writeRequest: 'write_request',
       httpResponse: 'http_response',
     },
+		groupId: 'token-lookup'
   },
   zookeeper: {
     host: 'zookeeper:2181',

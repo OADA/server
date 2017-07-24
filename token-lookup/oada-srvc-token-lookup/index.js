@@ -21,138 +21,101 @@ const info = debug('token-lookup:info');
 const error = debug('token-lookup:error');
 
 const Promise = require('bluebird');
-const kf = require('kafka-node');
+// const kf = require('kafka-node');
+const Responder = require('../../libs/oada-lib-kafka').Responder;
 const oadaLib = require('../../libs/oada-lib-arangodb');
 const config = require('./config');
 
-const ensureClient = require('../../libs/oada-lib-kafka').ensureClient;
+process.on('exit', () => {
+	info('process exit');
+});
+
+process.on('SIGINT', () => {
+	info('SIGINT');
+	process.exit(2);
+});
+
+process.on('uncaughtException', (a) => {
+	info('uncaughtException: ', a);
+	process.exit(99);
+});
 
 //---------------------------------------------------------
 // Kafka intializations:
-const topicnames = [config.get('kafka:topics:tokenRequest')];
-if (!Array.isArray(topicnames)) {
-  topicnames = [topicnames];
-}
-ensureClient('token-lookup', topicnames)
-  .catch(err => {
-    trace('oada-lib-kafaka not working properly: ' + err);
-    return new kf.Client(
-      config.get('zookeeper:host'),
-      'token-lookup'
-    )
-  })
-  .then(client => {
-    trace('We have a kafka client, now make producer/consumer');
-    const offset = new kf.Offset(client);
-    let producer = new kf.Producer(client, {
-      partitionerType: 0
-    });
-    const consumer = new kf.ConsumerGroup({
-      host: config.get('zookeeper:host'),
-      groupId: 'token-lookup',
-      fromOffset: 'latest'
-    }, topicnames);
+const responder = new Responder(
+			config.get('kafka:topics:tokenRequest'),
+			config.get('kafka:topics:httpResponse'),
+			config.get('kafka:groupId'));
 
-    process.on('exit', () => {
-      info('process exit');
-      client.close()
-    });
-    process.on('SIGINT', () => {
-      info('SIGINT');
-      client.close();
-      process.exit(2);
-    });
-    process.on('uncaughtException', (a) => {
-      info('uncaughtException: ', a);
-      client.close();
-      process.exit(99);
-    });
+module.exports = function stopResp() {
+	return responder.disconnect(); 
+};
 
-    consumer.on('message', (msg) => {
-      return Promise.try(() => {
-          return JSON.parse(msg.value);
-        })
-        .then((req) => {
-          if (!req ||
-            typeof req.resp_partition === "undefined" ||
-            typeof req.connection_id === "undefined") {
-            error('Invalid token_request for request: ' + JSON.stringify(req));
-            return {};
-          }
+responder.on('request', function handleReq(req, msg) {
+		if (!req ||
+			typeof req.resp_partition === "undefined" ||
+			typeof req.connection_id === "undefined") {
+			error('Invalid token_request for request: ' + JSON.stringify(req));
+			return {};
+		}
 
-          const res = {
-            type: 'http_response',
-            token: req.token,
-            token_exists: false,
-            partition: req.resp_partition,
-            connection_id: req.connection_id,
-            doc: {
-              authorizationid: null,
-              user_id: null,
-              scope: [],
-              bookmarks_id: null,
-              client_id: null,
-            }
-          };
+		const res = {
+			type: 'http_response',
+			token: req.token,
+			token_exists: false,
+			partition: req.resp_partition,
+			connection_id: req.connection_id,
+			doc: {
+				authorizationid: null,
+				user_id: null,
+				scope: [],
+				bookmarks_id: null,
+				client_id: null,
+			}
+		};
 
-          if (typeof req.token === "undefined") {
-            trace('No token supplied with the request.');
-            return res;
-          }
+		if (typeof req.token === "undefined") {
+			trace('No token supplied with the request.');
+			return res;
+		}
+			// Get token from db.  Later on, we should speed this up
+			// by getting everything in one query.
+		return oadaLib.authorizations.findByToken(req.token.trim().replace(/^Bearer /, ''))
+			.then(t => {
+					let msg = Object.assign({}, res);
 
-          // Get token from db.  Later on, we should speed this up
-          // by getting everything in one query.
-          return oadaLib.authorizations.findByToken(req.token.trim().replace(/^Bearer /, ''))
-            .then(t => {
-              if (!t) {
-                info('WARNING: token ' + req.token + ' does not exist.');
-                res.token = null;
-                return res;
-              }
+					if (!t) {
+						info('WARNING: token ' + req.token + ' does not exist.');
+						msg.token = null;
+						return msg;
+					}
 
-              if (!t._id) {
-                info('WARNING: _id for token does not exist in response');
-              }
+					if (!t._id) {
+						info('WARNING: _id for token does not exist in response');
+					}
 
-              if (!t.user) {
-                info(`user for token ${t.token} not found`);
-                t.user = {};
-              }
+					if (!t.user) {
+						info(`user for token ${t.token} not found`);
+						t.user = {};
+					}
 
-              if (!t.user.bookmarks) {
-                info(`No bookmarks for user from token ${t.token}`);
-                t.user.bookmarks = {};
-              }
+					if (!t.user.bookmarks) {
+						info(`No bookmarks for user from token ${t.token}`);
+						t.user.bookmarks = {};
+					}
 
-              res.token_exists = true;
-              trace('received authorization, _id = ', t._id);
-              res.doc.authorizationid = t._id;
-              res.doc.client_id = t.clientId;
-              res.doc.user_id = t.user._id || res.doc.user_id;
-              res.doc.bookmarks_id = t.user.bookmarks._id || res.doc.bookmarks_id;
-              res.doc.scope = t.scope || res.doc.scope;
+					msg.token_exists = true;
+					trace('received authorization, _id = ', t._id);
+					msg.doc.authorizationid = t._id;
+					msg.doc.client_id = t.clientId;
+					msg.doc.user_id = t.user._id || msg.doc.user_id;
+					msg.doc.bookmarks_id = t.user.bookmarks._id || msg.doc.bookmarks_id;
+					msg.doc.scope = t.scope || msg.doc.scope;
 
-              return res;
-            });
-        })
-        .then((res) => {
-          return Promise.fromCallback((done) => {
-            producer.send([{
-              topic: config.get('kafka:topics:httpResponse'),
-              partitions: 0,
-              messages: JSON.stringify(res)
-            }], done);
-          });
-        })
-        .catch(err => {
-          error('%O', err);
-        })
-        .finally(() =>
-          offset.commit('token-lookup', [{
-            topic: config.get('kafka:topics:tokenRequest'),
-            partition: msg.partition,
-            offset: msg.offset
-          }])
-        );
-    });
-  });
+					return msg;
+			})
+			.catch(err => {
+				error(err);
+				return res;
+			});
+});

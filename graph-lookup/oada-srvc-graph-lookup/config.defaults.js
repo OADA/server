@@ -16,7 +16,10 @@
 
 module.exports = {
   kafka: {
-    testProducerTopic: "graph_request",
-    testConsumerTopic: "http_response",
+    topics: {
+      graphRequest: "graph_request",
+      httpResponse: "http_response",
+    },
+    groupId: 'graph-lookup',
   }
 };

@@ -2,43 +2,30 @@
 
 var Promise = require('bluebird');
 const oadaLib = require('../../libs/oada-lib-arangodb');
-const kf = require('kafka-node');
+const Responder = require('../../libs/oada-lib-kafka').Responder;
 const pointer = require('json-pointer');
 const hash = require('object-hash');
-const debug = require('debug')('write-handler');
 const error = require('debug')('write-handler:error');
 const info = require('debug')('write-handler:info');
 const trace = require('debug')('write-handler:trace');
 
 var config = require('./config');
 
-var client = new kf.Client(config.get('kafka:broker'), 'http-handler');
-var offset = Promise.promisifyAll(new kf.Offset(client));
-var producer = Promise.promisifyAll(new kf.Producer(client, {
-    partitionerType: 0 //kf.Producer.PARTITIONER_TYPES.keyed
-}));
-var consumer = new kf.ConsumerGroup({
-    host: config.get('kafka:broker'),
-    groupId: 'write-handlers',
-    fromOffset: 'latest'
-}, [config.get('kafka:topics:writeRequest')]);
+var responder = new Responder(
+    config.get('kafka:topics:writeRequest'),
+    config.get('kafka:topics:httpResponse'),
+    'write-handlers'
+);
 
-producer = producer
-    .onAsync('ready')
-    .return(producer);
-
-consumer.on('message', handleMsg);
-
-function handleMsg(msg) {
+responder.on('request', function handleReq(req, msg) {
     // TODO: Check scope/permission?
-    var req = JSON.parse(msg.value);
     req.source = req.source || '';
     var id = req['resource_id'];
 
     // Get body and check permission in parallel
     var body = Promise.try(function getBody() {
         return req.body || oadaLib.putBodies.getPutBody(req.bodyid);
-    }); 
+    });
     let existing_resource_info = {};
     var permitted = Promise.try(function checkPermissions() {
         if (req.source === 'rev-graph-update') {
@@ -114,7 +101,7 @@ function handleMsg(msg) {
         };
         obj['_meta'] = Object.assign(obj['_meta'] || {}, meta);
 
-        // Precompute new rev: using only the body so that subsequent PUT's 
+        // Precompute new rev: using only the body so that subsequent PUT's
         var rev = msg.offset + '-' + hash(JSON.stringify(body), {algorithm: 'md5'});
 
         // If the hash part of the rev is identical to last time, don't re-execute a PUT to keep it idempotent
@@ -150,37 +137,28 @@ function handleMsg(msg) {
     }).then(function respond(rev) {
         var end = new Date().getTime();
         info(`Finished PUTing to "${req['path_leftover']}". + ${end-start}ms`);
-        return producer.call('sendAsync', [{
-            topic: config.get('kafka:topics:httpResponse'),
-            partition: req['resp_partition'],
-            messages: JSON.stringify({
-                'msgtype': 'write-response',
-                'code': 'success',
-                'resource_id': id,
-                '_rev': rev,
-                'user_id': req['user_id'],
-                'authorizationid': req['authorizationid'],
-                'connection_id': req['connection_id'],
-            })
-        }]);
+        return {
+            'msgtype': 'write-response',
+            'code': 'success',
+            'resource_id': id,
+            '_rev': rev,
+            'user_id': req['user_id'],
+            'authorizationid': req['authorizationid'],
+        };
     }).catch(function respondErr(err) {
         error(err);
-        return producer.call('sendAsync', [{
-            topic: config.get('kafka:topics:httpResponse'),
-            partition: req['resp_partition'],
-            messages: JSON.stringify({
-                'msgtype': 'write-response',
-                'code': err.message || 'error',
-                'user_id': req['user_id'],
-                'authorizationid': req['authorizationid'],
-                'connection_id': req['connection_id'],
-            })
-        }]);
+        return {
+            'msgtype': 'write-response',
+            'code': err.message || 'error',
+            'user_id': req['user_id'],
+            'authorizationid': req['authorizationid'],
+        };
     });
 
     var cleanup = body.then(() => {
         // Remove putBody, if there was one
         return req.bodyid && oadaLib.putBodies.removePutBody(req.bodyid);
     });
-    return Promise.join(upsert, cleanup);
-}
+
+    return Promise.join(upsert, cleanup, resp => resp);
+});

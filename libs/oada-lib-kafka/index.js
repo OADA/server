@@ -1,128 +1,240 @@
-const debug = require('debug');
-const trace = debug('oada-lib-kafka:trace');
-const info = debug('oada-lib-kafka:info');
-const error = debug('oada-lib-kafka:error');
+'use strict';
 
-const uuid = require('uuid');
 const Promise = require('bluebird');
-const kf = Promise.promisifyAll(require('kafka-node'));
-const oadaLib = require('../../libs/oada-lib-arangodb');
+const kf = require('node-rdkafka');
 const config = require('./config');
+const uuid = require('uuid');
+const info = require('debug')('oada-lib-kafka:info');
+const warn = require('debug')('oada-lib-kafka:warn');
 
-const healthtopic = 'oada-lib-kafka:health-checks';
+const REQ_ID_KEY = 'connection_id';
+// Not sure I like the way options are oragnised, but it works
+const rdkafkaOpts = Object.assign(config.get('kafka:librdkafka'), {
+    'metadata.broker.list': config.get('kafka:broker'),
+});
 
-const TIMEOUT = 10000;
-const MAX_NUM_TRIALS = 6;
+function topicTimeout(topic) {
+    let timeout = config.get('kafka:timeouts:default');
 
-const tryProduceConsume = client => {
-  return new Promise((resolve, reject) => {
-    // This whole process should finish in a bounded amout of time
-    trace('tryProduceConsume: waiting is being set up...');
-    let waiting = setTimeout(() => {
-        info('tryProduceConsume: timer expired, closing consumer, trying again.');
-        client.closeAsync().finally(() =>
-          reject(new Error('Timeout: failed to get message in less than 10 seconds'))
-        );
-      }, TIMEOUT // 10 seconds ought to do it
-    );
-
-    // Create a producer for dummy topic, and a consumerGroupfor that topic
-    trace('tryProduceConsume: Creating producer/consumer for dummy topic to ensure connection');
-    const producer = Promise.promisifyAll(new kf.Producer(client, {
-      partitionerType: 0
-    }));
-    const consumer = Promise.promisifyAll(new kf.ConsumerGroup({
-      host: config.get('zookeeper:host'),
-      groupId: 'oada-lib-kafka_ensureClient',
-      fromOffset: 'latest',
-    }, [healthtopic]));
-
-    //--------------------------------------------
-    // setup consumer
-    trace('tryProduceConsume: setting message handler');
-    consumer.onAsync('message').then(msg => {
-      clearTimeout(waiting);
-      waiting = null;
-      // Success case:
-      info('tryProduceConsume: successfully consumed message, closing consumer and returning client');
-      return consumer.closeAsync().then(() => resolve(client));
-    }).catch(err => {
-      info('tryProduceConsume: failed on message consumption');
-      clearTimeout(waiting);
-      waiting = null;
-      reject(new Error(err.toString()));
-    });
-    consumer.onAsync('error').then(err => {
-      info('tryProduceConsume: exception thrown on consumer.  err = ' + err.toString());
-      clearTimeout(waiting);
-      waiting = null;
-      client.closeAsync().finally(() => reject(new Error(err.toString())));
-    });
-
-    //----------------------------------------------
-    // setup producer and send message
-    producer.connectAsync(() => {
-      producer.onAsync('error').then(() => {
-        info('tryProduceConsume: exception thrown on producer.  err = ' + err.toString());
-        clearTimeout(waiting);
-        waiting = null;
-        client.closeAsync().finally(() => reject(new Error(err.toString())));
-      });
-      trace('tryProduceConsume: producing message');
-      producer.onAsync('ready').then(() => {
-        trace('********************************************************')
-        trace('* tryProduceConsume: producer ready, producing message *');
-        trace('********************************************************')
-        return producer.sendAsync([{
-          topic: healthtopic,
-          partition: 0,
-          messages: {
-            hello: 'healthcheck'
-          }
-        }, ]).then(() => trace('tryProduceConsume: send complete'));
-      }).catch(err => {
-        clearTimeout(waiting);
-        waiting = null;
-        info('tryProduceConsume: failed to produce.  err = ', err);
-        client.closeAsync().catch((caErr) => {
-          trace('Handling closeAsync error: ' + caErr);
-        }).finally(() => {
-          reject(new Error(err.toString()))
-        });
-      });
-    })
-
-  });
-}
-
-const ensureClient = (clientname, topicnames) => {
-  let refreshCount = 0;
-  trace('ensureClient: calling tryProduceConsume for first attempt');
-  trace('ensureClient - clientname: ' + clientname);
-  trace('ensureClient - topicnames: ' + topicnames);
-
-  const retry = (clientname, topicnames) => {
-    trace('ensureClient: creating client');
-    const client = Promise.promisifyAll(new kf.Client(config.get('zookeeper:host'), clientname));
-
-    return client.refreshMetadataAsync(topicnames)
-      .return(client)
-      .then(tryProduceConsume)
-      .catch(err => {
-        if (++refreshCount > MAX_NUM_TRIALS) {
-          info('Failed too many times to tryProduceConsume, throwing up.');
-          throw err;
+    let topics = config.get('kafka:topics');
+    Object.keys(topics).forEach(topick => {
+        if (topics[topick] === topic) {
+            timeout = config.get('kafka:timeouts:' + topick) || timeout;
         }
-        info('-------------------------------------------------------------------------------');
-        info('Failed to tryProduceConsume: trying again on attempt #' + refreshCount + ', err = ', err);
-        info('-------------------------------------------------------------------------------');
-        return retry(clientname, topicnames);
-      });
-  };
+    });
 
-  return retry(clientname, topicnames);
+    return timeout;
 }
+
+function Responder(listenTopic, respTopic, groupId, opts) {
+    this.listenTopic = listenTopic;
+    this.respTopic = respTopic;
+
+    this.opts = opts || {};
+
+    this.consumer = new kf.KafkaConsumer(Object.assign({
+        'group.id': groupId,
+    }, rdkafkaOpts));
+    this.producer = new kf.Producer(Object.assign({
+        'dr_cb': true,  //delivery report callback
+    }, rdkafkaOpts));
+
+    let consumerReady = Promise.fromCallback(done => {
+            this.consumer.on('ready', () => {
+                info('Responder\'s consumer ready');
+                done();
+            });
+        })
+        .then(() => {
+            this.consumer.subscribe([listenTopic]);
+            this.consumer.consume();
+        });
+    let producerReady = Promise.fromCallback(done => {
+        this.producer.on('ready', () => {
+            info('Responder\'s producer ready');
+            done();
+        });
+    });
+    this.ready = Promise.join(consumerReady, producerReady);
+    this.consumer.connect();
+    this.producer.connect();
+
+    this.timeout = topicTimeout(this.listenTopic);
+}
+
+Responder.prototype.disconnect = function disconnect() {
+    let dcons = Promise.fromCallback(done=> {
+        this.consumer.disconnect(() => done());
+    });
+    let dprod = Promise.fromCallback(done => {
+        this.producer.disconnect(() => done());
+    });
+
+    return Promise.join(dcons, dprod);
+};
+
+Responder.prototype.on = function on(event, callback) {
+    switch (event) {
+        case 'request':
+            this.consumer.on('data', (data) => {
+                let req = JSON.parse(data.value);
+                delete data.value;
+                let id = req[REQ_ID_KEY];
+                let part = req['resp_partition'];
+                if (typeof part !== 'number') {
+                    part = null;
+                }
+                info(`Received request ${id}`);
+
+                // Check for old messages
+                if (!this.opts.old && (Date.now() - req.time) >= this.timeout) {
+                    warn('Ignoring timed-out request');
+                    return;
+                }
+
+                let resp = callback(req, data);
+                this.ready.return(resp)
+                    .then(resp => {
+                        if (!Array.isArray(resp)) {
+                            return resp === undefined ? [] : [resp];
+                        }
+                        return resp;
+                    })
+                    .map(resp => {
+                        resp[REQ_ID_KEY] = id;
+                        resp['time'] = Date.now();
+                        let payload = JSON.stringify(resp);
+                        let value = new Buffer(payload);
+                        this.producer.produce(this.respTopic, part, value);
+                    })
+                    .finally(() => {
+                        // TODO: Handle committing better
+                        //this.consumer.commit(data);
+                    });
+            });
+            break;
+        case 'ready':
+            this.ready.then(callback);
+            break;
+        case 'error':
+            this.consumer.on('error', callback);
+            this.producer.on('error', callback);
+            this.consumer.on('event.error', callback);
+            this.producer.on('event.error', callback);
+            break;
+        default:
+            warn('oada-lib-kafka: unsupported event');
+            break;
+    }
+};
+
+function Requester(listenTopic, respTopic, groupId) {
+    this.listenTopic = listenTopic;
+    this.respTopic = respTopic;
+    this.consumer = new kf.KafkaConsumer(Object.assign({
+        'group.id': groupId,
+    }, rdkafkaOpts));
+    this.producer = new kf.Producer(Object.assign({
+        'dr_cb': true,  //delivery report callback
+    }, rdkafkaOpts));
+    let consumerReady = Promise.fromCallback(done => {
+            this.consumer.on('ready', () => {
+                info('Requester\'s consumer ready');
+                done();
+            });
+        })
+        .then(() => {
+            this.consumer.subscribe([listenTopic]);
+            this.consumer.consume();
+        });
+    let producerReady = Promise.fromCallback(done => {
+        this.producer.on('ready', () => {
+            info('Requester\'s producer ready');
+            done();
+        });
+    });
+    this.ready = Promise.join(consumerReady, producerReady);
+    this.consumer.connect();
+    this.producer.connect();
+
+    this.requests = {};
+    this.consumer.on('data', msg => {
+        let resp = JSON.parse(msg.value);
+
+        let done = this.requests[resp[REQ_ID_KEY]];
+
+        return done && done(null, resp);
+    });
+
+    this.timeouts = {};
+    if (this.respTopic) {
+        this.timeouts[this.respTopic] = topicTimeout(this.respTopic);
+    }
+}
+
+Requester.prototype.disconnect = function disconnect() {
+    let dcons = Promise.fromCallback(done=> {
+        this.consumer.disconnect(() => done());
+    });
+    let dprod = Promise.fromCallback(done => {
+        this.producer.disconnect(() => done());
+    });
+
+    return Promise.join(dcons, dprod);
+};
+
+Requester.prototype.on = function on(event, callback) {
+    switch (event) {
+        case 'response':
+            this.consumer.on('data', (data) => {
+                let resp = callback(JSON.parse(data.value));
+                this.ready.return(resp)
+                .finally(() => {
+                    //this.consumer.commit(data);
+                });
+            });
+            break;
+        case 'ready':
+            this.ready.then(callback);
+            break;
+        default:
+            warn('oada-lib-kafka: unsupported event');
+            break;
+    }
+};
+
+Requester.prototype.send = function send(request, topic) {
+    let id = request[REQ_ID_KEY] || uuid();
+    topic = topic || this.respTopic;
+    let timeout = this.timeouts[topic];
+    if (!timeout) {
+        timeout = topicTimeout(topic);
+        this.timeouts[topic] = timeout;
+    }
+
+    request[REQ_ID_KEY] = id;
+    request['time'] = Date.now();
+    // TODO: Handle partitions?
+    request['resp_partition'] = 0;
+
+    let reqDone = Promise.fromCallback(done => {
+        this.requests[id] = done;
+    });
+    return this.ready
+        .then(() => {
+            let payload = JSON.stringify(request);
+            let value = new Buffer(payload);
+            this.producer.produce(topic, null, value);
+        })
+        .then(() => {
+            return reqDone.timeout(timeout, topic + ' timeout');
+        })
+        .finally(() => {
+            delete this.requests[id];
+        });
+};
 
 module.exports = {
-  ensureClient,
+    Responder,
+    Requester
 };

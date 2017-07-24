@@ -32,10 +32,6 @@ module.exports = {
       writeRequest: 'write_request',
       httpResponse: 'http_response',
     },
+		groupId: 'rev-graph-update'
   },
-  zookeeper: {
-    host: 'zookeeper:2181',
-		revGraphUpdate: 'rev-graph-update'
-  },
-
 };
