@@ -33,12 +33,22 @@ function Responder(listenTopic, respTopic, groupId, opts) {
         'metadata.broker.list': config.get('kafka:broker'),
         'group.id': groupId,
         'enable.auto.commit': config.get('kafka:auto_commit'),
-        'auto.offset.reset': config.get('kafka:auto_offset_reset')
+        'auto.offset.reset': config.get('kafka:auto_offset_reset'),
+//        'fetch.wait.max.ms': 10,
+//        'fetch.min.bytes': 1,
+//        'request.required.acks': '0',
+//        'socket.blocking.max.ms': '1',
+//        'queue.buffering.max.ms': '1',
     });
     this.producer = new kf.Producer({
         // 'debug': config.get('debug'),
         'metadata.broker.list': config.get('kafka:broker'),
-        'dr_cb': true  //delivery report callback
+        'dr_cb': true,  //delivery report callback
+//        'fetch.wait.max.ms': 10,
+//        'fetch.min.bytes': 1,
+//        'request.required.acks': '0',
+//        'socket.blocking.max.ms': '1',
+        'queue.buffering.max.ms': '1',
     });
 
     let consumerReady = Promise.fromCallback(done => {
@@ -138,12 +148,22 @@ function Requester(listenTopic, respTopic, groupId) {
         'metadata.broker.list': config.get('kafka:broker'),
         'group.id': groupId,
         'enable.auto.commit': config.get('kafka:auto_commit'),
-        'auto.offset.reset': config.get('kafka:auto_offset_reset')
+        'auto.offset.reset': config.get('kafka:auto_offset_reset'),
+//        'fetch.wait.max.ms': 10,
+//        'fetch.min.bytes': 1,
+//        'request.required.acks': '0',
+//        'socket.blocking.max.ms': '1',
+//        'queue.buffering.max.ms': '1',
     });
     this.producer = new kf.Producer({
         'debug': config.get('debug'),
         'metadata.broker.list': config.get('kafka:broker'),
-        'dr_cb': true  //delivery report callback
+        'dr_cb': true,  //delivery report callback
+//        'fetch.wait.max.ms': 10,
+//        'fetch.min.bytes': 1,
+//        'request.required.acks': '0',
+//        'socket.blocking.max.ms': '1',
+        'queue.buffering.max.ms': '1',
     });
     let consumerReady = Promise.fromCallback(done => {
             this.consumer.on('ready', () => {
