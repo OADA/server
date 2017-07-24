@@ -12,13 +12,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 'use strict';
 
 module.exports = {
     kafka: {
         broker: 'kafka',
-        auto_commit: false,
-        auto_offset_reset: 'latest',
+        // https://github.com/edenhill/librdkafka/blob/master/CONFIGURATION.md
+        librdkafka: {
+            'enable.auto.commit': false,
+            'auto.offset.reset': 'latest',
+            // Needed to lower latency
+            'fetch.wait.max.ms': 10,
+            //'fetch.min.bytes': 1,
+            'request.required.acks': 0,
+            'socket.blocking.max.ms': 100,
+            'queue.buffering.max.ms': 10,
+        },
         timeouts: {
             default: 5000,
             writeRequest: 45000,
@@ -30,5 +40,4 @@ module.exports = {
             httpResponse: 'http_response',
         }
     },
-    debug: 'all'
 };

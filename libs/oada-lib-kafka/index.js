@@ -8,6 +8,10 @@ const info = require('debug')('oada-lib-kafka:info');
 const warn = require('debug')('oada-lib-kafka:warn');
 
 const REQ_ID_KEY = 'connection_id';
+// Not sure I like the way options are oragnised, but it works
+const rdkafkaOpts = Object.assign(config.get('kafka:librdkafka'), {
+    'metadata.broker.list': config.get('kafka:broker'),
+});
 
 function topicTimeout(topic) {
     let timeout = config.get('kafka:timeouts:default');
@@ -28,28 +32,12 @@ function Responder(listenTopic, respTopic, groupId, opts) {
 
     this.opts = opts || {};
 
-    this.consumer = new kf.KafkaConsumer({
-        // 'debug': config.get('debug'),
-        'metadata.broker.list': config.get('kafka:broker'),
+    this.consumer = new kf.KafkaConsumer(Object.assign({
         'group.id': groupId,
-        'enable.auto.commit': config.get('kafka:auto_commit'),
-        'auto.offset.reset': config.get('kafka:auto_offset_reset'),
-//        'fetch.wait.max.ms': 10,
-//        'fetch.min.bytes': 1,
-//        'request.required.acks': '0',
-//        'socket.blocking.max.ms': '1',
-//        'queue.buffering.max.ms': '1',
-    });
-    this.producer = new kf.Producer({
-        // 'debug': config.get('debug'),
-        'metadata.broker.list': config.get('kafka:broker'),
+    }, rdkafkaOpts));
+    this.producer = new kf.Producer(Object.assign({
         'dr_cb': true,  //delivery report callback
-//        'fetch.wait.max.ms': 10,
-//        'fetch.min.bytes': 1,
-//        'request.required.acks': '0',
-//        'socket.blocking.max.ms': '1',
-        'queue.buffering.max.ms': '1',
-    });
+    }, rdkafkaOpts));
 
     let consumerReady = Promise.fromCallback(done => {
             this.consumer.on('ready', () => {
@@ -143,28 +131,12 @@ Responder.prototype.on = function on(event, callback) {
 function Requester(listenTopic, respTopic, groupId) {
     this.listenTopic = listenTopic;
     this.respTopic = respTopic;
-    this.consumer = new kf.KafkaConsumer({
-        'debug': config.get('debug'),
-        'metadata.broker.list': config.get('kafka:broker'),
+    this.consumer = new kf.KafkaConsumer(Object.assign({
         'group.id': groupId,
-        'enable.auto.commit': config.get('kafka:auto_commit'),
-        'auto.offset.reset': config.get('kafka:auto_offset_reset'),
-//        'fetch.wait.max.ms': 10,
-//        'fetch.min.bytes': 1,
-//        'request.required.acks': '0',
-//        'socket.blocking.max.ms': '1',
-//        'queue.buffering.max.ms': '1',
-    });
-    this.producer = new kf.Producer({
-        'debug': config.get('debug'),
-        'metadata.broker.list': config.get('kafka:broker'),
+    }, rdkafkaOpts));
+    this.producer = new kf.Producer(Object.assign({
         'dr_cb': true,  //delivery report callback
-//        'fetch.wait.max.ms': 10,
-//        'fetch.min.bytes': 1,
-//        'request.required.acks': '0',
-//        'socket.blocking.max.ms': '1',
-        'queue.buffering.max.ms': '1',
-    });
+    }, rdkafkaOpts));
     let consumerReady = Promise.fromCallback(done => {
             this.consumer.on('ready', () => {
                 info('Requester\'s consumer ready');
