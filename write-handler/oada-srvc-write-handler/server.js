@@ -24,7 +24,8 @@ responder.on('request', function handleReq(req, msg) {
 
     // Get body and check permission in parallel
     var body = Promise.try(function getBody() {
-        return req.body || oadaLib.putBodies.getPutBody(req.bodyid);
+        return req.body ||
+                req.bodyid && oadaLib.putBodies.getPutBody(req.bodyid);
     });
     let existing_resource_info = {};
     var permitted = Promise.try(function checkPermissions() {
@@ -53,6 +54,19 @@ responder.on('request', function handleReq(req, msg) {
     info(`PUTing to "${req['path_leftover']}" in "${id}"`);
     var upsert = Promise.join(body, permitted, function doUpsert(body) {
         var path = pointer.parse(req['path_leftover'].replace(/\/*$/, ''));
+
+        // Perform delete
+        // TODO: Should deletes be a separate topic?
+        if (body === undefined) {
+            if (path.length > 0) {
+                // TODO: Implement this
+                let msg = 'DELETE of sub-documents not yet implemented';
+                return Promise.reject(new Error(msg));
+            }
+
+            return oadaLib.resources.deleteResource(id);
+        }
+
         var obj = {};
         var ts = Date.now();
         // TODO: Sanitize keys?

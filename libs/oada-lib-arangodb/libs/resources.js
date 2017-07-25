@@ -383,7 +383,7 @@ function putResource(id, obj) {
             FOR i IN 0..(LENGTH(l.path)-1)
               LET isresource = i IN [0, LENGTH(l.path)]
               LET ppath = SLICE(l.path, 0, i)
-              LET resid = i == LENGTH(l.path) ? lkey : reskey 
+              LET resid = i == LENGTH(l.path) ? lkey : reskey
               LET path = isresource ? null : CONCAT_SEPARATOR('/', APPEND([''], ppath))
               UPSERT { '_key': nodeids[i] }
               INSERT {
@@ -483,6 +483,38 @@ function addLinks(res) {
   }).then(() => links);
 }
 
+function deleteResource(id) {
+  let key = id.replace(/^resources\//, '');
+
+  // Query deletes resouce, its nodes, and outgoing edges (but not incoming)
+  return db.query(aql`
+    LET res = FIRST(
+      REMOVE { '_key': ${key} } IN resources
+      RETURN OLD
+    )
+    LET nodes = (
+      FOR node in graphNodes
+        FILTER node['resource_id'] == res._id
+        REMOVE node IN graphNodes
+        RETURN OLD
+    )
+    FOR node IN nodes
+      FOR edge IN edges
+        FILTER edge['_from'] == node._id
+        REMOVE edge IN edges
+  `);
+}
+
+function deleteSubResource(id, path) {
+  let key = id.replace(/^resources\//, '');
+
+  return db.query(aql`
+    UPDATE { '_key': ${key} }
+    WITH { }
+    IN resources
+  `);
+}
+
 function upsertMeta(req) {
 }
 
@@ -495,5 +527,7 @@ module.exports = {
   getResource,
   getResourceOwnerIdRev,
   putResource,
+  deleteResource,
+  deleteSubResource,
   getParents,
 };

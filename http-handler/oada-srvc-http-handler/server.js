@@ -289,10 +289,48 @@ _server.app.put('/resources/*', bodyParser.text({
 
 _server.app.put('/resources/*', function putResource(req, res, next) {
     info(`Saving PUT body for request ${req.id}`);
-    var bodyid = oadaLib.putBodies.savePutBody(req.body)
+    return oadaLib.putBodies.savePutBody(req.body)
         .tap(() => info(`PUT body saved for request ${req.id}`))
-        .get('_id');
+        .get('_id')
+        .then(bodyid => {
+            return kafkaReq.send({
+                'connection_id': req.id,
+                'url': req.url,
+                'resource_id': req.oadaGraph['resource_id'],
+                'path_leftover': req.oadaGraph['path_leftover'],
+                'meta_id': req.oadaGraph['meta_id'],
+                'user_id': req.user.doc['user_id'],
+                'authorizationid': req.user.doc['authorizationid'],
+                'client_id': req.user.doc['client_id'],
+                'content_type': req.get('Content-Type'),
+                'bodyid': bodyid,
+                //body: req.body
+            }, config.get('kafka:topics:writeRequest'));
+        })
+        .tap(function checkWrite(resp) {
+            info(`Recieved write response for request ${req.id}`);
+            switch (resp.code) {
+                case 'success':
+                    return;
+                case 'permission':
+                    return Promise.reject(new OADAError('Not Authorized', 403,
+                            'User does not own this resource'));
+                default:
+                    let err = new OADAError('write failed with code ' + resp.code);
+                    return Promise.reject(err);
+            }
+        })
+        .then(function(resp) {
+            return res
+                .set('X-OADA-Rev', resp['_rev'])
+                .location(req.url)
+                .sendStatus(204);
+        })
+        .catch(next);
+});
 
+_server.app.delete('/resources/*', function deleteResource(req, res, next) {
+    info(`Sending DELETE request for request ${req.id}`);
     return kafkaReq.send({
         'connection_id': req.id,
         'url': req.url,
@@ -302,12 +340,11 @@ _server.app.put('/resources/*', function putResource(req, res, next) {
         'user_id': req.user.doc['user_id'],
         'authorizationid': req.user.doc['authorizationid'],
         'client_id': req.user.doc['client_id'],
-        'content_type': req.get('Content-Type'),
-        'bodyid': bodyid,
+        //'bodyid': bodyid, // No body means delete?
         //body: req.body
     }, config.get('kafka:topics:writeRequest'))
-    .tap(function checkWrite(resp) {
-        info(`Recieved write response for request ${req.id}`);
+    .tap(function checkDelete(resp) {
+        info(`Recieved delete response for request ${req.id}`);
         switch (resp.code) {
             case 'success':
                 return;
@@ -315,15 +352,12 @@ _server.app.put('/resources/*', function putResource(req, res, next) {
                 return Promise.reject(new OADAError('Not Authorized', 403,
                         'User does not own this resource'));
             default:
-                let err = new OADAError('write failed with code ' + resp.code);
+                let err = new OADAError('delete failed with code ' + resp.code);
                 return Promise.reject(err);
         }
     })
-    .then(function(resp) {
-        return res
-            .set('X-OADA-Rev', resp['_rev'])
-            .location(req.url)
-            .sendStatus(204);
+    .then(function() {
+        return res.sendStatus(204);
     })
     .catch(next);
 });
