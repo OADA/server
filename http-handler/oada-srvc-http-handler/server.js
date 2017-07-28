@@ -149,6 +149,7 @@ _server.app.use(function graphHandler(req, res, next) {
             // Rewire URL to resource found by graph
             req.url = `/${resp['resource_id']}${resp['path_leftover']}`;
         }
+        res.set('Content-Location', req.url);
         // TODO: Just use express parameters rather than graph thing?
         req.oadaGraph = resp;
     })
