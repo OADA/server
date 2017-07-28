@@ -107,6 +107,9 @@ responder.on('request', function handleReq(req, msg) {
             obj = Object.assign(obj, body);
         }
 
+        // Precompute new rev ignoring _meta and such
+        let new_rev_hash = hash(JSON.stringify(obj), {algorithm: 'md5'});
+
         // Update meta
         var meta = {
             'modifiedBy': req['user_id'],
@@ -114,13 +117,11 @@ responder.on('request', function handleReq(req, msg) {
         };
         obj['_meta'] = Object.assign(obj['_meta'] || {}, meta);
 
-        // Precompute new rev: using only the body so that subsequent PUT's
-        var rev = msg.offset + '-' + hash(JSON.stringify(body), {algorithm: 'md5'});
+        var rev = msg.offset + '-' + new_rev_hash;
 
         // If the hash part of the rev is identical to last time, don't re-execute a PUT to keep it idempotent
         existing_resource_info._rev = existing_resource_info._rev || '0-0';
         const old_rev_hash = existing_resource_info._rev.split('-')[1];
-        const new_rev_hash = rev.split('-')[1];
         if (old_rev_hash === new_rev_hash) {
           info('PUT would result in same rev hash as the current one, skipping write.');
           return rev;
