@@ -512,11 +512,27 @@ function deleteSubResource(id, path) {
 
   pointer.set(doc, path, null);
 
-  // TODO: Remove associated edges/nodes
+  // Regex to match starts of paths
+  let preg = `^${Array.isArray(path) ? pointer.compile(path) : path}(/|$)`;
+
   return db.query(aql`
-    UPDATE { '_key': ${key} }
-    WITH ${doc}
-    IN resources OPTIONS { keepNull: false }
+    LET res = FIRST(
+      UPDATE { '_key': ${key} }
+      WITH ${doc}
+      IN resources
+      OPTIONS { keepNull: false }
+      RETURN NEW
+    )
+    LET nodes = (
+      FOR node IN graphNodes
+        FILTER node['resource_id'] == res._id AND node.path =~ ${preg}
+        REMOVE node IN graphNodes
+        RETURN OLD
+    )
+    FOR node IN nodes
+      FOR edge IN edges
+        FILTER edge['_from'] == node._id
+        REMOVE edge IN edges
   `);
 }
 

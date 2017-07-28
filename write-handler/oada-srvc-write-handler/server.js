@@ -58,6 +58,7 @@ responder.on('request', function handleReq(req, msg) {
         // Perform delete
         // TODO: Should deletes be a separate topic?
         if (body === undefined) {
+            // TODO: How to handle rev etc. on DELETE?
             if (path.length > 0) {
                 return oadaLib.resources.deleteSubResource(id, path);
             } else {
