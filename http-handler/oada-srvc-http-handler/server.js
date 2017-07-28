@@ -329,6 +329,18 @@ _server.app.put('/resources/*', function putResource(req, res, next) {
         .catch(next);
 });
 
+// Don't let users DELETE their bookmarks?
+_server.app.delete('/resources/*', function noDeleteBookmarks(req, res, next) {
+    let err = null;
+
+    if (req.url === '/' + req.user.doc['bookmarks_id']) {
+        err = new OADAError('Forbidden', 403,
+            'User cannot delete their bookmarks');
+    }
+
+    next(err);
+});
+
 _server.app.delete('/resources/*', function deleteResource(req, res, next) {
     info(`Sending DELETE request for request ${req.id}`);
     return kafkaReq.send({
