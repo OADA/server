@@ -505,13 +505,18 @@ function deleteResource(id) {
   `);
 }
 
+// "Delete" a part of a resource
 function deleteSubResource(id, path) {
   let key = id.replace(/^resources\//, '');
+  let doc = {};
 
+  pointer.set(doc, path, null);
+
+  // TODO: Remove associated edges/nodes
   return db.query(aql`
     UPDATE { '_key': ${key} }
-    WITH { }
-    IN resources
+    WITH ${doc}
+    IN resources OPTIONS { keepNull: false }
   `);
 }
 

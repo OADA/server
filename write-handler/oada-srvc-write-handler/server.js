@@ -59,12 +59,10 @@ responder.on('request', function handleReq(req, msg) {
         // TODO: Should deletes be a separate topic?
         if (body === undefined) {
             if (path.length > 0) {
-                // TODO: Implement this
-                let msg = 'DELETE of sub-documents not yet implemented';
-                return Promise.reject(new Error(msg));
+                return oadaLib.resources.deleteSubResource(id, path);
+            } else {
+                return oadaLib.resources.deleteResource(id);
             }
-
-            return oadaLib.resources.deleteResource(id);
         }
 
         var obj = {};
