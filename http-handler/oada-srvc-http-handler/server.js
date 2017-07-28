@@ -369,8 +369,10 @@ _server.app.delete('/resources/*', function deleteResource(req, res, next) {
                 return Promise.reject(err);
         }
     })
-    .then(function() {
-        return res.sendStatus(204);
+    .then(function(resp) {
+        return res
+            .set('X-OADA-Rev', resp['_rev'])
+            .sendStatus(204);
     })
     .catch(next);
 });
