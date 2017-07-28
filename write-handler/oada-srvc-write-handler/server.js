@@ -55,12 +55,19 @@ responder.on('request', function handleReq(req, msg) {
     var upsert = Promise.join(body, permitted, function doUpsert(body) {
         var path = pointer.parse(req['path_leftover'].replace(/\/*$/, ''));
 
+        let method = oadaLib.resources.putResource;
+        let changeType = 'merge';
         // Perform delete
         // TODO: Should deletes be a separate topic?
         if (body === undefined) {
             // TODO: How to handle rev etc. on DELETE?
             if (path.length > 0) {
-                return oadaLib.resources.deleteSubResource(id, path);
+                // TODO: This is gross
+                let ppath = Array.from(path);
+                method = (id, obj) =>
+                        oadaLib.resources.deletePartialResource(id, ppath, obj);
+                body = null;
+                changeType = 'delete';
             } else {
                 return oadaLib.resources.deleteResource(id);
             }
@@ -137,7 +144,7 @@ responder.on('request', function handleReq(req, msg) {
             '_id': id + '/_meta/_changes',
             '_rev': rev,
             [rev]: {
-                'merge': Object.assign({}, obj),
+                [changeType]: Object.assign({}, obj),
                 'userId': req['user_id'],
                 'authorizationID': req['authorizationid']
             },
@@ -147,7 +154,7 @@ responder.on('request', function handleReq(req, msg) {
         // Update rev of meta?
         obj['_meta']['_rev'] = rev;
 
-        return oadaLib.resources.putResource(id, obj).return(rev);
+        return method(id, obj).return(rev);
     }).then(function respond(rev) {
         var end = new Date().getTime();
         info(`Finished PUTing to "${req['path_leftover']}". + ${end-start}ms`);

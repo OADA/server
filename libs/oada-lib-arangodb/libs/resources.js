@@ -506,9 +506,14 @@ function deleteResource(id) {
 }
 
 // "Delete" a part of a resource
-function deleteSubResource(id, path) {
+// TODO: Not too sure I like how this function works or its name...
+function deletePartialResource(id, path, doc) {
   let key = id.replace(/^resources\//, '');
-  let doc = {};
+  doc = doc || {};
+
+  // Fix rev
+  doc['_oada_rev'] = doc['_rev'];
+  doc['_rev'] = undefined;
 
   pointer.set(doc, path, null);
 
@@ -549,6 +554,6 @@ module.exports = {
   getResourceOwnerIdRev,
   putResource,
   deleteResource,
-  deleteSubResource,
+  deletePartialResource,
   getParents,
 };
