@@ -274,63 +274,63 @@ function getResourceOwnerIdRev(id) {
 
 function getParents(to_resource_id) {
   let edges = db.collection('edges');
-	let resources = db.collection('resources');
+  let resources = db.collection('resources');
 
   let collection = 'graphNodes';
   if (!to_resource_id.match(/^\//)) collection += '/'; // if no leading slash on resourceid, add it to graphNodes
 
-	let bindVars = {
-		to_resource_id: collection + to_resource_id.replace(/resources\//, 'resources:'), // have to take out the slash on resources/ for arango to allow as key
-	};
+  let bindVars = {
+    to_resource_id: collection + to_resource_id.replace(/resources\//, 'resources:'), // have to take out the slash on resources/ for arango to allow as key
+  };
 
-	let parents = [];
-	let parent = {
-		resource_id: null,
-		path: null,
-		contentType: null
-	};
+  let parents = [];
+  let parent = {
+    resource_id: null,
+    path: null,
+    contentType: null
+  };
 
-	let parent_query = `FOR v, e IN 0..1
-			INBOUND @to_resource_id
-			edges
-			FILTER e.versioned == true
-			RETURN {v:v, e:e}`
+  let parent_query = `FOR v, e IN 0..1
+      INBOUND @to_resource_id
+      edges
+      FILTER e.versioned == true
+      RETURN {v:v, e:e}`
 
   return db.query({
     query: parent_query,
     bindVars
   })
-	.then((cursor) => {
-		let i = 0;
+  .then((cursor) => {
+    let i = 0;
 
-		// console.log(cursor._result);
-		let length = cursor._result.length;
-		trace('getParents'+'('+to_resource_id+')'+' parents length is '+length);
+    // console.log(cursor._result);
+    let length = cursor._result.length;
+    trace('getParents'+'('+to_resource_id+')'+' parents length is '+length);
 
-		for (i = 0; i < length; i++) {
-			parent.resource_id = cursor._result[i].v.resource_id;
+    for (i = 0; i < length; i++) {
+      parent.resource_id = cursor._result[i].v.resource_id;
       let path = cursor._result[i].v.path;
       if (!path) path = '';
-			parent.path = path + '/' + cursor._result[i].e.name;
-			parents.splice(i, 0, parent);
-		}
+      parent.path = path + '/' + cursor._result[i].e.name;
+      parents.splice(i, 0, parent);
+    }
 
-		return Promise.map(parents, parent => {
-			return db.query(aql`
-				FOR r in resources
-				FILTER r._id == ${parent.resource_id}
-				RETURN r._type`)
-				.then(cursor => cursor.next())
-				.then(result => {
-					// console.log(parent);
-					parent.contentType = result;
-				})
-		})
-		.then(() => {
-			// all done
-			return parents;
-		});
-	})
+    return Promise.map(parents, parent => {
+      return db.query(aql`
+        FOR r in resources
+        FILTER r._id == ${parent.resource_id}
+        RETURN r._type`)
+        .then(cursor => cursor.next())
+        .then(result => {
+          // console.log(parent);
+          parent.contentType = result;
+        })
+    })
+    .then(() => {
+      // all done
+      return parents;
+    });
+  })
   .catch({
       isArangoError: true,
       errorMessage: 'invalid traversal depth (while instantiating plan)'
@@ -556,4 +556,10 @@ module.exports = {
   deleteResource,
   deletePartialResource,
   getParents,
+  // TODO: Better way to handler errors?
+  // ErrorNum from: https://docs.arangodb.com/2.8/ErrorCodes/
+  NotFoundError: {
+    name: 'ArangoError',
+    errorNum: 1202
+  }
 };

@@ -317,8 +317,9 @@ _server.app.put('/resources/*', function putResource(req, res, next) {
                     return Promise.reject(new OADAError('Not Authorized', 403,
                             'User does not own this resource'));
                 default:
-                    let err = new OADAError('write failed with code ' + resp.code);
-                    return Promise.reject(err);
+                    let msg = 'write failed with code ' + resp.code;
+
+                    return Promise.reject(new OADAError(msg));
             }
         })
         .then(function(resp) {
@@ -361,6 +362,9 @@ _server.app.delete('/resources/*', function deleteResource(req, res, next) {
         switch (resp.code) {
             case 'success':
                 return;
+            case 'not_found':
+                // fall-through
+                // TODO: Is 403 a good response for DELETE on non-existent?
             case 'permission':
                 return Promise.reject(new OADAError('Not Authorized', 403,
                         'User does not own this resource'));
