@@ -24,10 +24,11 @@ module.exports = {
             'auto.offset.reset': 'latest',
             // Needed to lower latency
             'fetch.wait.max.ms': 10,
+            'fetch.error.backoff.ms': 10,
             //'fetch.min.bytes': 1,
             'request.required.acks': 0,
-            'socket.blocking.max.ms': 100,
-            'queue.buffering.max.ms': 10,
+            'socket.blocking.max.ms': 10,
+            'queue.buffering.max.ms': 5,
         },
         timeouts: {
             default: 5000,
