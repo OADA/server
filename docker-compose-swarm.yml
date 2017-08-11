@@ -1,0 +1,496 @@
+version: '3'
+
+# For deploying the swarm:
+#   On a swarm mananger machine (more about creating docker machines please
+#   refer to the official tutorial)
+#     - Build the images using this docker compose file:
+#         docker-compose -f .\docker-compose-swarm.yml build
+#     - docker stack deploy -c ./docker-compose-swarm.yml .
+#     - Go to [manager_ip]:8080 to check the swarm status;
+#     - You may need to rm the deployed and rebuild the images first for
+#       updates.
+services:
+
+  startup:
+    depends_on:
+      - zookeeper
+      - kafka
+      - arangodb
+    build: ./startup
+    restart: always
+    container_name: startup
+    image: oada-srvc-startup:latest
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: any
+      resources:
+        limits:
+          cpus: "0.05"
+          memory: 50M
+    networks:
+      - kafka_net
+      - arango_net
+      - startup_net
+    ports:
+      - "80"
+    volumes:
+      - .:/code
+      - ./oada-srvc-docker-config.js:/oada-srvc-docker-config.js
+    environment:
+      - NODE_ENV=${NODE_ENV:-development}
+      - DEBUG=${DEBUG:-""}
+      # set RESETDATABASE to "yes" if you want to drop database on startup and recreate
+      - RESETDATABASE=${RESETDATABASE:-no}
+
+  # proxy routes OAuth2 requests (/auth, /code) to auth service,
+  # and the rest to main http-handlers.  TODO: add load balancing with multiple handlers.
+  proxy:
+    depends_on:
+      - auth
+      - http-handler
+      - well-known
+    build: ./proxy
+    container_name: proxy
+    restart: always
+    image: oada-srvc-proxy:latest
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: any
+      resources:
+        limits:
+          cpus: "0.05"
+          memory: 50M
+    networks:
+      - http_net
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./proxy/nginx.conf:/etc/nginx/nginx.conf
+      - ./proxy/dev-sites-enabled/:/etc/nginx/sites-templates/
+      - ./proxy/dev-certs/:/certs/
+      - .:/code
+      - ./oada-srvc-docker-config.js:/oada-srvc-docker-config.js
+      - letsencrypt_www_data:/var/www/letsencrypt
+    environment:
+      - NODE_ENV=${NODE_ENV:-development}
+      - DEBUG=${DEBUG:-""}
+      - DOMAIN=${DOMAIN:-localhost}
+    command:
+      - /entrypoint.sh
+
+  auth:
+    depends_on:
+      - startup
+    build: ./auth
+    container_name: auth
+    restart: always
+    image: oada-srvc-auth:latest
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: any
+      resources:
+        limits:
+          cpus: "0.05"
+          memory: 50M
+    networks:
+      - http_net
+      - arango_net
+      - startup_net
+    ports:
+      - "80"
+    volumes:
+      - .:/code
+      - ./oada-srvc-docker-config.js:/oada-srvc-docker-config.js
+    environment:
+      - NODE_ENV=${NODE_ENV:-development}
+      - DEBUG=${DEBUG:-""}
+    command:
+      - /entrypoint.sh
+
+  # http-handler is in charge of maintaining connectiongs to clients and starting
+  # the first message for a request into Kafka
+  http-handler:
+    depends_on:
+      - startup
+    build: ./http-handler
+    restart: always
+    container_name: http-handler
+    image: oada-srvc-http-handler:latest
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: any
+      resources:
+        limits:
+          cpus: "0.05"
+          memory: 50M
+    networks:
+      - startup_net
+      - http_net
+      - kafka_net
+      - arango_net
+    ports:
+      - "80"
+    volumes:
+      - .:/code
+      - ./oada-srvc-docker-config.js:/oada-srvc-docker-config.js
+    environment:
+      - NODE_ENV=${NODE_ENV:-development}
+      - DEBUG=${DEBUG:-""}
+      - IGNORE_SCOPE=${IGNORE_SCOPE:-""}
+
+  write-handler:
+    depends_on:
+      - startup
+    build: ./write-handler
+    restart: always
+    container_name: write-handler
+    image: oada-srvc-write-handler:latest
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: any
+      resources:
+        limits:
+          cpus: "0.05"
+          memory: 50M
+    networks:
+      - startup_net
+      - kafka_net
+      - arango_net
+    volumes:
+      - .:/code
+      - ./oada-srvc-docker-config.js:/oada-srvc-docker-config.js
+    environment:
+      - NODE_ENV=${NODE_ENV:-development}
+      - DEBUG=${DEBUG:-""}
+
+  token-lookup:
+    depends_on:
+      - startup
+    build: ./token-lookup
+    restart: always
+    container_name: token-lookup
+    image: oada-srvc-token-lookup:latest
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: any
+      resources:
+        limits:
+          cpus: "0.05"
+          memory: 50M
+    networks:
+      - startup_net
+      - kafka_net
+      - arango_net
+    volumes:
+      - .:/code
+      - ./oada-srvc-docker-config.js:/oada-srvc-docker-config.js
+    environment:
+      - NODE_ENV=${NODE_ENV:-development}
+      - DEBUG=${DEBUG:-""}
+
+  rev-graph-update:
+    depends_on:
+      - startup
+    build: ./rev-graph-update
+    restart: always
+    container_name: rev-graph-update
+    image: oada-srvc-rev-graph-update:latest
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: any
+      resources:
+        limits:
+          cpus: "0.05"
+          memory: 50M
+    networks:
+      - startup_net
+      - kafka_net
+      - arango_net
+    volumes:
+      - .:/code
+      - ./oada-srvc-docker-config.js:/oada-srvc-docker-config.js
+    environment:
+      - NODE_ENV=${NODE_ENV:-development}
+      - DEBUG=${DEBUG:-""}
+
+  graph-lookup:
+    depends_on:
+      - startup
+    build: ./graph-lookup
+    restart: always
+    container_name: graph-lookup
+    image: oada-srvc-graph-lookup:latest
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: any
+      resources:
+        limits:
+          cpus: "0.05"
+          memory: 50M
+    networks:
+      - startup_net
+      - kafka_net
+      - arango_net
+    volumes:
+      - .:/code
+      - ./oada-srvc-docker-config.js:/oada-srvc-docker-config.js
+    environment:
+      - NODE_ENV=${NODE_ENV:-development}
+      - DEBUG=${DEBUG:-""}
+
+  well-known:
+    depends_on:
+      - startup
+    build: ./well-known
+    restart: always
+    container_name: well-known
+    image: oada-srvc-well-known:latest
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: any
+      resources:
+        limits:
+          cpus: "0.05"
+          memory: 50M
+    networks:
+      - startup_net
+      - http_net
+    volumes:
+      - .:/code
+      - ./oada-srvc-docker-config.js:/oada-srvc-docker-config.js
+    ports:
+      - "80"
+    environment:
+      - NODE_ENV=${NODE_ENV:-development}
+      - DEBUG=${DEBUG:-""}
+
+  tests:
+    # depends_on:
+    #   - startup
+    build: ./tests
+    container_name: tests
+    image: oada-srvc-tests:latest
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: none
+      resources:
+        limits:
+          cpus: "0.05"
+          memory: 50M
+    networks:
+      - startup_net
+      - kafka_net
+      - arango_net
+      - http_net
+    volumes:
+      - .:/code
+      - ./oada-srvc-docker-config.js:/oada-srvc-docker-config.js
+    environment:
+      - NODE_ENV=${NODE_ENV:-development}
+      - DEBUG=${DEBUG:-""}
+
+  # admin container has all the service names and volumes mapped, so you
+  # can interact with them easily from this service.
+  admin:
+    build: ./admin
+    image: oada-srvc-admin:latest
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: none
+      resources:
+        limits:
+          cpus: "0.05"
+          memory: 50M
+    volumes:
+      - ./oada-srvc-docker-config.js:/oada-srvc-docker-config.js
+      - arangodb_data:/volumes/arangodb
+      - arangodb_apps_data:/volumes/arangodb_apps
+      - zookeeper_data:/volumes/zookeeper
+      - kafka_data:/volumes/kafka
+      - .:/code
+      - /var/run/docker.sock:/var/run/docker.sock
+    command: bash
+    networks:
+      - startup_net
+      - kafka_net
+      - arango_net
+      - http_net
+    environment:
+      - NODE_ENV=${NODE_ENV:-development}
+      - DEBUG=${DEBUG:-""}
+
+  # Needed for installing native Node dependencies
+  yarn:
+    build: ./yarn
+    image: oada-srvc-yarn:latest
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: none
+      resources:
+        limits:
+          cpus: "0.05"
+          memory: 50M
+    volumes:
+      - .:/code
+
+  # letsencrypt will go get HTTPS certificates for you if DOMAIN is not localhost
+  # NOTE: letsencrypt has a limit of 5 certificates per top domain per week,
+  # so you don't want this thing running often.  Once it runs, SAVE THE CERTIFICATES
+  # TO A SAFE PLACE.  Otherwise if you go over the request limit and lost the private
+  # key, you're just out of luck for 7 days.
+  letsencrypt:
+    build: ./letsencrypt
+    container_name: letsencrypt
+    restart: "no"
+    image: oada-srvc-letsencrypt:latest
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: none
+      resources:
+        limits:
+          cpus: "0.05"
+          memory: 50M
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - letsencrypt_www_data:/var/www/letsencrypt
+      - ./proxy/dev-certs:/certs
+    networks:
+      - http_net
+    environment:
+      - SERVER_CONTAINER=proxy
+      - DOMAINS=${DOMAIN:-localhost}
+      - EMAIL=${LETSENCRYPTEMAIL:-info@openag.io}
+      - WEBROOT_PATH=/var/www/letsencrypt
+      - CERTS_PATH=/certs/${DOMAIN:-nodomain}
+      - CHECK_FREQ=7
+
+  # Arango is the main backend where core data and graph is stored
+  arangodb:
+    image: arangodb
+    container_name: arangodb
+    restart: always
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: any
+      resources:
+        limits:
+          cpus: "0.1"
+          memory: 200M
+    networks:
+      - arango_net
+    volumes:
+      - arangodb_data:/var/lib/arangodb3
+      - arangodb_data:/var/lib/arangodb3-apps
+    ports:
+      - "8529:8529"
+    environment:
+      # - ARANGO_RANDOM_ROOT_PASSWORD=1
+      - ARANGO_NO_AUTH=1
+
+
+  # zookeeper and kafka entries are based on:
+  # from https://github.com/wurstmeister/kafka-docker/blob/master/docker-compose.yml
+  zookeeper:
+    image: wurstmeister/zookeeper
+    restart: always
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: any
+      resources:
+        limits:
+          cpus: "0.05"
+          memory: 300M
+    networks:
+      - kafka_net
+    ports:
+      - "2181"
+    volumes:
+      - zookeeper_data:/var/lib/zookeeper
+
+  kafka:
+    image: wurstmeister/kafka
+    depends_on:
+      - zookeeper
+    ports:
+      - "9092"
+    restart: always
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: any
+      resources:
+        limits:
+          cpus: "0.1"
+          memory: 50M
+    hostname: kafka
+    networks:
+      - kafka_net
+    environment:
+      KAFKA_ADVERTISED_HOST_NAME: "kafka"  # NOTE: this only allows services inside this docker network
+      KAFKA_ADVERTISED_PORT: "9092"        # to connect to kafka.  Set to machine's IP if you want external.
+      KAFKA_ZOOKEEPER_CONNECT: "zookeeper:2181"
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+      KAFKA_HEAP_OPTS: "-Xmx1g -Xms512M"
+      KAFKA_BROKER_ID: 1
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - kafka_data:/var/lib/kafka
+
+  # hitman container will kill other containers using Pumba for resiliency test.
+  hitman:
+    image: gaiaadm/pumba:master
+    container_name: hitman
+    restart: always
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: any
+      resources:
+        limits:
+          cpus: "0.05"
+          memory: 50M
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    command: pumba --random --interval 1h kill --signal SIGKILL
+
+  # Overview for swarm services.
+  visualizer:
+    image: dockersamples/visualizer:stable
+    ports:
+      - "8080:8080"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    deploy:
+      placement:
+        constraints: [node.role == manager]
+    networks:
+      - http_net
+
+volumes:
+  arangodb_data:
+  arangodb_apps_data:
+  kafka_data:
+  zookeeper_data:
+  letsencrypt_www_data:
+
+networks:
+  arango_net:
+  kafka_net:
+  http_net:
+  startup_net:
