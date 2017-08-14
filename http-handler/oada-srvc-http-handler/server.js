@@ -393,7 +393,21 @@ _server.app.get('/authorizations', function(req, res, next) {
         .then(res.json)
         .catch(next);
 });
+_server.app.get('/authorizations/:authId', function(req, res, next) {
+    return oadaLib.authorizations.findById(req.params.authId)
+        .tap(function chkAuthUser(auth) {
+            // Only let users see their own authorizations
+            try {
+                if (auth.user['_id'] === req.user.doc['user_id']) {
+                    return;
+                }
+            } catch (e) {}
 
+            return Promise.reject(new OADAError('Not Authorized', 403));
+        })
+        .then(res.json)
+        .catch(next);
+});
 
 //////////////////////////////////////////////////
 // Default handler for top-level routes not found:

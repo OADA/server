@@ -10,6 +10,15 @@ const users = require('./users.js');
 const authorizations = db.collection(
     config.get('arangodb:collections:authorizations:name'));
 
+function findById(id) {
+  return db.query(aql`
+      FOR t IN ${authorizations}
+        FILTER t._key == ${id}
+        RETURN UNSET(t, '_key')
+    `)
+    .call('next');
+}
+
 function findByToken(token) {
   return db.query(aql`
       FOR t IN ${authorizations}
@@ -51,6 +60,7 @@ function save(token) {
 }
 
 module.exports = {
+  findById,
   findByToken,
   findByUser,
   save,
