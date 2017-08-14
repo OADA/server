@@ -138,11 +138,11 @@ _server.app.post('/resources(/*)?', function postResource(req, res, next) {
     next();
 });
 
-_server.app.use(function graphHandler(req, res, next) {
+_server.app.use('/resources', function graphHandler(req, res, next) {
     return kafkaReq.send({
         'connection_id': req.id,
         'token': req.get('authorization'),
-        'url': req.url,
+        'url': '/resources' + req.url,
     }, config.get('kafka:topics:graphRequest'))
     .then(function handleGraphRes(resp) {
         if (resp['resource_id']) {
