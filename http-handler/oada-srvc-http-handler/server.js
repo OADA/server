@@ -381,17 +381,19 @@ _server.app.delete('/resources/*', function deleteResource(req, res, next) {
     .catch(next);
 });
 
-/////////////////////////////////////////////////////////
-// Setup the resources, meta, and bookmarks routes:
+// AUthorizations routes
+// TODO: How the heck should this work??
+_server.app.get('/authorizations', function(req, res, next) {
+    return oadaLib.authorizations.findByUser(req.user.doc['user_id'])
+        .reduce((o, i) => {
+            let k = i['_id'].replace(/^authorizations\//, '');
+            o[k] = i;
+            return o;
+        }, {})
+        .then(res.json)
+        .catch(next);
+});
 
-// NOTE: must register bookmarks_handler and meta_handler prior to
-// resources_handler because they call next() to get to the
-// resources handler.
-/*
-_server.app.use(config.server.path_prefix, bookmarks_handler);
-_server.app.use(config.server.path_prefix, meta_handler);
-_server.app.use(config.server.path_prefix, resources_handler);
-*/
 
 //////////////////////////////////////////////////
 // Default handler for top-level routes not found:

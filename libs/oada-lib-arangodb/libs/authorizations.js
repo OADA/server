@@ -7,9 +7,12 @@ const util = require('../util');
 
 const users = require('./users.js');
 
+const authorizations = db.collection(
+    config.get('arangodb:collections:authorizations:name'));
+
 function findByToken(token) {
   return db.query(aql`
-      FOR t IN ${db.collection(config.get('arangodb:collections:authorizations:name'))}
+      FOR t IN ${authorizations}
       FILTER t.token == ${token}
       RETURN t`
     )
@@ -31,13 +34,24 @@ function findByToken(token) {
     });
 }
 
+// TODO: Add index on user id
+function findByUser(user) {
+  let cur = db.query(aql`
+    FOR t IN ${authorizations}
+      FILTER t.user._id == ${user}
+      FILTER t.revoked != true
+      RETURN UNSET(t, '_key')
+  `);
+
+  return util.bluebirdCursor(cur);
+}
+
 function save(token) {
-  return db.collection(config.get('arangodb:collections:authorizations:name'))
-    .save(token)
-    .then(() => findByToken(token.token));
+  return authorizations.save(token).then(() => findByToken(token.token));
 }
 
 module.exports = {
   findByToken,
-  save
+  findByUser,
+  save,
 };
