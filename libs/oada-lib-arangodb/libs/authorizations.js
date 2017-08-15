@@ -59,9 +59,16 @@ function save(token) {
   return authorizations.save(token).then(() => findByToken(token.token));
 }
 
+function revoke(token) {
+  return db.query(aql`
+    UPDATE ${token} WITH { revoked: true } IN ${authorizations}
+  `);
+}
+
 module.exports = {
   findById,
   findByToken,
   findByUser,
   save,
+  revoke
 };

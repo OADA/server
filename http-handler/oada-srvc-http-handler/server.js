@@ -408,6 +408,23 @@ _server.app.get('/authorizations/:authId', function(req, res, next) {
         .then(res.json)
         .catch(next);
 });
+// TODO: Should another microservice revoke authorizations?
+_server.app.delete('/authorizations/:authId', function(req, res, next) {
+    return oadaLib.authorizations.findById(req.params.authId)
+        .tap(function chkAuthUser(auth) {
+            // Only let users see their own authorizations
+            try {
+                if (auth.user['_id'] === req.user.doc['user_id']) {
+                    return;
+                }
+            } catch (e) {}
+
+            return Promise.reject(new OADAError('Not Authorized', 403));
+        })
+        .then(() => oadaLib.authorizations.revoke(req.params.authId))
+        .then(() => res.sendStatus(204))
+        .catch(next);
+});
 
 //////////////////////////////////////////////////
 // Default handler for top-level routes not found:
