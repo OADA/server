@@ -25,13 +25,13 @@ module.exports = {
     collections: {
                users: { name: 'users',          indexes: [ 'username' ], defaults: './libs/exampledocs/users'      },
              clients: { name: 'clients',        indexes: [ 'clientId' ], defaults: './libs/exampledocs/clients'    },
-      authorizations: { name: 'authorizations', indexes: [ 'token'    ], defaults: './libs/exampledocs/authorizations' },
+      authorizations: { name: 'authorizations', indexes: [ 'token', { name: 'user', unique: false } ], defaults: './libs/exampledocs/authorizations' },
                codes: { name: 'codes',          indexes: [ 'code'     ], defaults: './libs/exampledocs/codes'      },
            resources: { name: 'resources',      indexes: [            ], defaults: './libs/exampledocs/resources'  },
           graphNodes: { name: 'graphNodes',     indexes: [            ], defaults: './libs/exampledocs/graphNodes' },
                edges: { name: 'edges',          indexes: [ { name: 'name', unique: false } ], defaults: './libs/exampledocs/edges',
                         edgeCollection: true },
-           putBodies: { name: 'putBodies',      indexes: [ ], defaults: './libs/exampledocs/putBodies', 
+           putBodies: { name: 'putBodies',      indexes: [ ], defaults: './libs/exampledocs/putBodies',
                         createOptions: { isVolatile: true } },
     },
     init: {

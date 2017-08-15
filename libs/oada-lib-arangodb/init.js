@@ -78,8 +78,8 @@ module.exports = {
       .then(dbindexes => {
         return Promise.map(c.indexes, ci => { // for each index in this collection, check and create
           const indexname = (typeof ci === 'string') ? ci : ci.name;
-          const unique = (typeof ci === 'string') ? true: ci.unique;
-          const sparse = (typeof ci === 'string') ? true: ci.sparse;
+          const unique = (typeof ci === 'string') ? true : ci.unique;
+          const sparse = (typeof ci === 'string') ? true : ci.sparse;
           if (_.find(dbindexes, dbi => _.isEqual(dbi.fields, [ indexname ]))) {
             return trace('Index '+indexname+' exists on collection '+c.name);
           }
@@ -102,7 +102,7 @@ module.exports = {
       const colinfo = config.get('arangodb:collections')[colname];
       if (typeof colinfo.defaults !== 'string') return; // nothing to import for this colname
       const data = require(colinfo.defaults);
-      
+
       return Promise.map(data, doc => {
         if (!doc || !doc._id) trace('WARNING: doc is undefined for collection '+colinfo.name);
         // Have to use _key if we want the key to be our key:
