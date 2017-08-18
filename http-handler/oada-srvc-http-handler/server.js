@@ -90,6 +90,7 @@ _server.app.use(oada_ref_auth({
 */
 _server.app.use(function requestId(req, res, next) {
     req.id = uuid();
+    res.set('X-Request-Id', req.id);
 
     res.on('finish', () => info(`finished request ${req.id}`));
     next();
