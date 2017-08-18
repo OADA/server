@@ -9,6 +9,6 @@ module.exports = {
   codes: require('./libs/codes.js'),
   authorizations: require('./libs/authorizations.js'),
   putBodies: require('./libs/putBodies.js'),
-  // you can call examples('resources') to get the list of example resources, etc.
-  examples: collectionName => require('./libs/exampledocs/'+collectionName),
+  // call examples('resources') to get the list of example resources, etc.
+  examples: collectionName => require('./libs/exampledocs/' + collectionName),
 }
