@@ -119,9 +119,6 @@ function getResource(id, path) {
 
   const returnPath = parts.reduce((p, part, i) => p.concat(`[@v${i}]`), '');
 
-  console.log('ajhmtgrtasfgrhjuysadhfjash');
-  console.log(id);
-  console.log(JSON.stringify(bindVars, false, '    '));
   return db.query({
     query: `FOR r IN @@collection
         FILTER r._id == @id
@@ -449,5 +446,9 @@ module.exports = {
   NotFoundError: {
     name: 'ArangoError',
     errorNum: 1202
-  }
+  },
+  UniqueConstraintError: {
+    name: 'ArangoError',
+    errorNum: 1210
+  },
 };

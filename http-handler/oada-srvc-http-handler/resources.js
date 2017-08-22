@@ -59,6 +59,7 @@ function checkScopes(scope, contentType) {
     const scopeTypes = {
         'oada.rocks': [
             'application/vnd.oada.bookmarks.1+json',
+            'application/vnd.oada.shares.1+json',
             'application/vnd.oada.rocks.1+json',
             'application/vnd.oada.rock.1+json',
         ]
@@ -174,6 +175,20 @@ router.put('/*', function chkPutScope(req, res, next) {
 
     return next();
 });
+
+// Don't let users modify their shares?
+function noModifyShares(req, res, next) {
+    let err = null;
+
+    if (req.url.match(`^/${req.user.doc['shares_id']}`)) {
+        err = new OADAError('Forbidden', 403,
+            'User cannot modify their shares document');
+    }
+
+    next(err);
+}
+router.delete('/*', noModifyShares);
+router.put('/*', noModifyShares);
 
 // Parse JSON content types as text (but do not parse JSON yet)
 router.put('/*', bodyParser.text({

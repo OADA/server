@@ -101,6 +101,13 @@ app.use(function handleBookmarks(req, res, next) {
     next();
 });
 
+// Rewrite the URL if it starts with /shares
+app.use(function handleShares(req, res, next) {
+    req.url = req.url.replace(/^\/shares/,
+      `/${req.user.doc['shares_id']}`);
+    next();
+});
+
 app.use('/resources', resources);
 app.use('/authorizations', authorizations);
 
