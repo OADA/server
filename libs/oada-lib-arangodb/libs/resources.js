@@ -88,10 +88,11 @@ function lookupFromUrl(url) {
       if (res.vertices.length - 1 < pieces.length) {
         trace('lookupFromUrl(' + url + '):',
             'more URL pieces than vertices, computing path');
-        let lastResource = (res.vertices.length-1) - (_.findIndex(_.reverse(res.vertices), 'is_resource'))
-          // Slice a negative value to take the last n pieces of the array 
-        path_leftover = pointer.compile(pieces.slice((lastResource) - pieces.length))
-        pathLeftover = pointer.compile(pieces.slice(0 - extras));
+        let lastResource = (res.vertices.length - 1) -
+            (_.findIndex(_.reverse(res.vertices), 'is_resource'));
+        // Slice a negative value to take the last n pieces of the array
+        pathLeftover =
+            pointer.compile(pieces.slice(lastResource - pieces.length));
       } else {
         trace('lookupFromUrl(' + url + '):',
             'same number URL pieces as vertices, path is on graphNode');
