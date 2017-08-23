@@ -13,7 +13,7 @@ function findById(id) {
     )
     .call('next')
     .then((client) => {
-      if(!client) {
+      if (!client) {
         return null;
       }
 

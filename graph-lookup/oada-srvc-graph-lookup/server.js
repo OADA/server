@@ -15,7 +15,7 @@ const responder = new Responder(
   config.get('kafka:groupId'));
 
 module.exports = function stopResp() {
-	return responder.disconnect(); 
+  return responder.disconnect();
 };
 
 

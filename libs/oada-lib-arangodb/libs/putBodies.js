@@ -1,8 +1,10 @@
+'use strict';
+
 const config = require('../config');
 const db = require('../db');
-const aql = require('arangojs').aql;
 
-const collection = db.collection(config.get('arangodb:collections:putBodies:name'));
+const collection =
+    db.collection(config.get('arangodb:collections:putBodies:name'));
 
 // Give string of JSON rather than object
 function savePutBody(body) {
