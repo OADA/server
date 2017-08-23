@@ -214,7 +214,10 @@ function lookupFromUrl(url) {
         // path_leftover is the extra pieces
         if (res.vertices.length-1 < pieces.length) {
           trace('lookupFromUrl('+url+'): more URL pieces than vertices, computing path');
-          let extras = pieces.length - (res.vertices.length-1)
+          trace('pieces: '+ pieces);
+          let i = _.findIndex(_.reverse(res.vertices, ['is_resource', false])
+          let extras = pieces.length - (i)
+          trace('picesslice', pieces.slice(0-extras))
           path_leftover = pointer.compile(pieces.slice(0-extras))
         } else {
           trace('lookupFromUrl('+url+'): same number URL pieces as vertices, path is whatever is on graphNode');

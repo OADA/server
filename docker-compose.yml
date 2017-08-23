@@ -15,7 +15,7 @@ services:
       - arango_net
       - startup_net
     ports:
-      - "80"
+      - "8000"
     volumes:
       - .:/code
       - ./oada-srvc-docker-config.js:/oada-srvc-docker-config.js
@@ -38,7 +38,6 @@ services:
     networks:
       - http_net
     ports:
-      - "80:80"
       - "443:443"
     volumes:
       - ./proxy/nginx.conf:/etc/nginx/nginx.conf
@@ -65,7 +64,7 @@ services:
       - arango_net
       - startup_net
     ports:
-      - "80"
+      - "8000"
     volumes:
       - .:/code
       - ./oada-srvc-docker-config.js:/oada-srvc-docker-config.js
@@ -89,7 +88,7 @@ services:
       - kafka_net
       - arango_net
     ports:
-      - "80"
+      - "8000"
     volumes:
       - .:/code
       - ./oada-srvc-docker-config.js:/oada-srvc-docker-config.js
@@ -179,7 +178,7 @@ services:
       - .:/code
       - ./oada-srvc-docker-config.js:/oada-srvc-docker-config.js
     ports:
-      - "80"
+      - "8000"
     environment:
       - NODE_ENV=${NODE_ENV:-development}
       - DEBUG=${DEBUG:-""}
@@ -310,6 +309,11 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
     command: pumba --random --interval 1h kill --signal SIGKILL
+
+  webhooks:
+    build: ./webhooks
+    volumes:
+      - .:/code
 
 volumes:
   arangodb_data:
