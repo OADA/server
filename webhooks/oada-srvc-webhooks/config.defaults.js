@@ -26,12 +26,12 @@ module.exports = {
   isProduction: (process.env.NODE_ENV === 'production'),
 
 	kafka: {
-    topics: {
-      tokenRequest: 'token_request',
-      graphRequest: 'graph_request',
-      writeRequest: 'write_request',
-      httpResponse: 'http_response',
+        topics: {
+            tokenRequest: 'token_request',
+            graphRequest: 'graph_request',
+            writeRequest: 'write_request',
+            httpResponse: 'http_response',
+        },
+    	groupId: 'webhooks'
     },
-		groupId: 'rev-graph-update'
-  },
 };

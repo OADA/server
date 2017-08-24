@@ -311,9 +311,22 @@ services:
     command: pumba --random --interval 1h kill --signal SIGKILL
 
   webhooks:
+    depends_on:
+      - startup
     build: ./webhooks
+    restart: always
+    container_name: webhooks
+    networks:
+      - startup_net
+      - kafka_net
+      - arango_net
     volumes:
       - .:/code
+      - ./oada-srvc-docker-config.js:/oada-srvc-docker-config.js
+    environment:
+      - NODE_ENV=${NODE_ENV:-development}
+      - DEBUG=${DEBUG:-""}
+
 
 volumes:
   arangodb_data:
