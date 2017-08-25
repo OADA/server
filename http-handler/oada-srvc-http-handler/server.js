@@ -97,14 +97,14 @@ app.use(function tokenHandler(req, res, next) {
 // Rewrite the URL if it starts with /bookmarks
 app.use(function handleBookmarks(req, res, next) {
     req.url = req.url.replace(/^\/bookmarks/,
-      `/${req.user.doc['bookmarks_id']}`);
+        `/${req.user.doc['bookmarks_id']}`);
     next();
 });
 
 // Rewrite the URL if it starts with /shares
 app.use(function handleShares(req, res, next) {
     req.url = req.url.replace(/^\/shares/,
-      `/${req.user.doc['shares_id']}`);
+        `/${req.user.doc['shares_id']}`);
     next();
 });
 
