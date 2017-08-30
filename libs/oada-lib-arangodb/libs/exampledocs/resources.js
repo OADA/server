@@ -48,11 +48,59 @@ module.exports = [
 
           },
           'userid': 'users/default:users_frank_123',
-          'authorizationid': 'authorizations/default:authorizations_123',
+          'authorizationid': 'authorizations/default:authorizations-123',
         },
       },
     },
     'rocks': {'_id': 'resources/default:resources_rocks_123', '_rev': '1-abc'}
+  },
+  //--------------------
+  //Bookmarks document (for sam):
+  {
+    '_id': 'resources/default:resources_bookmarks_321',
+    '_oada_rev': '1-abc',
+    '_type': 'application/vnd.oada.bookmarks.1+json',
+    '_meta': {
+      '_id': 'resources/default:resources_bookmarks_321/_meta',
+      '_rev': '1-abc',
+      '_type': 'application/vnd.oada.bookmarks.1+json',
+      '_owner': 'users/default:users_sam_321',
+      'stats': {
+        // stats on meta is exempt from _changes
+        // because that would generate loop of rev updates with resource
+        'createdBy': 'users/default:users_sam_321',
+        'created': 1494133055,
+        'modifiedBy': 'users/default:users_sam_321',
+        'modified': 1494133055
+      },
+      '_changes': {
+        '_id': 'resources/default:resources_bookmarks_321/_meta/_changes',
+        '_rev': '1-abc',
+        '1-abc': {
+          'merge': {
+            '_rev': '1-abc',
+            '_type': 'application/vnd.oada.bookmarks.1+json',
+            '_meta': {
+              '_id': 'resources/default:resources_bookmarks_321/_meta',
+              '_rev': '1-abc',
+              '_type': 'application/vnd.oada.bookmarks.1+json',
+              '_owner': 'users/default:users_sam_321',
+              'stats': {
+                // stats on meta is exempt from _changes
+                // because that would generate loop of rev updates with resource
+                'createdBy': 'users/default:users_sam_321',
+                'created': 1494133055,
+                'modifiedBy': 'users/default:users_sam_321',
+                'modified': 1494133055
+              },
+              // leave out _changes in the _changes itself
+            },
+          },
+          'userid': 'users/default:users_sam_321',
+          'authorizationid': 'authorizations/default:authorizations-321',
+        },
+      },
+    },
   },
 
   //------------------------------------------------
@@ -66,6 +114,29 @@ module.exports = [
       '_rev': '1-abc',
       '_type': 'application/vnd.oada.shares.1+json',
       '_owner': 'users/default:users_frank_123', // TODO: Who "owns" /shares?
+      'stats': {
+        // stats on meta is exempt from _changes
+        // because that would generate loop of rev updates with resource
+        'createdBy': 'system',
+        'created': 1494133055,
+        'modifiedBy': 'system',
+        'modified': 1494133055
+      },
+      '_changes': {
+      },
+    },
+  },
+  //------------------------------------------------
+  // Shares document (for user sam):
+  {
+    '_id': 'resources/default:resources_shares_321',
+    '_oada_rev': '1-abc',
+    '_type': 'application/vnd.oada.shares.1+json',
+    '_meta': {
+      '_id': 'resources/default:resources_shares_321/_meta',
+      '_rev': '1-abc',
+      '_type': 'application/vnd.oada.shares.1+json',
+      '_owner': 'users/default:users_sam_321', // TODO: Who "owns" /shares?
       'stats': {
         // stats on meta is exempt from _changes
         // because that would generate loop of rev updates with resource
@@ -123,7 +194,7 @@ module.exports = [
             }
           },
           'userid': 'users/default:users_frank_123',
-          'authorizationid': 'authorizations/default:authorizations_123',
+          'authorizationid': 'authorizations/default:authorizations-123',
         },
       },
     },
@@ -179,7 +250,7 @@ module.exports = [
             'picked_up': false
           },
           'userid': 'users/default:users_frank_123',
-          'authorizationid': 'authorizations/default:authorizations_123',
+          'authorizationid': 'authorizations/default:authorizations-123',
         },
       },
     },

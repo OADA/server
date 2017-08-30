@@ -15,10 +15,26 @@ module.exports = [
   },
 
   //------------------------------------------------
+  // Bookmarks document (for user sam):
+  {
+    '_id': 'graphNodes/resources:default:resources_bookmarks_321',
+    'resource_id': 'resources/default:resources_bookmarks_321',
+    'is_resource': true,
+  },
+
+  //------------------------------------------------
   // Shares document:
   {
     '_id': 'graphNodes/resources:default:resources_shares_123',
     'resource_id': 'resources/default:resources_shares_123',
+    'is_resource': true,
+  },
+
+  //------------------------------------------------
+  // Shares document (for user sam):
+  {
+    '_id': 'graphNodes/resources:default:resources_shares_321',
+    'resource_id': 'resources/default:resources_shares_321',
     'is_resource': true,
   },
 

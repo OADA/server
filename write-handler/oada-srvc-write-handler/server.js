@@ -168,7 +168,8 @@ responder.on('request', function handleReq(req, msg) {
             'resource_id': id,
             '_rev': rev,
             'user_id': req['user_id'],
-            'authorizationid': req['authorizationid'],
+			'authorizationid': req['authorizationid'],
+			'path_leftover': req['path_leftover'],
         };
     }).catch(resources.NotFoundError, function respondNotFound(err) {
         error(err);

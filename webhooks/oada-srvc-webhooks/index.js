@@ -38,13 +38,24 @@ module.exports = function stopResp() {
 };
 
 responder.on('request', function handleReq(req) {
-	trace('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
     if (req.msgtype !== 'write-response') return
     if (req.code !== 'success') return
-	trace('webhook resource_id : '+req.resource_id)
-	return oadaLib.resources.getResource(req.resource_id)
-	.get('_meta').get('_syncs').then(Object.values).each((sync) => {
-		trace('Sending to: '+sync.url)
-		return axios(sync)
+	return oadaLib.resources.getResource(req.resource_id).then((res) => {
+		if (res._meta && res._meta._syncs) {
+			return Promise.map(Object.keys(res._meta._syncs), (sync) => {
+				if (res._meta._syncs[sync]['oada-put']) {
+					trace('Sending oada-put to: '+res._meta._syncs[sync].url)
+					trace('oada-put body: '+res._meta._changes[res._rev])
+					return axios({
+						method: 'put',
+						url: res._meta._syncs[sync].url,
+						data: res._meta._changes[res._rev],
+						headers: res._meta._syncs[sync].headers,
+					})
+				}
+				trace('Sending to: '+res._meta._syncs[sync].url)
+				return axios(res._meta._syncs[sync])
+			})
+		} else return
 	}).then(() => {})
 })

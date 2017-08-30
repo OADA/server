@@ -327,6 +327,22 @@ services:
       - NODE_ENV=${NODE_ENV:-development}
       - DEBUG=${DEBUG:-""}
 
+  shares:
+    depends_on:
+      - startup
+    build: ./shares
+    restart: always
+    container_name: shares
+    networks:
+      - startup_net
+      - kafka_net
+      - arango_net
+    volumes:
+      - .:/code
+      - ./oada-srvc-docker-config.js:/oada-srvc-docker-config.js
+    environment:
+      - NODE_ENV=${NODE_ENV:-development}
+      - DEBUG=${DEBUG:-""}
 
 volumes:
   arangodb_data:

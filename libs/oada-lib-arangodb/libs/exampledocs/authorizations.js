@@ -11,7 +11,7 @@ module.exports = [
   {
     '_id': 'authorizations/default:authorization-321',
     'token': 'abc',
-    'scope': ['oada.foo:none'],
+    'scope': ['oada.rocks:all'],
     'createTime': 1413831649937,
     'expiresIn': 60,
     'user': {'_id': 'users/default:users_sam_321'},

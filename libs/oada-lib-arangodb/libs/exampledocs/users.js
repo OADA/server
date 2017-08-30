@@ -22,7 +22,7 @@ module.exports = [
     'middle_name': '',
     'nickname': 'Sammy',
     'email': 'sam@openag.io',
-    'bookmarks': {'_id': 'resources/default:resources_bookmarks_123'},
-    'shares': {'_id': 'resources/default:resources_shares_123'}
+    'bookmarks': {'_id': 'resources/default:resources_bookmarks_321'},
+    'shares': {'_id': 'resources/default:resources_shares_321'}
   },
 ];
