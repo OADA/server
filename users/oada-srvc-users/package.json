@@ -1,0 +1,12 @@
+{
+  "name": "oada-srvc-users",
+  "version": "1.0.0",
+  "description": "",
+  "author": "Alex Layton <alex@layton.in>",
+  "license": "ISC",
+  "dependencies": {
+    "bluebird": "^3.5.0",
+    "debug": "^3.0.1",
+    "uuid": "^3.1.0"
+  }
+}

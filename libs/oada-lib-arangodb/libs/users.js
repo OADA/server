@@ -1,12 +1,16 @@
 'use strict';
 
+const debug = require('debug');
+const info = debug('arangodb#resources:info');
+const trace = debug('arangodb#resources:trace');
+const uuid = require('uuid');
 const config = require('../config');
 const db = require('../db.js');
 const aql = require('arangojs').aql;
 const bcrypt = require('bcryptjs');
 var Promise = require('bluebird');
 const util = require('../util');
-const users = db.collection(config.get('arangodb:collections:users:name'))
+const users = db.collection(config.get('arangodb:collections:users:name'));
 
 /*
   user {
@@ -52,22 +56,28 @@ function findByUsernamePassword(username, password) {
     });
 }
 
-function create(u) {
+function create(u, returnNew = false) {
+  let opts = {returnNew};
   return Promise.try(() => {
-    console.log('create user was called');
-  });
-  /*
-  u = _.cloneDeep(u);
-  // Hash the plaintext password:
-  u.password = bcrypt.hashSync(u.password, config.get('init:passwordSalt'));
+    info('create user was called');
 
-  // 1. Create meta document for bookmarks resource
-  resources
-  // 2. Create bookmarks resource
-  // 3. Create graph node for meta document and bookmarks resource
-  // 4. Create _meta edge for bookmarks -> meta
-  // 5. Create user with proper bookmarksid
-*/
+    if (u.password) {
+      u.password = bcrypt.hashSync(u.password, config.get('init:passwordSalt'));
+    }
+
+    // TODO: Good way to name bookmarks?
+    //u.bookmarks = Object.assign({'_id': 'resources/' + uuid()}, u.bookmarks);
+
+    return users.save(u, opts).then(r => r.new || r);
+  });
+}
+
+function update(u) {
+  return users.update(u._id, u);
+}
+
+function like(u) {
+  return util.bluebirdCursor(users.byExample(u));
 }
 
 function hashPw(pw) {
@@ -79,5 +89,17 @@ module.exports = {
   findByUsername,
   findByUsernamePassword,
   create: create,
+  update,
+  like,
   hashPw: hashPw,
+  // TODO: Better way to handler errors?
+  // ErrorNum from: https://docs.arangodb.com/2.8/ErrorCodes/
+  NotFoundError: {
+    name: 'ArangoError',
+    errorNum: 1202
+  },
+  UniqueConstraintError: {
+    name: 'ArangoError',
+    errorNum: 1210
+  },
 };

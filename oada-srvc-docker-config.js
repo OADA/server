@@ -14,9 +14,6 @@
  */
 'use strict';
 
-var path = require('path');
-var fs = require('fs');
-
 const domain = process.env.DOMAIN || 'localhost';
 
 module.exports = {
@@ -31,7 +28,7 @@ module.exports = {
     connectionString: 'http://arangodb:8529',
     database: 'oada',
     collections: {
-               users: { name: 'users',          indexes: [ 'username' ], defaults: './libs/exampledocs/users'      },
+               users: { name: 'users',          indexes: [ 'username', { name: 'oadaid', sparse: true } ], defaults: './libs/exampledocs/users'      },
              clients: { name: 'clients',        indexes: [ 'clientId' ], defaults: './libs/exampledocs/clients'    },
       authorizations: { name: 'authorizations', indexes: [ 'token', { name: 'user', unique: false } ], defaults: './libs/exampledocs/authorizations' },
                codes: { name: 'codes',          indexes: [ 'code'     ], defaults: './libs/exampledocs/codes'      },
@@ -52,6 +49,7 @@ module.exports = {
       tokenRequest: 'token_request',
       graphRequest: 'graph_request',
       writeRequest: 'write_request',
+      userRequest: 'user_request',
       httpResponse: 'http_response',
     },
   },

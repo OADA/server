@@ -23,7 +23,7 @@ var router = express.Router();
 // Turn POSTs into PUTs at random id
 router.post('/*?', function postResource(req, res, next) {
     // TODO: Is this a good way to generate new id?
-    if (req.url.endsWith('/')) {
+    if (req.url === '' || req.url.endsWith('/')) {
         req.url += uuid();
     } else {
         req.url += '/' + uuid();
@@ -42,9 +42,11 @@ router.use(function graphHandler(req, res, next) {
     .then(function handleGraphRes(resp) {
         if (resp['resource_id']) {
             // Rewire URL to resource found by graph
-            req.url = `/${resp['resource_id']}${resp['path_leftover']}`;
+            let url = `${resp['resource_id']}${resp['path_leftover']}`;
+            // Remove "/resources" from id
+            req.url = url.replace(/^\/?resources\//, '/');
         }
-        res.set('Content-Location', req.url);
+        res.set('Content-Location', req.baseUrl + req.url);
         // TODO: Just use express parameters rather than graph thing?
         req.oadaGraph = resp;
     })
@@ -234,8 +236,7 @@ router.put('/*', function putResource(req, res, next) {
         .then(function(resp) {
             return res
                 .set('X-OADA-Rev', resp['_rev'])
-                .location(req.url)
-                .sendStatus(204);
+                .redirect(204, req.baseUrl + req.url);
         })
         .catch(next);
 });
