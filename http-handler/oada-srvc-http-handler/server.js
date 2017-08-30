@@ -17,6 +17,7 @@ var config = require('./config');
 
 var resources = require('./resources');
 var authorizations = require('./authorizations');
+var users = require('./users');
 
 var requester = require('./requester');
 
@@ -110,6 +111,7 @@ app.use(function handleShares(req, res, next) {
 
 app.use('/resources', resources);
 app.use('/authorizations', authorizations);
+app.use('/users', users);
 
 //////////////////////////////////////////////////
 // Default handler for top-level routes not found:
