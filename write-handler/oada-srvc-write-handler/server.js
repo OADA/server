@@ -19,7 +19,6 @@ var responder = new Responder(
 );
 
 responder.on('request', function handleReq(req, msg) {
-    // TODO: Check scope/permission?
     req.source = req.source || '';
     var id = req['resource_id'];
 

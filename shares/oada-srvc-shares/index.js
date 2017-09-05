@@ -39,7 +39,8 @@ module.exports = function stopResp() {
 
 responder.on('request', function handleReq(req) {
   if (req.msgtype !== 'write-response') return
-  if (req.code !== 'success') return
+	if (req.code !== 'success') return
+	//TODO: CHECK FOR OTHER ITERATIONS OF _meta/_permissions as it might occur in a request
   if (req.path_leftover.indexOf('_meta/_permissions/users') === -1) return
   //get user's /shares and add this
   return oadaLib.resources.getResource(req.resource_id).then((res) => {

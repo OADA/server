@@ -344,6 +344,23 @@ services:
       - NODE_ENV=${NODE_ENV:-development}
       - DEBUG=${DEBUG:-""}
 
+  permissions-handler:
+    depends_on:
+      - startup
+    build: ./permissions-handler
+    restart: always
+    container_name: permissions-handler 
+    networks:
+      - startup_net
+      - kafka_net
+      - arango_net
+    volumes:
+      - .:/code
+      - ./oada-srvc-docker-config.js:/oada-srvc-docker-config.js
+    environment:
+      - NODE_ENV=${NODE_ENV:-development}
+      - DEBUG=${DEBUG:-""}
+
   shares:
     depends_on:
       - startup

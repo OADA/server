@@ -53,61 +53,53 @@ router.use(function graphHandler(req, res, next) {
     .asCallback(next);
 });
 
-// TODO: Is this scope stuff right/good?
-function checkScopes(scope, contentType) {
-    if (process.env.IGNORE_SCOPE === 'yes') {
-        return true;
-    }
-    const scopeTypes = {
-        'oada.rocks': [
-            'application/vnd.oada.bookmarks.1+json',
-            'application/vnd.oada.shares.1+json',
-            'application/vnd.oada.rocks.1+json',
-            'application/vnd.oada.rock.1+json',
-        ]
-    };
-    function scopePerm(perm, has) {
-        return perm === has || perm === 'all';
-    }
+router.put('/*', function checkScope(req, res, next) {
+    requester.send({
+        'connection_id': req.id,
+        'oadaGraph': req.oadaGraph,
+        'user_id': req.user.doc.user_id,
+        'scope': req.user.doc.scope,
+    }, config.get('kafka:topics:permissionsRequest')).then(function handlePermissionsRequest(response) {
+        if (!response.permissions.owner && !response.permissions.write) {
+                warn(req.user.doc['user_id'] +
+                    ' tried to GET resource without proper permissions');
+                throw new OADAError('Not Authorized', 403,
+                        'User does not have write permission for this resource');
+        }
+        if (!response.scopes.write) {
+                throw new OADAError('Not Authorized', 403,
+                        'Token does not have required scope');
+        }
+    }).asCallback(next)
+})
 
-    return scope.some(function chkScope(scope) {
-        var type;
-        var perm;
-        [type, perm] = scope.split(':');
-
-        if (!scopeTypes[type]) {
-            warn('Unsupported scope type "' + type + '"');
-            return false;
+router.get('/*', function checkScope(req, res, next) {
+    trace('STUFF', req.oadaGraph)
+    requester.send({
+        'connection_id': req.id,
+        'oadaGraph': req.oadaGraph,
+        'user_id': req.user.doc.user_id,
+        'scope': req.user.doc.scope,
+    }, config.get('kafka:topics:permissionsRequest')).then(function handlePermissionsRequest(response) {
+        trace('PERMISSIONS RESPONSE '+response)
+        if (!response.permissions.owner && !response.permissions.read) {
+                warn(req.user.doc['user_id'] +
+                    ' tried to GET resource without proper permissions');
+                throw new OADAError('Not Authorized', 403,
+                        'User does not have read permission for this resource');
         }
 
-        return scopeTypes[type].indexOf(contentType) >= 0 &&
-                scopePerm(perm, 'read');
-    });
-}
+        if (!response.scopes.read) {
+                throw new OADAError('Not Authorized', 403,
+                        'Token does not have required scope');
+        }
+    }).asCallback(next)
+})
+
 router.get('/*', function getResource(req, res, next) {
     // TODO: Should it not get the whole meta document?
     // TODO: Make getResource accept an array of paths and return an array of
     //       results. I think we can do that in one arango query
-    var owned = resources
-        .getResource(req.oadaGraph['resource_id'], '_meta/_owner')
-        .then(function checkOwner(owner) {
-            if (owner !== req.user.doc['user_id']) {
-                warn(req.user.doc['user_id'] +
-                    ' tried to GET resource owned by ' + owner);
-                throw new OADAError('Not Authorized', 403,
-                        'User does not own this resource');
-            }
-        });
-
-    var scoped = resources
-        .getResource(req.oadaGraph['resource_id'], '_meta/_type')
-        .then(checkScopes.bind(null, req.user.doc.scope))
-        .then(function scopesAllowed(allowed) {
-            if (!allowed) {
-                throw new OADAError('Not Authorized', 403,
-                        'Token does not have required scope');
-            }
-        });
 
     var doc = resources.getResource(
             req.oadaGraph['resource_id'],
@@ -117,7 +109,7 @@ router.get('/*', function getResource(req, res, next) {
     });
 
     return Promise
-        .join(doc, owned, scoped, function returnDoc(doc) {
+        .join(doc, function returnDoc(doc) {
             // TODO: Allow null values in OADA?
             if (doc === undefined || doc === null) {
                 throw new OADAError('Not Found', 404);
@@ -167,16 +159,6 @@ function unflattenMeta(doc) {
     */
     return doc;
 }
-
-router.put('/*', function chkPutScope(req, res, next) {
-    if (!checkScopes(req.user.doc.scope, req.get('Content-Type'))) {
-        info('Checking PUT scope');
-        return next(new OADAError('Not Authorized', 403,
-                'Token does not have required scope'));
-    }
-
-    return next();
-});
 
 // Don't let users modify their shares?
 function noModifyShares(req, res, next) {
