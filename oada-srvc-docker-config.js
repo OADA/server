@@ -90,7 +90,7 @@ module.exports = {
     ],
     "oada-configuration": {
       well_known_version: '1.0.0',
-      oada_base_uri: 'https://' + domain,
+      oada_base_uri: './',
       scopes_supported: [
         {
           name: 'oada.all.1', // can do anything the user can do
