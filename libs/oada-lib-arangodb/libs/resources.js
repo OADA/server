@@ -48,21 +48,32 @@ function lookupFromUrl(url, user_id) {
       trace('query result = ', JSON.stringify(result, false, '  '));
       let resourceId = '';
       let pathLeftover = pointer.compile(id.concat(pieces));
+      // Also return info about parent?
+      let from = {'resource_id': '', 'path': ''};
 
       if (result.length < 1) {
         trace('lookupFromUrl(' + url + '): result path length < 1');
         return {'resource_id': resourceId, 'path_leftover': pathLeftover,
-          permissions: {}};
+          from, permissions: {}};
       }
 
       let permissions = {}
-      result.permissions.reverse().some((p, i) => {
+      result.permissions.reverse().some(p => {
         if (p) {
-          if (permissions.read === undefined) permissions.read = p.read
-          if (permissions.write === undefined) permissions.write = p.write
-          if (permissions.owner === undefined) permissions.owner = p.owner
-          if (permissions.read !== undefined && permissions.write !== undefined
-            && permissions.owner !== undefined) return true
+          if (permissions.read === undefined) {
+            permissions.read = p.read;
+          }
+          if (permissions.write === undefined) {
+            permissions.write = p.write;
+          }
+          if (permissions.owner === undefined) {
+            permissions.owner = p.owner;
+          }
+          if (permissions.read !== undefined &&
+              permissions.write !== undefined &&
+              permissions.owner !== undefined) {
+            return true;
+          }
         }
       })
 
@@ -70,7 +81,7 @@ function lookupFromUrl(url, user_id) {
       if (result.vertices[0] === null) {
         trace('lookupFromUrl(' + url + '):', 'result.vertices[0] === null');
         return {'resource_id': resourceId, 'path_leftover': pathLeftover,
-          permissions};
+          from, permissions};
       }
 
       trace('longest path has ' + result.vertices.length + ' vertices');
@@ -80,9 +91,11 @@ function lookupFromUrl(url, user_id) {
             .replace(/^graphNodes\//, '/')
             .replace(/resources:/, 'resources/');
         return {'resource_id': resourceId, 'path_leftover': pathLeftover,
-          permissions};
+          from, permissions};
       }
       resourceId = result.vertices[result.vertices.length - 1]['resource_id'];
+      from = result.vertices[result.vertices.length - 2];
+      let edge = result.edges[result.edges.length - 1];
       // If the desired url has more pieces than the longest path, the
       // pathLeftover is the extra pieces
       if (result.vertices.length - 1 < pieces.length) {
@@ -99,8 +112,15 @@ function lookupFromUrl(url, user_id) {
         pathLeftover = result.vertices[result.vertices.length - 1].path || '';
       }
 
-      return {'resource_id': resourceId, 'path_leftover': pathLeftover,
-        permissions};
+      return {
+        'resource_id': resourceId,
+        'path_leftover': pathLeftover,
+        permissions,
+        'from': {
+          'resource_id': from ? from['resource_id'] : '',
+          'path': (from && from['path'] || '') + (edge ? '/' + edge.name : '')
+        }
+      };
     });
   });
 }
