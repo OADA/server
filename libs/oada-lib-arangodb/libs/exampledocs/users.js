@@ -38,4 +38,17 @@ module.exports = [
     'bookmarks': {'_id': 'resources/default:resources_bookmarks_999'},
     'shares': {'_id': 'resources/default:resources_shares_999'}
   },
+  {
+    '_id': 'users/default:users_gary_growersync',
+    'username': 'gary@growersync.fpad.io',
+    'password': 'test',
+    'name': 'Grower Gary',
+    'family_name': 'Grower',
+    'given_name': 'Gary',
+    'middle_name': '',
+    'nickname': 'G-Man',
+    'email': 'gary@growersync.fpad.io',
+    'bookmarks': {'_id': 'resources/default:resources_bookmarks_777'},
+    'shares': {'_id': 'resources/default:resources_shares_777'}
+  },
 ];

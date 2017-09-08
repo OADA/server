@@ -16,6 +16,7 @@
 'use strict';
 
 const debug = require('debug');
+const warn = debug('permissions-handler:trace');
 const trace = debug('permissions-handler:trace');
 const info = debug('permissions-handler:info');
 const error = debug('permissions-handler:error');
@@ -42,7 +43,15 @@ const scopeTypes = {
 		'application/vnd.oada.shares.1+json',                                
 		'application/vnd.oada.rocks.1+json',                                 
 		'application/vnd.oada.rock.1+json',                                  
-	]                                                                        
+		'application/vnd.fpad.audit.globalgap.1+json',
+	],
+	'fpad': [
+		'application/vnd.oada.bookmarks.1+json',                             
+		'application/vnd.oada.shares.1+json',                                
+		'application/vnd.oada.rocks.1+json',                                 
+		'application/vnd.oada.rock.1+json',                                  
+		'application/vnd.fpad.audit.globalgap.1+json',
+	]
 };                                                                           
 function scopePerm(perm, has) {                                              
   return perm === has || perm === 'all';                                   
@@ -92,7 +101,11 @@ responder.on('request', function handleReq(req) {
 					warn('Unsupported scope type "' + type + '"');
 					return false;
 				}
-        let contentType = resource ? resource._type : req.content_type
+				trace('A', resource ? true : false)
+				trace('B', resource ? resource._type : req.content_type)
+				let contentType = resource ? resource._type : req.content_type
+				trace('C', scopeTypes[type].indexOf(contentType) >= 0)
+				trace('D', scopePerm(perm, 'write'))
 				return scopeTypes[type].indexOf(contentType) >= 0 &&
 					scopePerm(perm, 'write');
 			});

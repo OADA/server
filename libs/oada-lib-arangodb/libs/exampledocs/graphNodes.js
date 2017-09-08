@@ -52,6 +52,14 @@ module.exports = [
     'is_resource': true,
   },
 
+  //------------------------------------------------
+  // Shares document (for user gary):
+  {
+    '_id': 'graphNodes/resources:default:resources_shares_777',
+    'resource_id': 'resources/default:resources_shares_777',
+    'is_resource': true,
+  },
+
   //------------------------------------------------------
   // Rocks document:
   {
