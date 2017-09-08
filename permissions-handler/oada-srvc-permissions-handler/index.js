@@ -60,7 +60,6 @@ responder.on('request', function handleReq(req) {
 			owner: false
 		}
 	}
-	trace(req)
 	let user_id = req.user_id.split('/')[1]
 	return oadaLib.resources.getResource(req.oadaGraph.resource_id, '').then((resource) => {
 		//Check scopes
@@ -79,7 +78,8 @@ responder.on('request', function handleReq(req) {
 					return false;
 				}
 
-				return scopeTypes[type].indexOf(resource._type) >= 0 &&
+        let contentType = resource ? resource._type : req.content_type
+				return scopeTypes[type].indexOf(contentType) >= 0 && 
 					scopePerm(perm, 'read');
 			});
 
@@ -92,13 +92,19 @@ responder.on('request', function handleReq(req) {
 					warn('Unsupported scope type "' + type + '"');
 					return false;
 				}
-
-				return scopeTypes[type].indexOf(resource._type) >= 0 &&
+        let contentType = resource ? resource._type : req.content_type
+				return scopeTypes[type].indexOf(contentType) >= 0 &&
 					scopePerm(perm, 'write');
 			});
 		}
+   	trace('2HERE')
+		trace(resource && resource._meta._owner === req.user_id)
+		trace(resource && resource._meta._permissions && 
+			Object.keys(resource._meta._permissions.users)
+			.some(user => user === user_id))
+		trace(req.content_type)
 		//Check permissions. 1. Check if owner.
-		if (resource._meta._owner === req.user_id) {
+		if (resource && resource._meta._owner === req.user_id) {
 	    trace('Resource requested by owner.')
 			response.permissions = {
 				read: true,
@@ -106,10 +112,18 @@ responder.on('request', function handleReq(req) {
 				owner: true
 			}
 		//Check permissions. 2. Check if otherwise permissioned.
-		} else if (resource._meta._permissions && Object.keys(resource._meta._permissions.users)
+		} else if (resource && resource._meta._permissions && 
+			Object.keys(resource._meta._permissions.users)
 			.some(user => user === user_id)) {
 	      trace('User has permissions on requested resource.')
 			response.permissions = resource._meta._permissions.users[user_id]
+		} else if (req.content_type) {
+			trace('1HERE')
+			response.permissions = {
+				read: true,
+				write: true,
+				owner: true
+			}
 		}
 		trace('END RESULT', response)
 		return response

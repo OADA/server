@@ -13,12 +13,18 @@ module.exports = [
     'resource_id': 'resources/default:resources_bookmarks_123',
     'is_resource': true,
   },
-
   //------------------------------------------------
   // Bookmarks document (for user sam):
   {
     '_id': 'graphNodes/resources:default:resources_bookmarks_321',
     'resource_id': 'resources/default:resources_bookmarks_321',
+    'is_resource': true,
+  },
+  //------------------------------------------------
+  // Bookmarks document (for user audrey):
+  {
+    '_id': 'graphNodes/resources:default:resources_bookmarks_999',
+    'resource_id': 'resources/default:resources_bookmarks_999',
     'is_resource': true,
   },
 
@@ -27,6 +33,14 @@ module.exports = [
   {
     '_id': 'graphNodes/resources:default:resources_shares_123',
     'resource_id': 'resources/default:resources_shares_123',
+    'is_resource': true,
+  },
+
+  //------------------------------------------------
+  // Shares document (for user audrey):
+  {
+    '_id': 'graphNodes/resources:default:resources_shares_999',
+    'resource_id': 'resources/default:resources_shares_999',
     'is_resource': true,
   },
 
@@ -43,6 +57,20 @@ module.exports = [
   {
     '_id': 'graphNodes/resources:default:resources_rocks_123',
     'resource_id': 'resources/default:resources_rocks_123',
+    'is_resource': true,
+  },
+  //------------------------------------------------------
+  // fpad document:
+  {
+    '_id': 'graphNodes/resources:default:resources_fpad_999',
+    'resource_id': 'resources/default:resources_fpad_999',
+    'is_resource': true,
+  },
+  //------------------------------------------------------
+  // clients document:
+  {
+    '_id': 'graphNodes/resources:default:resources_clients_999',
+    'resource_id': 'resources/default:resources_clients_999',
     'is_resource': true,
   },
   { // This is an example of a node internal to a resource

@@ -24,14 +24,14 @@ const kf = require('../../../libs/oada-lib-kafka');
 const oadaLib = require('../../../libs/oada-lib-arangodb');
 const config = require('../config');
 const debug = require('debug');
-const trace = debug('trace:rev-graph-update#test');
-const revGraphUpdate = require('../');
+const trace = debug('trace:permissions-handler#test');
+const permissionsHandler = require('../');
 
 const requester = new kf.Requester(config.get('kafka:topics:httpResponse'),
 											config.get('kafka:topics:writeRequest'),
 											config.get('kafka:groupId')+'-test');
 
-describe('rev graph update service', () => {
+describe('permissions handler service', () => {
   before(oadaLib.init.run);
 	before(function waitKafka(done) {
 		requester.on('ready', () => done());
@@ -40,7 +40,7 @@ describe('rev graph update service', () => {
   //--------------------------------------------------
   // The tests!
   //--------------------------------------------------
-	describe('.rev-graph-update', () => {
+	describe('.permissions-handler', () => {
 		it('should be able to produce a correct write_request message', (done) => {
 
 			// make http_response message

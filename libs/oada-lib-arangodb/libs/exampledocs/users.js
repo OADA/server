@@ -25,4 +25,17 @@ module.exports = [
     'bookmarks': {'_id': 'resources/default:resources_bookmarks_321'},
     'shares': {'_id': 'resources/default:resources_shares_321'}
   },
+  {
+    '_id': 'users/default:users_audrey_999',
+    'username': 'audrey',
+    'password': 'test',
+    'name': 'Auditor Audrey',
+    'family_name': 'Auditor',
+    'given_name': 'Audrey',
+    'middle_name': '',
+    'nickname': 'Audinator',
+    'email': 'audrey@openag.io',
+    'bookmarks': {'_id': 'resources/default:resources_bookmarks_999'},
+    'shares': {'_id': 'resources/default:resources_shares_999'}
+  },
 ];

@@ -59,6 +59,7 @@ router.put('/*', function checkScope(req, res, next) {
         'oadaGraph': req.oadaGraph,
         'user_id': req.user.doc.user_id,
         'scope': req.user.doc.scope,
+        'content_type': req.get('Content-Type'),
     }, config.get('kafka:topics:permissionsRequest')).then(function handlePermissionsRequest(response) {
         if (!response.permissions.owner && !response.permissions.write) {
                 warn(req.user.doc['user_id'] +
@@ -74,14 +75,13 @@ router.put('/*', function checkScope(req, res, next) {
 })
 
 router.get('/*', function checkScope(req, res, next) {
-    trace('STUFF', req.oadaGraph)
     requester.send({
         'connection_id': req.id,
         'oadaGraph': req.oadaGraph,
         'user_id': req.user.doc.user_id,
         'scope': req.user.doc.scope,
     }, config.get('kafka:topics:permissionsRequest')).then(function handlePermissionsRequest(response) {
-        trace('PERMISSIONS RESPONSE '+response)
+        trace('permissions response:'+response)
         if (!response.permissions.owner && !response.permissions.read) {
                 warn(req.user.doc['user_id'] +
                     ' tried to GET resource without proper permissions');

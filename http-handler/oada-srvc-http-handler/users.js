@@ -3,7 +3,7 @@
 var Promise = require('bluebird');
 const express = require('express');
 const bodyParser = require('body-parser');
-
+const trace = require('debug')('http-handler-users:trace')
 const OADAError = require('oada-error').OADAError;
 
 const config = require('./config');
@@ -11,6 +11,9 @@ const config = require('./config');
 var requester = require('./requester');
 
 var router = express.Router();
+
+var oadaLib = require('../../libs/oada-lib-arangodb/libs/users.js')
+var _ = require('lodash')
 
 router.post('/', bodyParser.json({
     strict: false,
@@ -41,5 +44,25 @@ router.post('/', function(req, res, next) {
     })
     .catch(next);
 });
+
+router.get('/me', function(req, res, next) {
+    trace('MEEEEE', req.user.doc)
+    req.url = req.url.replace(/^\/me/, `/${req.user.doc.user_id.replace(/^users\//, '')}`);
+    next();
+})
+
+//TODO: don't return stuff to anyone anytime
+router.get('/:id', function(req, res, next) {
+    return oadaLib.findById(req.params.id.replace(/^users\//, ''))
+        .then((response) => {
+            trace('!!!!!!', response)
+        let user = _.clone(response)
+        delete user.password
+        trace(user)
+        return res.json(user)
+    })
+})
+
+
 
 module.exports = router;

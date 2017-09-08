@@ -26,4 +26,13 @@ module.exports = [
     'user': {'_id': 'users/default:users_sam_321'},
     'clientId': 'jf93caauf3uzud7f308faesf3@provider.oada-dev.com'
   },
+  {
+    '_id': 'authorizations/default:authorization-999',
+    'token': 'aaa',
+    'scope': ['oada.rocks:all'],
+    'createTime': 1413831649937,
+    'expiresIn': 60,
+    'user': {'_id': 'users/default:users_audrey_999'},
+    'clientId': 'jf93caauf3uzud7f308faesf3@provider.oada-dev.com'
+  },
 ];
