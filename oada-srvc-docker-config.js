@@ -49,8 +49,8 @@ module.exports = {
       tokenRequest: 'token_request',
       graphRequest: 'graph_request',
       writeRequest: 'write_request',
-			userRequest: 'user_request',
-			permissionsRequest: 'permissions_request', //show bobs
+      userRequest: 'user_request',
+      permissionsRequest: 'permissions_request', //show bobs
       httpResponse: 'http_response',
     },
   },
@@ -67,7 +67,7 @@ module.exports = {
       port: 80,
       mode: "http",
       domain: domain, // in docker it's port 80 localhost
-      publicUri: "https://"+domain // but to nginx proxy, it's https://localhost in dev
+      publicUri: "https://" + domain // but to nginx proxy, it's https://localhost in dev
     },
     keys: {
       signPems: "/code/auth/sign/",
@@ -90,7 +90,7 @@ module.exports = {
     ],
     "oada-configuration": {
       well_known_version: '1.0.0',
-      oada_base_uri: 'https://domain',
+      oada_base_uri: './',
       scopes_supported: [
         {
           name: 'oada.all.1', // can do anything the user can do
