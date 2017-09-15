@@ -38,6 +38,7 @@ router.use(function graphHandler(req, res, next) {
         'connection_id': req.id,
         'token': req.get('authorization'),
         'url': '/resources' + req.url,
+        'user_id': req.user.doc.user_id
     }, config.get('kafka:topics:graphRequest'))
     .then(function handleGraphRes(resp) {
         if (resp['resource_id']) {
@@ -59,7 +60,7 @@ router.put('/*', function checkScope(req, res, next) {
         'oadaGraph': req.oadaGraph,
         'user_id': req.user.doc.user_id,
         'scope': req.user.doc.scope,
-        'content_type': req.get('Content-Type'),
+        'contentType': req.get('Content-Type'),
     }, config.get('kafka:topics:permissionsRequest')).then(function handlePermissionsRequest(response) {
         if (!response.permissions.owner && !response.permissions.write) {
                 warn(req.user.doc['user_id'] +
@@ -196,7 +197,7 @@ router.put('/*', function putResource(req, res, next) {
                 'user_id': req.user.doc['user_id'],
                 'authorizationid': req.user.doc['authorizationid'],
                 'client_id': req.user.doc['client_id'],
-                'content_type': req.get('Content-Type'),
+                'contentType': req.get('Content-Type'),
                 'bodyid': bodyid,
                 //body: req.body
             }, config.get('kafka:topics:writeRequest'));

@@ -29,17 +29,17 @@ const config = require('./config');
 //---------------------------------------------------------
 // Kafka intializations:
 const responder = new Responder(
-			config.get('kafka:topics:writeRequest'),
 			config.get('kafka:topics:httpResponse'),
+			config.get('kafka:topics:writeRequest'),
 			config.get('kafka:groupId'));
 
 module.exports = function stopResp() {
-	return responder.disconnect(); 
+	return responder.disconnect();
 };
 
 responder.on('request', function handleReq(req, msg) {
 	if (!req || req.msgtype !== 'write-response') {
-		trace('Received message, but msgtype is not write-response to ignoring message');
+		trace('Received message, but msgtype is not write-response so ignoring message', req);
 		return []; // not a write-response message, ignore it
 	}
 	if (req.code !== 'success') {
@@ -49,8 +49,8 @@ responder.on('request', function handleReq(req, msg) {
 	if(typeof req.resource_id === "undefined" ||
 		 typeof req._rev === "undefined" ) {
 		throw new Error(`Invalid http_response: there is either no resource_id or _rev.  respose = ${JSON.stringify(req)}`);
-	}
-	if (typeof req.doc.user_id === "undefined") {
+    }
+	if (typeof req.user_id === "undefined") {
 		trace('WARNING: received message does not have user_id');
 	}
 	if (typeof req.authorizationid === "undefined") {
@@ -67,17 +67,17 @@ responder.on('request', function handleReq(req, msg) {
 		contentType: null,
 		body: null,
 		url: "",
-		user_id: req.doc.user_id,
-		authorizationid: req.doc.authorizationid
+		user_id: req.user_id,
+		authorizationid: req.authorizationid
 	};
 
 	trace('find parents for resource_id = ', req.resource_id);
 
 	// find resource's parent
 	return oadaLib.resources.getParents(req.resource_id)
-		.then(p => {
-			if (!p) {
-					info('WARNING: resource_id'+req.resource_id+' does not have a parent.');
+        .then(p => {
+            if (!p || p.length === 0) {
+					info('WARNING: '+req.resource_id+' does not have a parent.');
 					return res;
 			}
 
@@ -85,7 +85,7 @@ responder.on('request', function handleReq(req, msg) {
 			let i = 0;
 
 			trace('the parents are: ', p);
-		
+
 			return Promise.map(p, item => {
 					trace('parent resource_id = ', item.resource_id);
 					let msg = Object.assign({}, res);

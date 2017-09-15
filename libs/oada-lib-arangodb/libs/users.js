@@ -62,7 +62,7 @@ function create(u, returnNew = false) {
     info('create user was called');
 
     if (u.password) {
-      u.password = bcrypt.hashSync(u.password, config.get('init:passwordSalt'));
+      u.password = hashPw(u.password);
     }
 
     // TODO: Good way to name bookmarks?

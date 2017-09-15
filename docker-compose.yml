@@ -319,13 +319,30 @@ services:
       - kafka_data:/var/lib/kafka
 
   # hitman container will kill other containers using Pumba for resiliency test.
-  hitman:
-    image: gaiaadm/pumba:master
-    container_name: hitman
+  #  hitman:
+  #    image: gaiaadm/pumba:master
+  #    container_name: hitman
+  #    restart: always
+  #   volumes:
+  #      - /var/run/docker.sock:/var/run/docker.sock
+  #    command: pumba --random --interval 1h kill --signal SIGKILL
+  #
+  indexer:
+    depends_on:
+      - startup
+    build: ./indexer
     restart: always
+    container_name: indexer
+    networks:
+      - startup_net
+      - kafka_net
+      - arango_net
     volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-    command: pumba --random --interval 1h kill --signal SIGKILL
+      - .:/code
+      - ./oada-srvc-docker-config.js:/oada-srvc-docker-config.js
+    environment:
+      - NODE_ENV=${NODE_ENV:-development}
+      - DEBUG=${DEBUG:-""}
 
   webhooks:
     depends_on:

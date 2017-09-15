@@ -3,7 +3,7 @@
 var Promise = require('bluebird');
 const express = require('express');
 const bodyParser = require('body-parser');
-const trace = require('debug')('http-handler-users:trace')
+const trace = require('debug')('http-handler:trace')
 const OADAError = require('oada-error').OADAError;
 
 const config = require('./config');
@@ -40,25 +40,22 @@ router.post('/', function(req, res, next) {
     .then(resp => {
         // TODO: Better status code choices?
         let id = resp.user._key;
-        return res.redirect(resp.new ? 201 : 303, req.baseUrl + '/' + id);
+        return res.redirect(201, req.baseUrl + '/' + id);
     })
     .catch(next);
 });
 
 router.get('/me', function(req, res, next) {
-    trace('MEEEEE', req.user.doc)
     req.url = req.url.replace(/^\/me/, `/${req.user.doc.user_id.replace(/^users\//, '')}`);
     next();
 })
 
 //TODO: don't return stuff to anyone anytime
 router.get('/:id', function(req, res, next) {
-    return oadaLib.findById(req.params.id.replace(/^users\//, ''))
+    return oadaLib.findById(req.params.id)
         .then((response) => {
-            trace('!!!!!!', response)
         let user = _.clone(response)
         delete user.password
-        trace(user)
         return res.json(user)
     })
 })

@@ -84,10 +84,10 @@ responder.on('request', function handleReq(req, msg) {
 
             // Initialize resource stuff
             obj = {
-                '_type': req['content_type'],
+                '_type': req['contentType'],
                 '_meta': {
                     '_id': id + '/_meta',
-                    '_type': req['content_type'],
+                    '_type': req['contentType'],
                     '_owner': req['user_id'],
                     'stats': {
                         'createdBy': req['user_id'],
@@ -168,7 +168,8 @@ responder.on('request', function handleReq(req, msg) {
             '_rev': rev,
             'user_id': req['user_id'],
 			'authorizationid': req['authorizationid'],
-			'path_leftover': req['path_leftover'],
+					'path_leftover': req['path_leftover'],
+						'contentType': req['contentType'],
         };
     }).catch(resources.NotFoundError, function respondNotFound(err) {
         error(err);

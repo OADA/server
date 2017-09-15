@@ -32,6 +32,6 @@ module.exports = {
             writeRequest: 'write_request',
             httpResponse: 'http_response',
         },
-    	groupId: 'webhooks'
+    	groupId: 'permissions'
     },
 };

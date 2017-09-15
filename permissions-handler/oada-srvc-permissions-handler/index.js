@@ -50,7 +50,14 @@ const scopeTypes = {
 		'application/vnd.oada.shares.1+json',                                
 		'application/vnd.oada.rocks.1+json',                                 
 		'application/vnd.oada.rock.1+json',                                  
+		'application/vnd.fpad.audit.primusgfs.1+json',
 		'application/vnd.fpad.audit.globalgap.1+json',
+		'application/vnd.fpad.certification.primusgfs.1+json',
+		'application/vnd.fpad.certification.globalgap.1+json',
+		'application/vnd.fpad.certifications.globalgap.1+json',
+		'application/vnd.fpad.client.1+json',
+		'application/vnd.fpad.clients.1+json',
+		'application/vnd.fpad.1+json',
 	]
 };                                                                           
 function scopePerm(perm, has) {                                              
@@ -69,7 +76,6 @@ responder.on('request', function handleReq(req) {
 			owner: false
 		}
 	}
-	let user_id = req.user_id.split('/')[1]
 	return oadaLib.resources.getResource(req.oadaGraph.resource_id, '').then((resource) => {
 		//Check scopes
 		if (process.env.IGNORE_SCOPE === 'yes') {
@@ -87,7 +93,7 @@ responder.on('request', function handleReq(req) {
 					return false;
 				}
 
-        let contentType = resource ? resource._type : req.content_type
+        let contentType = resource ? resource._type : req.contentType
 				return scopeTypes[type].indexOf(contentType) >= 0 && 
 					scopePerm(perm, 'read');
 			});
@@ -101,21 +107,11 @@ responder.on('request', function handleReq(req) {
 					warn('Unsupported scope type "' + type + '"');
 					return false;
 				}
-				trace('A', resource ? true : false)
-				trace('B', resource ? resource._type : req.content_type)
-				let contentType = resource ? resource._type : req.content_type
-				trace('C', scopeTypes[type].indexOf(contentType) >= 0)
-				trace('D', scopePerm(perm, 'write'))
+				let contentType = resource ? resource._type : req.contentType
 				return scopeTypes[type].indexOf(contentType) >= 0 &&
 					scopePerm(perm, 'write');
 			});
 		}
-   	trace('2HERE')
-		trace(resource && resource._meta._owner === req.user_id)
-		trace(resource && resource._meta._permissions && 
-			Object.keys(resource._meta._permissions.users)
-			.some(user => user === user_id))
-		trace(req.content_type)
 		//Check permissions. 1. Check if owner.
 		if (resource && resource._meta._owner === req.user_id) {
 	    trace('Resource requested by owner.')
@@ -125,12 +121,13 @@ responder.on('request', function handleReq(req) {
 				owner: true
 			}
 		//Check permissions. 2. Check if otherwise permissioned.
-		} else if (resource && resource._meta._permissions && 
-			Object.keys(resource._meta._permissions.users)
-			.some(user => user === user_id)) {
+		} else if (resource && resource._meta._permissions) { 
+			if (Object.keys(resource._meta._permissions)
+			.some(user => user === req.user_id)) {
 	      trace('User has permissions on requested resource.')
-			response.permissions = resource._meta._permissions.users[user_id]
-		} else if (req.content_type) {
+				response.permissions = resource._meta._permissions[req.user_id]
+			}
+		} else if (req.contentType) {
 			trace('1HERE')
 			response.permissions = {
 				read: true,

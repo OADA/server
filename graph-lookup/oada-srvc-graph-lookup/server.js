@@ -19,14 +19,14 @@ module.exports = function stopResp() {
 };
 
 
-responder.on('request', function handleReq(resp, msg) {
+responder.on('request', function handleReq(req, msg) {
   var start = new Date().getTime();
-  info(`Performing arango lookup for url ${resp.url}`)
-  return oadaLib.resources.lookupFromUrl(resp.url).then((result) => {
+  info(`Performing arango lookup for url ${req.url}`)
+  return oadaLib.resources.lookupFromUrl(req.url, req.user_id).then((result) => {
     var end = new Date().getTime();
-    info(`Finished arango lookup for url ${resp.url} +${end-start}ms`)
-    trace(`lookup for url ${resp.url} returned:`, result)
-    result.connection_id = resp.connection_id;
+    info(`Finished arango lookup for url ${req.url} +${end-start}ms`)
+    trace(`lookup for url ${req.url} returned:`, result)
+    result.connection_id = req.connection_id;
     return result;
   }).catch((err) => {
     error(err)

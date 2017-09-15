@@ -18,88 +18,89 @@ const graphNodes =
 const edges =
     db.collection(config.get('arangodb:collections:edges:name'));
 
-function lookupFromUrl(url) {
+function lookupFromUrl(url, user_id) {
   return Promise.try(() => {
+    trace(user_id)
     let pieces = pointer.parse(url);
     // resources/123 => graphNodes/resources:123
     var startNode = graphNodes.name + '/' + pieces[0] + ':' + pieces[1];
-    let bindVars = {
-      // need to not count first two entries since they are in startNode
-      'value0': pieces.length - 2,
-      'value1': startNode,
-      '@edges': edges.name
-    };
     let id = pieces.splice(0, 2);
     // Create a filter for each segment of the url
     const filters = pieces.map((urlPiece, i) => {
-      let bindVarA = 'value' + (2 + (i * 2)).toString();
-      let bindVarB = 'value' + (2 + (i * 2) + 1).toString();
-      bindVars[bindVarA] = i;
-      bindVars[bindVarB] = urlPiece;
-      return `FILTER p.edges[@${bindVarA}].name == @${bindVarB}` +
-          ` || p.edges[@${bindVarA}].name == null`;
+      return `FILTER p.edges[${i}].name == '${urlPiece}' || p.edges[${i}].name == null`
     }).join(' ');
+    trace('FILTERSSSS', filters)
     let query = `
-      FOR v, e, p IN 0..@value0
-        OUTBOUND @value1
-        @@edges
-        ${filters}
-        RETURN p
+      LET path = LAST(
+        FOR v, e, p IN 0..${pieces.length}
+          OUTBOUND '${startNode}'
+          ${edges.name}
+          ${filters}
+          RETURN p
+      )
+      LET resources = DOCUMENT(path.vertices[*].resource_id)
+      RETURN MERGE(path, {permissions:
+      resources[*]._meta._permissions['${user_id}']})
     `;
-    trace(`lookupFromUrl(${url})`,
-        `running query: ${query}, bindVars = ${bindVars}`);
-    return db.query({query, bindVars}).then((cursor) => {
-      trace('lookupFromUrl(' + url + '): query result = ',
-          JSON.stringify(cursor._result, false, '  '));
+    trace(`lookupFromUrl(${url})`, `running query: ${query}`);
+    return db.query({query}).call('next').then((result) => {
+
+      trace('query result = ', JSON.stringify(result, false, '  '));
       let resourceId = '';
       let pathLeftover = pointer.compile(id.concat(pieces));
 
-      if (cursor._result.length < 1) {
-        trace('lookupFromUrl(' + url + '): cursor._result.length < 1');
-        return {'resource_id': resourceId, 'path_leftover': pathLeftover};
+      if (result.length < 1) {
+        trace('lookupFromUrl(' + url + '): result path length < 1');
+        return {'resource_id': resourceId, 'path_leftover': pathLeftover,
+          permissions: {}};
       }
+
+      let permissions = {}
+      result.permissions.reverse().some((p, i) => {
+        if (p) {
+          if (permissions.read === undefined) permissions.read = p.read
+          if (permissions.write === undefined) permissions.write = p.write
+          if (permissions.owner === undefined) permissions.owner = p.owner
+          if (permissions.read !== undefined && permissions.write !== undefined
+            && permissions.owner !== undefined) return true
+        }
+      })
 
       // Check for a traversal that did not finish (aka not found)
-      if (cursor._result[cursor._result.length - 1].vertices[0] === null) {
-        trace('lookupFromUrl(' + url + '):',
-            'cursor._result[end].vertices[0] === null');
-        return {'resource_id': resourceId, 'path_leftover': pathLeftover};
+      if (result.vertices[0] === null) {
+        trace('lookupFromUrl(' + url + '):', 'result.vertices[0] === null');
+        return {'resource_id': resourceId, 'path_leftover': pathLeftover,
+          permissions};
       }
 
-      // find the longest path:
-      let res = _.reduce(cursor._result, (result, value) => {
-        if (result.vertices.length > value.vertices.length) {
-          return result;
-        }
-        return value;
-      }, {vertices: -1});
-      trace('lookupFromUrl(' + url + '):',
-          'longest path has ' + res.vertices.length + ' vertices');
-      if (!res.vertices[res.vertices.length - 1]) {
+      trace('longest path has ' + result.vertices.length + ' vertices');
+      if (!result.vertices[result.vertices.length - 1]) {
         resourceId = '';
-        pathLeftover = res.edges[res.edges.length - 1]._to
+        pathLeftover = result.edges[result.edges.length - 1]._to
             .replace(/^graphNodes\//, '/')
             .replace(/resources:/, 'resources/');
-        return {'resource_id': resourceId, 'path_leftover': pathLeftover};
+        return {'resource_id': resourceId, 'path_leftover': pathLeftover,
+          permissions};
       }
-      resourceId = res.vertices[res.vertices.length - 1]['resource_id'];
+      resourceId = result.vertices[result.vertices.length - 1]['resource_id'];
       // If the desired url has more pieces than the longest path, the
       // pathLeftover is the extra pieces
-      if (res.vertices.length - 1 < pieces.length) {
+      if (result.vertices.length - 1 < pieces.length) {
         trace('lookupFromUrl(' + url + '):',
             'more URL pieces than vertices, computing path');
-        let lastResource = (res.vertices.length - 1) -
-            (_.findIndex(_.reverse(res.vertices), 'is_resource'));
+        let lastResource = (result.vertices.length - 1) -
+            (_.findIndex(_.reverse(result.vertices), 'is_resource'));
         // Slice a negative value to take the last n pieces of the array
         pathLeftover =
             pointer.compile(pieces.slice(lastResource - pieces.length));
       } else {
         trace('lookupFromUrl(' + url + '):',
             'same number URL pieces as vertices, path is on graphNode');
-        pathLeftover = res.vertices[res.vertices.length - 1].path || '';
+        pathLeftover = result.vertices[result.vertices.length - 1].path || '';
       }
 
-      return {'resource_id': resourceId, 'path_leftover': pathLeftover};
+      return {'resource_id': resourceId, 'path_leftover': pathLeftover,
+        permissions};
     });
   });
 }
