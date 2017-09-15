@@ -62,7 +62,9 @@ router.put('/*', function checkScope(req, res, next) {
         'scope': req.user.doc.scope,
         'contentType': req.get('Content-Type'),
     }, config.get('kafka:topics:permissionsRequest')).then(function handlePermissionsRequest(response) {
-        if (!response.permissions.owner && !response.permissions.write) {
+        if (!req.oadaGraph['resource_id']) { // PUTing non-existant resource
+            return;
+        } else if (!response.permissions.owner && !response.permissions.write) {
                 warn(req.user.doc['user_id'] +
                     ' tried to GET resource without proper permissions');
                 throw new OADAError('Not Authorized', 403,
