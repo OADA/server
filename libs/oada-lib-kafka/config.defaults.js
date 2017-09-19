@@ -33,11 +33,13 @@ module.exports = {
         timeouts: {
             default: 5000,
             writeRequest: 45000,
+            websocketsRequest: Infinity,
         },
         topics: {
             tokenRequest: 'token_request',
             graphRequest: 'graph_request',
             writeRequest: 'write_request',
+            websocketsRequest: 'websockets_request',
             permissionsRequest: 'permissions_request',
             permissionsResponse: 'permissions_response',
             httpResponse: 'http_response',

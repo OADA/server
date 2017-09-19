@@ -1,5 +1,6 @@
 'use strict';
 
+const EventEmitter = require('events');
 const Promise = require('bluebird');
 const kf = require('node-rdkafka');
 const config = require('./config');
@@ -55,9 +56,11 @@ function Responder(listenTopic, respTopic, groupId, opts) {
             done();
         });
     });
-    this.ready = Promise.join(consumerReady, producerReady);
+    this.ready = Promise.join(consumerReady, producerReady).bind(this);
     this.consumer.connect();
     this.producer.connect();
+
+    this.generators = {};
 
     this.timeout = topicTimeout(this.listenTopic);
 }
@@ -93,24 +96,46 @@ Responder.prototype.on = function on(event, callback) {
                 }
 
                 let resp = callback(req, data);
-                this.ready.return(resp)
-                    .then(resp => {
-                        if (!Array.isArray(resp)) {
-                            return resp === undefined ? [] : [resp];
-                        }
-                        return resp;
-                    })
-                    .map(resp => {
-                        resp[REQ_ID_KEY] = id;
-                        resp['time'] = Date.now();
-                        let payload = JSON.stringify(resp);
-                        let value = new Buffer(payload);
-                        this.producer.produce(this.respTopic, part, value);
-                    })
-                    .finally(() => {
-                        // TODO: Handle committing better
-                        //this.consumer.commit(data);
-                    });
+                this.ready.return(resp).then(resp => {
+                    // Check for generator
+                    if (typeof (resp && resp.next) === 'function') {
+                        // Keep track of generators in case we want to close it
+                        // TODO: Support closing generator
+                        this.generators[id] = resp;
+
+                        // Asynchronously use generator
+                        (function generate(gen) {
+                            let resp = gen.next();
+
+                            if (!resp.done) {
+                                respond(resp.value).return(gen).then(generate);
+                            }
+                        })(resp);
+                    } else {
+                        respond(resp);
+                    }
+                });
+
+                function respond(resp) {
+                    return Promise.resolve(resp)
+                        .then(resp => {
+                            if (!Array.isArray(resp)) {
+                                return resp === undefined ? [] : [resp];
+                            }
+                            return resp;
+                        })
+                        .map(resp => {
+                            resp[REQ_ID_KEY] = id;
+                            resp['time'] = Date.now();
+                            let payload = JSON.stringify(resp);
+                            let value = new Buffer(payload);
+                            this.producer.produce(this.respTopic, part, value);
+                        })
+                        .finally(() => {
+                            // TODO: Handle committing better
+                            //this.consumer.commit(data);
+                        });
+                }
             });
             break;
         case 'ready':
@@ -232,6 +257,32 @@ Requester.prototype.send = function send(request, topic) {
         .finally(() => {
             delete this.requests[id];
         });
+};
+
+// Like send but return an event emitter to allow multiple responses
+Requester.prototype.emitter = function emitter(request, topic) {
+    let emitter = new EventEmitter();
+
+    let id = request[REQ_ID_KEY] || uuid();
+    topic = topic || this.respTopic;
+
+    request[REQ_ID_KEY] = id;
+    request['time'] = Date.now();
+    // TODO: Handle partitions?
+    request['resp_partition'] = 0;
+
+    this.request[id] = (err, res) => emitter.emit('response', res);
+    emitter.close = function close() {
+        // TODO: Implement closing other end
+    };
+
+    return this.ready
+        .then(() => {
+            let payload = JSON.stringify(request);
+            let value = new Buffer(payload);
+            this.producer.produce(topic, null, value);
+        })
+        .return(emitter);
 };
 
 module.exports = {
