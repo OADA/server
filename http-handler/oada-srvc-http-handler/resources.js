@@ -242,16 +242,14 @@ router.delete('/*', function noDeleteBookmarks(req, res, next) {
 
 router.delete('/*', function deleteLink(req, res, next) {
     // Check if followed a link and are at the root of the linked resource
-    if (req.oadaGraph.from.path && !req.oadaGraph['path_leftover']) {
+    if (req.oadaGraph.from['path_leftover'] &&
+            !req.oadaGraph['path_leftover']) {
         // Switch to DELETE on parent resource
         let id = req.oadaGraph.from['resource_id'];
-        let path = req.oadaGraph.from.path;
+        let path = req.oadaGraph.from['path_leftover'];
         req.url = id.replace(/^\/?resources\//, '') + path;
 
-        req.oadaGraph = {
-            'resource_id': id,
-            'path_leftover': path
-        };
+        req.oadaGraph = req.oadaGraph.from;
     }
 
     next();

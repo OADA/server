@@ -18,18 +18,18 @@ const graphNodes =
 const edges =
     db.collection(config.get('arangodb:collections:edges:name'));
 
-function lookupFromUrl(url, user_id) {
+function lookupFromUrl(url, userId) {
   return Promise.try(() => {
-    trace(user_id)
+    trace(userId);
     let pieces = pointer.parse(url);
     // resources/123 => graphNodes/resources:123
     var startNode = graphNodes.name + '/' + pieces[0] + ':' + pieces[1];
     let id = pieces.splice(0, 2);
     // Create a filter for each segment of the url
     const filters = pieces.map((urlPiece, i) => {
-      return `FILTER p.edges[${i}].name == '${urlPiece}' || p.edges[${i}].name == null`
+      return `FILTER p.edges[${i}].name == '${urlPiece}' || p.edges[${i}].name == null`;
     }).join(' ');
-    trace('FILTERSSSS', filters)
+    trace('FILTERSSSS', filters);
     let query = `
       LET path = LAST(
         FOR v, e, p IN 0..${pieces.length}
@@ -40,7 +40,7 @@ function lookupFromUrl(url, user_id) {
       )
       LET resources = DOCUMENT(path.vertices[*].resource_id)
       RETURN MERGE(path, {permissions:
-      resources[*]._meta._permissions['${user_id}']})
+      resources[*]._meta._permissions['${userId}']})
     `;
     trace(`lookupFromUrl(${url})`, `running query: ${query}`);
     return db.query({query}).call('next').then((result) => {
@@ -49,15 +49,15 @@ function lookupFromUrl(url, user_id) {
       let resourceId = '';
       let pathLeftover = pointer.compile(id.concat(pieces));
       // Also return info about parent?
-      let from = {'resource_id': '', 'path': ''};
+      let from = {'resource_id': '', 'path_leftover': ''};
 
-      if (result.length < 1) {
+      if (!result) {
         trace('lookupFromUrl(' + url + '): result path length < 1');
         return {'resource_id': resourceId, 'path_leftover': pathLeftover,
           from, permissions: {}};
       }
 
-      let permissions = {}
+      let permissions = {};
       result.permissions.reverse().some(p => {
         if (p) {
           if (permissions.read === undefined) {
@@ -75,7 +75,7 @@ function lookupFromUrl(url, user_id) {
             return true;
           }
         }
-      })
+      });
 
       // Check for a traversal that did not finish (aka not found)
       if (result.vertices[0] === null) {
@@ -118,7 +118,7 @@ function lookupFromUrl(url, user_id) {
         permissions,
         'from': {
           'resource_id': from ? from['resource_id'] : '',
-          'path': (from && from['path'] || '') + (edge ? '/' + edge.name : '')
+          'path_leftover': (from && from['path'] || '') + (edge ? '/' + edge.name : '')
         }
       };
     });
@@ -402,19 +402,19 @@ function deleteResource(id) {
   // Query deletes resouce, its nodes, and outgoing edges (but not incoming)
   return db.query(aql`
     LET res = FIRST(
-      REMOVE { '_key': ${key} } IN resources
+      REMOVE { '_key': ${key} } IN ${resources}
       RETURN OLD
     )
     LET nodes = (
-      FOR node in graphNodes
+      FOR node in ${graphNodes}
         FILTER node['resource_id'] == res._id
-        REMOVE node IN graphNodes
+        REMOVE node IN ${graphNodes}
         RETURN OLD
     )
     FOR node IN nodes
-      FOR edge IN edges
+      FOR edge IN ${edges}
         FILTER edge['_from'] == node._id
-        REMOVE edge IN edges
+        REMOVE edge IN ${edges}
   `);
 }
 
@@ -423,6 +423,7 @@ function deleteResource(id) {
 function deletePartialResource(id, path, doc) {
   let key = id.replace(/^resources\//, '');
   doc = doc || {};
+  path = Array.isArray(path) ? path : pointer.parse(path);
 
   // Fix rev
   doc['_oada_rev'] = doc['_rev'];
@@ -430,28 +431,45 @@ function deletePartialResource(id, path, doc) {
 
   pointer.set(doc, path, null);
 
-  // Regex to match starts of paths
-  let preg = `^${Array.isArray(path) ? pointer.compile(path) : path}(/|$)`;
+  let name = path.pop();
+  path = pointer.compile(path);
 
-  return db.query(aql`
-    LET res = FIRST(
-      UPDATE { '_key': ${key} }
-      WITH ${doc}
-      IN resources
-      OPTIONS { keepNull: false }
-      RETURN NEW
+  const MAX_DEPTH = 100; // TODO: Is this good?
+  let query = aql`
+    LET res = DOCUMENT(${resources}, ${key})
+
+    LET start = FIRST(
+      FOR node IN ${graphNodes}
+        LET path = node.path || null
+        FILTER node['resource_id'] == res._id AND path == ${path || null}
+        RETURN node
     )
-    LET nodes = (
-      FOR node IN graphNodes
-        FILTER node['resource_id'] == res._id AND node.path =~ ${preg}
-        REMOVE node IN graphNodes
+
+    LET v = (
+      FOR v, e, p IN 1..${MAX_DEPTH} OUTBOUND start._id ${edges}
+        OPTIONS { bfs: true, uniqueVertices: 'global' }
+        FILTER p.edges[0].name == ${name}
+        FILTER p.vertices[*].resource_id ALL == res._id
+        REMOVE v IN ${graphNodes}
         RETURN OLD
     )
-    FOR node IN nodes
-      FOR edge IN edges
-        FILTER edge['_from'] == node._id
-        REMOVE edge IN edges
-  `);
+
+    LET e = (
+      FOR edge IN ${edges}
+        FILTER (v[*]._id ANY == edge._to) || (v[*]._id ANY == edge._from)
+        REMOVE edge IN ${edges}
+        RETURN OLD
+    )
+
+    UPDATE { _key: ${key} }
+    WITH ${doc}
+    IN ${resources}
+    OPTIONS { keepNull: false }
+  `; // TODO: Why the heck does arango error if I update resource before graph?
+
+  trace('Sending partial delete query:', query);
+
+  return db.query(query);
 }
 
 module.exports = {
