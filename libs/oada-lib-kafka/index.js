@@ -9,6 +9,7 @@ const info = require('debug')('oada-lib-kafka:info');
 const warn = require('debug')('oada-lib-kafka:warn');
 
 const REQ_ID_KEY = 'connection_id';
+const CANCEL_KEY = 'cancel_request';
 // Not sure I like the way options are oragnised, but it works
 const rdkafkaOpts = Object.assign(config.get('kafka:librdkafka'), {
     'metadata.broker.list': config.get('kafka:broker'),
@@ -95,7 +96,21 @@ Responder.prototype.on = function on(event, callback) {
                     return;
                 }
 
+                // Check for cancelling request
+                if (req[CANCEL_KEY]) {
+                    let gen = this.requests[id];
+                    delete this.requests[id];
+
+                    if (typeof (gen && gen.return) === 'function') {
+                        // Stop generator
+                        gen.return();
+                    }
+
+                    return;
+                }
+
                 if (callback.length === 3) {
+                    this.requests[id] = true;
                     this.ready.then(() => callback(req, data, respond));
                 } else {
                     let resp = callback(req, data);
@@ -103,16 +118,18 @@ Responder.prototype.on = function on(event, callback) {
                         // Check for generator
                         if (typeof (resp && resp.next) === 'function') {
                             // Keep track of generator to later close it
-                            // TODO: Support closing generator
-                            this.generators[id] = resp;
+                            this.requests[id] = resp;
 
                             // Asynchronously use generator
+                            let self = this;
                             (function generate(gen) {
                                 let resp = gen.next();
 
                                 if (!resp.done) {
                                     respond(resp.value).return(gen)
                                         .then(generate);
+                                } else {
+                                    delete self.requests[id];
                                 }
                             })(resp);
                         } else {
@@ -121,8 +138,15 @@ Responder.prototype.on = function on(event, callback) {
                     });
                 }
 
+                let self = this;
                 function respond(resp) {
                     return Promise.resolve(resp)
+                        .tap(function checkNotCancelled() {
+                            if (!self.requests[id]) {
+                                let err = new Error('Request cancelled');
+                                return Promise.reject(err);
+                            }
+                        })
                         .then(resp => {
                             if (!Array.isArray(resp)) {
                                 return resp === undefined ? [] : [resp];
@@ -134,7 +158,7 @@ Responder.prototype.on = function on(event, callback) {
                             resp['time'] = Date.now();
                             let payload = JSON.stringify(resp);
                             let value = new Buffer(payload);
-                            this.producer.produce(this.respTopic, part, value);
+                            self.producer.produce(self.respTopic, part, value);
                         })
                         .finally(() => {
                             // TODO: Handle committing better
@@ -277,8 +301,17 @@ Requester.prototype.emitter = function emitter(request, topic) {
     request['resp_partition'] = 0;
 
     this.request[id] = (err, res) => emitter.emit('response', res);
-    emitter.close = function close() {
-        // TODO: Implement closing other end
+    emitter.close = () => {
+        return Promise.try(() => {
+            let payload = JSON.stringify({
+                [REQ_ID_KEY]: id,
+                [CANCEL_KEY]: true
+            });
+            let value = new Buffer(payload);
+            this.producer.produce(topic, null, value);
+
+            delete this.request[id];
+        });
     };
 
     return this.ready
