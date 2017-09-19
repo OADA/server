@@ -90,7 +90,10 @@ responder.on('request', function handleReq(req) {
                     return false;
                 }
 
+								trace('resource exist? ', resource, req.contentType)
                 let contentType = resource ? resource._type : req.contentType;
+								trace(contentType, 'on the list? ', scopeTypes[type].indexOf(contentType))
+								trace('user scope all/read?', scopePerm(perm, 'read'))
                 return scopeTypes[type].indexOf(contentType) >= 0 &&
                         scopePerm(perm, 'read');
             });
@@ -104,7 +107,10 @@ responder.on('request', function handleReq(req) {
                     warn('Unsupported scope type "' + type + '"');
                     return false;
                 }
-                let contentType = resource ? resource._type : req.contentType;
+								trace('resource exist? ', resource, req.contentType)
+							let contentType = resource ? resource._type : req.contentType;
+							trace(contentType, 'on the list? ', scopeTypes[type].indexOf(contentType))
+							trace('user scope all/write?', scopePerm(perm, 'write'))
                 return scopeTypes[type].indexOf(contentType) >= 0 &&
                         scopePerm(perm, 'write');
             });

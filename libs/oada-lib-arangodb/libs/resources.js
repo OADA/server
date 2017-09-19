@@ -29,7 +29,6 @@ function lookupFromUrl(url, user_id) {
     const filters = pieces.map((urlPiece, i) => {
       return `FILTER p.edges[${i}].name == '${urlPiece}' || p.edges[${i}].name == null`
     }).join(' ');
-    trace('FILTERSSSS', filters)
     let query = `
       LET path = LAST(
         FOR v, e, p IN 0..${pieces.length}

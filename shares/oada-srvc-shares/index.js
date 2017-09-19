@@ -47,7 +47,7 @@ responder.on('request', function handleReq(req) {
 	if (/_meta\/?$/.test(req.path_leftover) || /_meta\/_permissions\/?/.test(req.path_leftover)) {
 		//get user's /shares and add this
 		return oadaLib.resources.getResource(req.resource_id).then((res) => {
-			return Promise.map(Object.keys(res._meta._changes[res._rev].merge._meta._permissions), (id) => {
+			return Promise.map(Object.keys(res._meta._changes[res._rev].merge._meta._permissions || {}), (id) => {
 				trace('Change made on user: '+id)
 				return oadaLib.users.findById(id).then((user) => {
 					trace('making a write request to /shares for user - '+id, user)
