@@ -1,7 +1,7 @@
 'use strict';
 
 const EventEmitter = require('events');
-const Promise = require('bluebird');
+var Promise = require('bluebird');
 const kf = require('node-rdkafka');
 const config = require('./config');
 const uuid = require('uuid');
@@ -95,26 +95,31 @@ Responder.prototype.on = function on(event, callback) {
                     return;
                 }
 
-                let resp = callback(req, data);
-                this.ready.return(resp).then(resp => {
-                    // Check for generator
-                    if (typeof (resp && resp.next) === 'function') {
-                        // Keep track of generators in case we want to close it
-                        // TODO: Support closing generator
-                        this.generators[id] = resp;
+                if (callback.length === 3) {
+                    this.ready.then(() => callback(req, data, respond));
+                } else {
+                    let resp = callback(req, data);
+                    this.ready.return(resp).then(resp => {
+                        // Check for generator
+                        if (typeof (resp && resp.next) === 'function') {
+                            // Keep track of generator to later close it
+                            // TODO: Support closing generator
+                            this.generators[id] = resp;
 
-                        // Asynchronously use generator
-                        (function generate(gen) {
-                            let resp = gen.next();
+                            // Asynchronously use generator
+                            (function generate(gen) {
+                                let resp = gen.next();
 
-                            if (!resp.done) {
-                                respond(resp.value).return(gen).then(generate);
-                            }
-                        })(resp);
-                    } else {
-                        respond(resp);
-                    }
-                });
+                                if (!resp.done) {
+                                    respond(resp.value).return(gen)
+                                        .then(generate);
+                                }
+                            })(resp);
+                        } else {
+                            respond(resp);
+                        }
+                    });
+                }
 
                 function respond(resp) {
                     return Promise.resolve(resp)
