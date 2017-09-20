@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "DEBUG=* mocha test/shares.js",
+    "test": "DEBUG=* mocha test/index.js",
     "start": "DEBUG=* node index.js"
   },
   "author": "",

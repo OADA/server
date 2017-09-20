@@ -38,6 +38,7 @@ router.use(function graphHandler(req, res, next) {
         'connection_id': req.id,
         'token': req.get('authorization'),
         'url': '/resources' + req.url,
+        'user_id': req.user.doc.user_id
     }, config.get('kafka:topics:graphRequest'))
     .then(function handleGraphRes(resp) {
         if (resp['resource_id']) {
@@ -57,44 +58,48 @@ router.put('/*', function checkScope(req, res, next) {
     requester.send({
         'connection_id': req.id,
         'oadaGraph': req.oadaGraph,
-        'user_id': req.user.doc.user_id,
+        'user_id': req.user.doc['user_id'],
         'scope': req.user.doc.scope,
-    }, config.get('kafka:topics:permissionsRequest')).then(function handlePermissionsRequest(response) {
-        if (!response.permissions.owner && !response.permissions.write) {
+        'contentType': req.get('Content-Type'),
+    }, config.get('kafka:topics:permissionsRequest'))
+    .then(function handlePermissionsRequest(response) {
+        if (!req.oadaGraph['resource_id']) { // PUTing non-existant resource
+            return;
+        } else if (!response.permissions.owner && !response.permissions.write) {
                 warn(req.user.doc['user_id'] +
                     ' tried to GET resource without proper permissions');
-                throw new OADAError('Not Authorized', 403,
-                        'User does not have write permission for this resource');
+            throw new OADAError('Not Authorized', 403,
+                    'User does not have write permission for this resource');
         }
         if (!response.scopes.write) {
-                throw new OADAError('Not Authorized', 403,
-                        'Token does not have required scope');
+            throw new OADAError('Not Authorized', 403,
+                    'Token does not have required scope');
         }
-    }).asCallback(next)
-})
+    }).asCallback(next);
+});
 
 router.get('/*', function checkScope(req, res, next) {
-    trace('STUFF', req.oadaGraph)
     requester.send({
         'connection_id': req.id,
         'oadaGraph': req.oadaGraph,
-        'user_id': req.user.doc.user_id,
+        'user_id': req.user.doc['user_id'],
         'scope': req.user.doc.scope,
-    }, config.get('kafka:topics:permissionsRequest')).then(function handlePermissionsRequest(response) {
-        trace('PERMISSIONS RESPONSE '+response)
+    }, config.get('kafka:topics:permissionsRequest'))
+    .then(function handlePermissionsRequest(response) {
+        trace('permissions response:' + response);
         if (!response.permissions.owner && !response.permissions.read) {
-                warn(req.user.doc['user_id'] +
+            warn(req.user.doc['user_id'] +
                     ' tried to GET resource without proper permissions');
-                throw new OADAError('Not Authorized', 403,
-                        'User does not have read permission for this resource');
+            throw new OADAError('Not Authorized', 403,
+                    'User does not have read permission for this resource');
         }
 
         if (!response.scopes.read) {
-                throw new OADAError('Not Authorized', 403,
-                        'Token does not have required scope');
+            throw new OADAError('Not Authorized', 403,
+                    'Token does not have required scope');
         }
-    }).asCallback(next)
-})
+    }).asCallback(next);
+});
 
 router.get('/*', function getResource(req, res, next) {
     // TODO: Should it not get the whole meta document?
@@ -196,7 +201,7 @@ router.put('/*', function putResource(req, res, next) {
                 'user_id': req.user.doc['user_id'],
                 'authorizationid': req.user.doc['authorizationid'],
                 'client_id': req.user.doc['client_id'],
-                'content_type': req.get('Content-Type'),
+                'contentType': req.get('Content-Type'),
                 'bodyid': bodyid,
                 //body: req.body
             }, config.get('kafka:topics:writeRequest'));
@@ -233,6 +238,21 @@ router.delete('/*', function noDeleteBookmarks(req, res, next) {
     }
 
     next(err);
+});
+
+router.delete('/*', function deleteLink(req, res, next) {
+    // Check if followed a link and are at the root of the linked resource
+    if (req.oadaGraph.from['path_leftover'] &&
+            !req.oadaGraph['path_leftover']) {
+        // Switch to DELETE on parent resource
+        let id = req.oadaGraph.from['resource_id'];
+        let path = req.oadaGraph.from['path_leftover'];
+        req.url = id.replace(/^\/?resources\//, '') + path;
+
+        req.oadaGraph = req.oadaGraph.from;
+    }
+
+    next();
 });
 
 router.delete('/*', function deleteResource(req, res, next) {

@@ -1,4 +1,4 @@
-module.exports = [ 
+module.exports = [
   //-------------------------------------------------------
   // /bookmarks/rocks
   {
@@ -27,6 +27,26 @@ module.exports = [
     _from: 'graphNodes/resources:default:resources_rocks_123:rocks-index',
     _to: 'graphNodes/resources:default:resources_rock_123',
     name: '90j2klfdjss',
+    versioned: true,
+  },
+
+
+  //-------------------------------------------------------
+  // /bookmarks/fpad
+  {
+    _id: 'edges/default:edges_bookmarks_fpad_999',
+    _from: 'graphNodes/resources:default:resources_bookmarks_999',
+    _to: 'graphNodes/resources:default:resources_fpad_999',
+    name: 'fpad',
+    versioned: true,
+  },
+  //--------------------------------------------------------
+  // /bookmarks/fpad/clients
+  {
+    _id: 'edges/default:edges_fpad_clients_999',
+    _from: 'graphNodes/resources:default:resources_fpad_999',
+    _to: 'graphNodes/resources:default:resources_clients_999',
+    name: 'clients',
     versioned: true,
   },
 

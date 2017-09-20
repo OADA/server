@@ -27,32 +27,10 @@ responder.on('request', function handleReq(req, msg) {
         return req.body || req.bodyid && putBodies.getPutBody(req.bodyid);
     });
     let existingResourceInfo = {};
-    var permitted = Promise.try(function checkPermissions() {
-        if (req.source === 'rev-graph-update') {
-            // no need to check permission for rev graph updates
-            return;
-        }
-
-        if (id) { // Only run checks if resource exists
-            // TODO: Support sharing (i.e., not just owner has permission)
-            var start = new Date().getTime();
-            info(`Checking permissions of "${id}".`);
-            // { _id, _rev, _meta._owner }
-            return resources.getResourceOwnerIdRev(id).then(results => {
-                existingResourceInfo = results;
-                var end = new Date().getTime();
-                info(`Got owner (${results._meta._owner}) of "${id}"` +
-                        ` from arango. +${end - start}ms`);
-                if (existingResourceInfo._meta._owner !== req['user_id']) {
-                    return Promise.reject(new Error('permission'));
-                }
-            });
-        }
-    });
 
     var start = new Date().getTime();
     info(`PUTing to "${req['path_leftover']}" in "${id}"`);
-    var upsert = Promise.join(body, permitted, function doUpsert(body) {
+    var upsert = body.then(function doUpsert(body) {
         var path = pointer.parse(req['path_leftover'].replace(/\/*$/, ''));
 
         let method = resources.putResource;
@@ -84,10 +62,10 @@ responder.on('request', function handleReq(req, msg) {
 
             // Initialize resource stuff
             obj = {
-                '_type': req['content_type'],
+                '_type': req['contentType'],
                 '_meta': {
                     '_id': id + '/_meta',
-                    '_type': req['content_type'],
+                    '_type': req['contentType'],
                     '_owner': req['user_id'],
                     'stats': {
                         'createdBy': req['user_id'],
@@ -167,8 +145,9 @@ responder.on('request', function handleReq(req, msg) {
             'resource_id': id,
             '_rev': rev,
             'user_id': req['user_id'],
-			'authorizationid': req['authorizationid'],
-			'path_leftover': req['path_leftover'],
+            'authorizationid': req['authorizationid'],
+            'path_leftover': req['path_leftover'],
+            'contentType': req['contentType'],
         };
     }).catch(resources.NotFoundError, function respondNotFound(err) {
         error(err);

@@ -24,14 +24,16 @@ const kf = require('../../../libs/oada-lib-kafka');
 const oadaLib = require('../../../libs/oada-lib-arangodb');
 const config = require('../config');
 const debug = require('debug');
-const trace = debug('trace:rev-graph-update#test');
-const revGraphUpdate = require('../');
+const trace = debug('trace:shares#test');
+const shares = require('../');
+const axios = require('axios')
 
-const requester = new kf.Requester(config.get('kafka:topics:httpResponse'),
+const requester = new kf.Requester(
 											config.get('kafka:topics:writeRequest'),
+											config.get('kafka:topics:httpResponse'),
 											config.get('kafka:groupId')+'-test');
 
-describe('rev graph update service', () => {
+describe('shares service', () => {
   before(oadaLib.init.run);
 	before(function waitKafka(done) {
 		requester.on('ready', () => done());
@@ -40,14 +42,30 @@ describe('rev graph update service', () => {
   //--------------------------------------------------
   // The tests!
   //--------------------------------------------------
-	describe('.rev-graph-update', () => {
-		it('should be able to produce a correct write_request message', (done) => {
-
+	describe('.shares', () => {
+		it('should produce a write request', (done) => {
+			/*
+			return axios({
+				url: 'https://vip3.ecn.purdue.edu/bookmarks/rocks/rocks-index/90j2klfdjss/_meta/_permissions',
+				headers: {
+          'Authorization': 'Bearer xyz',
+					'Content-Type': 'application/vnd.fpad.client'
+				},
+		    data: {
+					[`users/default:user_sam_321`]: {
+            read: true,
+            write: true,
+            owner: false
+          }
+        }
+			})
+			*/
 			// make http_response message
 			let r = {
 				msgtype: 'write-response',
 				code: "success",
 				resource_id: '/resources:default:resources_rock_123',
+				path_leftover: '/_meta/_permissions',
         connection_id: '123abc' + randomstring.generate(7),
 				_rev: randomstring.generate(7),
 				doc: {

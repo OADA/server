@@ -65,7 +65,7 @@ responder.on('request', function handleReq(req) {
                             // TODO: What to put for these?
                             //'authorizationid': ,
                             //'client_id': ,
-                            'content_type': contentTypes[res],
+                            'contentType': contentTypes[res],
                             'body': {}
                         }).tap(resp => {
                             if (resp.code !== 'success') {
@@ -90,7 +90,7 @@ responder.on('request', function handleReq(req) {
                 user,
             };
         })
-        .catch(users.UniqueConstraintError, () => {
+		.catch(users.UniqueConstraintError, () => {
             info(`User ${user} already exists`);
             // TODO: Implement updating users?
             return users.like(user).call('next').then(user => {

@@ -11,7 +11,7 @@ module.exports = [
   {
     '_id': 'authorizations/default:authorization-321',
     'token': 'abc',
-    'scope': ['oada.rocks:all'],
+    'scope': ['fpad:all'],
     'createTime': 1413831649937,
     'expiresIn': 60,
     'user': {'_id': 'users/default:users_sam_321'},
@@ -24,6 +24,24 @@ module.exports = [
     'createTime': 1413831649937,
     'expiresIn': 60,
     'user': {'_id': 'users/default:users_sam_321'},
+    'clientId': 'jf93caauf3uzud7f308faesf3@provider.oada-dev.com'
+  },
+  {
+    '_id': 'authorizations/default:authorization-999',
+    'token': 'aaa',
+    'scope': ['fpad:all'],
+    'createTime': 1413831649937,
+    'expiresIn': 60,
+    'user': {'_id': 'users/default:users_audrey_999'},
+    'clientId': 'jf93caauf3uzud7f308faesf3@provider.oada-dev.com'
+  },
+  {
+    '_id': 'authorizations/default:authorization-777',
+    'token': 'ggg',
+    'scope': ['fpad:all'],
+    'createTime': 1413831649937,
+    'expiresIn': 60,
+    'user': {'_id': 'users/default:users_gary_growersync'},
     'clientId': 'jf93caauf3uzud7f308faesf3@provider.oada-dev.com'
   },
 ];
