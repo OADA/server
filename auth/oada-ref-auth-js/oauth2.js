@@ -44,6 +44,16 @@ module.exports = function(_server,config) {
   //////
   return {
     authorize: [
+      // If the redirecting domain sets the "domain_hint", save it in the session so that the login page
+      // can fill it in as the default choice:
+      function(req,res,next) {
+        debug('oauth2#authorize: checking for domain_hint');
+        if (req && req.query && req.query.domain_hint) {
+          req.session.domain_hint = req.query.domain_hint;
+        }
+        next();
+      },
+      // can access it to pre-fill the domain box
       login.ensureLoggedIn(config.get('auth:endpoints:login')),
       server.authorization(function(clientId, redirectURI, done) {
         clients.findById(clientId, function(err, client) {

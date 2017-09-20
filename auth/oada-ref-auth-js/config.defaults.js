@@ -37,6 +37,8 @@ module.exports = {
       token: '/token',
       decision: '/decision',
       login: '/login',
+      loginConnect: '/login-openidconnect',
+      redirectConnect: '/redirect-openidconnect',
       logout: '/logout',
       certs: '/certs',
       userinfo: '/userinfo',

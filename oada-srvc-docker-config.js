@@ -60,6 +60,8 @@ module.exports = {
   auth: {
     // Prefix should match nginx proxy's prefix for the auth service
     endpointsPrefix: '/oadaauth',
+    serviceName: 'fPAD',
+    serviceLongName: 'Framework for Produce Audit Data',
     server: {
       // Replace these in production with things that are actually secret...
       sessionSecret: "2jp901p3#2#(!)kd9",

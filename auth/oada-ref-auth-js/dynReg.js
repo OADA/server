@@ -52,7 +52,7 @@ function dynReg(req, res, done) {
           debug('Failed to save new dynReg client.  err = ', err);
           res.status(400).json({
             error: 'invalid_client_metadata',
-            error_description: 'Unexpected error - Metadata could not be stored'
+            error_description: 'Unexpected error - Metadata could not be stored.  Err = '+err.toString()
           });
 
           return done();
