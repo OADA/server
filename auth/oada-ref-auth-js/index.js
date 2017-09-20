@@ -196,6 +196,7 @@ module.exports = function(conf) {
       };
       
       // And call the middleware directly so we can use closure variables:
+      trace(config.get('auth:endpoints:loginConnect')+': calling getIDToken for dest_domain = ', dest_domain);
       return oadaidclient.getIDToken(dest_domain,options)(req,res,next);
     });
 
@@ -308,15 +309,18 @@ module.exports = function(conf) {
 
 if (require.main === module) {
   var app = module.exports();
-  var server;
-  if (config.get('auth:server:mode') === 'http') {
-    var server = app.listen(config.get('auth:server:port'), function() {
-      info('Listening HTTP on port %d', server.address().port);
+  var server1,server2;
+  // Note: now we listen on both http and https by default.  https is only
+  // for debugging trying to use localhost or 127.0.0.1, since that will resolve
+  // inside the container itself instead of as the overall host.
+//  if (config.get('auth:server:mode') === 'http') {
+    var server1 = app.listen(config.get('auth:server:port-http'), function() {
+      info('Listening HTTP on port %d', server1.address().port);
     });
-  } else {
-    var server = https.createServer(config.get('auth:certs'), app);
-    server.listen(config.get('auth:server:port'), function() {
-      info('Listening HTTPS on port %d', server.address().port);
+//  } else {
+    var server2 = https.createServer(config.get('auth:certs'), app);
+    server2.listen(config.get('auth:server:port-https'), function() {
+      info('Listening HTTPS on port %d', server2.address().port);
     });
-  }
+//  }
 }

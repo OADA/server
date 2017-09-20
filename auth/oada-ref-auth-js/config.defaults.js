@@ -24,7 +24,8 @@ module.exports = {
       jsonSpaces: 2,
       sessionSecret: 'Xka*32F@*!15',
       passwordSalt: '$2a$10$l64QftVz6.7KR5BXNc29IO',
-      port: 443,
+      'port-http': 80,
+      'port-https': 443,
       mode: 'https',
       domain: 'localhost',
       publicUri: undefined

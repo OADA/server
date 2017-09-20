@@ -67,7 +67,7 @@ module.exports = {
       // Replace these in production with things that are actually secret...
       sessionSecret: "2jp901p3#2#(!)kd9",
       passwordSalt: "$2a$06$xbh/gQcEgAX5eapjlCgMYO",
-      port: 80,
+      'port-http': 80,
       mode: "http",
       domain: domain, // in docker it's port 80 localhost
       publicUri: "https://" + domain // but to nginx proxy, it's https://localhost in dev
