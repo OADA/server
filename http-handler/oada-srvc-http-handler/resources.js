@@ -109,11 +109,12 @@ router.ws('/:resourceId/_meta/_changes', function(ws, req) {
         'oadaGraph': req.oadaGraph,
         'user_id': req.user.doc['user_id'],
         'scope': req.user.doc.scope,
-    }, config.get('kafka:topics:websocketsRequest'))
-    .then((emitter) => {
-        emitter.on('message', (msg) => {
+    }, config.get('kafka:topics:websocketsRequest')).then((emitter) => {
+        emitter.on('response', (msg) => {
+            trace('MESSAGE RECEIVED FROM WEBSOCKETS IN HTTP HANDLER', msg)
             ws.send(msg)
         })
+        ws.on('close', emitter.close())
     });
 });
 

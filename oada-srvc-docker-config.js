@@ -49,6 +49,7 @@ module.exports = {
       tokenRequest: 'token_request',
       graphRequest: 'graph_request',
       writeRequest: 'write_request',
+      websocketsRequest: 'websockets_request',
       userRequest: 'user_request',
       permissionsRequest: 'permissions_request', //show bobs
       httpResponse: 'http_response',
@@ -60,11 +61,13 @@ module.exports = {
   auth: {
     // Prefix should match nginx proxy's prefix for the auth service
     endpointsPrefix: '/oadaauth',
+    serviceName: 'fPAD',
+    serviceLongName: 'Framework for Produce Audit Data',
     server: {
       // Replace these in production with things that are actually secret...
       sessionSecret: "2jp901p3#2#(!)kd9",
       passwordSalt: "$2a$06$xbh/gQcEgAX5eapjlCgMYO",
-      port: 80,
+      'port-http': 80,
       mode: "http",
       domain: domain, // in docker it's port 80 localhost
       publicUri: "https://" + domain // but to nginx proxy, it's https://localhost in dev

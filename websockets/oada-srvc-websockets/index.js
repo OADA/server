@@ -50,21 +50,19 @@ module.exports = function stopResp() {
 writeResponder.on('request', function handleReq(req) {
 	if (req.msgtype !== 'write-response') return
 	if (req.code !== 'success') return
-	if (req.resource_id === resource_id) {
-		let msg = oadaLib.resources.getResource(req.resource_id).then((res) => {
-			if (res._meta._changes[res._rev].merge) {
-				emitter.emit(req.resource_id, res._meta._changes[res._rev].merge)
-			} else if (res._meta._changes[res._rev].delete) {
-        //TODO: Don't do anything or close the socket?
-			}
-		})
-	}
+	oadaLib.resources.getResource(req.oadaGraph.resource_id).then((res) => {
+		if (res._meta._changes[res._rev].merge) {
+			emitter.emit(req.resource_id, res._meta._changes[res._rev].merge)
+		} else if (res._meta._changes[res._rev].delete) {
+       //TODO: Don't do anything or close the socket?
+		}
+	})
 })
 
 // Set up generator function for web socket connections 
-websocketsResponder.on('request', function* handleWrite(req, data, respond) {
-	emitter.on(req.resource_id, () => {
-		yield res._meta._changes[res._rev].merge
+websocketsResponder.on('request', function handleWrite(req, data, respond) {
+	emitter.on(req.resource_id, (content) => {
+		respond(content)
 	})
 })
 

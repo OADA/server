@@ -25,6 +25,7 @@
     "debug": "^2.6.6",
     "express": "^4.15.2",
     "express-promise": "^0.4.0",
+    "express-ws": "^3.0.0",
     "kafka-node": "^1.6.0",
     "nconf": "^0.8.4",
     "oada-error": "^1.1.1",

@@ -14,11 +14,14 @@
  */
 'use strict';
 
+process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
+
 // The config needs to know whether to look for command-line arguments or not,
 // so set isLibrary in global scope before requiring.
 global.isLibrary = !(require.main === module);
 
 var _ = require('lodash');
+var fs = require('fs');
 var trace = require('debug')('auth#index:trace');
 var info = require('debug')('auth#index:info');
 var config = require('./config');
@@ -47,6 +50,15 @@ var URI = require('URIjs');
 
 var oadaError = require('oada-error').middleware;
 var oadaLookup = require('oada-lookup');
+
+// Use the oada-id-client for the openidconnect code flow:
+var oadaidclient = require('oada-id-client').middleware;
+
+//-----------------------------------------------------------------------
+// Load all the domain configs at startup
+const domainConfigs = _.indexBy(_.map(fs.readdirSync('./public/domains'), dirname => 
+  require('./public/domains/'+dirname+'/config')
+), 'domain');
 
 
 module.exports = function(conf) {
@@ -124,21 +136,80 @@ module.exports = function(conf) {
     app.post(config.get('auth:endpoints:decision'), oauth2.decision);
     app.post(config.get('auth:endpoints:token'), oauth2.token);
 
+
+    //----------------------------------------------------------------------------------
+    // Login page: someone has navigated or been redirected to the login page.  Populate 
+    // based on the domain
     app.get(config.get('auth:endpoints:login'), function(req, res) {
       trace('GET '+config.get('auth:endpoints:login')+': setting X-Frame-Options=SAMEORIGIN before rendering login');
       res.header('X-Frame-Options', 'SAMEORIGIN');
+
+      // Load the login info for this domain from the public directory:
+      const domain_config = domainConfigs[req.hostname] || domainConfigs.localhost;
       res.render('login', {
-        hint: config.get('auth:hint'),
-        logo_url: config.get('auth:endpointsPrefix')+'/oada-logo.png',
+        // Where should the local login form post:
         login_url: config.get('auth:endpoints:login'),
+        // Where should the openidconnect form post:
+        loginconnect_url: config.get('auth:endpoints:loginConnect'),
+
+        // domain-specific configs:
+        hint: domain_config.hint || { username: '', password: '' }, // has .username, .password
+        logo_url: config.get('auth:endpointsPrefix')+'/domains/'+domain_config.domain+'/'+domain_config.logo,
+        name: domain_config.name,
+        tagline: domain_config.tagline,
+        color: domain_config.color || '#FFFFFF',
+        idService: domain_config.idService, // has .shortname, .longname
+
+        // domain_hint can be set when authorization server redirects to login
+        domain_hint: "growersync.fpad.io", //req.session.domain_hint || '',
       });
     });
 
+
+    //---------------------------------------------------
+    // Handle post of local form from login page:
     const pfx = config.get('auth:endpointsPrefix') || '';
     app.post(config.get('auth:endpoints:login'), passport.authenticate('local', {
       successReturnToOrRedirect: '/' + pfx,
       failureRedirect: config.get('auth:endpoints:login'),
     }));
+
+
+    //-----------------------------------------------------------------
+    // Handle the POST from clicking the "login with OADA/fPAD" button
+    app.post(config.get('auth:endpoints:loginConnect'), function(req,res,next) {
+      
+      // First, get domain entered in the posted form and strip protocol if they used it
+      let dest_domain = req.body && req.body.dest_domain;
+      if (dest_domain) dest_domain = dest_domain.replace(/^https?:\/\//);
+      req.body.dest_domain = dest_domain;
+      info(config.get('auth:endpoints:loginConnect')+': OpenIDConnect request to redirect from domain '+req.hostname+' to domain '+dest_domain);
+      
+      // Next, get the info for the id client middleware based on main domain:
+      const domain_config = domainConfigs[req.hostname] || domainConfigs.localhost;
+      const options = {
+        metadata: domain_config.software_statement,
+        redirect: 'https://'+req.hostname+'/'+pfx+'/'+config.get('auth:endpoints:redirectConnect'),
+        scope: 'openid profile',
+        prompt: 'consent',
+        privateKey: domain_config.keys.private,
+      };
+      
+      // And call the middleware directly so we can use closure variables:
+      trace(config.get('auth:endpoints:loginConnect')+': calling getIDToken for dest_domain = ', dest_domain);
+      return oadaidclient.getIDToken(dest_domain,options)(req,res,next);
+    });
+
+    //-----------------------------------------------------
+    // Handle the redirect for openid connect login:
+    app.use(config.get('auth:endpoints:redirectConnect'), (req,res,next) => {
+      info(config.get('auth:endpoints:redirectConnect')+': OpenIDConnect request returned');
+      // Get the token for the user
+    }, oadaidclient.handleRedirect(), (req,res,next) => {
+      // Get the user info
+      trace(config.get('auth:endpoints:redirectConnect')+': token is: ', req.token);
+      // should have res.tok
+    });
 
     app.get(config.get('auth:endpoints:logout'), function(req, res) {
       req.logout();
@@ -238,15 +309,18 @@ module.exports = function(conf) {
 
 if (require.main === module) {
   var app = module.exports();
-  var server;
-  if (config.get('auth:server:mode') === 'http') {
-    var server = app.listen(config.get('auth:server:port'), function() {
-      info('Listening HTTP on port %d', server.address().port);
+  var server1,server2;
+  // Note: now we listen on both http and https by default.  https is only
+  // for debugging trying to use localhost or 127.0.0.1, since that will resolve
+  // inside the container itself instead of as the overall host.
+//  if (config.get('auth:server:mode') === 'http') {
+    var server1 = app.listen(config.get('auth:server:port-http'), function() {
+      info('Listening HTTP on port %d', server1.address().port);
     });
-  } else {
-    var server = https.createServer(config.get('auth:certs'), app);
-    server.listen(config.get('auth:server:port'), function() {
-      info('Listening HTTPS on port %d', server.address().port);
+//  } else {
+    var server2 = https.createServer(config.get('auth:certs'), app);
+    server2.listen(config.get('auth:server:port-https'), function() {
+      info('Listening HTTPS on port %d', server2.address().port);
     });
-  }
+//  }
 }
