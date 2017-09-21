@@ -61,7 +61,7 @@ function Responder(listenTopic, respTopic, groupId, opts) {
     this.consumer.connect();
     this.producer.connect();
 
-    this.generators = {};
+    this.requests = {};
 
     this.timeout = topicTimeout(this.listenTopic);
 }
@@ -109,8 +109,8 @@ Responder.prototype.on = function on(event, callback) {
                     return;
                 }
 
+                this.requests[id] = true;
                 if (callback.length === 3) {
-                    this.requests[id] = true;
                     this.ready.then(() => callback(req, data, respond));
                 } else {
                     let resp = callback(req, data);
@@ -133,7 +133,7 @@ Responder.prototype.on = function on(event, callback) {
                                 }
                             })(resp);
                         } else {
-                            respond(resp);
+                            respond(resp).then(() => delete this.requests[id]);
                         }
                     });
                 }
