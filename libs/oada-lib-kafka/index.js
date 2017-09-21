@@ -142,7 +142,7 @@ Responder.prototype.on = function on(event, callback) {
                 function respond(resp) {
                     return Promise.resolve(resp)
                         .tap(function checkNotCancelled() {
-                            if (!self.requests || !self.requests[id]) {
+                            if (!self.requests[id]) {
                                 let err = new Error('Request cancelled');
                                 return Promise.reject(err);
                             }

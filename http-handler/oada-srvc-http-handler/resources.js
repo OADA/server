@@ -103,6 +103,7 @@ router.get('/*', function checkScope(req, res, next) {
 });
 
 router.ws('/:resourceId/_meta/_changes', function(ws, req) {
+    trace('Got it yo')
     // Now stream stuff back
     requester.emitter({
         'connection_id': req.id,
