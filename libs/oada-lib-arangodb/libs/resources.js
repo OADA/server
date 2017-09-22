@@ -29,7 +29,6 @@ function lookupFromUrl(url, userId) {
     const filters = pieces.map((urlPiece, i) => {
       return `FILTER p.edges[${i}].name == '${urlPiece}' || p.edges[${i}].name == null`;
     }).join(' ');
-    trace('FILTERSSSS', filters);
     let query = `
       LET path = LAST(
         FOR v, e, p IN 0..${pieces.length}
@@ -86,10 +85,20 @@ function lookupFromUrl(url, userId) {
 
       trace('longest path has ' + result.vertices.length + ' vertices');
       if (!result.vertices[result.vertices.length - 1]) {
-        resourceId = '';
+        //TODO: fix this wierd edge case...I'm not quite sure why it occurs
+        trace('THIS WIERD EDGE CASE')
+        resourceId = result.vertices[result.vertices.length -2]['resource_id']
+          /*
         pathLeftover = result.edges[result.edges.length - 1]._to
             .replace(/^graphNodes\//, '/')
             .replace(/resources:/, 'resources/');
+            */
+        let lastResource = (result.vertices.length - 1) -
+            (_.findIndex(_.reverse(result.vertices), 'is_resource'));
+        // Slice a negative value to take the last n pieces of the array
+        pathLeftover =
+            pointer.compile(pieces.slice(lastResource - pieces.length));
+
         return {'resource_id': resourceId, 'path_leftover': pathLeftover,
           from, permissions};
       }

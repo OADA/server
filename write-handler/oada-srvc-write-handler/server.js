@@ -19,6 +19,8 @@ var responder = new Responder(
 );
 
 responder.on('request', function handleReq(req, msg) {
+	  trace('~~~~~~~~~~~~~~~~~~')
+	  trace('REQUEST: ', req)
     req.source = req.source || '';
     var id = req['resource_id'];
 

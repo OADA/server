@@ -19,6 +19,7 @@ const config = require('./config');
 var requester = require('./requester');
 
 var router = express.Router();
+var expressWs = require('express-ws')(router)
 
 // Turn POSTs into PUTs at random id
 router.post('/*?', function postResource(req, res, next) {
@@ -99,6 +100,23 @@ router.get('/*', function checkScope(req, res, next) {
                     'Token does not have required scope');
         }
     }).asCallback(next);
+});
+
+router.ws('/:resourceId/_meta/_changes', function(ws, req) {
+    trace('Got it yo')
+    // Now stream stuff back
+    requester.emitter({
+        'connection_id': req.id,
+        'oadaGraph': req.oadaGraph,
+        'user_id': req.user.doc['user_id'],
+        'scope': req.user.doc.scope,
+    }, config.get('kafka:topics:websocketsRequest')).then((emitter) => {
+        emitter.on('response', (msg) => {
+            trace('MESSAGE RECEIVED FROM WEBSOCKETS IN HTTP HANDLER', msg)
+            ws.send(msg)
+        })
+        ws.on('close', emitter.close())
+    });
 });
 
 router.get('/*', function getResource(req, res, next) {
@@ -292,5 +310,7 @@ router.delete('/*', function deleteResource(req, res, next) {
     })
     .catch(next);
 });
+
+
 
 module.exports = router;
