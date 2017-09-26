@@ -21,9 +21,20 @@ var users = require('./users');
 
 var requester = require('./requester');
 
+const http = require('http')
+const url = require('url')
+
 /////////////////////////////////////////////////////////////////
 // Setup express:
 var app = express();
+require('express-ws')(app);
+var websockets = require('./websockets');
+
+app.get('*', (req, res, next) => { console.log(req.originalUrl); next(); })
+app.get('/favicon.ico', (req, res) => res.end());
+app.use('/test', express.static('ws_test'));
+app.use('/websockets', websockets);
+
 function start() {
     return Promise.fromCallback(function(done) {
         info('----------------------------------------------------------');

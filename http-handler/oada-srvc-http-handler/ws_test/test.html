@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+	<script>
+		var s = new WebSocket('ws://aaa@vip3.ecn.purdue.edu:34135/websockets/something');
+var log = console.log;
+s.addEventListener('error', function (m) {console.log(m); log("error"); });
+s.addEventListener('open', function (m) { log("websocket connection open"); });
+s.addEventListener('message', function (m) { log(m.data); });
+	</script>
+<body>
+
+<h1>My First Heading</h1>
+
+<p>My first paragraph.</p>
+
+</body>
+</html>

@@ -35,6 +35,9 @@ module.exports = function stopResp() {
 };
 
 const scopeTypes = {
+	'oada.mirrors': [
+		'application/vnd.oada.mirrors.1:json',
+	],
   'oada.rocks': [
         'application/vnd.oada.bookmarks.1+json',
         'application/vnd.oada.shares.1+json',
