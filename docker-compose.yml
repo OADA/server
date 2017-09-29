@@ -15,7 +15,7 @@ services:
       - arango_net
       - startup_net
     ports:
-      - "8000"
+      - "80"
     volumes:
       - .:/code
       - ./oada-srvc-docker-config.js:/oada-srvc-docker-config.js
@@ -64,7 +64,7 @@ services:
       - arango_net
       - startup_net
     ports:
-      - "8000"
+      - "80"
     volumes:
       - .:/code
       - ./oada-srvc-docker-config.js:/oada-srvc-docker-config.js
@@ -88,7 +88,7 @@ services:
       - kafka_net
       - arango_net
     ports:
-      - "8000"
+      - "80"
     volumes:
       - .:/code
       - ./oada-srvc-docker-config.js:/oada-srvc-docker-config.js
@@ -195,7 +195,7 @@ services:
       - .:/code
       - ./oada-srvc-docker-config.js:/oada-srvc-docker-config.js
     ports:
-      - "8000"
+      - "80"
     environment:
       - NODE_ENV=${NODE_ENV:-development}
       - DEBUG=${DEBUG:-""}

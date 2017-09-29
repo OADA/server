@@ -79,6 +79,25 @@ app.use(function sanitizeUrl(req, res, next) {
     next();
 });
 
+app.use(function bearerAsBasic(req, res, next) {
+    let auth = req.get('authorization');
+
+    let type;
+    let val;
+    [type, val] = auth.split(' ');
+
+    // Gross hack needed because WebSocket only supports basic auth
+    if (type === 'Basic') {
+        let bearer;
+        // Treat basic auth username as bearer token
+        [bearer] = Buffer.from(val, 'base64').toString().split(':');
+
+        req.headers['authorization'] = 'Bearer ' + bearer;
+    }
+
+    next();
+});
+
 app.use(function tokenHandler(req, res, next) {
     return requester.send({
         'connection_id': req.id,
