@@ -23,12 +23,12 @@ function findByCode(code, cb) {
   oadaLib.codes.findByCode(code).asCallback(cb);
 }
 
-function save(code, cb) {
-  code = _.cloneDeep(code);
+function save(in_code, cb) {
+  var code = _.cloneDeep(in_code);
   // Link user
-  code.user = {_id: code.user._id};
+  code.user = { _id: null };
+  if (in_code.user) code.user = { _id: in_code.user._id };
 
-  trace('save: saving code ', code);
   oadaLib.codes.save(code).asCallback(cb);
 }
 

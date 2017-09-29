@@ -27,7 +27,7 @@ function save(token, cb) {
   token = _.cloneDeep(token);
   // Link user
   token.user = {_id: token.user._id};
-  trace('save: saving token ', token);
+  trace('save: saving token ', token.token);
   oadaLib.authorizations.save(token).asCallback(cb);
 }
 

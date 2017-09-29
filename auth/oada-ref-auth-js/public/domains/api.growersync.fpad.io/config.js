@@ -5,7 +5,7 @@ module.exports = {
   tagline: 'Data Connections for Growers',
   color: '#99EAA4',
   hint: {
-    username: 'gary',
+    username: 'gary@gmail.com',
     password: 'test',
   },
   idService: {

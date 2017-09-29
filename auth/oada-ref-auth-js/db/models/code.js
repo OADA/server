@@ -14,7 +14,7 @@
  */
 'use strict';
 
-var debug = require('debug')('model-codes');
+var debug = require('debug')('model-codes:trace');
 var URI = require('URIjs');
 
 var OADAError = require('oada-error');
@@ -55,6 +55,7 @@ function makeCode(code) {
     var self = this;
     this.redeemed = true;
 
+    debug('makeCode#redeem: saving redeemed code ', self.code);
     db.save(this, function(err) {
       if (err) { debug(err); return cb(err); }
 

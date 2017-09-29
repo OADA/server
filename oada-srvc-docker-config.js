@@ -75,6 +75,11 @@ module.exports = {
     keys: {
       signPems: "/code/auth/sign/",
     },
+    idToken: {
+      expiresIn: 3600,
+      // Note: signKid has to match the name of the .pem at the signPem path above
+      signKid: '02llkjf92jieiekk2',
+    },
     datastoresDriver: 'arango',
     hint: {
       username: "frank",

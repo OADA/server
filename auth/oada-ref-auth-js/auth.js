@@ -14,6 +14,8 @@
  */
 'use strict';
 
+var trace = require('debug')('trace:auth.js');
+var info = require('debug')('info:auth.js');
 var passport = require('passport');
 var LocalStrategy = require('passport-local');
 var ClientPassword = require('passport-oauth2-client-password');
@@ -57,44 +59,59 @@ passport.use(new ClientPassword.Strategy({
     passReqToCallback: true
   },
   function(req, cId, cSecret, done) {
+    trace('#ClientPassword.Strategy: looking for code ', req.body.code);
     codes.findByCode(req.body.code, function(err, code) {
       if (err) {
+        info('#ClientPassword.Strategy: code not found');
         return done(new AuthorizationError('Code not found',
               'invalid_request'));
       }
 
       if (code.isRedeemed()) {
+        info('#ClientPassword.Strategy: code ',req.body.code,' is already redeemed');
         return done(null, false);
       }
 
+      trace('#ClientPassword.Strategy: found code, searching for clientid from that code: ',code.clientId);
       clients.findById(code.clientId, function(err, client) {
-        if (err) { return done(err); }
+        if (err) { 
+          info('#ClientPassword.Strategy: failed to find client by id ',code.clientId,'.  err = ', err); 
+          return done(err); 
+        }
 
         var key_hint = client.jwks_uri || client.jwks;
 
-        jwtBearerClientAuth.verify(cSecret, key_hint, cId, cId,
-          URI(config.get('auth:server:publicUri') + config.get('auth:endpoints:token'))
-            .normalize()
-            .toString(), {},
-          function(err, valid) {
+        // Have to compute this from req now that we have multi-domain.
+        // Could also verify that req.host matches one of the possible
+        // domains to prevent someone spoofing a different domain?
+        var tokenEndpoint = URI({
+          protocol: req.protocol,    // http or https
+          hostname: req.get('host'), // includes port if available
+          path: req.originalUrl,     // does not include query parameters
+        }).normalize().toString();
+
+        trace('#ClientPassword.Strategy: verifying jwt, tokenEndpoint = ', tokenEndpoint);
+        jwtBearerClientAuth.verify(
+          cSecret,       // arg0: client secret
+          key_hint,      // arg1: jwks_uri or jwks (i.e. public key or where to find public key)
+          cId,           // arg2: issuer ID: simplest to just make the same as clientID,
+          cId,           // arg3: clientID: used in the `sub` claim
+          tokenEndpoint, // arg4: tokenEndpoint (i.e. the `aud` (audience) field from JWT)
+          {},            // arg5: options
+          function(err, valid) { // arg6: callback
             if (err) {
-              if(err.name === 'JsonWebTokenError') {
-                return done(null, err);
-              } else {
-                return done(err);
-              }
+              info('#ClientPassword.Strategy: jwtBearerClientAuth.verify returned an error.  err = ', err);
+              return done(err);
             }
 
             if (!valid) {
               return done(null, valid);
             }
-
-            clients.findById(code.clientId, function(err, client) {
-              if (err) { return done(err); }
-
-              done(null, client);
-            });
-          });
+            
+            trace('#ClientPassword.Strategy: client is valid, returning');
+            return done(null, client);
+          }
+        );
       });
     });
   }));

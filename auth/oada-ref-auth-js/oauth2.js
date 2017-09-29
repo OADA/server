@@ -20,11 +20,20 @@ var oauth2orize = require('oauth2orize');
 var AuthorizationError = require('oauth2orize').AuthorizationError;
 var passport = require('passport');
 var debug = require('debug')('oauth2/trace');
+var _ = require('lodash');
+var fs = require('fs');
 
 var oadaLookup = require('oada-lookup');
 
 var utils = require('./utils');
 var clients = require('./db/models/client');
+
+//-----------------------------------------------------------------------
+// Load all the domain configs at startup
+const domainConfigs = _.indexBy(_.map(fs.readdirSync('./public/domains'), dirname => 
+  require('./public/domains/'+dirname+'/config')
+), 'domain');
+
 
 var server;
 module.exports = function(_server,config) {
@@ -66,25 +75,35 @@ module.exports = function(_server,config) {
               return done(null, client, redirectURI);
             }
           }
+          debug('oauth2#authorize: redirect_uri from URL ('+redirectURI+') does not match any on client cert: ',client.redirect_uris);
           return done(null, false);
         });
       }),
       function(req, res) {
         oadaLookup.trustedCDP(function(err, pl) {
+          // Load the login info for this domain from the public directory:
+          const domain_config = domainConfigs[req.hostname] || domainConfigs.localhost;
           res.render('approve', {
             transactionID: req.oauth2.transactionID,
             client: req.oauth2.client,
             scope: req.oauth2.req.scope,
             nonce: req.oauth2.req.nonce,
             trusted: req.oauth2.client.trusted,
-            logo_url: config.get('auth:endpointsPrefix')+'/oada-logo.png',
             decision_url: config.get('auth:endpoints:decision'),
+            name: domain_config.name,
+            logo_url: config.get('auth:endpointsPrefix')+'/domains/'+domain_config.domain+'/'+domain_config.logo,
+            tagline: domain_config.tagline,
+            color: domain_config.color || '#FFFFFF',
           });
         });
       },
       server.errorHandler({mode: 'indirect'})
     ],
     decision: [
+      function(req,res,next) {
+        debug('oauth2#decision: Received decision POST from form');
+        next();
+      },
       login.ensureLoggedIn(config.get('auth:endpoints:login')),
       server.decision(function parseDecision(req, done) {
         var validScope = req.body.scope.every(function(el) {
@@ -106,11 +125,12 @@ module.exports = function(_server,config) {
       server.errorHandler({mode: 'indirect'})
     ],
     token: [
-      function(req, res, done) {
+      function(req, res, next) {
+        debug('oauth2#token: setting client_secret = client_assertion');
         // todo: hack to use passport-oauth2-client-password
         req.body['client_secret'] = req.body['client_assertion'];
 
-        return done();
+        return next();
       },
       passport.authenticate(['oauth2-client-password'], {session: false}),
       server.token(),
