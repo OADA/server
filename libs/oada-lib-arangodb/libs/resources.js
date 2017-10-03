@@ -18,6 +18,8 @@ const graphNodes =
 const edges =
     db.collection(config.get('arangodb:collections:edges:name'));
 
+const MAX_DEPTH = 100; // TODO: Is this good?
+
 function lookupFromUrl(url, userId) {
   return Promise.try(() => {
     trace(userId);
@@ -260,6 +262,24 @@ function getParents(id) {
     () => null); // Treat non-existing path has not-found
 }
 
+function getNewDescendants(id, rev) {
+  // TODO: Better way to compare the revs?
+  return db.query(aql`
+    LET node = FIRST(
+      FOR node in ${graphNodes}
+        FILTER node.resource_id == ${id}
+        RETURN node
+    )
+
+    FOR v, e, p IN 0..${MAX_DEPTH} OUTBOUND node ${edges}
+      FILTER p.edges[*].versioned ALL == true
+      FILTER v.is_resource
+      LET ver = SPLIT(DOCUMENT(LAST(p.vertices).resource_id)._oada_rev, '-', 1)
+      FILTER TO_NUMBER(ver) >= ${+rev.split('-', 1)}
+      RETURN DISTINCT v.resource_id
+  `).call('all');
+}
+
 function putResource(id, obj) {
   // Fix rev
   obj['_oada_rev'] = obj['_rev'];
@@ -269,12 +289,12 @@ function putResource(id, obj) {
 
   obj['_key'] = id.replace(/^resources\//, '');
   var start = new Date().getTime();
-  info(`Adding links for resource ${id}...`);
+  trace(`Adding links for resource ${id}...`);
   return addLinks(obj).then(function docUpsert(links) {
     var end = new Date().getTime();
-    info(`Links added for resource ${id}. Upserting. +${end - start}ms`);
-    debug(`Upserting resource ${obj['_key']}`);
-    debug(`Upserting links: ${JSON.stringify(links, null, 2)}`);
+    trace(`Links added for resource ${id}. Upserting. +${end - start}ms`);
+    info(`Upserting resource ${obj['_key']}`);
+    trace(`Upserting links: ${JSON.stringify(links, null, 2)}`);
 
     // TODO: Should it check that graphNodes exist but are wrong?
     var q;
@@ -368,28 +388,28 @@ function putResource(id, obj) {
   });
 }
 
+function forLinks(res, cb, path) {
+  path = path || [];
+
+  return Promise.map(Object.keys(res), key => {
+    if (res[key] && res[key].hasOwnProperty('_id')) {
+      return cb(res[key], path.concat(key));
+    } else if (typeof res[key] === 'object' && res[key] !== null) {
+      return forLinks(res[key], cb, path.concat(key));
+    }
+  });
+}
+
 // TODO: Remove links as well
 function addLinks(res) {
-  function forLinks(res, cb, path) {
-    path = path || [];
-
-    return Promise.map(Object.keys(res), key => {
-      // Just ignore _meta for now TODO: Allow links in _meta?
-      if (key === '_meta') {
-        return;
-      }
-
-      if (res[key] && res[key].hasOwnProperty('_id')) {
-        return cb(res[key], path.concat(key));
-      } else if (typeof res[key] === 'object' && res[key] !== null) {
-        return forLinks(res[key], cb, path.concat(key));
-      }
-    });
-  }
-
   // TODO: Use fewer queries or something?
   var links = [];
   return forLinks(res, function processLinks(link, path) {
+    // Just ignore _meta for now
+    // TODO: Allow links in _meta?
+    if (path[0] === '_meta') {
+      return;
+    }
 
     var rev;
     if (link.hasOwnProperty('_rev')) {
@@ -403,6 +423,17 @@ function addLinks(res) {
       links.push(Object.assign({path}, link));
     });
   }).then(() => links);
+}
+
+function makeRemote(res, domain) {
+  return forLinks(res, link => {
+    // Change all links to remote links
+    link['_rid'] = link['_id'];
+    link['_rrev'] = link['_rev'];
+    delete link['_id'];
+    delete link['_rev'];
+    link['_rdomain'] = domain;
+  }).then(() => res);
 }
 
 function deleteResource(id) {
@@ -443,7 +474,6 @@ function deletePartialResource(id, path, doc) {
   let name = path.pop();
   path = pointer.compile(path);
 
-  const MAX_DEPTH = 100; // TODO: Is this good?
   let query = aql`
     LET res = DOCUMENT(${resources}, ${key})
 
@@ -489,6 +519,8 @@ module.exports = {
   deleteResource,
   deletePartialResource,
   getParents,
+  getNewDescendants,
+  makeRemote,
   // TODO: Better way to handler errors?
   // ErrorNum from: https://docs.arangodb.com/2.8/ErrorCodes/
   NotFoundError: {
