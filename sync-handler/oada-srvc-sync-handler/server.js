@@ -18,6 +18,7 @@
 const debug = require('debug');
 const info = debug('sync-handler:info');
 const trace = debug('sync-handler:trace');
+const warn = debug('sync-handler:warn');
 const error = debug('sync-handler:error');
 
 const Promise = require('bluebird');
@@ -65,7 +66,7 @@ responder.on('request', async function handleReq(req) {
     // TODO: Figure out just what changed
     let ids = resources.getNewDescendants(id, '0-0');
     let changes = await ids.map(id => ({[id]: resources.getResource(id)}))
-        .reduce(Object.assign);
+        .reduce((a, b) => Object.assign(a, b));
 
     let puts = Promise.map(syncs, async ([key, sync]) => {
         info(`Running sync ${key} for resource ${id}`);
@@ -77,14 +78,14 @@ responder.on('request', async function handleReq(req) {
         })).get('data').get('oada_base_uri').then(s => s.replace(/\/?$/, '/'));
 
         // Ensure each local resource has a corresponding remote one
-        let rids = remoteResources.getRemoteId(await ids, domain)
-            .map(async rid => {
-                if (rid.rid) {
-                    return rid;
+        let rids = await remoteResources.getRemoteId(await ids, domain)
+            .map(async ({id, rid}) => {
+                if (rid) {
+                    return {id, rid};
                 }
 
                 let url = `${await apiroot}resources/`;
-                let type = (await changes[rid.id])['_meta']['_type'];
+                let type = (await changes[id])['_meta']['_type'];
                 // Create any missing remote IDs
                 let loc = await Promise.resolve(axios({
                     method: 'post',
@@ -101,7 +102,7 @@ responder.on('request', async function handleReq(req) {
 
                 let newrid = {
                     rid: newid,
-                    id: rid.id
+                    id: id
                 };
 
                 // Record new remote ID
@@ -111,16 +112,35 @@ responder.on('request', async function handleReq(req) {
                 return newrid;
             });
 
-        return rids.map(async rid => {
+        // Create mapping of IDs here to IDs there
+        let idmapping = rids.map(({id, rid}) => ({[id]: rid}))
+            .reduce((a, b) => Object.assign(a, b));
+        return Promise.map(rids, async ({id, rid}) => {
             // TODO: Only send what is new
-            let change = await changes[rid.id];
-            // TODO: Fix links
-            let body = Object.assign({}, change, {'_meta': undefined});
+            let change = await changes[id];
+            // Fix links etc.
+            let body = JSON.stringify(change, (k, v) => {
+                switch (k) {
+                case '_meta':
+                    // Don't send _meta
+                    return undefined;
+                case '_id':
+                    // TODO: Better link detection?
+                    if (idmapping[v]) {
+                        return idmapping[v];
+                    }
+                    warn(`Could not resolve link to ${v} at ${domain}`);
+                    // TODO: What to do in this case?
+                    return '';
+                default:
+                    return v;
+                }
+            });
             let type = change['_meta']['_type'];
             // TODO: Support DELETE
             return axios({
                 method: 'put',
-                url: `${await apiroot}${rid.rid}`,
+                url: `${await apiroot}${rid}`,
                 data: body,
                 headers: {
                     'content-type': type,
