@@ -25,6 +25,7 @@ router.post('/', function(req, res, next) {
     // TODO: Sanitize POST body?
     return requester.send({
         'connection_id': req.id,
+        'domain': req.get('host'),
         'token': req.get('authorization'),
         'user': req.body
     }, config.get('kafka:topics:userRequest'))

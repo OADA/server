@@ -101,6 +101,7 @@ app.use(function bearerAsBasic(req, res, next) {
 app.use(function tokenHandler(req, res, next) {
     return requester.send({
         'connection_id': req.id,
+        'domain': req.get('host'),
         'token': req.get('authorization'),
     }, config.get('kafka:topics:tokenRequest'))
     .tap(function checkTok(tok) {

@@ -37,6 +37,7 @@ router.post('/*?', function postResource(req, res, next) {
 router.use(function graphHandler(req, res, next) {
     return requester.send({
         'connection_id': req.id,
+        'domain': req.get('host'),
         'token': req.get('authorization'),
         'url': '/resources' + req.url,
         'user_id': req.user.doc.user_id
@@ -58,6 +59,7 @@ router.use(function graphHandler(req, res, next) {
 router.put('/*', function checkScope(req, res, next) {
     requester.send({
         'connection_id': req.id,
+        'domain': req.get('host'),
         'oadaGraph': req.oadaGraph,
         'user_id': req.user.doc['user_id'],
         'scope': req.user.doc.scope,
@@ -82,6 +84,7 @@ router.put('/*', function checkScope(req, res, next) {
 router.get('/*', function checkScope(req, res, next) {
     requester.send({
         'connection_id': req.id,
+        'domain': req.get('host'),
         'oadaGraph': req.oadaGraph,
         'user_id': req.user.doc['user_id'],
         'scope': req.user.doc.scope,
@@ -107,6 +110,7 @@ router.ws('/:resourceId/_meta/_changes', function(ws, req) {
     // Now stream stuff back
     requester.emitter({
         'connection_id': req.id,
+        'domain': req.get('host'),
         'oadaGraph': req.oadaGraph,
         'user_id': req.user.doc['user_id'],
         'scope': req.user.doc.scope,
@@ -212,6 +216,7 @@ router.put('/*', function putResource(req, res, next) {
         .then(bodyid => {
             return requester.send({
                 'connection_id': req.id,
+                'domain': req.get('host'),
                 'url': req.url,
                 'resource_id': req.oadaGraph['resource_id'],
                 'path_leftover': req.oadaGraph['path_leftover'],
@@ -277,6 +282,7 @@ router.delete('/*', function deleteResource(req, res, next) {
     info(`Sending DELETE request for request ${req.id}`);
     return requester.send({
         'connection_id': req.id,
+        'domain': req.get('host'),
         'url': req.url,
         'resource_id': req.oadaGraph['resource_id'],
         'path_leftover': req.oadaGraph['path_leftover'],
