@@ -68,9 +68,8 @@ responder.on('request', async function handleReq(req) {
     let changes = await ids.map(id => ({[id]: resources.getResource(id)}))
         .reduce((a, b) => Object.assign(a, b));
 
-    let puts = Promise.map(syncs, async ([key, sync]) => {
+    let puts = Promise.map(syncs, async ([key, {url, domain, token}]) => {
         info(`Running sync ${key} for resource ${id}`);
-        let domain = sync.domain;
         // TODO: Cache this?
         let apiroot = Promise.resolve(axios({
             method: 'get',
@@ -92,7 +91,7 @@ responder.on('request', async function handleReq(req) {
                     data: {},
                     headers: {
                         'content-type': type,
-                        authorization: sync.token
+                        authorization: token
                     },
                     url
                 })).get('headers').get('location');
@@ -115,7 +114,7 @@ responder.on('request', async function handleReq(req) {
         // Create mapping of IDs here to IDs there
         let idmapping = rids.map(({id, rid}) => ({[id]: rid}))
             .reduce((a, b) => Object.assign(a, b));
-        return Promise.map(rids, async ({id, rid}) => {
+        let docs = Promise.map(rids, async ({id, rid}) => {
             // TODO: Only send what is new
             let change = await changes[id];
             // Fix links etc.
@@ -144,10 +143,27 @@ responder.on('request', async function handleReq(req) {
                 data: body,
                 headers: {
                     'content-type': type,
-                    authorization: sync.token
+                    authorization: token
                 }
             });
         });
+
+        // TODO: Only create URL link first time?
+        let link = axios({
+            method: 'put',
+            url: `${await apiroot}${url}`,
+            data: {
+                // TODO: Should this be a versioned link?
+                '_id': idmapping[id]
+            },
+            headers: {
+                // TODO: How to set content type of this PUT?
+                //'content-type': 'application/json',
+                authorization: token
+            }
+        });
+
+        return Promise.join(docs, link);
     });
 
     // TODO: Handle sync url
