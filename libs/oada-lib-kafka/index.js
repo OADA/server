@@ -43,7 +43,7 @@ function Responder(listenTopic, respTopic, groupId, opts) {
 
     let consumerReady = Promise.fromCallback(done => {
             this.consumer.on('ready', () => {
-                info('Responder\'s consumer ready');
+                info(`${groupId}: Responder\'s consumer ready`);
                 done();
             });
         })
@@ -53,7 +53,7 @@ function Responder(listenTopic, respTopic, groupId, opts) {
         });
     let producerReady = Promise.fromCallback(done => {
         this.producer.on('ready', () => {
-            info('Responder\'s producer ready');
+            info(`${groupId}: Responder\'s producer ready`);
             done();
         });
     });
@@ -154,7 +154,8 @@ Responder.prototype.on = function on(event, callback) {
                             return resp;
                         })
                         .map(resp => {
-                            resp[REQ_ID_KEY] = id;
+														resp[REQ_ID_KEY] = resp[REQ_ID_KEY] === null ? 
+																uuid() : id;
                             resp['time'] = Date.now();
                             let payload = JSON.stringify(resp);
                             let value = new Buffer(payload);

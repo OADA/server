@@ -191,68 +191,25 @@ function getResourceOwnerIdRev(id) {
 }
 
 function getParents(id) {
-  let collection = graphNodes.name;
-  if (!id.match(/^\//)) {
-    // if no leading slash on resourceid, add it to graphNodes
-    collection += '/';
-  }
+  return db.query(aql`
+      LET node = FIRST(
+        FOR node IN ${graphNodes}
+        FILTER node.resource_id == ${id}
+        RETURN node
+      )
 
-  let bindVars = {
-    // have to take out the slash on resources/ for arango to allow as key
-    'id': collection + id.replace(/resources\//, 'resources:'),
-    '@edges': edges.name
-  };
-
-  let parents = [];
-  let parent = {
-    'resource_id': null,
-    'path': null,
-    'contentType': null
-  };
-
-  let parentQuery = `FOR v, e IN 0..1
-      INBOUND @id
-      @@edges
+      FOR v, e IN 0..1
+      INBOUND node
+      ${edges}
       FILTER e.versioned == true
-      RETURN {v:v, e:e}`;
-
-  return db.query({
-    query: parentQuery,
-    bindVars
-  })
-  .then((cursor) => {
-    let i = 0;
-
-    // console.log(cursor._result);
-    let length = cursor._result.length;
-    trace('getParents' + '(' + id + ')' + ' parents length is ' + length);
-
-    for (i = 0; i < length; i++) {
-      parent['resource_id'] = cursor._result[i].v['resource_id'];
-      let path = cursor._result[i].v.path;
-      if (!path) {
-        path = '';
-      }
-      parent.path = path + '/' + cursor._result[i].e.name;
-      parents.splice(i, 0, parent);
-    }
-
-    return Promise.map(parents, parent => {
-      return db.query(aql`
-        FOR r in resources
-        FILTER r._id == ${parent['resource_id']}
-        RETURN r._type`)
-        .then(cursor => cursor.next())
-        .then(result => {
-          // console.log(parent);
-          parent.contentType = result;
-        });
-    })
-    .then(() => {
-      // all done
-      return parents;
-    });
-  })
+      LET res = DOCUMENT(v.resource_id)
+      RETURN {
+        resource_id: v.resource_id,
+        path: CONCAT(v.path || '', '/', e.name),
+        contentType: res._type
+      }`
+  )
+  .call('all')
   .catch({
       isArangoError: true,
       errorMessage: 'invalid traversal depth (while instantiating plan)'

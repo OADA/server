@@ -52,7 +52,8 @@ module.exports = {
       websocketsRequest: 'websockets_request',
       userRequest: 'user_request',
       permissionsRequest: 'permissions_request', //show bobs
-      httpResponse: 'http_response',
+			httpResponse: 'http_response',
+			websocketsRequest: 'websockets_request',
     },
   },
   zookeeper: {

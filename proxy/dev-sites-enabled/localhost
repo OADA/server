@@ -55,8 +55,7 @@ server {
     proxy_set_header X-Forwarded-Proto $scheme;
     proxy_set_header Host $host;
     resolver 127.0.0.11;
-    set $proxy "http://http-handler:80";
-    proxy_pass $proxy;
+    proxy_pass "http://http-handler:80";
   }
 }
 
@@ -128,7 +127,6 @@ server {
     proxy_set_header X-Forwarded-Proto $scheme;
     proxy_set_header Host $host;
     resolver 127.0.0.11;
-    set $proxy "http://http-handler:80";
-    proxy_pass $proxy;
+    proxy_pass "http://http-handler:80";
   }
 }

@@ -17,10 +17,9 @@
 
 const debug = require('debug');
 const trace = debug('webhooks:trace');
-const info = debug('webhooks:info');
 const error = debug('webhooks:error');
 
-const Promise = require('bluebird');
+var Promise = require('bluebird');
 const Responder = require('../../libs/oada-lib-kafka').Responder;
 const oadaLib = require('../../libs/oada-lib-arangodb');
 const config = require('./config');
@@ -29,33 +28,43 @@ const axios = require('axios');
 //---------------------------------------------------------
 // Kafka intializations:
 const responder = new Responder(
-			config.get('kafka:topics:httpResponse'),
-			null,
-			'webhooks');
+            config.get('kafka:topics:httpResponse'),
+            null,
+            'webhooks');
 
 module.exports = function stopResp() {
-	return responder.disconnect(); 
+    return responder.disconnect();
 };
 
 responder.on('request', function handleReq(req) {
-    if (req.msgtype !== 'write-response') return
-    if (req.code !== 'success') return
-	return oadaLib.resources.getResource(req.resource_id).then((res) => {
-		if (res._meta && res._meta._syncs) {
-			return Promise.map(Object.keys(res._meta._syncs), (sync) => {
-				if (res._meta._syncs[sync]['oada-put']) {
-					trace('Sending oada-put to: '+res._meta._syncs[sync].url)
-					trace('oada-put body: '+res._meta._changes[res._rev])
-					return axios({
-						method: 'put',
-						url: res._meta._syncs[sync].url,
-						data: res._meta._changes[res._rev],
-						headers: res._meta._syncs[sync].headers,
-					})
-				}
-				trace('Sending to: '+res._meta._syncs[sync].url)
-				return axios(res._meta._syncs[sync])
-			})
-		} else return
-	}).then(() => {})
-})
+    if (req.msgtype !== 'write-response') {
+        return;
+    }
+    if (req.code !== 'success') {
+        return;
+    }
+    // TODO: Add AQL query for just syncs and newest change?
+    return oadaLib.resources.getResource(req.resource_id, '/_meta')
+        .then(meta => {
+            if (meta && meta._syncs) {
+                return Promise.map(Object.keys(meta._syncs), (sync) => {
+                    if (meta._syncs[sync]['oada-put']) {
+                        trace('Sending oada-put to: ' + meta._syncs[sync].url);
+                        let change = meta._changes[req._rev];
+                        let body = change.merge || change.delete;
+                        trace('oada-put body: ', body);
+                        return axios({
+                            method: change.delete ? 'delete' : 'put',
+                            url: meta._syncs[sync].url,
+                            data: body,
+                            headers: meta._syncs[sync].headers,
+                        });
+                    }
+                    trace('Sending to: ' + meta._syncs[sync].url);
+                    return axios(meta._syncs[sync]);
+                });
+            }
+        })
+        .then(() => {})
+        .tapCatch(error);
+});
