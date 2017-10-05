@@ -24,63 +24,69 @@
       <img style="max-width: 50px; max-height: 50px;" src="<%= logo_url %>" alt="<%= name %> Logo" />
       <span style="font-size: 2em;"><%= name %></span>
     </div>
-    <div class="container" style="max-width: 600px;">
-      <form class="card" action="<%= login_url %>" method="post">
-        <div class="container-fluid">
-          <div class="row">
-            <div class="col">
-              <strong>Username</strong>&nbsp;(Hint: <%= hint.username %>)
-              <input type="text" class="form-control"
-              name="username" value="<%= hint.username %>" />
-            </div>
-            <div class="col">
-              <strong>Password</strong>&nbsp;(Hint: <%= hint.password %>)
-              <input type="password" class="form-control"
-                name="password" value="<%= hint.password %>" />
+
+    <div class="container">
+      <div class="container" style="max-width: 600px;">
+        <% if (iserror) { %> 
+          <div class="text-danger"><%= errormsg %></div> 
+        <% } %>
+  
+        <form class="card" action="<%= login_url %>" method="post">
+          <div class="container-fluid">
+            <div class="row">
+              <div class="col">
+                <strong>Username</strong>&nbsp;(Hint: <%= hint.username %>)
+                <input type="text" class="form-control"
+                name="username" value="<%= hint.username %>" />
+              </div>
+              <div class="col">
+                <strong>Password</strong>&nbsp;(Hint: <%= hint.password %>)
+                <input type="password" class="form-control"
+                  name="password" value="<%= hint.password %>" />
+                </div>
+              </div>
+            </div> <!-- row -->
+            <div class="row pb-2 pt-2">
+              <div class="col-1"></div>
+              <div class="col">
+                <button class="btn btn-success btn-large btn-block">Login</button>
+              </div>
+              <div class="col-1"></div>
+          </div> <!-- container -->
+        </form>
+  
+        <br/>
+  
+        <form class="card" action="<%= loginconnect_url %>" method="post">
+          <div class="container-fluid">
+  
+            <div class="row align-items-center">
+              <div class="col align-items-center">
+                <center><strong>Or login with <%= idService.shortname %> identity:</center>
               </div>
             </div>
-          </div> <!-- row -->
-          <div class="row pb-2 pt-2">
-            <div class="col-1"></div>
-            <div class="col">
-              <button class="btn btn-success btn-large btn-block">Login</button>
+  
+            <div class="input-group">
+              <span class="input-group-addon">
+                <strong><%= idService.shortname %> Domain</strong>
+              </span>
+              <input type="text" class="form-control" name="dest_domain" placeholder="<%= domain_hint %>" />
             </div>
-            <div class="col-1"></div>
-        </div> <!-- container -->
-      </form>
-
-      <br/>
-
-      <form class="card" action="<%= loginconnect_url %>" method="post">
-        <div class="container-fluid">
-
-          <div class="row align-items-center">
-            <div class="col align-items-center">
-              <center><strong>Or login with <%= idService.shortname %> identity:</center>
+  
+            <div class="row pt-2 pb-2">
+              <div class="col-1"></div>
+              <div class="col">
+                <button class="btn btn-large btn-block btn-primary">Login with <%= idService.shortname %></button>
+              </div>
+              <div class="col-1"></div>
             </div>
-          </div>
-
-          <div class="input-group">
-            <span class="input-group-addon">
-              <strong><%= idService.shortname %> Domain</strong>
-            </span>
-            <input type="text" class="form-control" name="dest_domain" placeholder="<%= domain_hint %>" />
-          </div>
-
-          <div class="row pt-2 pb-2">
-            <div class="col-1"></div>
-            <div class="col">
-              <button class="btn btn-large btn-block btn-primary">Login with <%= idService.shortname %></button>
-            </div>
-            <div class="col-1"></div>
-          </div>
-
-        </div> <!-- container -->
-      </form>
+  
+          </div> <!-- container -->
+        </form>
+      </div>
+      <small>
+        © 2017 <a href="http://openag.io">Open Ag Data Alliance</a>
+      </small>
     </div>
-
-    <small>
-      © 2017 <a href="http://openag.io">Open Ag Data Alliance</a>
-    </small>
   </body>
 </html>

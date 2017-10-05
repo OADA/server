@@ -51,6 +51,7 @@ function findByUsername(username) {
 function findByUsernamePassword(username, password) {
   return findByUsername(username)
     .then((user) => {
+      if (!user) return null;
       return bcrypt.compare(password, user.password)
         .then((valid) => valid ? user : null);
     });

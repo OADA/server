@@ -12,32 +12,76 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 'use strict';
 
 const domain = process.env.DOMAIN || 'localhost';
 
+/* eslint indent: "off" */
 module.exports = {
 
   // By default, this checks for NODE_ENV===production
   // to determine if is production.
   // set to true to use the production database name
   // and prevent init.cleanup() from being called.
-  isProduction: (process.env.NODE_ENV === 'production'),
+  isProduction: process.env.NODE_ENV === 'production',
 
   arangodb: {
     connectionString: 'http://arangodb:8529',
     database: 'oada',
     collections: {
-               users: { name: 'users',          indexes: [ 'username', { name: 'oadaid', sparse: true } ], defaults: './libs/exampledocs/users'      },
-             clients: { name: 'clients',        indexes: [ 'clientId' ], defaults: './libs/exampledocs/clients'    },
-      authorizations: { name: 'authorizations', indexes: [ 'token', { name: 'user', unique: false } ], defaults: './libs/exampledocs/authorizations' },
-               codes: { name: 'codes',          indexes: [ 'code'     ], defaults: './libs/exampledocs/codes'      },
-           resources: { name: 'resources',      indexes: [            ], defaults: './libs/exampledocs/resources'  },
-          graphNodes: { name: 'graphNodes',     indexes: [            ], defaults: './libs/exampledocs/graphNodes' },
-               edges: { name: 'edges',          indexes: [ { name: 'name', unique: false } ], defaults: './libs/exampledocs/edges',
-                        edgeCollection: true },
-           putBodies: { name: 'putBodies',      indexes: [ ], defaults: './libs/exampledocs/putBodies',
-                        createOptions: { isVolatile: true } },
+      users: {
+        name: 'users',
+        indexes: [
+          'username',
+          { name: 'oadaid', sparse: true }
+        ],
+          defaults: './libs/exampledocs/users'
+      },
+      clients: {
+        name: 'clients',
+        indexes: [ 'clientId' ],
+        defaults: './libs/exampledocs/clients'
+      },
+      authorizations: {
+        name: 'authorizations',
+        indexes: [
+          'token',
+          { name: 'user', unique: false }
+        ],
+        defaults: './libs/exampledocs/authorizations'
+      },
+      codes: {
+        name: 'codes',
+        indexes: [ 'code' ],
+        defaults: './libs/exampledocs/codes'
+      },
+      resources: {
+        name: 'resources',
+        indexes: [],
+        defaults: './libs/exampledocs/resources'
+      },
+      remoteResources: {
+        name: 'remoteResources',
+        indexes: [ { name: ['domain', 'resource_id'], unique: true } ]
+      },
+      graphNodes: {
+        name: 'graphNodes',
+        indexes: [],
+        defaults: './libs/exampledocs/graphNodes'
+      },
+      edges: {
+        name: 'edges',
+        indexes: [ { name: 'name', unique: false } ],
+        defaults: './libs/exampledocs/edges',
+        edgeCollection: true
+      },
+      putBodies: {
+        name: 'putBodies',
+        indexes: [],
+        defaults: './libs/exampledocs/putBodies',
+        createOptions: { isVolatile: true }
+      },
     },
     init: {
       // NOTE: passwordSalt HAS to match the one in auth
@@ -66,20 +110,26 @@ module.exports = {
     serviceLongName: 'Framework for Produce Audit Data',
     server: {
       // Replace these in production with things that are actually secret...
-      sessionSecret: "2jp901p3#2#(!)kd9",
-      passwordSalt: "$2a$06$xbh/gQcEgAX5eapjlCgMYO",
+      sessionSecret: '2jp901p3#2#(!)kd9',
+      passwordSalt: '$2a$06$xbh/gQcEgAX5eapjlCgMYO',
       'port-http': 80,
-      mode: "http",
+      mode: 'http',
       domain: domain, // in docker it's port 80 localhost
-      publicUri: "https://" + domain // but to nginx proxy, it's https://localhost in dev
+      // but to nginx proxy, it's https://localhost in dev
+      publicUri: 'https://' + domain
     },
     keys: {
-      signPems: "/code/auth/sign/",
+      signPems: '/code/auth/sign/',
+    },
+    idToken: {
+      expiresIn: 3600,
+      // Note: signKid has to match the name of the .pem at the signPem path above
+      signKid: '02llkjf92jieiekk2',
     },
     datastoresDriver: 'arango',
     hint: {
-      username: "frank",
-      password: "test"
+      username: 'frank',
+      password: 'test'
     },
   },
   wellKnown: {
@@ -89,13 +139,13 @@ module.exports = {
       domain: domain,
     },
     mergeSubServices: [
-      { resource:   'oada-configuration', base: 'http://auth', },
+      { resource: 'oada-configuration', base: 'http://auth', },
       { resource: 'openid-configuration', base: 'http://auth', },
     ],
-    "oada-configuration": {
-      well_known_version: '1.0.0',
-      oada_base_uri: './',
-      scopes_supported: [
+    'oada-configuration': {
+      'well_known_version': '1.0.0',
+      'oada_base_uri': './',
+      'scopes_supported': [
         {
           name: 'oada.all.1', // can do anything the user can do
           /* pattern: /oada\..*\.1/  */
@@ -103,7 +153,7 @@ module.exports = {
         }
       ],
     },
-    "openid-configuration": { },
+    'openid-configuration': {},
   },
 
 };

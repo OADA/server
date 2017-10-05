@@ -19,6 +19,7 @@ var crypto = require('crypto');
 var TokenError = require('oauth2orize').TokenError;
 var jwt = require('jsonwebtoken');
 var objectAssign = require('object-assign');
+var debug = require('debug')('utils:trace');
 
 var config = require('./config');
 var tokens = require('./db/models/token');
@@ -38,12 +39,13 @@ function createIdToken(aud, user, nonce, userinfoScope) {
   userinfoScope = userinfoScope || [];
 
   var idToken = config.get('auth:idToken');
+  debug('createIdToken: creating token, kid = ', idToken.signKid, ', keys.sign = ', keys.sign);
   var options = {
-    header: {
+    headers: {
       kid: idToken.signKid
     },
     algorithm: keys.sign[idToken.signKid].alg,
-    expiresInMinutes: idToken.expiresIn / 60,
+    expiresIn: idToken.expiresIn,
     audience: aud,
     subject: user.id,
     issuer: config.get('auth:server:publicUri')
@@ -63,7 +65,9 @@ function createIdToken(aud, user, nonce, userinfoScope) {
     objectAssign(payload, userinfo);
   }
 
+  debug('createIdToken: signing payload of id token');
   var j = jwt.sign(payload, keys.sign[idToken.signKid].pem, options);
+  debug('createIdToken: done signing payload of id token');
 
   return j;
 }
@@ -163,6 +167,7 @@ function issueCode(client, redirectUri, user, ares, done) {
     c.nonce = ares.nonce;
   }
 
+  debug('Saving new code: ', c.code);
   codes.save(c, function(err, code) {
     if (err) { return done(err); }
 

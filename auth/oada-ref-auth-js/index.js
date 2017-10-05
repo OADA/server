@@ -20,6 +20,8 @@ process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 // so set isLibrary in global scope before requiring.
 global.isLibrary = !(require.main === module);
 
+console.log('DEBUG = ', process.env.DEBUG);
+
 var _ = require('lodash');
 var fs = require('fs');
 var trace = require('debug')('auth#index:trace');
@@ -53,6 +55,7 @@ var oadaLookup = require('oada-lookup');
 
 // Use the oada-id-client for the openidconnect code flow:
 var oadaidclient = require('oada-id-client').middleware;
+
 
 //-----------------------------------------------------------------------
 // Load all the domain configs at startup
@@ -143,6 +146,8 @@ module.exports = function(conf) {
     app.get(config.get('auth:endpoints:login'), function(req, res) {
       trace('GET '+config.get('auth:endpoints:login')+': setting X-Frame-Options=SAMEORIGIN before rendering login');
       res.header('X-Frame-Options', 'SAMEORIGIN');
+      const iserror = !!req.query.error;
+      const errormsg = "Login failed.";
 
       // Load the login info for this domain from the public directory:
       const domain_config = domainConfigs[req.hostname] || domainConfigs.localhost;
@@ -159,6 +164,8 @@ module.exports = function(conf) {
         tagline: domain_config.tagline,
         color: domain_config.color || '#FFFFFF',
         idService: domain_config.idService, // has .shortname, .longname
+        iserror: iserror,
+        errormsg: errormsg,
 
         // domain_hint can be set when authorization server redirects to login
         domain_hint: "growersync.fpad.io", //req.session.domain_hint || '',
@@ -171,7 +178,7 @@ module.exports = function(conf) {
     const pfx = config.get('auth:endpointsPrefix') || '';
     app.post(config.get('auth:endpoints:login'), passport.authenticate('local', {
       successReturnToOrRedirect: '/' + pfx,
-      failureRedirect: config.get('auth:endpoints:login'),
+      failureRedirect: config.get('auth:endpoints:login')+'?error=1',
     }));
 
 
@@ -189,7 +196,7 @@ module.exports = function(conf) {
       const domain_config = domainConfigs[req.hostname] || domainConfigs.localhost;
       const options = {
         metadata: domain_config.software_statement,
-        redirect: 'https://'+req.hostname+'/'+pfx+'/'+config.get('auth:endpoints:redirectConnect'),
+        redirect: 'https://'+req.hostname+config.get('auth:endpoints:redirectConnect'), // the config already has the pfx added
         scope: 'openid profile',
         prompt: 'consent',
         privateKey: domain_config.keys.private,
@@ -203,12 +210,14 @@ module.exports = function(conf) {
     //-----------------------------------------------------
     // Handle the redirect for openid connect login:
     app.use(config.get('auth:endpoints:redirectConnect'), (req,res,next) => {
-      info(config.get('auth:endpoints:redirectConnect')+': OpenIDConnect request returned');
+      info(config.get('auth:endpoints:redirectConnect')+', req.hostname = '+req.hostname+': OpenIDConnect request returned');
+      next();
       // Get the token for the user
     }, oadaidclient.handleRedirect(), (req,res,next) => {
       // Get the user info
-      trace(config.get('auth:endpoints:redirectConnect')+': token is: ', req.token);
+      trace('*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+**+*+*+*+*+*+*+*======',config.get('auth:endpoints:redirectConnect')+', req.hostname = '+req.hostname+': token is: ', req.token);
       // should have res.tok
+      next();
     });
 
     app.get(config.get('auth:endpoints:logout'), function(req, res) {

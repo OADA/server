@@ -61,7 +61,7 @@ responder.on('request', function handleReq(req, msg) {
 		type: 'write_request',
 		resource_id: null,
 		path: null,
-		connection_id: null, 
+		connection_id: null,
 		contentType: null,
 		body: null,
 		url: "",

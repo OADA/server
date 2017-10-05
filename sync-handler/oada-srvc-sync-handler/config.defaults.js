@@ -14,25 +14,24 @@
  */
 'use strict';
 
-var _ = require('lodash');
-var trace = require('debug')('arango:codes/trace');
-var oadaLib = require('../../../../libs/oada-lib-arangodb');
-
-function findByCode(code, cb) {
-  trace('findByCode: searching for code ', code);
-  oadaLib.codes.findByCode(code).asCallback(cb);
-}
-
-function save(in_code, cb) {
-  var code = _.cloneDeep(in_code);
-  // Link user
-  code.user = { _id: null };
-  if (in_code.user) code.user = { _id: in_code.user._id };
-
-  oadaLib.codes.save(code).asCallback(cb);
-}
+var path = require('path');
+var fs = require('fs');
 
 module.exports = {
-  findByCode: findByCode,
-  save: save,
+
+  // By default, this checks for NODE_ENV===production 
+  // to determine if is production.  
+  // set to true to use the production database name
+  // and prevent init.cleanup() from being called.
+  isProduction: (process.env.NODE_ENV === 'production'),
+
+	kafka: {
+        topics: {
+            tokenRequest: 'token_request',
+            graphRequest: 'graph_request',
+            writeRequest: 'write_request',
+            httpResponse: 'http_response',
+        },
+    	groupId: 'webhooks'
+    },
 };

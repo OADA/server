@@ -118,7 +118,8 @@ app.use(function tokenHandler(req, res, next) {
     info('********************** 1');
     return requester.send({
         'connection_id': req.id,
-        'token': req.get('authorization') || req.query.access_token,
+        'domain': req.get('host'),
+        'token': req.get('authorization'),
     }, config.get('kafka:topics:tokenRequest'))
     .tap(function checkTok(tok) {
         if (!tok['token_exists']) {

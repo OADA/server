@@ -88,6 +88,7 @@ Responder.prototype.on = function on(event, callback) {
                 if (typeof part !== 'number') {
                     part = null;
                 }
+                let domain = req.domain;
                 info(`Received request ${id}`);
 
                 // Check for old messages
@@ -154,9 +155,13 @@ Responder.prototype.on = function on(event, callback) {
                             return resp;
                         })
                         .map(resp => {
-														resp[REQ_ID_KEY] = resp[REQ_ID_KEY] === null ? 
-																uuid() : id;
+                            if (resp[REQ_ID_KEY] === null) {
+                                resp[REQ_ID_KEY] = uuid();
+                            } else {
+                                resp[REQ_ID_KEY] = id;
+                            }
                             resp['time'] = Date.now();
+                            resp.domain = domain;
                             let payload = JSON.stringify(resp);
                             let value = new Buffer(payload);
                             self.producer.produce(self.respTopic, part, value);

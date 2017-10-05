@@ -38,8 +38,8 @@ module.exports = {
       token: '/token',
       decision: '/decision',
       login: '/login',
-      loginConnect: '/login-openidconnect',
-      redirectConnect: '/redirect-openidconnect',
+      loginConnect: '/id-login', // POST URL for OpenIDConnect domain web form
+      redirectConnect: '/id-redirect', // redirect URL for OpenIDConnect
       logout: '/logout',
       certs: '/certs',
       userinfo: '/userinfo',

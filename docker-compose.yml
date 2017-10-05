@@ -97,6 +97,25 @@ services:
       - DEBUG=${DEBUG:-""}
       - IGNORE_SCOPE=${IGNORE_SCOPE:-""}
 
+  sync-handler:
+    depends_on:
+      - startup
+    build: ./sync-handler
+    restart: always
+    container_name: sync-handler
+    networks:
+      - startup_net
+      - kafka_net
+      - arango_net
+    volumes:
+      - .:/code
+      - ./oada-srvc-docker-config.js:/oada-srvc-docker-config.js
+    environment:
+      - NODE_ENV=${NODE_ENV:-development}
+      - DEBUG=${DEBUG:-""}
+      - NODE_TLS_REJECT_UNAUTHORIZED=${NODE_TLS_REJECT_UNAUTHORIZED:-""}
+      - IGNORE_SCOPE=${IGNORE_SCOPE:-""}
+
   write-handler:
     depends_on:
       - startup
@@ -383,7 +402,7 @@ services:
       - startup
     build: ./permissions-handler
     restart: always
-    container_name: permissions-handler 
+    container_name: permissions-handler
     networks:
       - startup_net
       - kafka_net
