@@ -29,12 +29,42 @@ const EventEmitter = require('events')
 const emitter = new EventEmitter(); 
 
 //---------------------------------------------------------
+// Websockets Server 
+const WebSocket = require('ws');
+ 
+const wss = new WebSocket.Server();
+ 
+wss.on('connection', function connection(ws) {
+
+	ws.on('message', function incoming(message) {
+		let watchListener = function(content) {
+			ws.send(JSON.stringify(content))
+		}
+		let msg = json.parse(content))
+		switch(msg.method) {
+			//TODO: CURRENTLY WATCH IS ONLY method implemented
+		case get: 
+			break
+		case put:
+			break
+		case post:
+			break
+		case watch:
+			emitter.on(msg.resource_id, watchListener(msg.))
+			break
+		default: 
+			//Error
+		}
+		ws.on('close', function closing() {
+			emitter.removeListener(msg.resource_id, watchListener)
+		})
+	});
+});
+
+//---------------------------------------------------------
 // Kafka intializations:
 
-const websocketsResponder = new Responder(
-	config.get('kafka:topics:websocketsRequest'),
-	config.get('kafka:topics:httpResponse'),
-	'websockets');
+const resources = {}
 
 const writeResponder = new Responder(
 	config.get('kafka:topics:httpResponse'),
@@ -51,16 +81,13 @@ writeResponder.on('request', function handleReq(req) {
 	if (req.code !== 'success') return
 	trace('REQ', req)
 	oadaLib.resources.getResource(req.resource_id).then((res) => {
-		trace('EMITTING')
 		emitter.emit(req.resource_id, res._meta._changes[res._rev])
 	})
 })
 
-// Set up generator function for web socket connections 
-websocketsResponder.on('request', function handleWrite(req, data, respond) {
-	trace('1111111111111111111111 registering a listener')
-	emitter.on(req.resource_id, (content) => {
-		trace('emitter on got one: ', content)
-		respond(content)
-	})
+.on('request', function handleWrite(req, data, respond) {
+	trace('STARTING UP A WEBSOCKET LISTENER ON ', req.resource_id);
+
 })
+
+

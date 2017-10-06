@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+	<script>
+		var s = new WebSocket('wss://vip3.ecn.purdue.edu/websocket');
+
+        s.addEventListener('open', function () {
+            /*
+            s.send(JSON.stringify({
+                requestId: '1234-abcd',
+                method: 'get',
+                url: '/bookmarks',
+                authorization: 'Bearer aaa'
+            }));
+            */
+
+            s.send(JSON.stringify({
+                method: 'watch',
+                requestId: 'abc-123',
+                path:
+                "/bookmarks/fpad/certifications",
+                authorization: 'Bearer aaa'
+            }));
+
+            s.send(JSON.stringify({
+                method: 'get',
+                requestId: 'abc-123',
+                path: "/bookmarks/fpad/certifications",
+                authorization: 'Bearer aaa'
+            }));
+
+            /*
+            s.send(JSON.stringify({
+                method: 'watch',
+                requestId: 'abc-123',
+                resourceId: "/resources/ecbe56b5-5b4f-40c3-b28d-bca9d8f4094e",
+                authorization: 'Bearer aaa'
+            }));
+            */
+        });
+
+    s.addEventListener('error', function (m) {console.log(m); log("error"); });
+    s.addEventListener('open', function (m) { console.log("websocket connection open"); });
+    s.addEventListener('message', function (m) { console.dir(JSON.parse(m.data)); });
+    s.addEventListener('close', function () { console.dir('IT CLOSED'); });
+	</script>
+<body>
+
+<h1>My First Heading</h1>
+
+<p>My first paragraph.</p>
+
+</body>
+</html>

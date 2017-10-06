@@ -39,11 +39,9 @@ module.exports = function stopResp() {
 
 responder.on('request', function handleReq(req, msg) {
 	if (!req || req.msgtype !== 'write-response') {
-		trace('Received message, but msgtype is not write-response so ignoring message', req);
 		return []; // not a write-response message, ignore it
 	}
 	if (req.code !== 'success') {
-		trace('Received write response message, but code was not "success" so ignoring message');
 		return [];
 	}
 	if(typeof req.resource_id === "undefined" ||
@@ -63,7 +61,7 @@ responder.on('request', function handleReq(req, msg) {
 		type: 'write_request',
 		resource_id: null,
 		path: null,
-		connection_id: req.connection_id,
+		connection_id: null,
 		contentType: null,
 		body: null,
 		url: "",
@@ -76,28 +74,25 @@ responder.on('request', function handleReq(req, msg) {
 	// find resource's parent
 	return oadaLib.resources.getParents(req.resource_id)
         .then(p => {
-            if (!p || p.length === 0) {
-					info('WARNING: '+req.resource_id+' does not have a parent.');
-					return res;
-			}
+					if (!p || p.length === 0) {
+						info('WARNING: '+req.resource_id+' does not have a parent.');
+						return undefined;
+					}
 
-			let length = p.length;
-			let i = 0;
+					trace('the parents are: ', p);
 
-			trace('the parents are: ', p);
+					return Promise.map(p, item => {
+							trace('parent resource_id = ', item.resource_id);
+							let msg = Object.assign({}, res);
+							msg.resource_id = item.resource_id;
+							msg.path_leftover = item.path + '/_rev';
+							msg.contentType = item.contentType;
+							msg.body = req._rev;
 
-			return Promise.map(p, item => {
-					trace('parent resource_id = ', item.resource_id);
-					let msg = Object.assign({}, res);
-					msg.resource_id = item.resource_id;
-					msg.path_leftover = item.path + '/_rev';
-					msg.contentType = item.contentType;
-					msg.body = req._rev;
+							trace('trying to produce: ', msg);
 
-					trace('trying to produce: ', msg);
-
-					return msg;
-			});
+							return msg;
+					});
 	})
 	.catch(err => {
 		error(err);

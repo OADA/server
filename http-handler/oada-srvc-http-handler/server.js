@@ -15,22 +15,30 @@ const error = require('debug')('http-handler:error');
 
 var config = require('./config');
 
+/////////////////////////////////////////////////////////////////
+// Setup express:
+const http = require('http')
+var app = express();
+var server = http.createServer(app);
 var resources = require('./resources');
 var authorizations = require('./authorizations');
 var users = require('./users');
+require('./websockets')(server);
 
 var requester = require('./requester');
 
-/////////////////////////////////////////////////////////////////
-// Setup express:
-var app = express();
+const url = require('url')
+
+app.get('*', (req, res, next) => { console.log(req.originalUrl); next(); })
+app.get('/favicon.ico', (req, res) => res.end());
+app.use('/test', express.static('ws_test'));
+
 function start() {
     return Promise.fromCallback(function(done) {
         info('----------------------------------------------------------');
         info('Starting server...');
 
-        app.set('port', config.get('server:port'));
-        app.listen(app.get('port'), done);
+        server.listen(config.get('server:port'), done);
     })
     .tap(() => {
         info('OADA Test Server started on port ' +
@@ -47,7 +55,6 @@ app.use(function(req, res, next) {
     info('req.body = ', req.body);
     next();
 });
-
 // Turn on CORS for all domains, allow the necessary headers
 app.use(cors({
     exposedHeaders: ['x-oada-rev', 'location'],
@@ -79,28 +86,39 @@ app.use(function sanitizeUrl(req, res, next) {
     next();
 });
 
+/*
 app.use(function bearerAsBasic(req, res, next) {
+    info('********************** 2');
+    info('TOKEN', req.query.token)
+    try {
     let auth = req.get('authorization');
 
     let type;
     let val;
-    [type, val] = auth.split(' ');
+        //    [type, val] = auth.split(' ');
 
     // Gross hack needed because WebSocket only supports basic auth
     if (type === 'Basic') {
-        let bearer;
+        //        let bearer;
         // Treat basic auth username as bearer token
-        [bearer] = Buffer.from(val, 'base64').toString().split(':');
+        //        [bearer] = Buffer.from(val, 'base64').toString().split(':');
 
-        req.headers['authorization'] = 'Bearer ' + bearer;
+        req.headers['authorization'] = 'Bearer ' + req.query.token;
+        //        req.headers['authorization'] = 'Bearer ' + bearer;
     }
+    } catch (e) { console.log(e); }
+
+        req.headers['authorization'] = 'Bearer aaa';
 
     next();
 });
+*/
 
 app.use(function tokenHandler(req, res, next) {
+    info('********************** 1');
     return requester.send({
         'connection_id': req.id,
+        'domain': req.get('host'),
         'token': req.get('authorization'),
     }, config.get('kafka:topics:tokenRequest'))
     .tap(function checkTok(tok) {
@@ -116,8 +134,12 @@ app.use(function tokenHandler(req, res, next) {
 
 // Rewrite the URL if it starts with /bookmarks
 app.use(function handleBookmarks(req, res, next) {
+    info('********************** ' + req.url);
     req.url = req.url.replace(/^\/bookmarks/,
         `/${req.user.doc['bookmarks_id']}`);
+
+    info('********************** ' + req.url);
+
     next();
 });
 

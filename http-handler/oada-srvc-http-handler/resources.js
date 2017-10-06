@@ -37,6 +37,7 @@ router.post('/*?', function postResource(req, res, next) {
 router.use(function graphHandler(req, res, next) {
     return requester.send({
         'connection_id': req.id,
+        'domain': req.get('host'),
         'token': req.get('authorization'),
         'url': '/resources' + req.url,
         'user_id': req.user.doc.user_id
@@ -58,6 +59,7 @@ router.use(function graphHandler(req, res, next) {
 router.put('/*', function checkScope(req, res, next) {
     requester.send({
         'connection_id': req.id,
+        'domain': req.get('host'),
         'oadaGraph': req.oadaGraph,
         'user_id': req.user.doc['user_id'],
         'scope': req.user.doc.scope,
@@ -82,6 +84,7 @@ router.put('/*', function checkScope(req, res, next) {
 router.get('/*', function checkScope(req, res, next) {
     requester.send({
         'connection_id': req.id,
+        'domain': req.get('host'),
         'oadaGraph': req.oadaGraph,
         'user_id': req.user.doc['user_id'],
         'scope': req.user.doc.scope,
@@ -102,23 +105,6 @@ router.get('/*', function checkScope(req, res, next) {
     }).asCallback(next);
 });
 
-router.ws('/:resourceId/_meta/_changes', function(ws, req) {
-    trace('Got it yo')
-    // Now stream stuff back
-    requester.emitter({
-        'connection_id': req.id,
-        'oadaGraph': req.oadaGraph,
-        'user_id': req.user.doc['user_id'],
-        'scope': req.user.doc.scope,
-    }, config.get('kafka:topics:websocketsRequest')).then((emitter) => {
-        emitter.on('response', (msg) => {
-            trace('MESSAGE RECEIVED FROM WEBSOCKETS IN HTTP HANDLER', msg)
-            ws.send(msg)
-        })
-        ws.on('close', emitter.close())
-    });
-});
-
 router.get('/*', function getResource(req, res, next) {
     // TODO: Should it not get the whole meta document?
     // TODO: Make getResource accept an array of paths and return an array of
@@ -127,9 +113,7 @@ router.get('/*', function getResource(req, res, next) {
     var doc = resources.getResource(
             req.oadaGraph['resource_id'],
             req.oadaGraph['path_leftover']
-    ).tap(res => {
-        trace('doc that was returned from getResource = ', res);
-    });
+		);
 
     return Promise
         .join(doc, function returnDoc(doc) {
@@ -212,6 +196,7 @@ router.put('/*', function putResource(req, res, next) {
         .then(bodyid => {
             return requester.send({
                 'connection_id': req.id,
+                'domain': req.get('host'),
                 'url': req.url,
                 'resource_id': req.oadaGraph['resource_id'],
                 'path_leftover': req.oadaGraph['path_leftover'],
@@ -277,6 +262,7 @@ router.delete('/*', function deleteResource(req, res, next) {
     info(`Sending DELETE request for request ${req.id}`);
     return requester.send({
         'connection_id': req.id,
+        'domain': req.get('host'),
         'url': req.url,
         'resource_id': req.oadaGraph['resource_id'],
         'path_leftover': req.oadaGraph['path_leftover'],
