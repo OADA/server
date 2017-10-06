@@ -50,7 +50,16 @@ function findByUsernamePassword(username, password, cb) {
   });
 }
 
+function findByOIDCToken(idtoken, cb) {
+  db.findByOIDCToken(idtoken, function(err, u) {
+    debug('findByOIDCToken: searched for idtoken sub=',idtoken.sub,', iss=',idtoken.iss,', found u = ', u,', err = ', err);
+    var user = err ? makeUser(u) : null;
+    cb(err, user);
+  });
+}
+
 module.exports = {
   findByUsername: findByUsername,
   findByUsernamePassword: findByUsernamePassword,
+  findByOIDCToken: findByOIDCToken,
 };

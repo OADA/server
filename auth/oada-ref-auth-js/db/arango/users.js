@@ -18,7 +18,7 @@ var bcrypt = require('bcryptjs');
 
 var config = require('../../config');
 var oadaLib = require('../../../../libs/oada-lib-arangodb');
-var trace = require('debug')('arango:user/trace');
+var trace = require('debug')('trace:arango#user');
 
 function findById(id, cb) {
   trace('findById: searching for user ',id);
@@ -35,8 +35,14 @@ function findByUsernamePassword(username, password, cb) {
   oadaLib.users.findByUsernamePassword(username, password).asCallback(cb);
 }
 
+function findByOIDCToken(idtoken, cb) {
+  trace('findByOIDCToken: searching for oidc token sub=', idtoken.sub, ', iss=', idtoken.iss);
+  oadaLib.users.findByOIDCToken(idtoken).asCallback(cb);
+}
+
 module.exports = {
   findById: findById,
   findByUsernamePassword: findByUsernamePassword,
   findByUsername: findByUsername,
+  findByOIDCToken: findByOIDCToken,
 };

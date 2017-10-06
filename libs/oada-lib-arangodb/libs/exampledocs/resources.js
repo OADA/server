@@ -54,6 +54,53 @@ module.exports = [
     },
     'rocks': {'_id': 'resources/default:resources_rocks_123', '_rev': '1-abc'}
   },
+  {
+    '_id': 'resources/default:resources_bookmarks_124',
+    '_oada_rev': '1-abc',
+    '_type': 'application/vnd.oada.bookmarks.1+json',
+    '_meta': {
+      '_id': 'resources/default:resources_bookmarks_124/_meta',
+      '_rev': '1-abc',
+      '_type': 'application/vnd.oada.bookmarks.1+json',
+      '_owner': 'users/default:users_frank2_124',
+      'stats': {
+        // stats on meta is exempt from _changes
+        // because that would generate loop of rev updates with resource
+        'createdBy': 'users/default:users_frank2_124',
+        'created': 1494133055,
+        'modifiedBy': 'users/default:users_frank2_124',
+        'modified': 1494133055
+      },
+      '_changes': {
+        '_id': 'resources/default:resources_bookmarks_124/_meta/_changes',
+        '_rev': '1-abc',
+        '1-abc': {
+          'merge': {
+            '_rev': '1-abc',
+            '_type': 'application/vnd.oada.bookmarks.1+json',
+            '_meta': {
+              '_id': 'resources/default:resources_bookmarks_124/_meta',
+              '_rev': '1-abc',
+              '_type': 'application/vnd.oada.bookmarks.1+json',
+              '_owner': 'users/default:users_frank2_124',
+              'stats': {
+                'createdBy': 'users/default:users_frank2_124',
+                'created': 1494133055,
+                'modifiedBy': 'users/default:users_frank2_124',
+                'modified': 1494133055
+              },
+            },
+            'thisisopenidconnectexampleuser': true,
+          },
+          'userid': 'users/default:users_frank2_124',
+          'authorizationid': 'authorizations/default:authorizations-123',
+        },
+      },
+    },
+    'thisisopenidconnectexampleuser': true,
+  },
+
+
   //--------------------
   //Bookmarks document (for sam):
   {
@@ -228,6 +275,28 @@ module.exports = [
       },
     },
   },
+  {
+    '_id': 'resources/default:resources_shares_124',
+    '_oada_rev': '1-abc',
+    '_type': 'application/vnd.oada.shares.1+json',
+    '_meta': {
+      '_id': 'resources/default:resources_shares_124/_meta',
+      '_rev': '1-abc',
+      '_type': 'application/vnd.oada.shares.1+json',
+      '_owner': 'users/default:users_frank2_124', // TODO: Who "owns" /shares?
+      'stats': {
+        // stats on meta is exempt from _changes
+        // because that would generate loop of rev updates with resource
+        'createdBy': 'system',
+        'created': 1494133055,
+        'modifiedBy': 'system',
+        'modified': 1494133055
+      },
+      '_changes': {
+      },
+    },
+  },
+
   //------------------------------------------------
   // Shares document (for user gary growersync):
   {

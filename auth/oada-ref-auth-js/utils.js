@@ -35,7 +35,8 @@ function makeHash(length) {
     .replace(/=/g, '');
 }
 
-function createIdToken(aud, user, nonce, userinfoScope) {
+// iss is the domain of the issuer that is handing out the token
+function createIdToken(iss, aud, user, nonce, userinfoScope) {
   userinfoScope = userinfoScope || [];
 
   var idToken = config.get('auth:idToken');
@@ -48,7 +49,7 @@ function createIdToken(aud, user, nonce, userinfoScope) {
     expiresIn: idToken.expiresIn,
     audience: aud,
     subject: user.id,
-    issuer: config.get('auth:server:publicUri')
+    issuer: iss, 
   };
 
   var payload = {
@@ -149,7 +150,7 @@ function issueToken(client, user, ares, done) {
 function issueIdToken(client, user, ares, done) {
   var userinfoScope = ares.userinfo ? ares.scope : [];
 
-  done(null, createIdToken(client.clientId, user, ares.nonce, userinfoScope));
+  done(null, createIdToken(client.reqdomain, client.clientId, user, ares.nonce, userinfoScope));
 }
 
 function issueCode(client, redirectUri, user, ares, done) {
@@ -177,6 +178,7 @@ function issueCode(client, redirectUri, user, ares, done) {
 
 function issueTokenFromCode(client, c, redirectUri, done) {
   codes.findByCode(c, function(err, code) {
+    debug('issueTokenFromCode: findByCode returned, code = ', code, ', err = ', err);
     if (err) { return done(err); }
 
     if (code.isRedeemed()) {
@@ -212,7 +214,7 @@ function issueTokenFromCode(client, c, redirectUri, done) {
         };
 
         if (code.scope.indexOf('openid') != -1) {
-          extras['id_token'] = createIdToken(code.clientId, code.user,
+          extras['id_token'] = createIdToken(client.reqdomain, code.clientId, code.user,
             code.nonce);
         }
 

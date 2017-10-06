@@ -121,7 +121,8 @@ module.exports = {
           doc._key = doc._id.replace(/^[^\/]*\//, '');
         }
         if (colname === 'users') {
-          doc.password = users.hashPw(doc.password);
+          // oidc users don't have password, so you need to check for existence
+          if (doc.password) doc.password = users.hashPw(doc.password);
         }
         return db.collection(colname).document(doc._id)
           .then(() => trace('Default data document ' + doc._id +

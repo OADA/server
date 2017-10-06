@@ -127,17 +127,25 @@ module.exports = function(conf) {
   if (config.get('auth:oauth2:enable') || config.get('auth:oidc:enable')) {
     var oauth2 = require('./oauth2')(server,config);
 
+    //----------------------------------------------------------------
+    // Client registration endpoint:
     app.options(config.get('auth:endpoints:register'), require('cors')());
     app.post(config.get('auth:endpoints:register'),
         require('cors')(), bodyParser.json(), dynReg);
 
+    //----------------------------------------------------------------
+    // OAuth2 authorization request (serve the authorization screen)
     app.get(config.get('auth:endpoints:authorize'), function(req, res, done) {
       trace('GET '+config.get('auth:endpoints:authorize')+': setting X-Frame-Options=SAMEORIGIN before oauth2.authorize');
       res.header('X-Frame-Options', 'SAMEORIGIN');
       return done();
     }, oauth2.authorize);
     app.post(config.get('auth:endpoints:decision'), oauth2.decision);
-    app.post(config.get('auth:endpoints:token'), oauth2.token);
+    app.post(config.get('auth:endpoints:token'), function(req,res,next) {
+      trace(req.hostname + ': token POST '+config.get('auth:endpoints:token')+', storing reqdomain in req.user');
+      req.user.reqdomain = req.hostname;
+      next();
+    }, oauth2.token);
 
 
     //----------------------------------------------------------------------------------
@@ -210,13 +218,20 @@ module.exports = function(conf) {
     //-----------------------------------------------------
     // Handle the redirect for openid connect login:
     app.use(config.get('auth:endpoints:redirectConnect'), (req,res,next) => {
-      info(config.get('auth:endpoints:redirectConnect')+', req.hostname = '+req.hostname+': OpenIDConnect request returned');
+      info('+++++++++++++++++++=====================++++++++++++++++++++++++', config.get('auth:endpoints:redirectConnect')+', req.user.reqdomain = '+req.hostname+': OpenIDConnect request returned');
       next();
       // Get the token for the user
     }, oadaidclient.handleRedirect(), (req,res,next) => {
-      // Get the user info
-      trace('*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+**+*+*+*+*+*+*+*======',config.get('auth:endpoints:redirectConnect')+', req.hostname = '+req.hostname+': token is: ', req.token);
-      // should have res.tok
+      // should have req.token after this point
+      // Actually log the user in here, maybe get user info as well
+      // Get the user info: proper method is to ask again for profile permission after getting the idtoken
+      //    and determining we don't know this ID token.  If we do know it, don't worry about it
+      info('*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+**+*+*+*+*+*+*+*======',config.get('auth:endpoints:redirectConnect')+', req.hostname = '+req.hostname+': token is: ', req.token);
+      // look them up by oidc.sub and oidc.iss, get their profile data to get username if not found?
+      // save user in the session somehow to indicate to passport that we are logged in.
+      // and finally, redirect to req.session.returnTo from passport and/or connect-ensure-login
+      // since this will redirect them back to where they originally wanted to go which was likely 
+      // an oauth request.
       next();
     });
 
@@ -271,7 +286,7 @@ module.exports = function(conf) {
     });
 
     wkj.addResource('openid-configuration', {
-      'issuer': config.get('auth:server:publicUri'),
+      'issuer': './', //config.get('auth:server:publicUri'),
       'registration_endpoint': './' + config.get('auth:endpoints:register'),
       'authorization_endpoint': './' + config.get('auth:endpoints:authorize'),
       'token_endpoint': './' + config.get('auth:endpoints:token'),

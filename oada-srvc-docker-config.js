@@ -59,6 +59,10 @@ module.exports = {
     host: 'zookeeper:2181',
   },
   auth: {
+    // IMPORTANT: Only set this to true if identity.oada-dev.com is down and you need to develop anyway...
+    dynamicRegistration: {
+      devIgnoreTrustCheck: true, // skips the request to verify the signer
+    },
     // Prefix should match nginx proxy's prefix for the auth service
     endpointsPrefix: '/oadaauth',
     serviceName: 'fPAD',

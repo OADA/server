@@ -63,6 +63,8 @@ module.exports = function(_server,config) {
         next();
       },
       // can access it to pre-fill the domain box
+      // ensureLoggedIn fills in req.session.returnTo to let you redirect
+      // back after logging in
       login.ensureLoggedIn(config.get('auth:endpoints:login')),
       server.authorization(function(clientId, redirectURI, done) {
         clients.findById(clientId, function(err, client) {
@@ -126,6 +128,7 @@ module.exports = function(_server,config) {
     ],
     token: [
       function(req, res, next) {
+        // have to keep req.hostname in res to hack around oauth2orize so that issuer can be checked in openidconnect
         debug('oauth2#token: setting client_secret = client_assertion');
         // todo: hack to use passport-oauth2-client-password
         req.body['client_secret'] = req.body['client_assertion'];
