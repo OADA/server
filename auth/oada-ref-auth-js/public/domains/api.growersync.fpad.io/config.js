@@ -1,5 +1,6 @@
 module.exports = {
   domain: 'api.growersync.fpad.io', // just here for informational purposes
+  baseuri: 'https://api.growersync.fpad.io/', // just here for informational purposes
   logo: 'logo.svg',
   name: 'Grower Sync',
   tagline: 'Data Connections for Growers',

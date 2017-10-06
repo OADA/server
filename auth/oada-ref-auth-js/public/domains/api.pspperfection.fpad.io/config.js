@@ -3,6 +3,7 @@
 // private keys
 module.exports = {
   domain: 'api.pspperfection.fpad.io',
+  baseuri: 'https://api.pspperfection.fpad.io/',
   logo: 'logo.svg',
   name: 'PSP Perfection',
   tagline: 'We are packers, shippers, and processors',

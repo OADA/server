@@ -3,6 +3,7 @@
 // private keys
 module.exports = {
   domain: 'api.auditormining.fpad.io',
+  baseuri: 'https://api.auditormining.fpad.io/',
   logo: 'logo.svg',
   name: 'Auditor Mining',
   tagline: 'Improving Food Safety through Analytics',

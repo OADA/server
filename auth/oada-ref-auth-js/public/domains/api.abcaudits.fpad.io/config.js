@@ -3,6 +3,7 @@
 // private keys
 module.exports = {
   domain: 'api.abcaudits.fpad.io',
+  baseuri: 'https://api.abcaudits.fpad.io/',
   logo: 'logo.svg',
   name: 'ABC Audits',
   tagline: 'Audits done right!',

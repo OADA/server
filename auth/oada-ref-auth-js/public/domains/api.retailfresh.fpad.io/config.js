@@ -3,6 +3,7 @@
 // private keys
 module.exports = {
   domain: 'api.retailfresh.fpad.io',
+  baseuri: 'https://api.retailfresh.fpad.io/',
   logo: 'logo.svg',
   name: 'Retail Fresh',
   tagline: 'We sell retail stuff...fresh!',

@@ -143,7 +143,6 @@ module.exports = function(conf) {
     app.post(config.get('auth:endpoints:decision'), oauth2.decision);
     app.post(config.get('auth:endpoints:token'), function(req,res,next) {
       trace(req.hostname + ': token POST '+config.get('auth:endpoints:token')+', storing reqdomain in req.user');
-      req.user.reqdomain = req.hostname;
       next();
     }, oauth2.token);
 

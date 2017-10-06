@@ -136,6 +136,15 @@ module.exports = function(_server,config) {
         return next();
       },
       passport.authenticate(['oauth2-client-password'], {session: false}),
+      function(req,res,next) {
+        if (!req.user) {
+          debug('oauth2#token: there is no req.user after passport.authenticate should have put the client there.');
+          next();
+        }
+        const domain_cfg = domainConfigs[req.hostname] || { baseuri: 'https://localhost/' };
+        req.user.reqdomain = domain_cfg.baseuri;
+        next();
+      },
       server.token(),
       server.errorHandler({mode: 'direct'})
     ]

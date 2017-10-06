@@ -3,6 +3,7 @@
 // private keys
 module.exports = {
   domain: 'api.certificationanalytics.fpad.io',
+  baseuri: 'https://api.certificationanalytics.fpad.io/',
   logo: 'logo.svg',
   name: 'Certification Analytics',
   tagline: 'Helping you stay compliant and safe',
