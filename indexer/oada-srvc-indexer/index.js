@@ -39,28 +39,53 @@ module.exports = function stopResp() {
   return responder.disconnect(); 
 };
 
+
+
+function initializeIndexer(res, userid) {
+	return {
+		'resource_id': res._id,
+		'path_leftover': `/_meta/trellis/client-to-certifications/`,
+		'user_id': userid,
+		'contentType': res._type,
+		'connection_id': null,
+		'body': {
+			[userid]: {isInitialized: true}
+		}
+	}
+}
+
 responder.on('request', function handleReq(req) {
 	trace('message-type write-response?', req.msgtype === 'write-response')
 	if (req.msgtype !== 'write-response') return
 	trace('code success?', req.code === 'success')
 	if (req.code !== 'success') return
-	trace('contentType client?', req.contentType === 'application/vnd.fpad.client.1+json', req.contentType)
-	if (req.contentType !== 'application/vnd.fpad.client.1+json') return
+	trace('_type client?', req._type === 'application/vnd.fpad.client.1+json', req._type)
+	if (req._type !== 'application/vnd.fpad.client.1+json') return
 	trace('request: ', req)
 	return oadaLib.resources.getResource(req.resource_id).then((res) => {
-		if (!res._meta._changes[res._rev].merge.certifications) return 
+		trace('res', res)
+		if (!(res._meta._changes[res._rev].merge.certifications || res._meta._changes[res._rev].merge._meta._permissions)) return
 		return oadaLib.resources.getResource(res.certifications._id).then((result) => {
-			let newCerts = result._meta._changes[result._rev].merge
+			let newCerts = {}
 			let writes = []
+			if (!res._meta._changes[res._rev].merge._meta.trellis || !res._meta._changes[res._rev].merge._meta.trellis['client-to-certifications'].users[res._meta._owner].isInitialized) {
+				newCerts = result
+				writes.push(initializeIndexer(res, res._meta._owner))
+			} else newCerts = result._meta._changes[result._rev].merge;
 			// owner is a Promise of an array of write request objects. 
-			let owner = findNewCertifications(newCerts, res._meta._owner).then((result) => {
-				return writes.push(...result)
+			let owner = findNewCertifications(newCerts, res._meta._owner).then((write) => {
+				return writes.push(...write)
 			})
 			// other_users is an array..of Promises of arrays (a promise of an array for each permissioned user)
 			trace('res._meta._permissions', res._meta._permissions)
 			let other_users = Promise.map(Object.keys(res._meta._permissions || {}), (id) => {
-				return findNewCertifications(newCerts, id).then((result) => {
-					return writes.push(...result)
+				// If this user hasn't been indexed before, all certifications are "new", else use only recent _changes
+				if (!res._meta._changes[res._rev].merge._meta.trellis || !res._meta._changes[res._rev].merge._meta.trellis['client-to-certifications'].users[id].isInitialized) {
+					newCerts = result
+					writes.push(initializeIndexer(res, id))
+				} else newCerts = result._meta._changes[result._rev].merge;
+				return findNewCertifications(newCerts, id).then((write) => {
+					return writes.push(...write)
 				})
 			})
 		 // Combine all of the resolved write requests into a single array to return
@@ -83,6 +108,7 @@ function findNewCertifications(newCerts, id) {
 			'path_leftover': '/resources/'+uuid.v4(),
 			'user_id': user._id,
 			'contentType': 'application/vnd.fpad.certifications.globalgap.1+json',
+			'connection_id': null,
 		}
 		certifications.body = {
 			_type: 'application/vnd.fpad.certifications.globalgap.1+json',
@@ -102,6 +128,7 @@ function findNewCertifications(newCerts, id) {
 			'path_leftover': '/resources/'+uuid.v4(),
 			'user_id': user._id,
 			'contentType': 'application/vnd.fpad.1+json',
+			'connection_id': null,
 		}
 		fpad.body = {
 			_type: 'application/vnd.fpad.1+json',
@@ -117,6 +144,7 @@ function findNewCertifications(newCerts, id) {
 			'path_leftover': '',
 			'user_id': user._id,
 			'contentType': 'application/vnd.oada.bookmarks.1+json',
+			'connection_id': null,
 		}
 		bookmarks.body = {
 			fpad: {

@@ -40,8 +40,15 @@ function lookupFromUrl(url, userId) {
           RETURN p
       )
       LET resources = DOCUMENT(path.vertices[*].resource_id)
-      RETURN MERGE(path, {permissions:
-      resources[*]._meta._permissions['${userId}']})
+      LET permissions = (
+        FOR r IN resources
+        RETURN {
+          owner: r._meta._owner == '${userId}' || r._meta._permissions['${userId}'].owner,
+          read: r._meta._owner == '${userId}' || r._meta._permissions['${userId}'].read,
+          write: r._meta._owner == '${userId}' || r._meta._permissions['${userId}'].write
+        }
+      )
+      RETURN MERGE(path, {permissions})
     `;
     trace(`lookupFromUrl(${url})`, `running query: ${query}`);
     return db.query({query}).call('next').then((result) => {
@@ -58,21 +65,21 @@ function lookupFromUrl(url, userId) {
           from, permissions: {}};
       }
 
-      let permissions = {};
+      let permissions = { owner: null, read: null, write: null};
       result.permissions.reverse().some(p => {
         if (p) {
-          if (permissions.read === undefined) {
+          if (permissions.read === null) {
             permissions.read = p.read;
           }
-          if (permissions.write === undefined) {
+          if (permissions.write === null) {
             permissions.write = p.write;
           }
-          if (permissions.owner === undefined) {
+          if (permissions.owner === null) {
             permissions.owner = p.owner;
           }
-          if (permissions.read !== undefined &&
-              permissions.write !== undefined &&
-              permissions.owner !== undefined) {
+          if (permissions.read !== null &&
+            permissions.write !== null &&
+            permissions.owner !== null) {
             return true;
           }
         }

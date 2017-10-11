@@ -346,22 +346,22 @@ services:
   #      - /var/run/docker.sock:/var/run/docker.sock
   #    command: pumba --random --interval 1h kill --signal SIGKILL
 
-#  indexer:
-#    depends_on:
-#      - startup
-#    build: ./indexer
-#    restart: always
-#    container_name: indexer
-#    networks:
-#      - startup_net
-#      - kafka_net
-#      - arango_net
-#    volumes:
-#      - .:/code
-#      - ./oada-srvc-docker-config.js:/oada-srvc-docker-config.js
-#    environment:
-#      - NODE_ENV=${NODE_ENV:-development}
-#      - DEBUG=${DEBUG:-""}
+  indexer:
+    depends_on:
+      - startup
+    build: ./indexer
+    restart: always
+    container_name: indexer
+    networks:
+      - startup_net
+      - kafka_net
+      - arango_net
+    volumes:
+      - .:/code
+      - ./oada-srvc-docker-config.js:/oada-srvc-docker-config.js
+    environment:
+      - NODE_ENV=${NODE_ENV:-development}
+      - DEBUG=${DEBUG:-""}
 
   websockets:
     depends_on:

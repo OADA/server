@@ -137,8 +137,8 @@ responder.on('request', function handleReq(req, msg) {
         // Update rev of meta?
         obj['_meta']['_rev'] = rev;
 
-        return method(id, obj).return(rev);
-    }).then(function respond(rev) {
+        return method(id, obj).return({rev, _type: obj['_type']});
+    }).then(function respond({rev, _type}) {
         var end = new Date().getTime();
         info(`Finished PUTing to "${req['path_leftover']}". +${end - start}ms`);
         return {
@@ -149,7 +149,8 @@ responder.on('request', function handleReq(req, msg) {
             'user_id': req['user_id'],
             'authorizationid': req['authorizationid'],
             'path_leftover': req['path_leftover'],
-            'contentType': req['contentType'],
+						'contentType': req['contentType'],
+						'_type': _type,
         };
     }).catch(resources.NotFoundError, function respondNotFound(err) {
         error(err);
