@@ -1,7 +1,7 @@
 module.exports = [
 
   //------------------------------------------------
-  // Bookmarks document:
+  // Bookmarks document (for frank):
   {
     '_id': 'resources/default:resources_bookmarks_123',
     '_oada_rev': '1-abc',
@@ -166,7 +166,7 @@ module.exports = [
       '_id': 'resources/default:resources_bookmarks_777/_meta',
       '_rev': '1-abc',
       '_type': 'application/vnd.oada.bookmarks.1+json',
-      '_owner': 'users/default:users_audrey_777',
+      '_owner': 'users/default:users_gary_growersync',
       'stats': {
         // stats on meta is exempt from _changes
         // because that would generate loop of rev updates with resource
@@ -206,7 +206,7 @@ module.exports = [
   },
 
   //------------------------------------------------
-  // Shares document:
+  // Shares document (for user frank):
   {
     '_id': 'resources/default:resources_shares_123',
     '_oada_rev': '1-abc',
@@ -352,7 +352,7 @@ module.exports = [
     },
   },
   //------------------------------------------------------
-  // fpad document:
+  // fpad document (audrey):
   {
     '_id': 'resources/default:resources_fpad_999',
     '_oada_rev': '1-abc',
@@ -448,7 +448,7 @@ module.exports = [
   },
 
   //-----------------------------------------------------------------
-  // Rock document
+  // Rock document (frank)
   {
     '_id': 'resources/default:resources_rock_123',
     '_oada_rev': '1-abc',

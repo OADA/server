@@ -7,7 +7,7 @@
 // the graphNode key for a resource, user, authorization, etc.
 module.exports = [
   //------------------------------------------------
-  // Bookmarks document:
+  // Bookmarks document (for user frank):
   {
     '_id': 'graphNodes/resources:default:resources_bookmarks_123',
     'resource_id': 'resources/default:resources_bookmarks_123',
@@ -27,9 +27,16 @@ module.exports = [
     'resource_id': 'resources/default:resources_bookmarks_999',
     'is_resource': true,
   },
+  //------------------------------------------------
+  // Bookmarks document (for user gary at growersync):
+  {
+    '_id': 'graphNodes/resources:default:resources_bookmarks_777',
+    'resource_id': 'resources/default:resources_bookmarks_777',
+    'is_resource': true,
+  },
 
   //------------------------------------------------
-  // Shares document:
+  // Shares document (for user frank):
   {
     '_id': 'graphNodes/resources:default:resources_shares_123',
     'resource_id': 'resources/default:resources_shares_123',
