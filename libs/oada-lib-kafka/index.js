@@ -142,12 +142,6 @@ Responder.prototype.on = function on(event, callback) {
                 let self = this;
                 function respond(resp) {
                     return Promise.resolve(resp)
-                        .tap(function checkNotCancelled() {
-                            if (!self.requests[id]) {
-                                let err = new Error('Request cancelled');
-                                return Promise.reject(err);
-                            }
-                        })
                         .then(resp => {
                             if (!Array.isArray(resp)) {
                                 return resp === undefined ? [] : [resp];
@@ -159,6 +153,11 @@ Responder.prototype.on = function on(event, callback) {
                                 resp[REQ_ID_KEY] = uuid();
                             } else {
                                 resp[REQ_ID_KEY] = id;
+                                // Check for cancelled requests
+                                if (!self.requests[id]) {
+                                    let err = new Error('Request cancelled');
+                                    return Promise.reject(err);
+                                }
                             }
                             resp['time'] = Date.now();
                             resp.domain = domain;
