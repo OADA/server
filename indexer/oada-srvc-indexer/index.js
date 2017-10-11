@@ -59,10 +59,10 @@ responder.on('request', function handleReq(req) {
 	if (req.msgtype !== 'write-response') return
 	trace('code success?', req.code === 'success')
 	if (req.code !== 'success') return
-	trace('_type client?', req._type === 'application/vnd.fpad.client.1+json', req._type)
-	if (req._type !== 'application/vnd.fpad.client.1+json') return
 	trace('request: ', req)
 	return oadaLib.resources.getResource(req.resource_id).then((res) => {
+		trace('_type client?', req._type === 'application/vnd.fpad.client.1+json', req._type)
+		if (res._type !== 'application/vnd.fpad.client.1+json') return
 		trace('res', res)
 		if (!(res._meta._changes[res._rev].merge.certifications || res._meta._changes[res._rev].merge._meta._permissions)) return
 		return oadaLib.resources.getResource(res.certifications._id).then((result) => {
