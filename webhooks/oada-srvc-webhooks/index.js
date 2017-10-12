@@ -20,10 +20,11 @@ const trace = debug('webhooks:trace');
 const error = debug('webhooks:error');
 
 var Promise = require('bluebird');
+const _ = require('lodash');
 const Responder = require('../../libs/oada-lib-kafka').Responder;
 const oadaLib = require('../../libs/oada-lib-arangodb');
 const config = require('./config');
-const axios = require('axios');
+const axios = process.env.SSL_ALLOW_SELF_SIGNED ? require('axios').create({httpsAgent: new require('https').Agent({rejectUnauthorized: false})}) : require('axios');
 
 //---------------------------------------------------------
 // Kafka intializations:
@@ -48,19 +49,48 @@ responder.on('request', function handleReq(req) {
         .then(meta => {
             if (meta && meta._syncs) {
                 return Promise.map(Object.keys(meta._syncs), (sync) => {
-                    if (meta._syncs[sync]['oada-put']) {
-                        trace('Sending oada-put to: ' + meta._syncs[sync].url);
-                        let change = meta._changes[req._rev];
-                        let body = change.merge || change.delete;
-                        trace('oada-put body: ', body);
-                        return axios({
-                            method: change.delete ? 'delete' : 'put',
-                            url: meta._syncs[sync].url,
-                            data: body,
-                            headers: meta._syncs[sync].headers,
-                        });
+                    var url = meta._syncs[sync].url;
+                    if (process.env.NODE_ENV !== 'production') {
+                      /*
+                        If running in dev environment, https://localhost webhooks should
+                        be directed to the proxy server
+                      */
+                      url = url.replace('localhost', 'proxy');
                     }
-                    trace('Sending to: ' + meta._syncs[sync].url);
+                    if (meta._syncs[sync]['oada-put']) {
+                        trace('Sending oada-put to: ' + url);
+                        let change = meta._changes[req._rev];
+                        let body = change.merge || {};
+                        if (change.delete) {
+                          //Handle delete _changes
+                          var deletePath = [];
+                          var toDelete = _.omit(change.delete, ['_meta', '_rev']);
+                          if (_.keys(toDelete).length == 0) return;
+                          while (_.isObject(toDelete) && _.keys(toDelete).length > 0) {
+                            let key = _.keys(toDelete)[0];
+                            deletePath.push(key);
+                            toDelete = toDelete[key];
+                          }
+                          if (toDelete != null) return;
+                          let deleteUrl = url+'/'+deletePath.join('/');
+                          trace('Deleting: oada-put url changed to:', deleteUrl);
+                          return axios({
+                              method: 'delete',
+                              url: deleteUrl,
+                              headers: meta._syncs[sync].headers
+                          });
+                        } else {
+                          //Handle merge _changes
+                          trace('oada-put body: ', body);
+                          return axios({
+                              method: 'put',
+                              url: url,
+                              data: body,
+                              headers: meta._syncs[sync].headers
+                          });
+                        }
+                    }
+                    trace('Sending to: ' + url);
                     return axios(meta._syncs[sync]);
                 });
             }

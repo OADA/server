@@ -383,6 +383,7 @@ services:
   webhooks:
     depends_on:
       - startup
+      - proxy
     build: ./webhooks
     restart: always
     container_name: webhooks
@@ -390,12 +391,14 @@ services:
       - startup_net
       - kafka_net
       - arango_net
+      - http_net
     volumes:
       - .:/code
       - ./oada-srvc-docker-config.js:/oada-srvc-docker-config.js
     environment:
       - NODE_ENV=${NODE_ENV:-development}
       - DEBUG=${DEBUG:-""}
+      - SSL_ALLOW_SELF_SIGNED=1
 
   permissions-handler:
     depends_on:
