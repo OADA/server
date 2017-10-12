@@ -250,8 +250,7 @@ router.delete('/*', function deleteLink(req, res, next) {
         // Switch to DELETE on parent resource
         let id = req.oadaGraph.from['resource_id'];
         let path = req.oadaGraph.from['path_leftover'];
-        req.url = id.replace(/^\/?resources\//, '') + path;
-
+        req.url = '/' + id.replace(/^\/?resources\//, '') + path;
         req.oadaGraph = req.oadaGraph.from;
     }
 
