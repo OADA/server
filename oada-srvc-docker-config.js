@@ -118,6 +118,7 @@ module.exports = {
       passwordSalt: '$2a$06$xbh/gQcEgAX5eapjlCgMYO',
       'port-http': 80,
       mode: 'http',
+      proxy: 'uniquelocal',
       domain: domain, // in docker it's port 80 localhost
       // but to nginx proxy, it's https://localhost in dev
       publicUri: 'https://' + domain

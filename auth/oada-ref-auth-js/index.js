@@ -59,7 +59,7 @@ var oadaidclient = require('oada-id-client').middleware;
 
 //-----------------------------------------------------------------------
 // Load all the domain configs at startup
-const domainConfigs = _.indexBy(_.map(fs.readdirSync('./public/domains'), dirname => 
+const domainConfigs = _.indexBy(_.map(fs.readdirSync('./public/domains'), dirname =>
   require('./public/domains/'+dirname+'/config')
 ), 'domain');
 
@@ -101,6 +101,7 @@ module.exports = function(conf) {
   app.set('view engine', 'ejs');
   app.set('json spaces', config.get('auth:server:jsonSpaces'));
   app.set('views', path.join(__dirname, 'views'));
+  app.set('trust proxy', config.get('auth:server:proxy'));
 
   app.use(morgan('combined'));
   app.use(cookieParser());
@@ -148,7 +149,7 @@ module.exports = function(conf) {
 
 
     //----------------------------------------------------------------------------------
-    // Login page: someone has navigated or been redirected to the login page.  Populate 
+    // Login page: someone has navigated or been redirected to the login page.  Populate
     // based on the domain
     app.get(config.get('auth:endpoints:login'), function(req, res) {
       trace('GET '+config.get('auth:endpoints:login')+': setting X-Frame-Options=SAMEORIGIN before rendering login');
@@ -192,13 +193,13 @@ module.exports = function(conf) {
     //-----------------------------------------------------------------
     // Handle the POST from clicking the "login with OADA/fPAD" button
     app.post(config.get('auth:endpoints:loginConnect'), function(req,res,next) {
-      
+
       // First, get domain entered in the posted form and strip protocol if they used it
       let dest_domain = req.body && req.body.dest_domain;
       if (dest_domain) dest_domain = dest_domain.replace(/^https?:\/\//);
       req.body.dest_domain = dest_domain;
       info(config.get('auth:endpoints:loginConnect')+': OpenIDConnect request to redirect from domain '+req.hostname+' to domain '+dest_domain);
-      
+
       // Next, get the info for the id client middleware based on main domain:
       const domain_config = domainConfigs[req.hostname] || domainConfigs.localhost;
       const options = {
@@ -208,7 +209,7 @@ module.exports = function(conf) {
         prompt: 'consent',
         privateKey: domain_config.keys.private,
       };
-      
+
       // And call the middleware directly so we can use closure variables:
       trace(config.get('auth:endpoints:loginConnect')+': calling getIDToken for dest_domain = ', dest_domain);
       return oadaidclient.getIDToken(dest_domain,options)(req,res,next);
@@ -229,7 +230,7 @@ module.exports = function(conf) {
       // look them up by oidc.sub and oidc.iss, get their profile data to get username if not found?
       // save user in the session somehow to indicate to passport that we are logged in.
       // and finally, redirect to req.session.returnTo from passport and/or connect-ensure-login
-      // since this will redirect them back to where they originally wanted to go which was likely 
+      // since this will redirect them back to where they originally wanted to go which was likely
       // an oauth request.
       next();
     });
