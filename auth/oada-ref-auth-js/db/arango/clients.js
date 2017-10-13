@@ -12,19 +12,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 'use strict';
 
 var debug = require('debug')('arango:client/trace');
 var oadaLib = require('../../../../libs/oada-lib-arangodb');
 
 function findById(id, cb) {
-  debug('retrieving client { clientId: "'+id+'" }');
-  oadaLib.clients.findById(id).asCallback(cb);
+  debug('retrieving client { clientId: "' + id + '" }');
+  oadaLib.clients.findById(id)
+    .then(c => c && Object.assign(c, {id: c._id, _id: undefined}))
+    .asCallback(cb);
 }
 
 function save(client, cb) {
-  debug('saving clientId ',client.clientId);
-  oadaLib.clients.save(client).asCallback(cb);
+  Object.assign(client, {_id: client.id, id: undefined});
+  debug('saving clientId ', client.clientId);
+  oadaLib.clients.save(client)
+    .asCallback(cb);
 }
 
 module.exports = {

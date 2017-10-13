@@ -3,6 +3,7 @@
 // private keys
 module.exports = {
   domain: 'api.distributingexcellence.fpad.io',
+  baseuri: 'https://api.distributingexcellence.fpad.io/',
   logo: 'logo.svg',
   name: 'Distributing Excellence',
   tagline: 'We deliver excellence!',

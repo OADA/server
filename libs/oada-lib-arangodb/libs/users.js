@@ -23,6 +23,11 @@ const users = db.collection(config.get('arangodb:collections:users:name'));
     "middle_name": "",
     "nickname": "Frankie",
     "email": "frank@openag.io"
+    "oidc": {
+      "sub": "02kfj023ifkldf", // subject, i.e. unique ID for this user
+      "iss": "https://localhost", // issuer: the domain that gave out this ID
+      "username": "bob", // can be used to pre-link this account to openidconnect identity
+    }
   }
 */
 
@@ -46,6 +51,40 @@ function findByUsername(username) {
 
       return util.sanitizeResult(user);
     });
+}
+
+function findByOIDCUsername(oidcusername) {
+  return db.query(aql`
+    FOR u IN ${users}
+    FILTER u.oidc.username == ${username}
+    RETURN u`
+  )
+  .call('next')
+  .then((user) => {
+    if (!user) {
+      return null;
+    }
+
+    return util.sanitizeResult(user);
+  });
+}
+
+// expects idtoken to be at least { sub: "fkj2o", iss: "https://localhost/example" }
+function findByOIDCToken(idtoken) {
+  return db.query(aql`
+    FOR u IN ${users}
+    FILTER u.oidc.sub == ${idtoken.sub}
+    FILTER u.oidc.iss == ${idtoken.iss}
+    RETURN u`
+  )
+  .call('next')
+  .then((user) => {
+    if (!user) {
+      return null;
+    }
+
+    return util.sanitizeResult(user);
+  });
 }
 
 function findByUsernamePassword(username, password) {
