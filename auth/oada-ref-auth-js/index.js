@@ -250,8 +250,11 @@ module.exports = function(conf) {
           user = await users
               .findByOIDCUsername(info['preferred_username'], idToken.iss);
 
-          // TODO: Add sub to existing user
-
+          // Add sub to existing user
+          // TODO: Make a link function or something
+          //       instead of shoving sub where it goes?
+          user.oidc.sub = idToken.sub;
+          await users.update(user);
         }
 
         // Put user into session

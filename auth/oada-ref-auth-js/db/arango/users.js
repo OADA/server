@@ -17,27 +17,27 @@
 
 var bcrypt = require('bcryptjs');
 
-var config = require('../../config');
-var oadaLib = require('../../../../libs/oada-lib-arangodb');
-var trace = require('debug')('trace:arango#user');
+const config = require('../../config');
+const {users} = require('../../../../libs/oada-lib-arangodb');
+const trace = require('debug')('trace:arango#user');
 
 function findById(id, cb) {
   trace('findById: searching for user ', id);
-  return oadaLib.users.findById(id)
+  return users.findById(id)
     .then(u => u && Object.assign(u, {id: u._id, _id: undefined}))
     .asCallback(cb);
 }
 
 function findByUsername(username, cb) {
   trace('findByUsername: searching for user ', username);
-  return oadaLib.users.findByUsername(username)
+  return users.findByUsername(username)
     .then(u => u && Object.assign(u, {id: u._id, _id: undefined}))
     .asCallback(cb);
 }
 
 function findByUsernamePassword(username, password, cb) {
   trace('findByUsername: searching for user ', username, ' with a password');
-  return oadaLib.users.findByUsernamePassword(username, password)
+  return users.findByUsernamePassword(username, password)
     .then(u => u && Object.assign(u, {id: u._id, _id: undefined}))
     .asCallback(cb);
 }
@@ -45,7 +45,7 @@ function findByUsernamePassword(username, password, cb) {
 function findByOIDCToken(idtoken, cb) {
   trace('findByOIDCToken: searching for oidc token sub=', idtoken.sub,
       ', iss=', idtoken.iss);
-  return oadaLib.users.findByOIDCToken(idtoken)
+  return users.findByOIDCToken(idtoken)
     .then(u => u && Object.assign(u, {id: u._id, _id: undefined}))
     .asCallback(cb);
 }
@@ -53,8 +53,14 @@ function findByOIDCToken(idtoken, cb) {
 function findByOIDCUsername(username, domain, cb) {
   trace('findByOIDCUsername: searching for oidc username', username,
       'at ', domain);
-  return oadaLib.users.findByOIDCUsername(username, domain)
+  return users.findByOIDCUsername(username, domain)
     .then(u => u && Object.assign(u, {id: u._id, _id: undefined}))
+    .asCallback(cb);
+}
+
+function update(user, cb) {
+  let u = Object.assign({}, user, {_id: user.id, id: undefined});
+  return users.update(u)
     .asCallback(cb);
 }
 
@@ -63,5 +69,6 @@ module.exports = {
   findByUsernamePassword: findByUsernamePassword,
   findByUsername: findByUsername,
   findByOIDCToken: findByOIDCToken,
-  findByOIDCUsername
+  findByOIDCUsername,
+  update
 };

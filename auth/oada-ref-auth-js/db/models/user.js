@@ -59,9 +59,15 @@ function findByOIDCUsername(username, iss, cb) {
     .asCallback(cb);
 }
 
+function update(user, cb) {
+  return Promise.fromCallback(done => db.update(user, done))
+    .asCallback(cb);
+}
+
 module.exports = {
   findByUsername: findByUsername,
   findByUsernamePassword: findByUsernamePassword,
   findByOIDCToken: findByOIDCToken,
-  findByOIDCUsername
+  findByOIDCUsername,
+  update
 };
