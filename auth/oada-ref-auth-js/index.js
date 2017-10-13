@@ -51,6 +51,7 @@ var passport = require('passport');
 var morgan = require('morgan');
 var oauth2orize = require('oauth2orize');
 var URI = require('URIjs');
+const axios = require('axios');
 
 var oadaError = require('oada-error').middleware;
 var oadaLookup = require('oada-lookup');
@@ -225,19 +226,32 @@ module.exports = function(conf) {
       next();
       // Get the token for the user
     }, oadaidclient.handleRedirect(), async (req, res, next) => {
+      // "Token" is both an id token and an access token
+      let {'id_token': idToken, 'access_token': token} = req.token;
+
       // should have req.token after this point
       // Actually log the user in here, maybe get user info as well
       // Get the user info: proper method is to ask again for profile permission after getting the idtoken
       //    and determining we don't know this ID token.  If we do know it, don't worry about it
-      info('*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+**+*+*+*+*+*+*+*======',config.get('auth:endpoints:redirectConnect')+', req.hostname = '+req.hostname+': token is: ', req.token);
+      info('*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+**+*+*+*+*+*+*+*======',config.get('auth:endpoints:redirectConnect')+', req.hostname = '+req.hostname+': token is: ', idToken);
       try {
-        let user = await users.findByOIDCToken(req.token);
+        let user = await users.findByOIDCToken(idToken);
         if (!user) {
-          // TODO: Get profile
+          let uri = new URI(idToken.iss);
+          uri.path('/.well-known/openid-configuration');
+          let cfg = (await axios.get(uri.toString())).data;
 
-          user = await users.findByOIDCUsername(/* stuff */);
+          let info = (await axios.get(cfg['userinfo_endpoint'], {
+            headers: {
+              'Authorization': `Bearer ${token}`
+            }
+          })).data;
+
+          user = await users
+              .findByOIDCUsername(info['preferred_username'], idToken.iss);
 
           // TODO: Add sub to existing user
+
         }
 
         // Put user into session
