@@ -23,6 +23,13 @@ function findByCode(code, cb) {
   trace('findByCode: searching for code ', code);
   oadaLib.codes.findByCode(code)
     .then(c => c && Object.assign(c, {id: c._id, _id: undefined}))
+    .then(c => {
+      if (c && c.user) {
+        Object.assign(c.user, {id: c.user._id, _id: undefined});
+      }
+
+      return c;
+    })
     .asCallback(cb);
 }
 
