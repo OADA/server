@@ -31,7 +31,7 @@ function save(in_code, cb) {
   Object.assign(code, {_id: code.id, id: undefined});
   // Link user
   code.user = { _id: null };
-  if (in_code.user) code.user = { _id: in_code.user._id };
+  if (in_code.user) code.user = { _id: in_code.user.id };
 
   oadaLib.codes.save(code).asCallback(cb);
 }
