@@ -100,6 +100,7 @@ services:
   sync-handler:
     depends_on:
       - startup
+      - proxy
     build: ./sync-handler
     restart: always
     container_name: sync-handler
@@ -107,6 +108,7 @@ services:
       - startup_net
       - kafka_net
       - arango_net
+      - http_net
     volumes:
       - .:/code
       - ./oada-srvc-docker-config.js:/oada-srvc-docker-config.js

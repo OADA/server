@@ -58,7 +58,6 @@ responder.on('request', function handleReq(req) {
                       url = url.replace('localhost', 'proxy');
                     }
                     if (meta._syncs[sync]['oada-put']) {
-                        trace('Sending oada-put to: ' + url);
                         let change = meta._changes[req._rev];
                         let body = change.merge || {};
                         if (change.delete) {
@@ -66,6 +65,7 @@ responder.on('request', function handleReq(req) {
                           var deletePath = [];
                           var toDelete = _.omit(change.delete, ['_meta', '_rev']);
                           if (_.keys(toDelete).length == 0) return;
+                          trace('Sending oada-put to: ' + url);
                           while (_.isObject(toDelete) && _.keys(toDelete).length > 0) {
                             let key = _.keys(toDelete)[0];
                             deletePath.push(key);
@@ -81,6 +81,9 @@ responder.on('request', function handleReq(req) {
                           });
                         } else {
                           //Handle merge _changes
+                          //If change is only to _id, _rev, _meta, or _type, don't do put
+                          if (_.keys(_.omit(body, ['_id', '_rev', '_meta', '_type'])).length == 0) return;
+                          trace('Sending oada-put to: ' + url);
                           trace('oada-put body: ', body);
                           return axios({
                               method: 'put',

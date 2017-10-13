@@ -70,6 +70,15 @@ responder.on('request', async function handleReq(req) {
 
     let puts = Promise.map(syncs, async ([key, {url, domain, token}]) => {
         info(`Running sync ${key} for resource ${id}`);
+
+        if (process.env.NODE_ENV !== 'production') {
+          /*
+            If running in dev environment localhost should
+            be directed to the proxy server
+          */
+          domain = domain.replace('localhost', 'proxy');
+        }
+
         // TODO: Cache this?
         let apiroot = Promise.resolve(axios({
             method: 'get',
