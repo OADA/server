@@ -12,8 +12,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 'use strict';
 
+const Promise = require('bluebird');
 var debug = require('debug')('model-user');
 
 var config = require('../../config');
@@ -26,40 +28,40 @@ function makeUser(user) {
 }
 
 function findByUsername(id, cb) {
-  db.findByUsername(id, function(err, u) {
-    if (err) { debug(err); }
-    var user;
-    if (!err) {
-      user = makeUser(u);
-    }
-
-    cb(err, user);
-  });
+  return Promise.fromCallback(done => db.findByUsername(id, done))
+    .then(u => makeUser(u))
+    .tapCatch(debug)
+    .asCallback(cb);
 }
 
 function findByUsernamePassword(username, password, cb) {
-  db.findByUsernamePassword(username, password, function(err, u) {
-    if (u) { debug(u); }
-
-    var user;
-    if (!err) {
-      user = makeUser(u);
-    }
-
-    cb(err, user);
-  });
+  return Promise.fromCallback(done => {
+      return db.findByUsernamePassword(username, password, done);
+    })
+    .tap(debug)
+    .then(u => makeUser(u))
+    .asCallback(cb);
 }
 
 function findByOIDCToken(idtoken, cb) {
-  db.findByOIDCToken(idtoken, function(err, u) {
-    debug('findByOIDCToken: searched for idtoken sub=',idtoken.sub,', iss=',idtoken.iss,', found u = ', u,', err = ', err);
-    var user = err ? makeUser(u) : null;
-    cb(err, user);
-  });
+  return Promise.fromCallback(done => db.findByOIDCToken(idtoken, done))
+    .tap(u => {
+      debug('findByOIDCToken: searched for idtoken sub=', idtoken.sub,
+        ', iss=', idtoken.iss, ', found u = ', u);
+    })
+    .then(u => makeUser(u))
+    .asCallback(cb);
+}
+
+function findByOIDCUsername(username, iss, cb) {
+  return Promise.fromCallback(done => db.findByOIDCUsername(username, iss, done))
+    .then(u => makeUser(u))
+    .asCallback(cb);
 }
 
 module.exports = {
   findByUsername: findByUsername,
   findByUsernamePassword: findByUsernamePassword,
   findByOIDCToken: findByOIDCToken,
+  findByOIDCUsername
 };

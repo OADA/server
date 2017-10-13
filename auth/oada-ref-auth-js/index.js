@@ -12,6 +12,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 'use strict';
 
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
@@ -22,6 +23,7 @@ global.isLibrary = !(require.main === module);
 
 console.log('DEBUG = ', process.env.DEBUG);
 
+const util = require('util');
 var _ = require('lodash');
 var fs = require('fs');
 var trace = require('debug')('auth#index:trace');
@@ -73,7 +75,7 @@ module.exports = function(conf) {
   config.set('auth:server:port', process.env.PORT || config.get('auth:server:port'));
 
   var publicUri;
-  if(!config.get('auth:server:publicUri')) {
+  if (!config.get('auth:server:publicUri')) {
     publicUri = URI()
       .hostname(config.get('auth:server:domain'))
       .port(config.get('auth:server:port'))
@@ -91,6 +93,7 @@ module.exports = function(conf) {
   // Require these late because they depend on the config
   var dynReg = require('./dynReg');
   var clients = require('./db/models/client');
+  const users = require('./db/models/user');
   var keys = require('./keys');
   var utils = require('./utils');
   require('./auth');
@@ -221,18 +224,36 @@ module.exports = function(conf) {
       info('+++++++++++++++++++=====================++++++++++++++++++++++++', config.get('auth:endpoints:redirectConnect')+', req.user.reqdomain = '+req.hostname+': OpenIDConnect request returned');
       next();
       // Get the token for the user
-    }, oadaidclient.handleRedirect(), (req,res,next) => {
+    }, oadaidclient.handleRedirect(), async (req, res, next) => {
       // should have req.token after this point
       // Actually log the user in here, maybe get user info as well
       // Get the user info: proper method is to ask again for profile permission after getting the idtoken
       //    and determining we don't know this ID token.  If we do know it, don't worry about it
       info('*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+**+*+*+*+*+*+*+*======',config.get('auth:endpoints:redirectConnect')+', req.hostname = '+req.hostname+': token is: ', req.token);
+      try {
+        let user = await users.findByOIDCToken(req.token);
+        if (!user) {
+          // TODO: Get profile
+
+          user = await users.findByOIDCUsername(/* stuff */);
+
+          // TODO: Add sub to existing user
+        }
+
+        // Put user into session
+        let login = util.promisify(req.login.bind(req));
+        await login(user);
+
+        // Send user back where they started
+        return res.redirect(req.session.returnTo);
+      } catch (err) {
+        return next(err);
+      }
       // look them up by oidc.sub and oidc.iss, get their profile data to get username if not found?
       // save user in the session somehow to indicate to passport that we are logged in.
       // and finally, redirect to req.session.returnTo from passport and/or connect-ensure-login
       // since this will redirect them back to where they originally wanted to go which was likely
       // an oauth request.
-      next();
     });
 
     app.get(config.get('auth:endpoints:logout'), function(req, res) {
