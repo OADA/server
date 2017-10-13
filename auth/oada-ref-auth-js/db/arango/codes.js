@@ -12,6 +12,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 'use strict';
 
 var _ = require('lodash');
@@ -20,11 +21,14 @@ var oadaLib = require('../../../../libs/oada-lib-arangodb');
 
 function findByCode(code, cb) {
   trace('findByCode: searching for code ', code);
-  oadaLib.codes.findByCode(code).asCallback(cb);
+  oadaLib.codes.findByCode(code)
+    .then(c => c && Object.assign(c, {id: c._id, _id: undefined}))
+    .asCallback(cb);
 }
 
 function save(in_code, cb) {
   var code = _.cloneDeep(in_code);
+  Object.assign(code, {_id: code.id, id: undefined});
   // Link user
   code.user = { _id: null };
   if (in_code.user) code.user = { _id: in_code.user._id };

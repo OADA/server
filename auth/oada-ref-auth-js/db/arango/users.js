@@ -12,6 +12,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 'use strict';
 
 var bcrypt = require('bcryptjs');
@@ -21,23 +22,32 @@ var oadaLib = require('../../../../libs/oada-lib-arangodb');
 var trace = require('debug')('trace:arango#user');
 
 function findById(id, cb) {
-  trace('findById: searching for user ',id);
-  oadaLib.users.findById(id).asCallback(cb);
+  trace('findById: searching for user ', id);
+  oadaLib.users.findById(id)
+    .then(u => u && Object.assign(u, {id: u._id, _id: undefined}))
+    .asCallback(cb);
 }
 
 function findByUsername(username, cb) {
-  trace('findByUsername: searching for user ',username);
-  oadaLib.users.findByUsername(username).asCallback(cb);
+  trace('findByUsername: searching for user ', username);
+  oadaLib.users.findByUsername(username)
+    .then(u => u && Object.assign(u, {id: u._id, _id: undefined}))
+    .asCallback(cb);
 }
 
 function findByUsernamePassword(username, password, cb) {
-  trace('findByUsername: searching for user ',username, ' with a password');
-  oadaLib.users.findByUsernamePassword(username, password).asCallback(cb);
+  trace('findByUsername: searching for user ', username, ' with a password');
+  oadaLib.users.findByUsernamePassword(username, password)
+    .then(u => u && Object.assign(u, {id: u._id, _id: undefined}))
+    .asCallback(cb);
 }
 
 function findByOIDCToken(idtoken, cb) {
-  trace('findByOIDCToken: searching for oidc token sub=', idtoken.sub, ', iss=', idtoken.iss);
-  oadaLib.users.findByOIDCToken(idtoken).asCallback(cb);
+  trace('findByOIDCToken: searching for oidc token sub=', idtoken.sub,
+      ', iss=', idtoken.iss);
+  oadaLib.users.findByOIDCToken(idtoken)
+    .then(u => u && Object.assign(u, {id: u._id, _id: undefined}))
+    .asCallback(cb);
 }
 
 module.exports = {

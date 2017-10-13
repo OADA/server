@@ -12,6 +12,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 'use strict';
 
 var _ = require('lodash');
@@ -20,11 +21,14 @@ var oadaLib = require('../../../../libs/oada-lib-arangodb');
 
 function findByToken(token, cb) {
   trace('findByToken: searching for token ', token);
-  oadaLib.authorizations.findByToken(token).asCallback(cb);
+  oadaLib.authorizations.findByToken(token)
+    .then(t => t && Object.assign(t, {id: t._id, _id: undefined}))
+    .asCallback(cb);
 }
 
 function save(token, cb) {
   token = _.cloneDeep(token);
+  Object.assign(token, {_id: token.id, id: undefined});
   // Link user
   token.user = {_id: token.user._id};
   trace('save: saving token ', token.token);
