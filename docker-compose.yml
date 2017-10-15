@@ -39,6 +39,7 @@ services:
       - http_net
     ports:
       - "443:443"
+      - "80:80"
     volumes:
       - ./proxy/nginx.conf:/etc/nginx/nginx.conf
       - ./proxy/dev-sites-enabled/:/etc/nginx/sites-templates/
@@ -250,7 +251,7 @@ services:
       - kafka_data:/volumes/kafka
       - .:/code
       - /var/run/docker.sock:/var/run/docker.sock
-      - letsencrypt_www_data:/volumes/letsencrypt
+      - letsencrypt_www_data:/etc/letsencrypt/live
     command: bash
     networks:
       - startup_net
