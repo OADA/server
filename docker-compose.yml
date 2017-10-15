@@ -250,6 +250,7 @@ services:
       - kafka_data:/volumes/kafka
       - .:/code
       - /var/run/docker.sock:/var/run/docker.sock
+      - letsencrypt_www_data:/volumes/letsencrypt
     command: bash
     networks:
       - startup_net

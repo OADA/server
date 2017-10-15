@@ -28,15 +28,16 @@ var oadaLookup = require('oada-lookup');
 var utils = require('./utils');
 var clients = require('./db/models/client');
 
-//-----------------------------------------------------------------------
-// Load all the domain configs at startup
-const domainConfigs = _.indexBy(_.map(fs.readdirSync('./public/domains'), dirname => 
-  require('./public/domains/'+dirname+'/config')
-), 'domain');
-
 
 var server;
 module.exports = function(_server,config) {
+  //-----------------------------------------------------------------------
+  // Load all the domain configs at startup
+  const ddir = config.get('domainsDir');
+  const domainConfigs = _.indexBy(_.map(fs.readdirSync(ddir), dirname => 
+    require(ddir+'/'+dirname+'/config')
+  ), 'domain');
+
   server = _server;
 
   // Implict flow (token)

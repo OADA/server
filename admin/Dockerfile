@@ -49,5 +49,13 @@ COPY "./.vimrc" "/root/.vimrc"
 RUN apt-get update
 RUN apt-get -qq install -y docker.io --fix-missing
 
+##########################################
+# Install letsencrypt to get certs
+RUN apt-get update \
+ && apt-get install -y software-properties-common \
+ && add-apt-repository ppa:certbot/certbot \
+ && apt-get update \
+ && apt-get install -y python-certbot-nginx
+
 WORKDIR "/code"
 CMD bash

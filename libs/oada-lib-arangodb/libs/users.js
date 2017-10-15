@@ -128,6 +128,8 @@ module.exports = {
   findById,
   findByUsername,
   findByUsernamePassword,
+  findByOIDCToken,
+  findByOIDCUsername,
   create: create,
   update,
   like,

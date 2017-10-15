@@ -26,8 +26,9 @@ console.log('DEBUG = ', process.env.DEBUG);
 const util = require('util');
 var _ = require('lodash');
 var fs = require('fs');
-var trace = require('debug')('auth#index:trace');
-var info = require('debug')('auth#index:info');
+var fssymlink = require('fs-symlink');
+var trace = require('debug-logger')('auth#index').trace;
+var info = require('debug-logger')('auth#index').info;
 var config = require('./config');
 // If there is an endpointsPrefix, update all the endpoints to include the
 // prefix before doing anything else
@@ -62,9 +63,18 @@ var oadaidclient = require('oada-id-client').middleware;
 
 //-----------------------------------------------------------------------
 // Load all the domain configs at startup
-const domainConfigs = _.indexBy(_.map(fs.readdirSync('./public/domains'), dirname =>
-  require('./public/domains/'+dirname+'/config')
+const ddir = config.get('domainsDir');
+trace('using domainsDir = ', ddir);
+const domainConfigs = _.indexBy(_.map(fs.readdirSync(ddir), dirname =>
+  require(ddir+'/'+dirname+'/config')
 ), 'domain');
+// symlink all the domain auth-www folders to domain folder in ./public:
+_.each(domainConfigs, (cfg, domain) => {
+  const source = ddir+'/'+domain+'/auth-www';
+  const linkname = './public/domains/'+domain;
+  trace('symlinking '+source+' to link name '+linkname);
+  fssymlink(source, linkname, 'junction'); // note: returns promise, but we're not waiting
+});
 
 
 module.exports = function(conf) {

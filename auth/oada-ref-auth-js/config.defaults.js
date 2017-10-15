@@ -18,6 +18,7 @@ var path = require('path');
 var fs = require('fs');
 
 module.exports = {
+  domainsDir: './domains',
   auth: {
     init: function() { }, // this will run if you call npm run init.  Replace in your own config with your own init.
     server: {
