@@ -44,36 +44,69 @@ module.exports = function wsHandler(server) {
             try {
                msg = JSON.parse(msg);
             } catch (e) {
-                let err = new OADAError('Bad Request', 400, 'Invalid JSON');
-
+                let err = {
+                    status: 400,
+                    headers: [],
+                    data: new OADAError('Bad Request', 400, 'Invalid JSON')
+                };
                 socket.send(JSON.stringify(err));
                 error(e);
-
                 return;
             }
 
             if (!msg.requestId) {
-                let err = new OADAError('Bad Request', 400,
-                    'Missing `requestId`');
-
+                let err = {
+                    status: 400,
+                    headers: [],
+                    data: new OADAError('Bad Request', 400,
+                        'Missing `requestId`')
+                };
                 socket.send(JSON.stringify(err));
                 return;
             }
 
             if (!msg.path) {
-                let err = new OADAError('Bad Request', 400,
-                    'Missing `path`');
+                let err = {
+                    status: 400,
+                    headers: [],
+                    data: new OADAError('Bad Request', 400, 'Missing `path`')
+                };
+                err.requestId = msg.requestId;
+                socket.send(JSON.stringify(err));
+                return;
+            }
+
+            if (!msg.authorization) {
+                let err = {
+                    status: 400,
+                    headers: [],
+                    data: new OADAError('Bad Request', 400,
+                        'Missing `authorization`')
+                };
                 err.requestId = msg.requestId;
 
                 socket.send(JSON.stringify(err));
                 return;
             }
 
-            if (!msg.authorization) {
-                let err = new OADAError('Bad Request', 400,
-                    'Missing `authorization`');
+            if (!msg.method) {
+                let err = {
+                    status: 400,
+                    headers: [],
+                    data: new OADAError('Bad Request', 400, 'Missing `method`')
+                };
                 err.requestId = msg.requestId;
+                socket.send(JSON.stringify(err));
+                return;
+            }
 
+            if (['watch', 'head', 'get', 'put', 'post', 'delete'].includes(msg.method.toLowerCase()) == false) {
+                let err = {
+                    status: 400,
+                    headers: [],
+                    data: new OADAError('Bad Request', 400, 'Method `'+msg.method+'` is not supported.')
+                };
+                err.requestId = msg.requestId;
                 socket.send(JSON.stringify(err));
                 return;
             }
@@ -84,16 +117,40 @@ module.exports = function wsHandler(server) {
                     authorization: msg.authorization
                 }
             };
+            if (msg.contentType) {
+                request.headers['Content-Type'] = msg.contentType;
+            }
 
             switch(msg.method.toLowerCase()) {
                 case 'watch':
                     request.method = 'head';
                     request.url = msg.path;
+                break;
 
+                case 'head':
+                    request.method = 'head';
+                    request.url = msg.path;
                 break;
 
                 case 'get':
                     request.method = 'get';
+                    request.url = msg.path;
+                break;
+
+                case 'post':
+                    request.method = 'post';
+                    request.url = msg.path;
+                    request.data = msg.data;
+                break;
+
+                case 'put':
+                    request.method = 'put';
+                    request.url = msg.path;
+                    request.data = msg.data;
+                break;
+
+                case 'delete':
+                    request.method = 'delete';
                     request.url = msg.path;
                 break;
             }
@@ -154,18 +211,20 @@ module.exports = function wsHandler(server) {
                 .catch(function(err) {
                     let e;
                     if (err.response) {
-                        if(err.response.data) {
-                            e = err.response.data;
-                        } else {
-                            e = new OADAError('Bad Request', 400);
-                        }
-                        e.requestId = msg.requestId;
+                        e = {
+                            status: err.response.status,
+                            headers: err.response.headers,
+                            data: err.response.data
+                        };
                     } else {
                         error(err);
-                        e = new OADAError('Internal Error', 500);
-                        e.requestId = msg.requestId;
+                        e = {
+                            status: 500,
+                            headers: [],
+                            data: new OADAError('Internal Error', 500)
+                        };
                     }
-
+                    e.requestId = msg.requestId;
                     socket.send(JSON.stringify(e));
                 });
         });
