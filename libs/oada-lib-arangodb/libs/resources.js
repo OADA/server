@@ -265,14 +265,15 @@ function putResource(id, obj) {
     if (links.length > 0) {
       q = db.query(aql`
         LET reskey = ${obj['_key']}
-        LET res = FIRST(
+        LET resup = FIRST(
           LET res = ${obj}
           UPSERT { '_key': reskey }
           INSERT res
           UPDATE res
           IN resources
-          RETURN NEW
+          RETURN { res: NEW, orev: OLD._oada_rev }
         )
+        LET res = resup.res
         FOR l IN ${links}
           LET lkey = SUBSTRING(l._id, LENGTH('resources/'))
           LET nodeids = FIRST(
@@ -323,19 +324,19 @@ function putResource(id, obj) {
               IN edges
               RETURN NEW
           )
-          FOR edge IN edges
-            RETURN edge._key
+          RETURN resup.orev
       `);
     } else {
       q = db.query(aql`
-        LET res = FIRST(
+        LET resup = FIRST(
           LET res = ${obj}
           UPSERT { '_key': res._key }
           INSERT res
           UPDATE res
           IN resources
-          return NEW
+          return { res: NEW, orev: OLD._oada_rev }
         )
+        LET res = resup.res
         LET nodekey = CONCAT('resources:', res._key)
         UPSERT { '_key': nodekey }
         INSERT {
@@ -345,10 +346,11 @@ function putResource(id, obj) {
         }
         UPDATE {}
         IN graphNodes
+        RETURN resup.orev
       `);
     }
 
-    return q;
+    return q.call('next');
   });
 }
 
@@ -415,11 +417,14 @@ function deleteResource(id) {
         REMOVE node IN ${graphNodes}
         RETURN OLD
     )
-    FOR node IN nodes
-      FOR edge IN ${edges}
-        FILTER edge['_from'] == node._id
-        REMOVE edge IN ${edges}
-  `);
+    LET edges = (
+      FOR node IN nodes
+        FOR edge IN ${edges}
+          FILTER edge['_from'] == node._id
+          REMOVE edge IN ${edges}
+    )
+    RETURN res._oada_rev
+  `).call('next');
 }
 
 // "Delete" a part of a resource
@@ -468,11 +473,12 @@ function deletePartialResource(id, path, doc) {
     WITH ${doc}
     IN ${resources}
     OPTIONS { keepNull: false }
+    RETURN OLD._oada_rev
   `; // TODO: Why the heck does arango error if I update resource before graph?
 
   trace('Sending partial delete query:', query);
 
-  return db.query(query);
+  return db.query(query).call('next');
 }
 
 module.exports = {
