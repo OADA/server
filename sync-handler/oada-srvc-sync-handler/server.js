@@ -52,7 +52,8 @@ responder.on('request', async function handleReq(req) {
     }
 
     let id = req['resource_id'];
-    let rev = req['_rev'];
+    //let rev = req['_rev'];
+    let orev = req['_orev'];
     // TODO: Add AQL query for just syncs and newest change?
     let syncs = await resources.getResource(id, `/_meta/${META_KEY}`)
         .then(syncs => syncs || {})
@@ -65,20 +66,24 @@ responder.on('request', async function handleReq(req) {
         return;
     }
 
+    let desc = resources.getNewDescendants(id, orev);
     // TODO: Figure out just what changed
-    let ids = resources.getNewDescendants(id, '0-0');
-    let changes = await ids.map(id => ({[id]: resources.getResource(id)}))
+    let changes = await desc.filter(d => d.changed)
+        .map(d => ({[d.id]: resources.getResource(d.id)}))
         .reduce((a, b) => Object.assign(a, b));
 
+    // TODO: Probably should not be keeping the tokens under _meta...
     let puts = Promise.map(syncs, async ([key, {url, domain, token}]) => {
         info(`Running sync ${key} for resource ${id}`);
+        // Need separate changes map for each sync since they run concurently
+        let lchanges = Object.assign({}, changes); // Shallow copy
 
         if (process.env.NODE_ENV !== 'production') {
-          /*
-            If running in dev environment localhost should
-            be directed to the proxy server
-          */
-          domain = domain.replace('localhost', 'proxy');
+            /*
+                If running in dev environment localhost should
+                be directed to the proxy server
+            */
+            domain = domain.replace('localhost', 'proxy');
         }
 
         // TODO: Cache this?
@@ -88,7 +93,8 @@ responder.on('request', async function handleReq(req) {
         })).get('data').get('oada_base_uri').then(s => s.replace(/\/?$/, '/'));
 
         // Ensure each local resource has a corresponding remote one
-        let rids = await remoteResources.getRemoteId(await ids, domain)
+        let ids = await desc.map(d => d.id);
+        let rids = await remoteResources.getRemoteId(ids, domain)
             .map(rid => rid.id === id ? {id: id, rid: url} : rid)
             .map(async ({id, rid}) => {
                 if (rid) {
@@ -96,7 +102,7 @@ responder.on('request', async function handleReq(req) {
                 }
 
                 let url = `${await apiroot}resources/`;
-                let type = (await changes[id])['_meta']['_type'];
+                let type = (await lchanges[id])['_meta']['_type'];
                 // Create any missing remote IDs
                 let loc = await Promise.resolve(axios({
                     method: 'post',
@@ -120,6 +126,9 @@ responder.on('request', async function handleReq(req) {
                 // TODO: Insert all new remoteResources at once?
                 await remoteResources.addRemoteId(newrid, domain);
 
+                // TODO: Less gross way of create new remote resources?
+                lchanges[id] = resources.getResource(id);
+
                 return newrid;
             });
 
@@ -128,15 +137,32 @@ responder.on('request', async function handleReq(req) {
             .reduce((a, b) => Object.assign(a, b));
         idmapping[id] = url;
         let docs = Promise.map(rids, async ({id, rid}) => {
-            // TODO: Only send what is new
-            let change = await changes[id];
+            let change = await lchanges[id];
+            if (!change) {
+                return Promise.resolve();
+            }
+
+            let type = change['_meta']['_type'];
+
             // Fix links etc.
-            let body = JSON.stringify(change, (k, v) => {
+            let body = JSON.stringify(change, function(k, v) {
                 switch (k) {
-                case '_meta':
-                    // Don't send _meta
-                    return undefined;
+                case '_meta': // Don't send resources's _meta
+                    if (this === change) {
+                        return undefined;
+                    } else {
+                        return v;
+                    }
+                case '_rev': // Don't resource's send _rev
+                    if (this === change) {
+                        return undefined;
+                    } else {
+                        return v;
+                    }
                 case '_id':
+                    if (this === change) { // Don't send resource's _id
+                        return undefined;
+                    }
                     // TODO: Better link detection?
                     if (idmapping[v]) {
                         return idmapping[v];
@@ -148,7 +174,6 @@ responder.on('request', async function handleReq(req) {
                     return v;
                 }
             });
-            let type = change['_meta']['_type'];
             // TODO: Support DELETE
             return axios({
                 method: 'put',

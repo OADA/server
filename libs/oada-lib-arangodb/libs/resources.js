@@ -239,8 +239,11 @@ function getNewDescendants(id, rev) {
       FILTER p.edges[*].versioned ALL == true
       FILTER v.is_resource
       LET ver = SPLIT(DOCUMENT(LAST(p.vertices).resource_id)._oada_rev, '-', 1)
-      FILTER TO_NUMBER(ver) >= ${+rev.split('-', 1)}
-      RETURN DISTINCT v.resource_id
+      // FILTER TO_NUMBER(ver) >= ${+rev.split('-', 1)}
+      RETURN DISTINCT {
+        id: v.resource_id,
+        changed: TO_NUMBER(ver) >= ${+rev.split('-', 1)}
+      }
   `).call('all');
 }
 
