@@ -201,13 +201,14 @@ function getResourceOwnerIdRev(id) {
 
 function getParents(id) {
   return db.query(aql`
-      LET node = FIRST(
-        FOR node IN ${graphNodes}
-        FILTER node.resource_id == ${id}
-        RETURN node
-      )
+    LET node = FIRST(
+      FOR node IN ${graphNodes}
+      FILTER node.resource_id == ${id}
+      FILTER node.is_resource
+      RETURN node
+    )
 
-      FOR v, e IN 0..1
+    FOR v, e IN 0..1
       INBOUND node
       ${edges}
       FILTER e.versioned == true
