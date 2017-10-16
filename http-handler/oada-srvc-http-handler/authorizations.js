@@ -4,10 +4,30 @@ const Promise = require('bluebird');
 const express = require('express');
 const uuid = require('uuid');
 
-const {authorizations} = require('../../libs/oada-lib-arangodb');
+const debug = require('debug-logger')('http-handler#authorizations');
+const trace = debug.trace;
+
+const {authorizations, clients} = require('../../libs/oada-lib-arangodb');
 const {OADAError} = require('oada-error');
 
 var router = express.Router(); // eslint-disable-line new-cap
+
+function addClientToAuth(auth) {
+  if (auth && auth.clientId) {
+    trace('GET /'+auth._id+': authorization has a client, retrieving');
+    return clients.findById(auth.clientId)
+    .then(client => {
+      auth.client = client; // store client from db into authorization object
+      return auth;
+    }).catch(err => {
+      debug.error('ERROR: authorization clientId not found in DB');
+      throw err;
+    });
+  } else {
+    trace('GET /'+auth._id+': authorization DOES NOT have a clientId');
+    return auth;
+  }
+}
 
 // Authorizations routes
 // TODO: How the heck should this work??
@@ -15,6 +35,7 @@ router.get('/', function(req, res, next) {
     return authorizations.findByUser(req.user.doc['user_id'])
         .reduce((o, i) => {
             let k = i['_id'].replace(/^authorizations\//, '');
+            i = addClientToAuth(i); // returns either a promise or the same auth object
             o[k] = i;
             return o;
         }, {})
@@ -33,7 +54,10 @@ router.get('/:authId', function(req, res, next) {
             } catch (e) {} // eslint-disable-line no-empty
 
             return Promise.reject(new OADAError('Not Authorized', 403));
-        })
+
+        // Get the full client out of the DB to send out with this auth document
+        // That way anybody listing authorizations can print the name, etc. of the client
+        }).then(addClientToAuth)
         .then(res.json)
         .catch(next);
 });
