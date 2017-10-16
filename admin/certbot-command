@@ -1,0 +1,9 @@
+# To get new certificates entirely (not just renew, don't forget to remove --staging when done testing):
+certbot certonly --staging --webroot -w /volumes/letsencrypt --agree-tos -m aaron@openag.io --noninteractive --domains $(ls -1 /code/domains | sed 's/localhost//' | sed '/^$/d' | tr '\n' ',' | sed 's/,$//')
+
+THEN you have to copy proxy/dev-certs/archive/<something>/*.pem to proxy/dev-certs/<domain>/.
+certbot may name things like fullchain1.pem, you have to then take off the 1 for the domain.
+The "<something>" above is told to you when certbot command finishes.
+
+TO RENEW ALL CERTS ONLY:
+certbot renew

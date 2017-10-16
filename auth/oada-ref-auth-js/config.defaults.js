@@ -18,6 +18,7 @@ var path = require('path');
 var fs = require('fs');
 
 module.exports = {
+  domainsDir: './domains',
   auth: {
     init: function() { }, // this will run if you call npm run init.  Replace in your own config with your own init.
     server: {
@@ -52,6 +53,9 @@ module.exports = {
     },
     dynamicRegistration: {
       trustedListLookupTimeout: 5000,
+      // devIgnoreTrustCheck skips the call that checks the trusted signer's certificate.
+      // Useful when the signer's host is down during development work.
+      devIgnoreTrustCheck: false,
     },
     code: {
       length: 25,

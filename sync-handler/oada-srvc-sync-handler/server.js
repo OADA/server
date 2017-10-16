@@ -56,7 +56,9 @@ responder.on('request', async function handleReq(req) {
     // TODO: Add AQL query for just syncs and newest change?
     let syncs = await resources.getResource(id, `/_meta/${META_KEY}`)
         .then(syncs => syncs || {})
-        .then(Object.entries);
+        .then(Object.entries)
+        // Ignore sync entries that aren't objects
+        .filter(sync => sync[1] && typeof sync[1] === 'object');
 
     if (syncs.length === 0) {
         // Nothing for us to do
@@ -87,6 +89,7 @@ responder.on('request', async function handleReq(req) {
 
         // Ensure each local resource has a corresponding remote one
         let rids = await remoteResources.getRemoteId(await ids, domain)
+            .map(rid => rid.id === id ? {id: id, rid: url} : rid)
             .map(async ({id, rid}) => {
                 if (rid) {
                     return {id, rid};
@@ -123,6 +126,7 @@ responder.on('request', async function handleReq(req) {
         // Create mapping of IDs here to IDs there
         let idmapping = rids.map(({id, rid}) => ({[id]: rid}))
             .reduce((a, b) => Object.assign(a, b));
+        idmapping[id] = url;
         let docs = Promise.map(rids, async ({id, rid}) => {
             // TODO: Only send what is new
             let change = await changes[id];
@@ -157,24 +161,8 @@ responder.on('request', async function handleReq(req) {
             });
         });
 
-        // TODO: Only create URL link first time?
-        let link = axios({
-            method: 'put',
-            url: `${await apiroot}${url}`,
-            data: {
-                // TODO: Should this be a versioned link?
-                '_id': idmapping[id]
-            },
-            headers: {
-                // TODO: How to set content type of this PUT?
-                //'content-type': 'application/json',
-                authorization: token
-            }
-        });
-
-        return Promise.join(docs, link);
+        return docs;
     });
 
-    // TODO: Handle sync url
     await puts;
 });

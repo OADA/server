@@ -26,6 +26,8 @@ module.exports = {
   // and prevent init.cleanup() from being called.
   isProduction: process.env.NODE_ENV === 'production',
 
+  domainsDir: '/code/domains', // served by auth for login pages, software statements, keys, etc.
+
   arangodb: {
     connectionString: 'http://arangodb:8529',
     database: 'oada',
@@ -104,6 +106,10 @@ module.exports = {
     host: 'zookeeper:2181',
   },
   auth: {
+    // IMPORTANT: Only set this to true if identity.oada-dev.com is down and you need to develop anyway...
+    dynamicRegistration: {
+      devIgnoreTrustCheck: true, // skips the request to verify the signer
+    },
     // Prefix should match nginx proxy's prefix for the auth service
     endpointsPrefix: '/oadaauth',
     serviceName: 'fPAD',
@@ -114,6 +120,7 @@ module.exports = {
       passwordSalt: '$2a$06$xbh/gQcEgAX5eapjlCgMYO',
       'port-http': 80,
       mode: 'http',
+      proxy: 'uniquelocal',
       domain: domain, // in docker it's port 80 localhost
       // but to nginx proxy, it's https://localhost in dev
       publicUri: 'https://' + domain

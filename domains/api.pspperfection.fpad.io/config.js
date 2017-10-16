@@ -2,13 +2,14 @@
 // and should not be considered private or protected, including the
 // private keys
 module.exports = {
-  domain: 'api.certificationanalytics.fpad.io',
+  domain: 'api.pspperfection.fpad.io',
+  baseuri: 'https://api.pspperfection.fpad.io/',
   logo: 'logo.svg',
-  name: 'Certification Analytics',
-  tagline: 'Helping you stay compliant and safe',
-  color: '#FF9900',
+  name: 'PSP Perfection',
+  tagline: 'We are packers, shippers, and processors',
+  color: '#B4A7D6',
   hint: {
-    username: 'frank',
+    username: 'pete',
     password: 'test',
   },
   idService: {
@@ -26,7 +27,8 @@ module.exports = {
       kid: require('./unsigned_software_statement').jwks.keys[0].kid,
       // Read the private key from the private key file:
       pem: require('fs').readFileSync(__dirname+'/private_key.pem'),
-    }
+    },
+
   },
   unsigned_software_statement: require('./unsigned_software_statement.js'),
   software_statement: require('./signed_software_statement.js'),

@@ -2,13 +2,14 @@
 // and should not be considered private or protected, including the
 // private keys
 module.exports = {
-  domain: 'api.pspperfection.fpad.io',
+  domain: 'api.retailfresh.fpad.io',
+  baseuri: 'https://api.retailfresh.fpad.io/',
   logo: 'logo.svg',
-  name: 'PSP Perfection',
-  tagline: 'We are packers, shippers, and processors',
-  color: '#B4A7D6',
+  name: 'Retail Fresh',
+  tagline: 'We sell retail stuff...fresh!',
+  color: '#EA9999',
   hint: {
-    username: 'pete',
+    username: 'ron',
     password: 'test',
   },
   idService: {

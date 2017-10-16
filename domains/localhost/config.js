@@ -1,6 +1,7 @@
 
 module.exports = {
   domain: 'localhost', // just here for informational purposes
+  baseuri: 'https://localhost/', // just here for informational purposes
   logo: 'logo.png',
   name: 'Open Ag Data Alliance',
   tagline: '',

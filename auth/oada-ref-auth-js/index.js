@@ -12,6 +12,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 'use strict';
 
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
@@ -22,10 +23,12 @@ global.isLibrary = !(require.main === module);
 
 console.log('DEBUG = ', process.env.DEBUG);
 
+const util = require('util');
 var _ = require('lodash');
 var fs = require('fs');
-var trace = require('debug')('auth#index:trace');
-var info = require('debug')('auth#index:info');
+var fssymlink = require('fs-symlink');
+var trace = require('debug-logger')('auth#index').trace;
+var info = require('debug-logger')('auth#index').info;
 var config = require('./config');
 // If there is an endpointsPrefix, update all the endpoints to include the
 // prefix before doing anything else
@@ -49,6 +52,7 @@ var passport = require('passport');
 var morgan = require('morgan');
 var oauth2orize = require('oauth2orize');
 var URI = require('URIjs');
+const axios = require('axios');
 
 var oadaError = require('oada-error').middleware;
 var oadaLookup = require('oada-lookup');
@@ -59,9 +63,18 @@ var oadaidclient = require('oada-id-client').middleware;
 
 //-----------------------------------------------------------------------
 // Load all the domain configs at startup
-const domainConfigs = _.indexBy(_.map(fs.readdirSync('./public/domains'), dirname => 
-  require('./public/domains/'+dirname+'/config')
+const ddir = config.get('domainsDir');
+trace('using domainsDir = ', ddir);
+const domainConfigs = _.indexBy(_.map(fs.readdirSync(ddir), dirname =>
+  require(ddir+'/'+dirname+'/config')
 ), 'domain');
+// symlink all the domain auth-www folders to domain folder in ./public:
+_.each(domainConfigs, (cfg, domain) => {
+  const source = ddir+'/'+domain+'/auth-www';
+  const linkname = './public/domains/'+domain;
+  trace('symlinking '+source+' to link name '+linkname);
+  fssymlink(source, linkname, 'junction'); // note: returns promise, but we're not waiting
+});
 
 
 module.exports = function(conf) {
@@ -73,7 +86,7 @@ module.exports = function(conf) {
   config.set('auth:server:port', process.env.PORT || config.get('auth:server:port'));
 
   var publicUri;
-  if(!config.get('auth:server:publicUri')) {
+  if (!config.get('auth:server:publicUri')) {
     publicUri = URI()
       .hostname(config.get('auth:server:domain'))
       .port(config.get('auth:server:port'))
@@ -91,6 +104,7 @@ module.exports = function(conf) {
   // Require these late because they depend on the config
   var dynReg = require('./dynReg');
   var clients = require('./db/models/client');
+  const users = require('./db/models/user');
   var keys = require('./keys');
   var utils = require('./utils');
   require('./auth');
@@ -101,6 +115,7 @@ module.exports = function(conf) {
   app.set('view engine', 'ejs');
   app.set('json spaces', config.get('auth:server:jsonSpaces'));
   app.set('views', path.join(__dirname, 'views'));
+  app.set('trust proxy', config.get('auth:server:proxy'));
 
   app.use(morgan('combined'));
   app.use(cookieParser());
@@ -127,21 +142,28 @@ module.exports = function(conf) {
   if (config.get('auth:oauth2:enable') || config.get('auth:oidc:enable')) {
     var oauth2 = require('./oauth2')(server,config);
 
+    //----------------------------------------------------------------
+    // Client registration endpoint:
     app.options(config.get('auth:endpoints:register'), require('cors')());
     app.post(config.get('auth:endpoints:register'),
         require('cors')(), bodyParser.json(), dynReg);
 
+    //----------------------------------------------------------------
+    // OAuth2 authorization request (serve the authorization screen)
     app.get(config.get('auth:endpoints:authorize'), function(req, res, done) {
       trace('GET '+config.get('auth:endpoints:authorize')+': setting X-Frame-Options=SAMEORIGIN before oauth2.authorize');
       res.header('X-Frame-Options', 'SAMEORIGIN');
       return done();
     }, oauth2.authorize);
     app.post(config.get('auth:endpoints:decision'), oauth2.decision);
-    app.post(config.get('auth:endpoints:token'), oauth2.token);
+    app.post(config.get('auth:endpoints:token'), function(req,res,next) {
+      trace(req.hostname + ': token POST '+config.get('auth:endpoints:token')+', storing reqdomain in req.user');
+      next();
+    }, oauth2.token);
 
 
     //----------------------------------------------------------------------------------
-    // Login page: someone has navigated or been redirected to the login page.  Populate 
+    // Login page: someone has navigated or been redirected to the login page.  Populate
     // based on the domain
     app.get(config.get('auth:endpoints:login'), function(req, res) {
       trace('GET '+config.get('auth:endpoints:login')+': setting X-Frame-Options=SAMEORIGIN before rendering login');
@@ -185,13 +207,13 @@ module.exports = function(conf) {
     //-----------------------------------------------------------------
     // Handle the POST from clicking the "login with OADA/fPAD" button
     app.post(config.get('auth:endpoints:loginConnect'), function(req,res,next) {
-      
+
       // First, get domain entered in the posted form and strip protocol if they used it
       let dest_domain = req.body && req.body.dest_domain;
       if (dest_domain) dest_domain = dest_domain.replace(/^https?:\/\//);
       req.body.dest_domain = dest_domain;
       info(config.get('auth:endpoints:loginConnect')+': OpenIDConnect request to redirect from domain '+req.hostname+' to domain '+dest_domain);
-      
+
       // Next, get the info for the id client middleware based on main domain:
       const domain_config = domainConfigs[req.hostname] || domainConfigs.localhost;
       const options = {
@@ -201,7 +223,7 @@ module.exports = function(conf) {
         prompt: 'consent',
         privateKey: domain_config.keys.private,
       };
-      
+
       // And call the middleware directly so we can use closure variables:
       trace(config.get('auth:endpoints:loginConnect')+': calling getIDToken for dest_domain = ', dest_domain);
       return oadaidclient.getIDToken(dest_domain,options)(req,res,next);
@@ -210,14 +232,55 @@ module.exports = function(conf) {
     //-----------------------------------------------------
     // Handle the redirect for openid connect login:
     app.use(config.get('auth:endpoints:redirectConnect'), (req,res,next) => {
-      info(config.get('auth:endpoints:redirectConnect')+', req.hostname = '+req.hostname+': OpenIDConnect request returned');
+      info('+++++++++++++++++++=====================++++++++++++++++++++++++', config.get('auth:endpoints:redirectConnect')+', req.user.reqdomain = '+req.hostname+': OpenIDConnect request returned');
       next();
       // Get the token for the user
-    }, oadaidclient.handleRedirect(), (req,res,next) => {
-      // Get the user info
-      trace('*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+**+*+*+*+*+*+*+*======',config.get('auth:endpoints:redirectConnect')+', req.hostname = '+req.hostname+': token is: ', req.token);
-      // should have res.tok
-      next();
+    }, oadaidclient.handleRedirect(), async (req, res, next) => {
+      // "Token" is both an id token and an access token
+      let {'id_token': idToken, 'access_token': token} = req.token;
+
+      // should have req.token after this point
+      // Actually log the user in here, maybe get user info as well
+      // Get the user info: proper method is to ask again for profile permission after getting the idtoken
+      //    and determining we don't know this ID token.  If we do know it, don't worry about it
+      info('*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+**+*+*+*+*+*+*+*======',config.get('auth:endpoints:redirectConnect')+', req.hostname = '+req.hostname+': token is: ', idToken);
+      try {
+        let user = await users.findByOIDCToken(idToken);
+        if (!user) {
+          let uri = new URI(idToken.iss);
+          uri.path('/.well-known/openid-configuration');
+          let cfg = (await axios.get(uri.toString())).data;
+
+          let info = (await axios.get(cfg['userinfo_endpoint'], {
+            headers: {
+              'Authorization': `Bearer ${token}`
+            }
+          })).data;
+
+          user = await users
+              .findByOIDCUsername(info['preferred_username'], idToken.iss);
+
+          // Add sub to existing user
+          // TODO: Make a link function or something
+          //       instead of shoving sub where it goes?
+          user.oidc.sub = idToken.sub;
+          await users.update(user);
+        }
+
+        // Put user into session
+        let login = util.promisify(req.login.bind(req));
+        await login(user);
+
+        // Send user back where they started
+        return res.redirect(req.session.returnTo);
+      } catch (err) {
+        return next(err);
+      }
+      // look them up by oidc.sub and oidc.iss, get their profile data to get username if not found?
+      // save user in the session somehow to indicate to passport that we are logged in.
+      // and finally, redirect to req.session.returnTo from passport and/or connect-ensure-login
+      // since this will redirect them back to where they originally wanted to go which was likely
+      // an oauth request.
     });
 
     app.get(config.get('auth:endpoints:logout'), function(req, res) {
@@ -271,7 +334,7 @@ module.exports = function(conf) {
     });
 
     wkj.addResource('openid-configuration', {
-      'issuer': config.get('auth:server:publicUri'),
+      'issuer': './', //config.get('auth:server:publicUri'),
       'registration_endpoint': './' + config.get('auth:endpoints:register'),
       'authorization_endpoint': './' + config.get('auth:endpoints:authorize'),
       'token_endpoint': './' + config.get('auth:endpoints:token'),

@@ -2,13 +2,14 @@
 // and should not be considered private or protected, including the
 // private keys
 module.exports = {
-  domain: 'api.distributingexcellence.fpad.io',
+  domain: 'api.auditormining.fpad.io',
+  baseuri: 'https://api.auditormining.fpad.io/',
   logo: 'logo.svg',
-  name: 'Distributing Excellence',
-  tagline: 'We deliver excellence!',
-  color: '#D5A6BD',
+  name: 'Auditor Mining',
+  tagline: 'Improving Food Safety through Analytics',
+  color: '#FFE599',
   hint: {
-    username: 'diane',
+    username: 'frank',
     password: 'test',
   },
   idService: {
@@ -26,8 +27,9 @@ module.exports = {
       kid: require('./unsigned_software_statement').jwks.keys[0].kid,
       // Read the private key from the private key file:
       pem: require('fs').readFileSync(__dirname+'/private_key.pem'),
-    },
+    }
+
   },
   unsigned_software_statement: require('./unsigned_software_statement.js'),
   software_statement: require('./signed_software_statement.js'),
-}
+};
