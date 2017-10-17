@@ -102,7 +102,8 @@ responder.on('request', async function handleReq(req) {
                 }
 
                 let url = `${await apiroot}resources/`;
-                let type = (await lchanges[id])['_meta']['_type'];
+                // TODO: How to handle this annoying content-type stuff?
+                let type = await resources.getResource(id, '/_meta/_type');
                 // Create any missing remote IDs
                 let loc = await Promise.resolve(axios({
                     method: 'post',
