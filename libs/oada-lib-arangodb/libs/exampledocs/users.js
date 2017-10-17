@@ -72,4 +72,32 @@ module.exports = [
     'bookmarks': {'_id': 'resources/default:resources_bookmarks_777'},
     'shares': {'_id': 'resources/default:resources_shares_777'}
   },
+  {
+    '_id': 'users/default:users_pete_pspperfection',
+    'username': 'pete@gmail.com',
+    'password': 'test',
+    'domain': 'pspperfection.fpad.io',
+    'name': 'Packershipperprocessor Pete',
+    'family_name': 'Packershipperprocessor',
+    'given_name': 'Pete',
+    'middle_name': '',
+    'nickname': 'Peter Piper',
+    'email': 'pete@gmail.com',
+    'bookmarks': {'_id': 'resources/default:resources_bookmarks_444'},
+    'shares': {'_id': 'resources/default:resources_shares_444'}
+  },
+  {
+    '_id': 'users/default:users_rick_retailfresh',
+    'username': 'rick@gmail.com',
+    'password': 'test',
+    'domain': 'retailfresh.fpad.io',
+    'name': 'Retailer Rick',
+    'family_name': 'Retailer',
+    'given_name': 'Rick',
+    'middle_name': '',
+    'nickname': 'Retail King',
+    'email': 'rick@gmail.com',
+    'bookmarks': {'_id': 'resources/default:resources_bookmarks_555'},
+    'shares': {'_id': 'resources/default:resources_shares_555'}
+  },
 ];

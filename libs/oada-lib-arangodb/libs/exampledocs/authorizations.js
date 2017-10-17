@@ -54,4 +54,22 @@ module.exports = [
     'user': {'_id': 'users/default:users_gary_growersync'},
     'clientId': 'jf93caauf3uzud7f308faesf3@provider.oada-dev.com'
   },
+  {
+    '_id': 'authorizations/default:authorization-444',
+    'token': 'ppp',
+    'scope': ['fpad:all'],
+    'createTime': 1413831649937,
+    'expiresIn': 60,
+    'user': {'_id': 'users/default:users_pete_pspperfection'},
+    'clientId': 'jf93caauf3uzud7f308faesf3@provider.oada-dev.com'
+  },
+  {
+    '_id': 'authorizations/default:authorization-555',
+    'token': 'rrr',
+    'scope': ['fpad:all'],
+    'createTime': 1413831649937,
+    'expiresIn': 60,
+    'user': {'_id': 'users/default:users_rick_retailfresh'},
+    'clientId': 'jf93caauf3uzud7f308faesf3@provider.oada-dev.com'
+  },
 ];

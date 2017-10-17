@@ -252,6 +252,104 @@ module.exports = [
     },
   },
 
+  //--------------------
+  //Bookmarks document (for pete at pspperfection):
+  {
+    '_id': 'resources/default:resources_bookmarks_444',
+    '_oada_rev': '1-abc',
+    '_type': 'application/vnd.oada.bookmarks.1+json',
+    '_meta': {
+      '_id': 'resources/default:resources_bookmarks_444/_meta',
+      '_rev': '1-abc',
+      '_type': 'application/vnd.oada.bookmarks.1+json',
+      '_owner': 'users/default:users_pete_pspperfection',
+      'stats': {
+        // stats on meta is exempt from _changes
+        // because that would generate loop of rev updates with resource
+        'createdBy': 'users/default:users_pete_pspperfection',
+        'created': 1494133055,
+        'modifiedBy': 'users/default:users_pete_pspperfection',
+        'modified': 1494133055
+      },
+      '_changes': {
+        '_id': 'resources/default:resources_bookmarks_444/_meta/_changes',
+        '_rev': '1-abc',
+        '1-abc': {
+          'merge': {
+            '_rev': '1-abc',
+            '_type': 'application/vnd.oada.bookmarks.1+json',
+            '_meta': {
+              '_id': 'resources/default:resources_bookmarks_444/_meta',
+              '_rev': '1-abc',
+              '_type': 'application/vnd.oada.bookmarks.1+json',
+              '_owner': 'users/default:users_pete_pspperfection',
+              'stats': {
+                // stats on meta is exempt from _changes
+                // because that would generate loop of rev updates with resource
+                'createdBy': 'users/default:users_pete_pspperfection',
+                'created': 1494133055,
+                'modifiedBy': 'users/default:users_pete_pspperfection',
+                'modified': 1494133055
+              },
+              // leave out _changes in the _changes itself
+            },
+          },
+          'userid': 'users/default:users_pete_pspperfection',
+          'authorizationid': 'authorizations/default:authorizations-444',
+        },
+      },
+    },
+  },
+
+  //--------------------
+  //Bookmarks document (for rick at retailfresh):
+  {
+    '_id': 'resources/default:resources_bookmarks_555',
+    '_oada_rev': '1-abc',
+    '_type': 'application/vnd.oada.bookmarks.1+json',
+    '_meta': {
+      '_id': 'resources/default:resources_bookmarks_555/_meta',
+      '_rev': '1-abc',
+      '_type': 'application/vnd.oada.bookmarks.1+json',
+      '_owner': 'users/default:users_rick_retailfresh',
+      'stats': {
+        // stats on meta is exempt from _changes
+        // because that would generate loop of rev updates with resource
+        'createdBy': 'users/default:users_rick_retailfresh',
+        'created': 1494133055,
+        'modifiedBy': 'users/default:users_rick_retailfresh',
+        'modified': 1494133055
+      },
+      '_changes': {
+        '_id': 'resources/default:resources_bookmarks_555_meta/_changes',
+        '_rev': '1-abc',
+        '1-abc': {
+          'merge': {
+            '_rev': '1-abc',
+            '_type': 'application/vnd.oada.bookmarks.1+json',
+            '_meta': {
+              '_id': 'resources/default:resources_bookmarks_555/_meta',
+              '_rev': '1-abc',
+              '_type': 'application/vnd.oada.bookmarks.1+json',
+              '_owner': 'users/default:users_rick_retailfresh',
+              'stats': {
+                // stats on meta is exempt from _changes
+                // because that would generate loop of rev updates with resource
+                'createdBy': 'users/default:users_rick_retailfresh',
+                'created': 1494133055,
+                'modifiedBy': 'users/default:users_rick_retailfresh',
+                'modified': 1494133055
+              },
+              // leave out _changes in the _changes itself
+            },
+          },
+          'userid': 'users/default:users_rick_retailfresh',
+          'authorizationid': 'authorizations/default:authorizations-555',
+        },
+      },
+    },
+  },
+
   //------------------------------------------------
   // Shares document (for user frank):
   {
@@ -308,6 +406,54 @@ module.exports = [
       '_rev': '1-abc',
       '_type': 'application/vnd.oada.shares.1+json',
       '_owner': 'users/default:users_gary_growersync', // TODO: Who "owns" /shares?
+      'stats': {
+        // stats on meta is exempt from _changes
+        // because that would generate loop of rev updates with resource
+        'createdBy': 'system',
+        'created': 1494133055,
+        'modifiedBy': 'system',
+        'modified': 1494133055
+      },
+      '_changes': {
+      },
+    },
+  },
+
+  //------------------------------------------------
+  // Shares document (for user pete):
+  {
+    '_id': 'resources/default:resources_shares_444',
+    '_oada_rev': '1-abc',
+    '_type': 'application/vnd.oada.shares.1+json',
+    '_meta': {
+      '_id': 'resources/default:resources_shares_444/_meta',
+      '_rev': '1-abc',
+      '_type': 'application/vnd.oada.shares.1+json',
+      '_owner': 'users/default:users_pete_pspperfection', // TODO: Who "owns" /shares?
+      'stats': {
+        // stats on meta is exempt from _changes
+        // because that would generate loop of rev updates with resource
+        'createdBy': 'system',
+        'created': 1494133055,
+        'modifiedBy': 'system',
+        'modified': 1494133055
+      },
+      '_changes': {
+      },
+    },
+  },
+
+  //------------------------------------------------
+  // Shares document (for user rick):
+  {
+    '_id': 'resources/default:resources_shares_555',
+    '_oada_rev': '1-abc',
+    '_type': 'application/vnd.oada.shares.1+json',
+    '_meta': {
+      '_id': 'resources/default:resources_shares_555/_meta',
+      '_rev': '1-abc',
+      '_type': 'application/vnd.oada.shares.1+json',
+      '_owner': 'users/default:users_rick_retailfresh', // TODO: Who "owns" /shares?
       'stats': {
         // stats on meta is exempt from _changes
         // because that would generate loop of rev updates with resource
