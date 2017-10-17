@@ -53,10 +53,11 @@ function findByUsername(username) {
     });
 }
 
-function findByOIDCUsername(oidcusername) {
+function findByOIDCUsername(oidcusername, oidcdomain) {
   return db.query(aql`
     FOR u IN ${users}
-    FILTER u.oidc.username == ${username}
+    FILTER u.oidc.username == ${oidcusername}
+    FILTER u.oidc.iss == ${oidcdomain}
     RETURN u`
   )
   .call('next')
@@ -69,7 +70,8 @@ function findByOIDCUsername(oidcusername) {
   });
 }
 
-// expects idtoken to be at least { sub: "fkj2o", iss: "https://localhost/example" }
+// expects idtoken to be at least
+// { sub: "fkj2o", iss: "https://localhost/example" }
 function findByOIDCToken(idtoken) {
   return db.query(aql`
     FOR u IN ${users}
@@ -128,8 +130,8 @@ module.exports = {
   findById,
   findByUsername,
   findByUsernamePassword,
-  findByOIDCToken,
   findByOIDCUsername,
+  findByOIDCToken,
   create: create,
   update,
   like,
