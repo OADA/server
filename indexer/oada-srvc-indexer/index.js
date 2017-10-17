@@ -61,11 +61,16 @@ responder.on('request', function handleReq(req) {
 	if (req.code !== 'success') return
 	trace('request: ', req)
 	return oadaLib.resources.getResource(req.resource_id).then((res) => {
-		trace('_type client?', req._type === 'application/vnd.fpad.client.1+json', req._type)
-		if (res._type !== 'application/vnd.fpad.client.1+json') return
+		if (!(res._type === 'application/vnd.fpad.client.1+json' || res._type === 'application/vnd.fpad.certifications.globalgap.1+json')) return
 		trace('res', res)
-		if (!(res._meta._changes[res._rev].merge.certifications || res._meta._changes[res._rev].merge._meta._permissions)) return
-		return oadaLib.resources.getResource(res.certifications._id).then((result) => {
+		var to_reindex;
+		if (res._type === 'application/vnd.fpad.client.1+json') {
+			if (!(res._meta._changes[res._rev].merge.certifications || res._meta._changes[res._rev].merge._meta._permissions)) return
+			to_reindex = res.certifications._id
+		} else {
+			to_reindex = res._id
+		}
+		return oadaLib.resources.getResource(to_reindex).then((result) => {
 			let newCerts = {}
 			let writes = []
 			if (!res._meta._changes[res._rev].merge._meta.trellis || !res._meta._changes[res._rev].merge._meta.trellis['client-to-certifications'].users[res._meta._owner].isInitialized) {
