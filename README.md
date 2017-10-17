@@ -14,8 +14,8 @@ that will be passed to any services that are restarted.
 
 Multi-domain:
 =============
-Everything can start up as localhost by default.  If you want to serve multiple 
-domains, create the appropriate folder (same name as hostname) in
-auth/oada-ref-auth-js/public/domains.  The proxy will see it and create domain
-configs for each name there, and the auth service will use that info to serve
-the proper logo, name, etc. for each service.
+Everything can start up as localhost by default.  If you want to serve multiple
+domains, create the appropriate folder (same name as hostname) in /domains.  
+The proxy will see it and create domain configs for each name there, and the
+auth service will use that info to serve the proper logo, name, etc. for each
+service.
