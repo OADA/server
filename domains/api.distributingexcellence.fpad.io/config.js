@@ -9,7 +9,7 @@ module.exports = {
   tagline: 'We deliver excellence!',
   color: '#D5A6BD',
   hint: {
-    username: 'diane',
+    username: 'diane@gmail.com',
     password: 'test',
   },
   idService: {
