@@ -1581,6 +1581,20 @@ oada-error@^1.1.1:
     superagent "^1.0.0"
     urijs "^1.18.12"
 
+oada-id-client@oada/oada-id-client-js#1ce91b76bf94eaf25057eaf4ecac87d18c01ea87:
+  version "0.0.1"
+  resolved "https://codeload.github.com/oada/oada-id-client-js/tar.gz/1ce91b76bf94eaf25057eaf4ecac87d18c01ea87"
+  dependencies:
+    jsonwebtoken "^5.0.0"
+    jwks-utils "^1.0.2"
+    jws "^3.0.0"
+    jwt-bearer-client-auth "^0.2.1"
+    oauth-dyn-reg "^1.0.1"
+    object-assign "^2.0.0"
+    pem-jwk "^1.5.1"
+    superagent "^1.0.0"
+    urijs "^1.18.12"
+
 oada-lib-arangodb@../../libs/oada-lib-arangodb:
   version "0.0.2"
   dependencies:
