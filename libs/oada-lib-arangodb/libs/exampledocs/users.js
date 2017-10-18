@@ -103,7 +103,7 @@ module.exports = [
     'shares': {'_id': 'resources/default:resources_shares_555'}
   },
   {
-    '_id': 'users/default:users_diane_distributing_excellence',
+    '_id': 'users/default:users_diane_distributingexcellence',
     'username': 'diane@gmail.com',
     'password': 'test',
     'domain': 'dstributingexcellence.fpad.io',
