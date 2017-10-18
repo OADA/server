@@ -13,6 +13,7 @@ module.exports = [
     'bookmarks': {'_id': 'resources/default:resources_bookmarks_123'},
     'shares': {'_id': 'resources/default:resources_shares_123'},
   },
+/*
   {
     '_id': 'users/default:users_frank2_124',
     'domain': 'localhost',
@@ -30,6 +31,7 @@ module.exports = [
     'bookmarks': {'_id': 'resources/default:resources_bookmarks_124'},
     'shares': {'_id': 'resources/default:resources_shares_124'},
   },
+*/
   {
     '_id': 'users/default:users_sam_321',
     'username': 'sam',
@@ -99,5 +101,19 @@ module.exports = [
     'email': 'rick@gmail.com',
     'bookmarks': {'_id': 'resources/default:resources_bookmarks_555'},
     'shares': {'_id': 'resources/default:resources_shares_555'}
+  },
+  {
+    '_id': 'users/default:users_diane_distributing_excellence',
+    'username': 'diane@gmail.com',
+    'password': 'test',
+    'domain': 'dstributingexcellence.fpad.io',
+    'name': 'Distributor Diane',
+    'family_name': 'Distributor',
+    'given_name': 'Diane',
+    'middle_name': '',
+    'nickname': 'The Distribunator',
+    'email': 'diane@gmail.com',
+    'bookmarks': {'_id': 'resources/default:resources_bookmarks_666'},
+    'shares': {'_id': 'resources/default:resources_shares_666'}
   },
 ];

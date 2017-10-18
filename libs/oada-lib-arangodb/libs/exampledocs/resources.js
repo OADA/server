@@ -350,6 +350,55 @@ module.exports = [
     },
   },
 
+  //--------------------
+  //Bookmarks document (for diane at distributing excellence):
+  {
+    '_id': 'resources/default:resources_bookmarks_666',
+    '_oada_rev': '1-abc',
+    '_type': 'application/vnd.oada.bookmarks.1+json',
+    '_meta': {
+      '_id': 'resources/default:resources_bookmarks_666/_meta',
+      '_rev': '1-abc',
+      '_type': 'application/vnd.oada.bookmarks.1+json',
+      '_owner': 'users/default:users_diane_distributingexcellence',
+      'stats': {
+        // stats on meta is exempt from _changes
+        // because that would generate loop of rev updates with resource
+        'createdBy': 'users/default:users_diane_distributingexcellence',
+        'created': 1494133055,
+        'modifiedBy': 'users/default:users_diane_distributingexcellence',
+        'modified': 1494133055
+      },
+      '_changes': {
+        '_id': 'resources/default:resources_bookmarks_666/_meta/_changes',
+        '_rev': '1-abc',
+        '1-abc': {
+          'merge': {
+            '_rev': '1-abc',
+            '_type': 'application/vnd.oada.bookmarks.1+json',
+            '_meta': {
+              '_id': 'resources/default:resources_bookmarks_666/_meta',
+              '_rev': '1-abc',
+              '_type': 'application/vnd.oada.bookmarks.1+json',
+              '_owner': 'users/default:users_diane_distributingexcellence',
+              'stats': {
+                // stats on meta is exempt from _changes
+                // because that would generate loop of rev updates with resource
+                'createdBy': 'users/default:users_diane_distributingexcellence',
+                'created': 1494133055,
+                'modifiedBy': 'users/default:users_diane_distributingexcellence',
+                'modified': 1494133055
+              },
+              // leave out _changes in the _changes itself
+            },
+          },
+          'userid': 'users/default:users_diane_distributingexcellence',
+          'authorizationid': 'authorizations/default:authorizations-666',
+        },
+      },
+    },
+  },
+
   //------------------------------------------------
   // Shares document (for user frank):
   {
@@ -454,6 +503,30 @@ module.exports = [
       '_rev': '1-abc',
       '_type': 'application/vnd.oada.shares.1+json',
       '_owner': 'users/default:users_rick_retailfresh', // TODO: Who "owns" /shares?
+      'stats': {
+        // stats on meta is exempt from _changes
+        // because that would generate loop of rev updates with resource
+        'createdBy': 'system',
+        'created': 1494133055,
+        'modifiedBy': 'system',
+        'modified': 1494133055
+      },
+      '_changes': {
+      },
+    },
+  },
+
+  //------------------------------------------------
+  // Shares document (for user diane):
+  {
+    '_id': 'resources/default:resources_shares_666',
+    '_oada_rev': '1-abc',
+    '_type': 'application/vnd.oada.shares.1+json',
+    '_meta': {
+      '_id': 'resources/default:resources_shares_666/_meta',
+      '_rev': '1-abc',
+      '_type': 'application/vnd.oada.shares.1+json',
+      '_owner': 'users/default:users_diane_distributingexcellence', // TODO: Who "owns" /shares?
       'stats': {
         // stats on meta is exempt from _changes
         // because that would generate loop of rev updates with resource

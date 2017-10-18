@@ -14,6 +14,27 @@ module.exports = [
     'is_resource': true,
   },
   //------------------------------------------------
+  // Bookmarks document (for user pete):
+  {
+    '_id': 'graphNodes/resources:default:resources_bookmarks_444',
+    'resource_id': 'resources/default:resources_bookmarks_444',
+    'is_resource': true,
+  },
+  //------------------------------------------------
+  // Bookmarks document (for user rick):
+  {
+    '_id': 'graphNodes/resources:default:resources_bookmarks_555',
+    'resource_id': 'resources/default:resources_bookmarks_555',
+    'is_resource': true,
+  },
+  //------------------------------------------------
+  // Bookmarks document (for user diane):
+  {
+    '_id': 'graphNodes/resources:default:resources_bookmarks_666',
+    'resource_id': 'resources/default:resources_bookmarks_666',
+    'is_resource': true,
+  },
+  //------------------------------------------------
   // Bookmarks document (for user sam):
   {
     '_id': 'graphNodes/resources:default:resources_bookmarks_321',
@@ -34,7 +55,6 @@ module.exports = [
     'resource_id': 'resources/default:resources_bookmarks_777',
     'is_resource': true,
   },
-
   //------------------------------------------------
   // Shares document (for user frank):
   {
@@ -42,7 +62,6 @@ module.exports = [
     'resource_id': 'resources/default:resources_shares_123',
     'is_resource': true,
   },
-
   //------------------------------------------------
   // Shares document (for user audrey):
   {
@@ -50,7 +69,6 @@ module.exports = [
     'resource_id': 'resources/default:resources_shares_999',
     'is_resource': true,
   },
-
   //------------------------------------------------
   // Shares document (for user sam):
   {
@@ -58,7 +76,6 @@ module.exports = [
     'resource_id': 'resources/default:resources_shares_321',
     'is_resource': true,
   },
-
   //------------------------------------------------
   // Shares document (for user gary):
   {
@@ -66,7 +83,27 @@ module.exports = [
     'resource_id': 'resources/default:resources_shares_777',
     'is_resource': true,
   },
-
+  //------------------------------------------------
+  // Shares document (for user pete):
+  {
+    '_id': 'graphNodes/resources:default:resources_shares_444',
+    'resource_id': 'resources/default:resources_shares_444',
+    'is_resource': true,
+  },
+  //------------------------------------------------
+  // Shares document (for user rick):
+  {
+    '_id': 'graphNodes/resources:default:resources_shares_555',
+    'resource_id': 'resources/default:resources_shares_555',
+    'is_resource': true,
+  },
+  //------------------------------------------------
+  // Shares document (for user diane):
+  {
+    '_id': 'graphNodes/resources:default:resources_shares_666',
+    'resource_id': 'resources/default:resources_shares_666',
+    'is_resource': true,
+  },
   //------------------------------------------------------
   // Rocks document:
   {
