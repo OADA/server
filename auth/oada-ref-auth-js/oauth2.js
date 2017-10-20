@@ -34,9 +34,9 @@ module.exports = function(_server,config) {
   //-----------------------------------------------------------------------
   // Load all the domain configs at startup
   const ddir = config.get('domainsDir');
-  const domainConfigs = _.indexBy(_.map(fs.readdirSync(ddir), dirname => 
-    require(ddir+'/'+dirname+'/config')
-  ), 'domain');
+  const domainConfigs = _.indexBy(_.map(fs.readdirSync(ddir), (dirname) => {
+    if (dirname.startsWith('.') == false) return require(ddir+'/'+dirname+'/config')
+  }), 'domain');
 
   server = _server;
 
@@ -112,7 +112,7 @@ module.exports = function(_server,config) {
         var validScope = req.body.scope.every(function(el) {
           return (req.oauth2.req.scope.indexOf(el) != -1);
         });
-        
+
         if (!validScope) {
           return done(new AuthorizationError('Scope does not match orignal ' +
               'request', 'invalid_scope'));
