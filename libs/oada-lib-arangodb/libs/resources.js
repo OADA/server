@@ -22,7 +22,7 @@ const MAX_DEPTH = 100; // TODO: Is this good?
 
 function lookupFromUrl(url, userId) {
   return Promise.try(() => {
-    trace(userId);
+    //    trace(userId);
     let pieces = pointer.parse(url);
     // resources/123 => graphNodes/resources:123
     var startNode = graphNodes.name + '/' + pieces[0] + ':' + pieces[1];
@@ -50,17 +50,17 @@ function lookupFromUrl(url, userId) {
       )
       RETURN MERGE(path, {permissions})
     `;
-    trace(`lookupFromUrl(${url})`, `running query: ${query}`);
+    //    trace(`lookupFromUrl(${url})`, `running query: ${query}`);
     return db.query({query}).call('next').then((result) => {
 
-      trace('query result = ', JSON.stringify(result, false, '  '));
+      //      trace('query result = ', JSON.stringify(result, false, '  '));
       let resourceId = '';
       let pathLeftover = pointer.compile(id.concat(pieces));
       // Also return info about parent?
       let from = {'resource_id': '', 'path_leftover': ''};
 
       if (!result) {
-        trace('lookupFromUrl(' + url + '): result path length < 1');
+        //        trace('lookupFromUrl(' + url + '): result path length < 1');
         return {'resource_id': resourceId, 'path_leftover': pathLeftover,
           from, permissions: {}};
       }
@@ -87,15 +87,15 @@ function lookupFromUrl(url, userId) {
 
       // Check for a traversal that did not finish (aka not found)
       if (result.vertices[0] === null) {
-        trace('lookupFromUrl(' + url + '):', 'result.vertices[0] === null');
+        //        trace('lookupFromUrl(' + url + '):', 'result.vertices[0] === null');
         return {'resource_id': resourceId, 'path_leftover': pathLeftover,
           from, permissions};
       }
 
-      trace('longest path has ' + result.vertices.length + ' vertices');
+      //      trace('longest path has ' + result.vertices.length + ' vertices');
       if (!result.vertices[result.vertices.length - 1]) {
         //TODO: fix this wierd edge case...I'm not quite sure why it occurs
-        trace('THIS WIERD EDGE CASE')
+        //        trace('THIS WIERD EDGE CASE')
         resourceId = result.vertices[result.vertices.length -2]['resource_id']
           /*
         pathLeftover = result.edges[result.edges.length - 1]._to
@@ -117,16 +117,16 @@ function lookupFromUrl(url, userId) {
       // If the desired url has more pieces than the longest path, the
       // pathLeftover is the extra pieces
       if (result.vertices.length - 1 < pieces.length) {
-        trace('lookupFromUrl(' + url + '):',
-            'more URL pieces than vertices, computing path');
+        //        trace('lookupFromUrl(' + url + '):',
+        //            'more URL pieces than vertices, computing path');
         let lastResource = (result.vertices.length - 1) -
             (_.findIndex(_.reverse(result.vertices), 'is_resource'));
         // Slice a negative value to take the last n pieces of the array
         pathLeftover =
             pointer.compile(pieces.slice(lastResource - pieces.length));
       } else {
-        trace('lookupFromUrl(' + url + '):',
-            'same number URL pieces as vertices, path is on graphNode');
+        //        trace('lookupFromUrl(' + url + '):',
+        //            'same number URL pieces as vertices, path is on graphNode');
         pathLeftover = result.vertices[result.vertices.length - 1].path || '';
       }
 

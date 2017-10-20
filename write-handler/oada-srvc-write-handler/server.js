@@ -149,7 +149,8 @@ responder.on('request', function handleReq(req, msg) {
             'user_id': req['user_id'],
             'authorizationid': req['authorizationid'],
             'path_leftover': req['path_leftover'],
-						'contentType': req['contentType']
+					'contentType': req['contentType'],
+					'indexer': req['indexer'],
         };
     }).catch(resources.NotFoundError, function respondNotFound(err) {
         error(err);

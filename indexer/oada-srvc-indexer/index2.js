@@ -23,29 +23,27 @@ const error = debug('indexer:error');
 const uuid = require('uuid')
 
 const Promise = require('bluebird');
-const _ = require('lodash')
-const {Requester, Responder} = require('../../libs/oada-lib-kafka');
+const Responder = require('../../libs/oada-lib-kafka').Responder;
 const oadaLib = require('../../libs/oada-lib-arangodb');
 const config = require('./config');
 const axios = require('axios')
 
 //---------------------------------------------------------
 // Kafka intializations:
-const requester = new Requester(
+const responder = new Responder(
 			config.get('kafka:topics:httpResponse'),
 			config.get('kafka:topics:writeRequest'),
-			'indexer1');
-
-const responder = new Responder(
-	config.get('kafka:topics:httpResponse'),
-	null,
-			'indexer2');
+			'indexer');
 
 module.exports = function stopResp() {
   return responder.disconnect(); 
 };
 
-
+trellisIndexer = {
+	name: 'client-to-certifications',
+	type: 'application/vnd.fpad.globalgap.certifications.1+json',
+	subtree: 'certifications',
+}
 
 function initializeIndexer(res, userid) {
 	return {
@@ -53,8 +51,7 @@ function initializeIndexer(res, userid) {
 		'path_leftover': `/_meta/trellis/client-to-certifications/`,
 		'user_id': userid,
 		'contentType': res._type,
-		//		'connection_id': null,
-		'indexer': true,
+		'connection_id': null,
 		'body': {
 			[userid]: {isInitialized: true}
 		}
@@ -62,65 +59,52 @@ function initializeIndexer(res, userid) {
 }
 
 responder.on('request', function handleReq(req) {
-	trace('write-response?', req.msgtype === 'write-response', 'success?', req.code ==='success')
+	trace('msgtype write-response?', req.msgtype === 'write-response')
 	if (req.msgtype !== 'write-response') return
+	trace('code success?', req.code === 'success')
 	if (req.code !== 'success') return
-	trace('INDEXER', req.indexer)
-	if (req.indexer) return
 	trace('request: ', req)
+	if (res._type !== type) return
 	return oadaLib.resources.getResource(req.resource_id).then((res) => {
-		if (res._type !== 'application/vnd.fpad.certifications.globalgap.1+json') return
 		trace('res', res)
 		var to_reindex;
-		if (res._type === 'application/vnd.fpad.client.1+json') {
-			if (!(res._meta._changes[res._rev].merge.certifications || res._meta._changes[res._rev].merge._meta._permissions)) return
-			to_reindex = res.certifications._id
+		if (!(res._meta._changes[res._rev].merge.certifications || res._meta._changes[res._rev].merge._meta._permissions)) return
+		to_reindex = res.certifications._id
+		let newCerts = {}
+		let writes = []
+		// Check owner for any necessary writes and reindexes  
+		if (res._meta.trellis && res._meta.trellis[name][res._meta._owner]) {
+			newCerts = result._meta._changes[result._rev].merge;
 		} else {
-			to_reindex = res._id
+			newCerts = result
+			writes.push(initializeIndexer(res, res._meta._owner))
 		}
-		return oadaLib.resources.getResource(to_reindex).then((result) => {
-			let newCerts = {}
-			let writes = []
-			// Check owner for any necessary writes and reindexes  
-			if (res._meta.trellis && res._meta.trellis['client-to-certifications'][res._meta._owner]) {
-				newCerts = result._meta._changes[result._rev].merge;
-			} else {
-				newCerts = result
-				writes.push(initializeIndexer(res, res._meta._owner))
-			}
-			let owner = findNewCertifications(newCerts, res._meta._owner).then((write) => {
-				return writes.push(...write)
-			})
-			// Check other permissioned users for any writes and reindexes needed
-			trace('res._meta._permissions', res._meta._permissions)
-			let other_users = Promise.map(Object.keys(res._meta._permissions || {}), (id) => {
-				// If this user hasn't been indexed before, all certifications are "new", else use only recent _changes
-				if (res._meta.trellis && res._meta.trellis['client-to-certifications'][id]) {
-					newCerts = result._meta._changes[result._rev].merge;
-				} else {
-					newCerts = result;
-					writes.push(initializeIndexer(res, id));
-				}
-				return findNewCertifications(newCerts, id).then((write) => {
-					return writes.push(...write)
-				})
-			})
-		 // Combine all of the resolved write requests into a single array to return
-			return Promise.join(owner, other_users, ()=> {})
-			.then((result) => {
-				trace('WRITES', writes)
-				return Promise.map(writes, (write) => {
-					return requester.send(write)
-						.catch(Promise.TimeoutError, (err) => {
-							trace(err, write)
-						})
-				}).return(undefined)
+		let owner = findNewCertifications(newCerts, res._meta._owner).then((write) => {
+			return writes.push(...write)
+		})
+		// Check other permissioned users for any writes and reindexes needed
+		trace('res._meta._permissions', res._meta._permissions)
+		let other_users = Promise.map(Object.keys(res._meta._permissions || {}), (id) => {
+		// If this user hasn't been indexed before, all certifications are "new", else use only recent _changes
+		if (res._meta.trellis && res._meta.trellis[name][id]) {
+			newCerts = result._meta._changes[result._rev].merge;
+		} else {
+			newCerts = result;
+			writes.push(initializeIndexer(res, id));
+		}
+		return findNewCertifications(newCerts, id).then((write) => {
+			return writes.push(...write)
+		})
+		// Combine all of the resolved write requests into a single array to return
+		return Promise.join(owner, other_users, ()=> {}).then((result) => {
+			trace('WRITES', writes)
+			return writes
 			})
 		})
 	})
 })
 
-function findNewCertifications(newCerts, id,) {
+function findNewCertifications(newCerts, id) {
 	trace('re-indexing for user: ', id)
 	return oadaLib.users.findById(id).then((user) => {
 		// Define all of the resources and links that MAY be necessary.
@@ -130,8 +114,7 @@ function findNewCertifications(newCerts, id,) {
 			'path_leftover': '/resources/'+uuid.v4(),
 			'user_id': user._id,
 			'contentType': 'application/vnd.fpad.certifications.globalgap.1+json',
-			//			'connection_id': null,
-			'indexer': true,
+			'connection_id': null,
 		}
 		certifications.body = {
 			_type: 'application/vnd.fpad.certifications.globalgap.1+json',
@@ -151,8 +134,7 @@ function findNewCertifications(newCerts, id,) {
 			'path_leftover': '/resources/'+uuid.v4(),
 			'user_id': user._id,
 			'contentType': 'application/vnd.fpad.1+json',
-			//			'connection_id': null,
-			'indexer': true,
+			'connection_id': null,
 		}
 		fpad.body = {
 			_type: 'application/vnd.fpad.1+json',
@@ -168,8 +150,7 @@ function findNewCertifications(newCerts, id,) {
 			'path_leftover': '',
 			'user_id': user._id,
 			'contentType': 'application/vnd.oada.bookmarks.1+json',
-			//			'connection_id': null,
-			'indexer': true,
+			'connection_id': null,
 		}
 		bookmarks.body = {
 			fpad: {
@@ -183,20 +164,14 @@ function findNewCertifications(newCerts, id,) {
 		return oadaLib.resources.lookupFromUrl('/'+user.bookmarks._id+'/fpad/certifications', user._id).then((result) => {
 			trace('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
 			trace('lookupUrl result: ', result)
-			if (result.path_leftover === '') { // fpad and certifications exist
+			if (result.path_leftover === '') {
 				certifications.path_leftover = ''
 				certifications.resource_id = result.resource_id
-				certifications.contentType = 'application/vnd.fpad.certifications.globalgap.1+json';
 				delete certifications.body._id
 				delete certifications.body._rev
+				delete certifications.body._type
 				trace('GETreSource', result.resource_id)
 				return oadaLib.resources.getResource(result.resource_id).then((curCerts) => {
-					let reset_type = false;
-					if (curCerts._type === 'application/vnd.fpad.certifications.globalgap.1+json') {
-						delete certifications.body._type
-					} else {
-						certifications.body._type = 'application/vnd.fpad.certifications.globalgap.1+json'
-					}
 					trace('Current CERTS', curCerts)
 					trace('New CERTS', newCerts)
 					// Prune off the certifications that have already been re-indexed
@@ -209,22 +184,21 @@ function findNewCertifications(newCerts, id,) {
 						}
 					})
   				trace('1', certifications.body)
-					if (_.isEmpty(certifications.body) && reset_type) return []
 					return [certifications]
 				})
 			} else if (/\/fpad/.test(result.path_leftover)) {
-			// neither fpad nor certifications exist
+			// fpad resource doesn't exist
 				trace('2', [certifications, fpad, bookmarks])
-				return [fpad, bookmarks, certifications ]
+				return [certifications, fpad, bookmarks]
 			} else {
-			// fpad exists, certifications doesn't exist
+			// certifications resource doesn't exist
 				delete fpad.body._id
 				delete fpad.body._rev
 				delete fpad.body._type
 				fpad.resource_id = result.resource_id
 				fpad.path_leftover= '' 
 				trace('3', [certifications, fpad])
-				return [fpad, certifications]
+				return [certifications, fpad]
 			}
 			return
 		})

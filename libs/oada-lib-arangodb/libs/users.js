@@ -11,6 +11,7 @@ const bcrypt = require('bcryptjs');
 var Promise = require('bluebird');
 const util = require('../util');
 const users = db.collection(config.get('arangodb:collections:users:name'));
+const flatten = require('flat')
 
 /*
   user {
@@ -119,7 +120,7 @@ function update(u) {
 }
 
 function like(u) {
-  return util.bluebirdCursor(users.byExample(u));
+  return util.bluebirdCursor(users.byExample(flatt(u)));
 }
 
 function hashPw(pw) {
