@@ -57,7 +57,10 @@ services:
   auth:
     depends_on:
       - startup
-    build: ./auth
+    build:
+      context: ./auth
+      args:
+        NODE_VERSION: 8.7.0
     container_name: auth
     restart: always
     networks:
@@ -80,7 +83,10 @@ services:
   http-handler:
     depends_on:
       - startup
-    build: ./http-handler
+    build:
+      context: ./http-handler
+      args:
+        NODE_VERSION: 8.7.0
     restart: always
     container_name: http-handler
     networks:
@@ -102,7 +108,10 @@ services:
     depends_on:
       - startup
       - proxy
-    build: ./sync-handler
+    build:
+      context: ./sync-handler
+      args:
+        NODE_VERSION: 8.7.0
     restart: always
     container_name: sync-handler
     networks:
@@ -122,7 +131,10 @@ services:
   write-handler:
     depends_on:
       - startup
-    build: ./write-handler
+    build:
+      context: ./write-handler
+      args:
+        NODE_VERSION: 8.7.0
     restart: always
     container_name: write-handler
     networks:
@@ -139,7 +151,10 @@ services:
   users:
     depends_on:
       - startup
-    build: ./users
+    build:
+      context: ./users
+      args:
+        NODE_VERSION: 8.7.0
     restart: always
     container_name: users
     networks:
@@ -156,7 +171,10 @@ services:
   token-lookup:
     depends_on:
       - startup
-    build: ./token-lookup
+    build:
+      context: ./token-lookup
+      args:
+        NODE_VERSION: 8.7.0
     restart: always
     container_name: token-lookup
     networks:
@@ -173,7 +191,10 @@ services:
   rev-graph-update:
     depends_on:
       - startup
-    build: ./rev-graph-update
+    build:
+      context: ./rev-graph-update
+      args:
+        NODE_VERSION: 8.7.0
     restart: always
     container_name: rev-graph-update
     networks:
@@ -190,7 +211,10 @@ services:
   graph-lookup:
     depends_on:
       - startup
-    build: ./graph-lookup
+    build:
+      context: ./graph-lookup
+      args:
+        NODE_VERSION: 8.7.0
     restart: always
     container_name: graph-lookup
     networks:
@@ -207,7 +231,10 @@ services:
   well-known:
     depends_on:
       - startup
-    build: ./well-known
+    build:
+      context: ./well-known
+      args:
+        NODE_VERSION: 8.7.0
     restart: always
     container_name: well-known
     networks:
@@ -225,7 +252,10 @@ services:
   tests:
     # depends_on:
     #   - startup
-    build: ./tests
+    build:
+      context: ./tests
+      args:
+        NODE_VERSION: 8.7.0
     container_name: tests
     networks:
       - startup_net
@@ -264,7 +294,10 @@ services:
 
   # Needed for installing native Node dependencies
   yarn:
-    build: ./yarn
+    build:
+      context: ./yarn
+      args:
+        NODE_VERSION: 8.7.0
     volumes:
       - .:/code
 
@@ -353,7 +386,10 @@ services:
   indexer:
     depends_on:
       - startup
-    build: ./indexer
+    build:
+      context: ./indexer
+      args:
+        NODE_VERSION: 8.7.0
     restart: always
     container_name: indexer
     networks:
@@ -370,7 +406,10 @@ services:
   websockets:
     depends_on:
       - startup
-    build: ./websockets
+    build:
+      context: ./websockets
+      args:
+        NODE_VERSION: 8.7.0
     restart: always
     container_name: websockets
     networks:
@@ -388,7 +427,10 @@ services:
     depends_on:
       - startup
       - proxy
-    build: ./webhooks
+    build:
+      context: ./webhooks
+      args:
+        NODE_VERSION: 8.7.0
     restart: always
     container_name: webhooks
     networks:
@@ -407,7 +449,10 @@ services:
   permissions-handler:
     depends_on:
       - startup
-    build: ./permissions-handler
+    build:
+      context: ./permissions-handler
+      args:
+        NODE_VERSION: 8.7.0
     restart: always
     container_name: permissions-handler
     networks:
@@ -424,7 +469,10 @@ services:
   shares:
     depends_on:
       - startup
-    build: ./shares
+    build:
+      context: ./shares
+      args:
+        NODE_VERSION: 8.7.0
     restart: always
     container_name: shares
     networks:
