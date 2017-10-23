@@ -21,10 +21,7 @@
     "bluebird": "^3.5.0",
     "debug": "^2.6.6",
     "json-pointer": "^0.6.0",
-    "kafka-node": "^1.6.2",
     "nconf": "^0.8.4",
-    "oada-lib-arangodb": "file:../../libs/oada-lib-arangodb",
-    "oada-lib-config": "file:../../libs/oada-lib-config",
     "object-hash": "^1.1.8"
   },
   "devDependencies": {

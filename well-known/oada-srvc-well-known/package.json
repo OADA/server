@@ -30,7 +30,6 @@
     "lodash": "^4.17.4",
     "nconf": "^0.8.4",
     "oada-error": "^1.1.1",
-    "oada-lib-config": "../../libs/oada-lib-config",
     "request": "^2.81.0",
     "well-known-json": "^0.2.0"
   }

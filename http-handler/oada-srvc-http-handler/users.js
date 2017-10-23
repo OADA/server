@@ -1,10 +1,10 @@
 'use strict';
 
-var Promise = require('bluebird');
+const Promise = require('bluebird');
 const express = require('express');
 const bodyParser = require('body-parser');
-const trace = require('debug')('http-handler:trace')
-const OADAError = require('oada-error').OADAError;
+const trace = require('debug')('http-handler:trace');
+const {OADAError} = require('oada-error');
 
 const config = require('./config');
 
@@ -12,8 +12,7 @@ var requester = require('./requester');
 
 var router = express.Router();
 
-var oadaLib = require('../../libs/oada-lib-arangodb/libs/users.js')
-var _ = require('lodash')
+const {users} = require('../../libs/oada-lib-arangodb');
 
 router.post('/', bodyParser.json({
     strict: false,
@@ -32,7 +31,7 @@ router.post('/', function(req, res, next) {
     .tap(function chkSuccess(resp) {
         switch (resp.code) {
             case 'success':
-                return;
+                return Promise.resolve();
             default:
                 let msg = 'write failed with code ' + resp.code;
                 return Promise.reject(new OADAError(msg));
@@ -40,27 +39,26 @@ router.post('/', function(req, res, next) {
     })
     .then(resp => {
         // TODO: Better status code choices?
-        let id = resp.user._key;
+        let id = resp.user['_key'];
         return res.redirect(201, req.baseUrl + '/' + id);
     })
     .catch(next);
 });
 
 router.get('/me', function(req, res, next) {
-    req.url = req.url.replace(/^\/me/, `/${req.user.doc.user_id.replace(/^users\//, '')}`);
+    req.url = req.url.replace(/^\/me/,
+            `/${req.user.doc['user_id'].replace(/^users\//, '')}`);
     next();
-})
+});
 
 //TODO: don't return stuff to anyone anytime
-router.get('/:id', function(req, res, next) {
-    return oadaLib.findById(req.params.id)
-        .then((response) => {
-        let user = _.clone(response)
-        delete user.password
-        return res.json(user)
-    })
-})
-
-
+router.get('/:id', function(req, res) {
+    return users.findById(req.params.id).then((response) => {
+        // Copy and get rid of password field
+        // eslint-disable-next-line no-unused-vars
+        let {password, ...user} = response;
+        return res.json(user);
+    });
+});
 
 module.exports = router;
