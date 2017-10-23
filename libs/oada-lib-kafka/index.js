@@ -15,6 +15,9 @@ const rdkafkaOpts = Object.assign(config.get('kafka:librdkafka'), {
     'metadata.broker.list': config.get('kafka:broker'),
 });
 
+const CONNECT = Symbol('kafka-lib-connect');
+const DATA = Symbol('kafa-lib-data');
+
 function topicTimeout(topic) {
     let timeout = config.get('kafka:timeouts:default');
 
@@ -28,61 +31,114 @@ function topicTimeout(topic) {
     return timeout;
 }
 
-function Responder(listenTopic, respTopic, groupId, opts) {
-    this.listenTopic = listenTopic;
-    this.respTopic = respTopic;
+const EMITTER = Symbol('kafa-lib-emitter'); // Don't touch my emitter plebs
+class Base {
+    constructor({consumeTopic, consumer, produceTopic, producer, group}) {
+        this.consumeTopic = consumeTopic;
+        this.produceTopic = produceTopic;
+        this.group = group;
 
-    this.opts = opts || {};
+        this[EMITTER] = new EventEmitter();
 
-    this.consumer = new kf.KafkaConsumer(Object.assign({
-        'group.id': groupId,
-    }, rdkafkaOpts));
-    this.producer = new kf.Producer(Object.assign({
-        'dr_cb': true,  //delivery report callback
-    }, rdkafkaOpts));
+        this.requests = {};
 
-    let consumerReady = Promise.fromCallback(done => {
+        this.consumer = consumer || new kf.KafkaConsumer({
+            'group.id': this.group,
+            ...rdkafkaOpts
+        });
+        this.producer = producer || new kf.Producer({
+            'dr_cb': true, //delivery report callback
+            ...rdkafkaOpts
+        });
+
+        this.consumer.on('error', (...args) =>
+            this[EMITTER].emit('error', ...args)
+        );
+        this.producer.on('error', (...args) =>
+            this[EMITTER].emit('error', ...args)
+        );
+        this.consumer.on('event.error', (...args) =>
+            this[EMITTER].emit('error', ...args)
+        );
+        this.producer.on('event.error', (...args) =>
+            this[EMITTER].emit('error', ...args)
+        );
+
+        let consumerReady = Promise.fromCallback(done => {
             this.consumer.on('ready', () => {
-                info(`${groupId}: Responder\'s consumer ready`);
+                info(`${this.group}'s consumer ready`);
                 done();
             });
-        })
-        .then(() => {
-            this.consumer.subscribe([listenTopic]);
-            this.consumer.consume();
         });
-    let producerReady = Promise.fromCallback(done => {
-        this.producer.on('ready', () => {
-            info(`${groupId}: Responder\'s producer ready`);
-            done();
+        let producerReady = Promise.fromCallback(done => {
+            this.producer.on('ready', () => {
+                info(`${this.group}'s producer ready`);
+                done();
+            });
         });
-    });
-    this.ready = Promise.join(consumerReady, producerReady).bind(this);
-    this.consumer.connect();
-    this.producer.connect();
+        this.ready = Promise.join(consumerReady, producerReady);
+    }
 
-    this.requests = {};
+    on(event, listener) {
+        return this[EMITTER].on(event, listener);
+    }
 
-    this.timeout = topicTimeout(this.listenTopic);
+    once(event, listener) {
+        return this[EMITTER].once(event, listener);
+    }
+
+    async [CONNECT]() {
+        // Assume all messages are JSON
+        this.consumer.on('data', ({value, ...data}) => {
+            let resp = JSON.parse(value);
+            this[EMITTER].emit(DATA, resp, data);
+        });
+
+        this.consumer.connect();
+        this.producer.connect();
+        await this.ready;
+
+        let topics = Array.isArray(this.consumeTopic) ?
+            this.consumeTopic : [this.consumeTopic];
+        this.consumer.subscribe(topics);
+        this.consumer.consume();
+
+        this[EMITTER].emit('ready');
+    }
+
+    disconnect() {
+        let dcons = Promise.fromCallback(done => {
+            this.consumer.disconnect(() => done());
+        });
+        let dprod = Promise.fromCallback(done => {
+            this.producer.disconnect(() => done());
+        });
+
+        return Promise.join(dcons, dprod);
+    }
 }
 
-Responder.prototype.disconnect = function disconnect() {
-    let dcons = Promise.fromCallback(done=> {
-        this.consumer.disconnect(() => done());
-    });
-    let dprod = Promise.fromCallback(done => {
-        this.producer.disconnect(() => done());
-    });
+class Responder extends Base {
+    constructor({consumeTopic, produceTopic, group, ...opts}) {
+        // Gross thing to support old API
+        if (arguments.length > 1) {
+            // eslint-disable-next-line no-param-reassign, prefer-rest-params
+            [consumeTopic, produceTopic, group, opts] = arguments;
+        }
+        super({consumeTopic, produceTopic, group, ...opts});
 
-    return Promise.join(dcons, dprod);
-};
+        this.opts = opts || {};
+        this.requests = {};
 
-Responder.prototype.on = function on(event, callback) {
-    switch (event) {
-        case 'request':
-            this.consumer.on('data', (data) => {
-                let req = JSON.parse(data.value);
-                delete data.value;
+        this.timeout = topicTimeout(this.consumeTopic);
+
+        this[CONNECT]();
+    }
+
+    on(event, listener) {
+        if (event === 'request') {
+            // TODO: Probably a better way to hande this event...
+            return super.on(DATA, (req, data) => {
                 let id = req[REQ_ID_KEY];
                 let part = req['resp_partition'];
                 if (typeof part !== 'number') {
@@ -92,7 +148,7 @@ Responder.prototype.on = function on(event, callback) {
                 info(`Received request ${id}`);
 
                 // Check for old messages
-                if (!this.opts.old && (Date.now() - req.time) >= this.timeout) {
+                if (!this.opts.old && Date.now() - req.time >= this.timeout) {
                     warn('Ignoring timed-out request');
                     return;
                 }
@@ -111,10 +167,10 @@ Responder.prototype.on = function on(event, callback) {
                 }
 
                 this.requests[id] = true;
-                if (callback.length === 3) {
-                    this.ready.then(() => callback(req, data, respond));
+                if (listener.length === 3) {
+                    this.ready.then(() => listener(req, data, respond));
                 } else {
-                    let resp = callback(req, data);
+                    let resp = listener(req, data);
                     this.ready.return(resp).then(resp => {
                         // Check for generator
                         if (typeof (resp && resp.next) === 'function') {
@@ -126,11 +182,11 @@ Responder.prototype.on = function on(event, callback) {
                             (function generate(gen) {
                                 let resp = gen.next();
 
-                                if (!resp.done) {
+                                if (resp.done) {
+                                    delete self.requests[id];
+                                } else {
                                     respond(resp.value).return(gen)
                                         .then(generate);
-                                } else {
-                                    delete self.requests[id];
                                 }
                             })(resp);
                         } else {
@@ -148,22 +204,22 @@ Responder.prototype.on = function on(event, callback) {
                             }
                             return resp;
                         })
-                        .map(resp => {
+                        .each(resp => {
                             if (resp[REQ_ID_KEY] === null) {
                                 resp[REQ_ID_KEY] = uuid();
                             } else {
                                 resp[REQ_ID_KEY] = id;
                                 // Check for cancelled requests
                                 if (!self.requests[id]) {
-                                    let err = new Error('Request cancelled');
-                                    return Promise.reject(err);
+                                    throw new Error('Request cancelled');
                                 }
                             }
                             resp['time'] = Date.now();
                             resp.domain = domain;
                             let payload = JSON.stringify(resp);
-                            let value = new Buffer(payload);
-                            self.producer.produce(self.respTopic, part, value);
+                            let value = Buffer.from(payload);
+                            self.producer
+                                .produce(self.produceTopic, part, value);
                         })
                         .finally(() => {
                             // TODO: Handle committing better
@@ -171,164 +227,184 @@ Responder.prototype.on = function on(event, callback) {
                         });
                 }
             });
-            break;
-        case 'ready':
-            this.ready.then(callback);
-            break;
-        case 'error':
-            this.consumer.on('error', callback);
-            this.producer.on('error', callback);
-            this.consumer.on('event.error', callback);
-            this.producer.on('event.error', callback);
-            break;
-        default:
-            warn('oada-lib-kafka: unsupported event');
-            break;
-    }
-};
-
-function Requester(listenTopic, respTopic, groupId) {
-    this.listenTopic = listenTopic;
-    this.respTopic = respTopic;
-    this.consumer = new kf.KafkaConsumer(Object.assign({
-        'group.id': groupId,
-    }, rdkafkaOpts));
-    this.producer = new kf.Producer(Object.assign({
-        'dr_cb': true,  //delivery report callback
-    }, rdkafkaOpts));
-    let consumerReady = Promise.fromCallback(done => {
-            this.consumer.on('ready', () => {
-                info('Requester\'s consumer ready');
-                done();
-            });
-        })
-        .then(() => {
-            this.consumer.subscribe([listenTopic]);
-            this.consumer.consume();
-        });
-    let producerReady = Promise.fromCallback(done => {
-        this.producer.on('ready', () => {
-            info('Requester\'s producer ready');
-            done();
-        });
-    });
-    this.ready = Promise.join(consumerReady, producerReady);
-    this.consumer.connect();
-    this.producer.connect();
-
-    this.requests = {};
-    this.consumer.on('data', msg => {
-        let resp = JSON.parse(msg.value);
-
-        let done = this.requests[resp[REQ_ID_KEY]];
-
-        return done && done(null, resp);
-    });
-
-    this.timeouts = {};
-    if (this.respTopic) {
-        this.timeouts[this.respTopic] = topicTimeout(this.respTopic);
+        } else {
+            return super.on(event, listener);
+        }
     }
 }
 
-Requester.prototype.disconnect = function disconnect() {
-    let dcons = Promise.fromCallback(done=> {
-        this.consumer.disconnect(() => done());
-    });
-    let dprod = Promise.fromCallback(done => {
-        this.producer.disconnect(() => done());
-    });
+class Requester extends Base {
+    constructor({consumeTopic, produceTopic, group, ...opts}) {
+        // Gross thing to support old API
+        if (arguments.length > 1) {
+            // eslint-disable-next-line no-param-reassign, prefer-rest-params
+            [consumeTopic, produceTopic, group] = arguments;
+        }
+        super({consumeTopic, produceTopic, group, ...opts});
 
-    return Promise.join(dcons, dprod);
-};
+        super.on(DATA, resp => {
+            let done = this.requests[resp[REQ_ID_KEY]];
 
-Requester.prototype.on = function on(event, callback) {
-    switch (event) {
-        case 'response':
-            this.consumer.on('data', (data) => {
-                let resp = callback(JSON.parse(data.value));
-                this.ready.return(resp)
-                .finally(() => {
-                    //this.consumer.commit(data);
-                });
-            });
-            break;
-        case 'ready':
-            this.ready.then(callback);
-            break;
-        default:
-            warn('oada-lib-kafka: unsupported event');
-            break;
-    }
-};
-
-Requester.prototype.send = function send(request, topic) {
-    let id = request[REQ_ID_KEY] || uuid();
-    topic = topic || this.respTopic;
-    let timeout = this.timeouts[topic];
-    if (!timeout) {
-        timeout = topicTimeout(topic);
-        this.timeouts[topic] = timeout;
-    }
-
-    request[REQ_ID_KEY] = id;
-    request['time'] = Date.now();
-    // TODO: Handle partitions?
-    request['resp_partition'] = 0;
-
-    let reqDone = Promise.fromCallback(done => {
-        this.requests[id] = done;
-    });
-    return this.ready
-        .then(() => {
-            let payload = JSON.stringify(request);
-            let value = new Buffer(payload);
-            this.producer.produce(topic, null, value);
-        })
-        .then(() => {
-            return reqDone.timeout(timeout, topic + ' timeout');
-        })
-        .finally(() => {
-            delete this.requests[id];
+            return done && done(null, resp);
         });
-};
 
-// Like send but return an event emitter to allow multiple responses
-Requester.prototype.emitter = function emitter(request, topic) {
-    let emitter = new EventEmitter();
+        this.timeouts = {};
+        if (this.produceTopic) {
+            this.timeouts[this.produceTopic] = topicTimeout(this.produceTopic);
+        }
 
-    let id = request[REQ_ID_KEY] || uuid();
-    topic = topic || this.respTopic;
+        this[CONNECT]();
 
-    request[REQ_ID_KEY] = id;
-    request['time'] = Date.now();
-    // TODO: Handle partitions?
-    request['resp_partition'] = 0;
+        // Should this even be available?
+        super.on(DATA, (...args) =>
+            this[EMITTER].emit('response', ...args)
+        );
+    }
 
-    this.request[id] = (err, res) => emitter.emit('response', res);
-    emitter.close = () => {
-        return Promise.try(() => {
+    send(request, reqtopic) {
+        let id = request[REQ_ID_KEY] || uuid();
+        let topic = reqtopic || this.produceTopic;
+        let timeout = this.timeouts[topic];
+        if (!timeout) {
+            timeout = topicTimeout(topic);
+            this.timeouts[topic] = timeout;
+        }
+
+        request[REQ_ID_KEY] = id;
+        request['time'] = Date.now();
+        request['group'] = this.group;
+        // TODO: Handle partitions?
+        request['resp_partition'] = 0;
+
+        let reqDone = Promise.fromCallback(done => {
+            this.requests[id] = done;
+        });
+        return this.ready
+            .then(() => {
+                let payload = JSON.stringify(request);
+                let value = Buffer.from(payload);
+                this.producer.produce(topic, null, value);
+            })
+            .then(() => reqDone.timeout(timeout, topic + ' timeout'))
+            .finally(() => {
+                delete this.requests[id];
+            });
+    }
+
+    // Like send but return an event emitter to allow multiple responses
+    emitter(request, reqtopic) {
+        let emitter = new EventEmitter();
+
+        let id = request[REQ_ID_KEY] || uuid();
+        let topic = reqtopic || this.produceTopic;
+
+        request[REQ_ID_KEY] = id;
+        request['time'] = Date.now();
+        request['group'] = this.group;
+        // TODO: Handle partitions?
+        request['resp_partition'] = 0;
+
+        this.request[id] = (e, res) => emitter.emit('response', res);
+        emitter.close = () => Promise.try(() => {
             let payload = JSON.stringify({
                 [REQ_ID_KEY]: id,
                 [CANCEL_KEY]: true
             });
-            let value = new Buffer(payload);
+            let value = Buffer.from(payload);
             this.producer.produce(topic, null, value);
 
             delete this.request[id];
         });
-    };
 
-    return this.ready
-        .then(() => {
-            let payload = JSON.stringify(request);
-            let value = new Buffer(payload);
-            this.producer.produce(topic, null, value);
-        })
-        .return(emitter);
-};
+        return this.ready
+            .then(() => {
+                let payload = JSON.stringify(request);
+                let value = Buffer.from(payload);
+                this.producer.produce(topic, null, value);
+            })
+            .return(emitter);
+    }
+}
+
+class DummyResponder extends Responder {
+    [CONNECT]() { // eslint-disable-line class-methods-use-this
+        // Don't connect to Kafka
+        return undefined;
+    }
+}
+class DummyRequester extends Requester {
+    [CONNECT]() { // eslint-disable-line class-methods-use-this
+        // Don't connect to Kafka
+        return undefined;
+    }
+}
+// Class for when responding to reuqests requires making other requests
+// TODO: Better class name?
+class ResponderRequester extends Base {
+    constructor({requestTopics, respondTopics, group, ...opts}) {
+        super({
+            consumeTopic: [
+                requestTopics.consumeTopic,
+                respondTopics.consumeTopic
+            ],
+            group,
+            ...opts
+        });
+
+        // Make a Responder and Requester using our consumer/producer
+        this.responder = new DummyResponder({
+            consumer: this.consumer,
+            producer: this.producer,
+            group,
+            ...respondTopics,
+            ...opts,
+        });
+        this.requester = new DummyRequester({
+            consumer: this.consumer,
+            producer: this.producer,
+            group,
+            ...requestTopics,
+            ...opts,
+        });
+
+        this[CONNECT]();
+    }
+
+    on(event, val, ...args) {
+        switch (event) {
+        case 'ready':
+            super.on('ready', val, ...args);
+            break;
+        case DATA: // Mux the consumer between requester and responder
+            if (val.topic === this.requester.consumeTopic) {
+                this.requester.on(DATA, val, ...args);
+            }
+            if (val.topic === this.responder.consumeTopic) {
+                if (!this.opts.respondOwn && val.group === this.group) {
+                    // Don't respond to own requests
+                    break;
+                }
+                this.responder.on(DATA, val, ...args);
+            }
+            break;
+        default:
+            this.requester.on(event, val, ...args);
+            this.responder.on(event, val, ...args);
+            break;
+        }
+    }
+
+    // TODO: Is it better to just extend Requester?
+    send(...args) {
+        return this.requester.send(...args);
+    }
+    emitter(...args) {
+        return this.requester.emitter(...args);
+    }
+}
 
 module.exports = {
     Responder,
-    Requester
+    Requester,
+    ResponderRequester,
 };
