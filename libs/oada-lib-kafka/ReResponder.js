@@ -15,14 +15,20 @@
 
 'use strict';
 
-const Responder = require('./Responder');
-const ReResponder = require('./ReResponder');
-const Requester = require('./Requester');
-const ResponderRequester = require('./ResponderRequester');
+const uuid = require('uuid');
 
-module.exports = {
-    Responder,
-    ReResponder,
-    Requester,
-    ResponderRequester,
+const {REQ_ID_KEY, DATA} = require('./base');
+const Responder = require('./Responder');
+
+// Class for generate new requests in response to others
+// (without needing the answer)
+module.exports = class ReResponder extends Responder {
+    constructor(...args) {
+        super(...args);
+
+        // Make everything look like a new request
+        super.prependListener(DATA, req => {
+            req[REQ_ID_KEY] = uuid();
+        });
+    }
 };
