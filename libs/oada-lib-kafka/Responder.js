@@ -15,6 +15,7 @@
 
 'use strict';
 
+const util = require('util');
 const uuid = require('uuid');
 const Bluebird = require('bluebird');
 
@@ -36,6 +37,10 @@ module.exports = class Responder extends Base {
         if (arguments.length > 1) {
             // eslint-disable-next-line no-param-reassign, prefer-rest-params
             [consumeTopic, produceTopic, group, opts] = arguments;
+
+            // Print deprecation warning
+            util.deprecate(() => {},
+                    'Giving multiple arguments to constructor is deprecated')();
         }
         super({consumeTopic, produceTopic, group, ...opts});
 
@@ -121,6 +126,8 @@ module.exports = class Responder extends Base {
                             if (resp[REQ_ID_KEY] === null) {
                                 // TODO: Remove once everything migrated
                                 resp[REQ_ID_KEY] = uuid();
+                                util.deprecate(() => {},
+                                        'Please use ReResponder instead')();
                             } else {
                                 resp[REQ_ID_KEY] = id;
                                 // Check for cancelled requests

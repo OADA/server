@@ -16,6 +16,7 @@
 'use strict';
 
 const EventEmitter = require('events');
+const util = require('util');
 const uuid = require('uuid');
 const Bluebird = require('bluebird');
 
@@ -37,6 +38,10 @@ module.exports = class Requester extends Base {
         if (arguments.length > 1) {
             // eslint-disable-next-line no-param-reassign, prefer-rest-params
             [consumeTopic, produceTopic, group] = arguments;
+
+            // Print deprecation warning
+            util.deprecate(() => {},
+                    'Giving multiple arguments to constructor is deprecated')();
         }
         super({consumeTopic, produceTopic, group, ...opts});
 
