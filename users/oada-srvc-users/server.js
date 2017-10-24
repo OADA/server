@@ -22,7 +22,7 @@ const error = debug('webhooks:error');
 var Promise = require('bluebird');
 const uuid = require('uuid');
 
-const {Responder, Requester} = require('../../libs/oada-lib-kafka');
+const {ResponderRequester} = require('../../libs/oada-lib-kafka');
 const {users} = require('../../libs/oada-lib-arangodb');
 const config = require('./config');
 const contentTypes = {
@@ -30,14 +30,18 @@ const contentTypes = {
     shares: 'application/vnd.oada.shares.1+json'
 };
 
-const responder = new Responder(
-        config.get('kafka:topics:userRequest'),
-        config.get('kafka:topics:httpResponse'),
-        'users');
-const requester = new Requester(
-        config.get('kafka:topics:httpResponse'),
-        config.get('kafka:topics:writeRequest'),
-        'users');
+const responder = new ResponderRequester({
+    requestTopics: {
+        produceTopic: config.get('kafka:topics:writeRequest'),
+        consumeTopic: config.get('kafka:topics:httpResponse'),
+    },
+    respondTopics: {
+        consumeTopic: config.get('kafka:topics:userRequest'),
+        produceTopic: config.get('kafka:topics:httpResponse'),
+    },
+    group: 'user-handlers'
+});
+
 
 module.exports = function stopResp() {
     return responder.disconnect();
@@ -51,24 +55,26 @@ responder.on('request', function handleReq(req) {
         .then(function ensureUserResources(user) {
             // Create empty resources for user
             ['bookmarks', 'shares'].forEach(function ensureResource(res) {
-                if (!(user[res] && user[res]._id)) {
+                if (!(user[res] && user[res]['_id'])) {
                     let resid = 'resources/' + uuid();
 
                     trace(`Creating ${resid} for ${res} of ${user.id}`);
                     user[res] =
-                        requester.send({
+                        responder.send({
                             'url': '/' + resid,
                             'resource_id': '',
                             'path_leftover': '/' + resid,
                             'meta_id': resid + '/_meta',
-                            'user_id': user._id,
+                            'user_id': user['_id'],
                             // TODO: What to put for these?
                             //'authorizationid': ,
                             //'client_id': ,
                             'contentType': contentTypes[res],
                             'body': {}
                         }).tap(resp => {
-                            if (resp.code !== 'success') {
+                            if (resp.code === 'success') {
+                                return Promise.resolve();
+                            } else {
                                 // TODO: Clean up on failure?
                                 error(resp.code);
                                 let err = new Error(`Failed to create ${res}`);
@@ -82,27 +88,23 @@ responder.on('request', function handleReq(req) {
         })
         .props()
         .then(users.update)
-        .tap(user => info(`Created user ${user._id}`))
-        .then(user => {
-            return {
-                code: 'success',
-                new: true,
-                user,
-            };
-        })
-		.catch(users.UniqueConstraintError, () => {
+        .tap(user => info(`Created user ${user['_id']}`))
+        .then(user => ({
+            code: 'success',
+            new: true,
+            user,
+        }))
+        .catch(users.UniqueConstraintError, () => {
             info(`User ${user} already exists`);
             // TODO: Implement updating users?
-            return users.like(user).call('next').then(user => {
-                return {
-                    code: 'success',
-                    new: false,
-                    user
-                };
-            });
+            return users.like(user).call('next').then(user => ({
+                code: 'success',
+                new: false,
+                user
+            }));
         })
         .catch(err => {
             error(err);
-            return {code: err.message || 'error'}
+            return {code: err.message || 'error'};
         });
 });
