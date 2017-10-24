@@ -16,6 +16,7 @@
 'use strict';
 
 const debug = require('debug');
+const typeis = require('type-is');
 const warn = debug('permissions-handler:trace');
 const trace = debug('permissions-handler:trace');
 
@@ -57,7 +58,9 @@ const scopeTypes = {
         'application/vnd.fpad.certifications.globalgap.1+json',
         'application/vnd.fpad.client.1+json',
         'application/vnd.fpad.clients.1+json',
+        'application/vnd.fpad.connection.1+json',
         'application/vnd.fpad.1+json',
+        'application/json',
     ]
 };
 function scopePerm(perm, has) {
@@ -97,7 +100,7 @@ responder.on('request', function handleReq(req) {
                 let contentType = resource ? resource._type : req.contentType;
                 trace(contentType, 'on the list? ', scopeTypes[type].indexOf(contentType))
                 trace('user scope all/read?', scopePerm(perm, 'read'))
-                return scopeTypes[type].indexOf(contentType) >= 0 &&
+                return typeis.is(contentType, scopeTypes[type]) &&
                         scopePerm(perm, 'read');
             });
 
@@ -114,7 +117,7 @@ responder.on('request', function handleReq(req) {
               let contentType = resource ? resource._type : req.contentType;
               trace(contentType, 'on the list? ', scopeTypes[type].indexOf(contentType))
               trace('user scope all/write?', scopePerm(perm, 'write'))
-                return scopeTypes[type].indexOf(contentType) >= 0 &&
+                return typeis.is(contentType, scopeTypes[type]) &&
                         scopePerm(perm, 'write');
             });
         }

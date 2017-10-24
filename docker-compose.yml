@@ -74,6 +74,10 @@ services:
       - DEBUG=${DEBUG:-""}
     command:
       - /entrypoint.sh
+    extra_hosts:
+      - "api.abcaudits.fpad.io:128.46.213.153"
+      - "api.growersync.fpad.io:128.46.213.153"
+      - "api.pspperfection.fpad.io:128.46.213.153"
 
   # http-handler is in charge of maintaining connectiongs to clients and starting
   # the first message for a request into Kafka

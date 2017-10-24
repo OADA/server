@@ -2,7 +2,7 @@
   "name": "oada-srvc-shares",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "server.js",
   "scripts": {
     "test": "DEBUG=* mocha test/index.js",
     "start": "DEBUG=* node index.js"

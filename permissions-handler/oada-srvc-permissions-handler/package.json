@@ -21,6 +21,7 @@
     "moment": "^2.18.1",
     "nconf": "^0.8.4",
     "node-rdkafka": "^1.0.0",
-    "randomstring": "^1.1.5"
+    "randomstring": "^1.1.5",
+    "type-is": "^1.6.15"
   }
 }
