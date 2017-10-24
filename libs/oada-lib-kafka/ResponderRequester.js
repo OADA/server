@@ -16,6 +16,7 @@
 'use strict';
 
 const info = require('debug')('oada-lib-kafka:info');
+const trace = require('debug')('oada-lib-kafka:trace');
 const warn = require('debug')('oada-lib-kafka:warn');
 
 const {
@@ -41,7 +42,7 @@ class DummyRequester extends Requester {
 // Class for when responding to reuqests requires making other requests
 // TODO: Better class name?
 class ResponderRequester extends Base {
-    constructor({requestTopics, respondTopics, group, ...opts}) {
+    constructor({requestTopics, respondTopics, group, respondOwn, ...opts}) {
         super({
             consumeTopic: [
                 requestTopics.consumeTopic,
@@ -50,6 +51,8 @@ class ResponderRequester extends Base {
             group,
             ...opts
         });
+
+        this.respondOwn = respondOwn;
 
         // Make a Responder and Requester using our consumer/producer
         this.responder = new DummyResponder({
@@ -67,29 +70,37 @@ class ResponderRequester extends Base {
             ...opts,
         });
 
+        // Mux the consumer between requester and responder
+        this.on(DATA, (val, data, ...rest) => {
+            trace('Received data', val);
+            if (data.topic === this.requester.consumeTopic) {
+                trace('Muxing data to requester');
+                this.requester.emit(DATA, val, data, ...rest);
+            }
+            if (data.topic === this.responder.consumeTopic) {
+                if (!this.respondOwn && val.group === this.group) {
+                    // Don't respond to own requests
+                    return;
+                }
+                trace('Muxing data to responder');
+                this.responder.emit(DATA, val, data, ...rest);
+            }
+        });
+
         this[CONNECT]();
     }
 
-    on(event, val, ...args) {
+    on(event, listener) {
         switch (event) {
             case 'ready':
-                super.on('ready', val, ...args);
+                super.on('ready', listener);
                 break;
-            case DATA: // Mux the consumer between requester and responder
-                if (val.topic === this.requester.consumeTopic) {
-                    this.requester.on(DATA, val, ...args);
-                }
-                if (val.topic === this.responder.consumeTopic) {
-                    if (!this.opts.respondOwn && val.group === this.group) {
-                        // Don't respond to own requests
-                        break;
-                    }
-                    this.responder.on(DATA, val, ...args);
-                }
+            case DATA:
+                super.on(DATA, listener);
                 break;
             default:
-                this.requester.on(event, val, ...args);
-                this.responder.on(event, val, ...args);
+                this.requester.on(event, listener);
+                this.responder.on(event, listener);
                 break;
         }
     }
