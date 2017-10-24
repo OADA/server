@@ -34,10 +34,10 @@ const META_KEY = '_remote_syncs';
 
 //---------------------------------------------------------
 // Kafka intializations:
-const responder = new Responder(
-        config.get('kafka:topics:httpResponse'),
-        null,
-        'sync-handlers');
+const responder = new Responder({
+    consumeTopic: config.get('kafka:topics:httpResponse'),
+    group: 'sync-handlers'
+});
 
 module.exports = function stopResp() {
     return responder.disconnect();
@@ -83,6 +83,7 @@ responder.on('request', async function handleReq(req) {
                 If running in dev environment localhost should
                 be directed to the proxy server
             */
+            // eslint-disable-next-line no-param-reassign
             domain = domain.replace('localhost', 'proxy');
         }
 
@@ -100,6 +101,8 @@ responder.on('request', async function handleReq(req) {
                 if (rid) {
                     return {id, rid};
                 }
+
+                trace(`Creating remote ID for ${id} at ${domain}`);
 
                 let url = `${await apiroot}resources/`;
                 // TODO: How to handle this annoying content-type stuff?
@@ -125,11 +128,15 @@ responder.on('request', async function handleReq(req) {
 
                 // Record new remote ID
                 // TODO: Insert all new remoteResources at once?
-                await remoteResources.addRemoteId(newrid, domain);
+                await remoteResources.addRemoteId(newrid, domain)
+                    .tapCatch(remoteResources.UniqueConstraintError, () => {
+                        error('Unique constraint error for remoteId', newrid);
+                    });
 
                 // TODO: Less gross way of create new remote resources?
                 lchanges[id] = resources.getResource(id);
 
+                trace(`Created remote ID ${newid} for ${id} at ${domain}`);
                 return newrid;
             });
 
@@ -143,40 +150,45 @@ responder.on('request', async function handleReq(req) {
                 return Promise.resolve();
             }
 
+            trace(`PUTing change for ${id} to ${rid} at ${domain}`);
+
             let type = change['_meta']['_type'];
 
             // Fix links etc.
             let body = JSON.stringify(change, function(k, v) {
+                /* eslint-disable no-invalid-this */
                 switch (k) {
-                case '_meta': // Don't send resources's _meta
-                    if (this === change) {
-                        return undefined;
-                    } else {
+                    case '_meta': // Don't send resources's _meta
+                        if (this === change) {
+                            return undefined;
+                        } else {
+                            return v;
+                        }
+                    case '_rev': // Don't resource's send _rev
+                        if (this === change) {
+                            return undefined;
+                        } else {
+                            return v;
+                        }
+                    case '_id':
+                        if (this === change) { // Don't send resource's _id
+                            return undefined;
+                        }
+                        // TODO: Better link detection?
+                        if (idmapping[v]) {
+                            return idmapping[v];
+                        }
+                        warn(`Could not resolve link to ${v} at ${domain}`);
+                        // TODO: What to do in this case?
+                        return '';
+                    default:
                         return v;
-                    }
-                case '_rev': // Don't resource's send _rev
-                    if (this === change) {
-                        return undefined;
-                    } else {
-                        return v;
-                    }
-                case '_id':
-                    if (this === change) { // Don't send resource's _id
-                        return undefined;
-                    }
-                    // TODO: Better link detection?
-                    if (idmapping[v]) {
-                        return idmapping[v];
-                    }
-                    warn(`Could not resolve link to ${v} at ${domain}`);
-                    // TODO: What to do in this case?
-                    return '';
-                default:
-                    return v;
                 }
+                /* eslint-enable no-invalid-this */
             });
+
             // TODO: Support DELETE
-            return axios({
+            let put = axios({
                 method: 'put',
                 url: `${await apiroot}${rid}`,
                 data: body,
@@ -185,6 +197,10 @@ responder.on('request', async function handleReq(req) {
                     authorization: token
                 }
             });
+            await put;
+
+            trace(`Finished PUTing change for ${id} to ${rid} at ${domain}`);
+            return put;
         });
 
         return docs;

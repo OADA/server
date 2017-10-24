@@ -46,4 +46,14 @@ function addRemoteId(rid, domain) {
 module.exports = {
     getRemoteId,
     addRemoteId,
+  // TODO: Better way to handler errors?
+  // ErrorNum from: https://docs.arangodb.com/2.8/ErrorCodes/
+  NotFoundError: {
+    name: 'ArangoError',
+    errorNum: 1202
+  },
+  UniqueConstraintError: {
+    name: 'ArangoError',
+    errorNum: 1210
+  },
 };
