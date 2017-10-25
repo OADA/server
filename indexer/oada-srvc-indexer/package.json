@@ -4,8 +4,7 @@
   "description": "",
   "main": "server.js",
   "scripts": {
-    "test": "DEBUG=* mocha test/permissions-handler.js",
-    "start": "DEBUG=* node index.js"
+    "test": "DEBUG=* mocha test/permissions-handler.js"
   },
   "author": "",
   "license": "ISC",
@@ -15,12 +14,10 @@
     "bcryptjs": "^2.4.3",
     "bluebird": "^3.5.0",
     "chai": "^3.5.0",
-    "kafka-node": "^1.6.0",
     "lodash": "^4.17.4",
     "mocha": "^3.3.0",
     "moment": "^2.18.1",
     "nconf": "^0.8.4",
-    "node-rdkafka": "^1.0.0",
     "randomstring": "^1.1.5",
     "uuid": "^3.1.0"
   }

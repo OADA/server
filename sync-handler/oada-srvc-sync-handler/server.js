@@ -121,8 +121,11 @@ responder.on('request', async function handleReq(req) {
                 };
 
                 // Record new remote ID
-                // TODO: Insert all new remoteResources at once?
-                await remoteResources.addRemoteId(newrid, domain);
+							// TODO: Insert all new remoteResources at once?
+								
+							await remoteResources.addRemoteId(newrid, domain).tapCatch((err)=>{
+								//								error(`for remote id ${newrid}`, err)
+							})
 
                 // TODO: Less gross way of create new remote resources?
                 lchanges[id] = resources.getResource(id);
@@ -180,7 +183,7 @@ responder.on('request', async function handleReq(req) {
                 headers: {
                     'content-type': type,
                     authorization: token
-                }
+								},
             });
         });
 

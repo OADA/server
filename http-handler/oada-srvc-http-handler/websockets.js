@@ -245,7 +245,7 @@ module.exports = function wsHandler(server) {
 const writeResponder = new Responder(
 	config.get('kafka:topics:httpResponse'),
 	null,
-	'websockets-handler');
+	'websockets');
 
 // Listen for successful write requests to resources of interest, then emit an event
 writeResponder.on('request', function handleReq(req) {

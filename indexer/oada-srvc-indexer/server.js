@@ -24,25 +24,26 @@ const uuid = require('uuid')
 
 const Promise = require('bluebird');
 const _ = require('lodash')
-const {Requester, Responder} = require('../../libs/oada-lib-kafka');
+const {ResponderRequester} = require('../../libs/oada-lib-kafka');
 const oadaLib = require('../../libs/oada-lib-arangodb');
 const config = require('./config');
 const axios = require('axios')
 
 //---------------------------------------------------------
 // Kafka intializations:
-const requester = new Requester(
-			config.get('kafka:topics:httpResponse'),
-			config.get('kafka:topics:writeRequest'),
-			'indexer1');
-
-const responder = new Responder(
-	config.get('kafka:topics:httpResponse'),
-	null,
-			'indexer2');
+const responderRequester = new ResponderRequester({
+	requestTopics: {
+		consumeTopic: config.get('kafka:topics:httpResponse'),
+		produceTopic: config.get('kafka:topics:writeRequest'),
+	},
+	respondTopics: {
+		consumeTopic: config.get('kafka:topics:httpResponse'),
+	},
+	group: 'indexer'
+});
 
 module.exports = function stopResp() {
-  return responder.disconnect(); 
+  return responderRequester.disconnect(); 
 };
 
 
@@ -53,20 +54,16 @@ function initializeIndexer(res, userid) {
 		'path_leftover': `/_meta/trellis/client-to-certifications/`,
 		'user_id': userid,
 		'contentType': res._type,
-		//		'connection_id': null,
-		'indexer': true,
 		'body': {
 			[userid]: {isInitialized: true}
 		}
 	}
 }
 
-responder.on('request', function handleReq(req) {
+responderRequester.on('request', function handleReq(req) {
 	trace('write-response?', req.msgtype === 'write-response', 'success?', req.code ==='success')
 	if (req.msgtype !== 'write-response') return
 	if (req.code !== 'success') return
-	trace('INDEXER', req.indexer)
-	if (req.indexer) return
 	trace('request: ', req)
 	return oadaLib.resources.getResource(req.resource_id).then((res) => {
 		if (res._type !== 'application/vnd.fpad.certifications.globalgap.1+json') return
@@ -110,7 +107,7 @@ responder.on('request', function handleReq(req) {
 			.then((result) => {
 				trace('WRITES', writes)
 				return Promise.map(writes, (write) => {
-					return requester.send(write)
+					return responderRequester.send(write)
 						.catch(Promise.TimeoutError, (err) => {
 							trace(err, write)
 						})
@@ -130,8 +127,6 @@ function findNewCertifications(newCerts, id,) {
 			'path_leftover': '/resources/'+uuid.v4(),
 			'user_id': user._id,
 			'contentType': 'application/vnd.fpad.certifications.globalgap.1+json',
-			//			'connection_id': null,
-			'indexer': true,
 		}
 		certifications.body = {
 			_type: 'application/vnd.fpad.certifications.globalgap.1+json',
@@ -191,7 +186,6 @@ function findNewCertifications(newCerts, id,) {
 				delete certifications.body._rev
 				trace('GETreSource', result.resource_id)
 				return oadaLib.resources.getResource(result.resource_id).then((curCerts) => {
-					let reset_type = false;
 					if (curCerts._type === 'application/vnd.fpad.certifications.globalgap.1+json') {
 						delete certifications.body._type
 					} else {
@@ -209,7 +203,7 @@ function findNewCertifications(newCerts, id,) {
 						}
 					})
   				trace('1', certifications.body)
-					if (_.isEmpty(certifications.body) && reset_type) return []
+					if (_.isEmpty(certifications.body)) return []
 					return [certifications]
 				})
 			} else if (/\/fpad/.test(result.path_leftover)) {

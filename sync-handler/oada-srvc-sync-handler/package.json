@@ -20,9 +20,7 @@
     "axios": "^0.16.2",
     "bluebird": "^3.5.0",
     "debug": "^2.6.9",
-    "nconf": "^0.8.4",
-    "oada-lib-arangodb": "../../libs/oada-lib-arangodb",
-    "oada-lib-config": "../../libs/oada-lib-config"
+    "nconf": "^0.8.4"
   },
   "devDependencies": {
     "chai": "^3.5.0",

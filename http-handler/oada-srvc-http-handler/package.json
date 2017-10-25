@@ -29,11 +29,8 @@
     "express-promise": "^0.4.0",
     "express-ws": "^3.0.0",
     "jsonpointer": "^4.0.1",
-    "kafka-node": "^1.6.0",
     "nconf": "^0.8.4",
     "oada-error": "^1.1.1",
-    "oada-lib-arangodb": "../../libs/oada-lib-arangodb",
-    "oada-lib-config": "../../libs/oada-lib-config",
     "uuid": "^3.0.1",
     "well-known-json": "^0.2.0"
   },

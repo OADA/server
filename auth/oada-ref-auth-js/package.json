@@ -54,8 +54,6 @@
     "oada-client-discovery": "^0.3.2",
     "oada-error": "^1.1.1",
     "oada-id-client": "github:oada/oada-id-client-js#1ce91b76bf94eaf25057eaf4ecac87d18c01ea87",
-    "oada-lib-arangodb": "../../libs/oada-lib-arangodb",
-    "oada-lib-config": "../../libs/oada-lib-config",
     "oada-lookup": "^0.4.1",
     "oada-trusted-jws": "^0.1.0",
     "oauth2orize": "^1.0.1",

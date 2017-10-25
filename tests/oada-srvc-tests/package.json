@@ -11,7 +11,6 @@
     "kafka-node": "^1.6.1",
     "mocha": "^3.3.0",
     "node-exec-promise": "^1.0.1",
-    "oada-lib-arangodb": "../../libs/oada-lib-arangodb",
     "uuid": "^3.0.1",
     "validator": "^7.0.0"
   },

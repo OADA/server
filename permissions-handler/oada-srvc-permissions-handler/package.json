@@ -2,10 +2,9 @@
   "name": "oada-srvc-permissions-handler",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "server.js",
   "scripts": {
-    "test": "DEBUG=* mocha test/permissions-handler.js",
-    "start": "DEBUG=* node index.js"
+    "test": "DEBUG=* mocha test/permissions-handler.js"
   },
   "author": "",
   "license": "ISC",
@@ -15,7 +14,6 @@
     "bcryptjs": "^2.4.3",
     "bluebird": "^3.5.0",
     "chai": "^3.5.0",
-    "kafka-node": "^1.6.0",
     "lodash": "^4.17.4",
     "mocha": "^3.3.0",
     "moment": "^2.18.1",
