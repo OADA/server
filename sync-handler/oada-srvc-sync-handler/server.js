@@ -52,6 +52,8 @@ responder.on('request', async function handleReq(req) {
     }
 
     let id = req['resource_id'];
+    trace(`Saw change for resource ${id}`);
+
     //let rev = req['_rev'];
     let orev = req['_orev'];
     // TODO: Add AQL query for just syncs and newest change?
@@ -65,9 +67,10 @@ responder.on('request', async function handleReq(req) {
         // Nothing for us to do
         return;
     }
+    trace(`Processing syncs for resource ${id}`);
 
-		let desc = resources.getNewDescendants(id, orev)
-				.tap(desc => trace(`New descendants for ${id}`, desc));
+    let desc = resources.getNewDescendants(id, orev)
+        .tap(desc => trace(`New descendants for ${id}`, desc));
     // TODO: Figure out just what changed
     let changes = await desc.filter(d => d.changed)
         .map(d => ({[d.id]: resources.getResource(d.id)}))
@@ -76,7 +79,7 @@ responder.on('request', async function handleReq(req) {
     // TODO: Probably should not be keeping the tokens under _meta...
     let puts = Promise.map(syncs, async ([key, {url, domain, token}]) => {
         info(`Running sync ${key} for resource ${id}`);
-				trace(`Sync ${key}`, {url, domain, token});
+        trace(`Sync ${key}`, {url, domain, token});
         // Need separate changes map for each sync since they run concurently
         let lchanges = Object.assign({}, changes); // Shallow copy
 
@@ -97,12 +100,12 @@ responder.on('request', async function handleReq(req) {
 
         // Ensure each local resource has a corresponding remote one
         let ids = await desc.map(d => d.id);
-        let rids = await remoteResources.getRemoteId(ids, domain)
-            .map(async ({id, rid}) => {
-                if (rid) {
-                    return {id, rid};
-                }
-
+        let rids = remoteResources.getRemoteId(ids, domain)
+            // Map the top resource to supplied URL
+            .map(rid => rid.id === id ? {id, rid: url} : rid);
+        // Create missing rids
+        let newrids = rids.filter(({rid}) => !rid)
+            .map(async ({id}) => {
                 trace(`Creating remote ID for ${id} at ${domain}`);
 
                 let url = `${await apiroot}resources/`;
@@ -116,33 +119,35 @@ responder.on('request', async function handleReq(req) {
                     url
                 })).get('headers').get('location');
 
-                // Parse resource ID from Location header
-                let newid = URL.resolve(url, loc).replace(url, 'resources/');
-
-                let newrid = {
-                    rid: newid,
-                    id: id
-                };
-
-                // Record new remote ID
-                // TODO: Insert all new remoteResources at once?
-                await remoteResources.addRemoteId(newrid, domain)
-                    .tapCatch(remoteResources.UniqueConstraintError, () => {
-                        error('Unique constraint error for remoteId', newrid);
-                    });
-
                 // TODO: Less gross way of create new remote resources?
                 lchanges[id] = resources.getResource(id);
 
-                trace(`Created remote ID ${newid} for ${id} at ${domain}`);
-                return newrid;
-						})
-						// Make it sync the top resource too...
-						.then(rids => rids.concat({id: id, rid: url}));
+                // Parse resource ID from Location header
+                let newid = URL.resolve(url, loc).replace(url, 'resources/');
+                return {
+                    rid: newid,
+                    id: id
+                };
+            })
+            .tap(async newrids => { // Add all remote IDs at once
+                if (newrids.length === 0) {
+                    return;
+                }
 
+                // Record new remote ID
+                await remoteResources.addRemoteId(newrids, domain)
+                    .tapCatch(remoteResources.UniqueConstraintError, () => {
+                        error('Unique constraint error for remoteId',
+                                newrids, domain);
+                    });
+
+                trace(`Created remote ID for ${id} at ${domain}`, newrids);
+            });
+
+        rids = (await rids).filter(({rid}) => rid).concat(await newrids);
         // Create mapping of IDs here to IDs there
         let idmapping = rids.map(({id, rid}) => ({[id]: rid}))
-            .reduce((a, b) => Object.assign(a, b));
+            .reduce((a, b) => ({...a, ...b}));
         let docs = Promise.map(rids, async ({id, rid}) => {
             let change = await lchanges[id];
             if (!change) {
@@ -163,7 +168,7 @@ responder.on('request', async function handleReq(req) {
                         } else {
                             return v;
                         }
-                    case '_rev': // Don't resource's send _rev
+                    case '_rev': // Don't send resource's _rev
                         if (this === change) {
                             return undefined;
                         } else {
@@ -194,11 +199,12 @@ responder.on('request', async function handleReq(req) {
                 headers: {
                     'content-type': type,
                     authorization: token
-								},
+                },
             });
             await put;
 
-            trace(`Finished PUTing change for ${id} to ${rid} at ${domain}`);
+            trace(`Finished PUTing change for ${id} to ${rid} at ${domain}`,
+                    await put);
             return put;
         });
 
