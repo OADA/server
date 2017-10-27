@@ -403,26 +403,6 @@ services:
       - NODE_ENV=${NODE_ENV:-development}
       - DEBUG=${DEBUG:-""}
 
-  websockets:
-    depends_on:
-      - startup
-    build:
-      context: ./websockets
-      args:
-        NODE_VERSION: 8.7.0
-    restart: always
-    container_name: websockets
-    networks:
-      - startup_net
-      - kafka_net
-      - arango_net
-    volumes:
-      - .:/code
-      - ./oada-srvc-docker-config.js:/oada-srvc-docker-config.js
-    environment:
-      - NODE_ENV=${NODE_ENV:-development}
-      - DEBUG=${DEBUG:-""}
-
   webhooks:
     depends_on:
       - startup
