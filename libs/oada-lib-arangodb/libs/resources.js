@@ -32,6 +32,7 @@ function lookupFromUrl(url, userId) {
       return `FILTER p.edges[${i}].name == '${urlPiece}' || p.edges[${i}].name == null`;
     }).join(' ');
     let query = `
+      WITH ${edges.name}, ${graphNodes.name}
       LET path = LAST(
         FOR v, e, p IN 0..${pieces.length}
           OUTBOUND '${startNode}'
@@ -159,7 +160,9 @@ function getResource(id, path) {
   const returnPath = parts.reduce((p, part, i) => p.concat(`[@v${i}]`), '');
 
   return db.query({
-    query: `FOR r IN @@collection
+    query: `
+      WITH ${resources.name}
+      FOR r IN @@collection
         FILTER r._id == @id
         RETURN r${returnPath}`,
     bindVars
@@ -175,6 +178,7 @@ function getResource(id, path) {
 function getResourceOwnerIdRev(id) {
   return db.query({
     query: `
+      WITH ${resources.name}
       FOR r IN @@collection
         FILTER r._id == @id
         RETURN {
@@ -201,6 +205,7 @@ function getResourceOwnerIdRev(id) {
 
 function getParents(id) {
   return db.query(aql`
+    WITH ${edges}, ${graphNodes}, ${resources}
     LET node = FIRST(
       FOR node IN ${graphNodes}
       FILTER node.resource_id == ${id}
@@ -230,6 +235,7 @@ function getParents(id) {
 function getNewDescendants(id, rev) {
   // TODO: Better way to compare the revs?
   return db.query(aql`
+    WITH ${graphNodes}, ${edges}, ${resources}
     LET node = FIRST(
       FOR node in ${graphNodes}
         FILTER node.resource_id == ${id}
@@ -274,7 +280,7 @@ function putResource(id, obj) {
           UPSERT { '_key': reskey }
           INSERT res
           UPDATE res
-          IN resources
+          IN ${resources}
           RETURN { res: NEW, orev: OLD._oada_rev }
         )
         LET res = resup.res
@@ -305,7 +311,7 @@ function putResource(id, obj) {
                 'resource_id': res._id
               }
               UPDATE {}
-              IN graphNodes
+              IN ${graphNodes}
               RETURN NEW
           ), { _id: CONCAT('graphNodes/', LAST(nodeids)), is_resource: true })
           LET edges = (
@@ -325,7 +331,7 @@ function putResource(id, obj) {
                 '_to': nodes[i+1]._id,
                 'versioned': nodes[i+1].is_resource && HAS(l, '_rev')
               }
-              IN edges
+              IN ${edges}
               RETURN NEW
           )
           RETURN resup.orev
@@ -337,7 +343,7 @@ function putResource(id, obj) {
           UPSERT { '_key': res._key }
           INSERT res
           UPDATE res
-          IN resources
+          IN ${resources}
           return { res: NEW, orev: OLD._oada_rev }
         )
         LET res = resup.res
@@ -349,7 +355,7 @@ function putResource(id, obj) {
           'resource_id': res._id
         }
         UPDATE {}
-        IN graphNodes
+        IN ${graphNodes}
         RETURN resup.orev
       `);
     }
@@ -411,6 +417,7 @@ function deleteResource(id) {
 
   // Query deletes resouce, its nodes, and outgoing edges (but not incoming)
   return db.query(aql`
+    WITH ${resources}, ${graphNodes}, ${edges}
     LET res = FIRST(
       REMOVE { '_key': ${key} } IN ${resources}
       RETURN OLD
@@ -448,6 +455,7 @@ function deletePartialResource(id, path, doc) {
   path = pointer.compile(path);
 
   let query = aql`
+    WITH ${resources}, ${graphNodes}, ${edges}
     LET res = DOCUMENT(${resources}, ${key})
 
     LET start = FIRST(
