@@ -93,6 +93,11 @@ module.exports = function(_server,config) {
             nonce: req.oauth2.req.nonce,
             trusted: req.oauth2.client.trusted,
             decision_url: config.get('auth:endpoints:decision'),
+            user: {
+              name: req.user && req.user.name ? req.user.name : '',
+              username: req.user && req.user.username ? req.user.username : 'nobody',
+            },
+            logout: config.get('auth:endpoints:logout'),
             name: domain_config.name,
             logo_url: config.get('auth:endpointsPrefix')+'/domains/'+domain_config.domain+'/'+domain_config.logo,
             tagline: domain_config.tagline,
