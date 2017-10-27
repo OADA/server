@@ -24,10 +24,16 @@
     <div class="header pt-2 pb-2 pl-2 mb-2" style="background-color: <%= color %>;">
       <img style="max-width: 50px; max-height: 50px;" src="<%= logo_url %>" alt="<%= name %> Logo" />
       <span style="font-size: 2em;"><%= name %></span>
+      <span style="float: right; padding-right: 5px;"><strong><%= user.name%></strong> <a href='<%= logout %>'>(Logout)</a></span>
     </div>
     
     <div class="container">
       <div class="jumbotron pt-4 pb-4">
+
+        <div class="row pb-2">
+          <div class="col" style="text-align: right">
+          </div>
+        </div>
 
         <div class="row pb-2">
           <div class="col">
