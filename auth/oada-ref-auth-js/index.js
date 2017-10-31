@@ -168,8 +168,9 @@ module.exports = function(conf) {
     app.get(config.get('auth:endpoints:login'), function(req, res) {
       trace('GET '+config.get('auth:endpoints:login')+': setting X-Frame-Options=SAMEORIGIN before rendering login');
       res.header('X-Frame-Options', 'SAMEORIGIN');
-      const iserror = !!req.query.error;
-      const errormsg = "Login failed.";
+      const iserror = !!req.query.error || req.session.errormsg;
+      let errormsg = req.session.errormsg || "Login failed.";
+      if (req.session.errormsg) req.session.errormsg = false; // reset for next time
 
       // Load the login info for this domain from the public directory:
       const domain_config = domainConfigs[req.hostname] || domainConfigs.localhost;
@@ -251,15 +252,21 @@ module.exports = function(conf) {
           uri.path('/.well-known/openid-configuration');
           let cfg = (await axios.get(uri.toString())).data;
 
-          let info = (await axios.get(cfg['userinfo_endpoint'], {
+          let userinfo = (await axios.get(cfg['userinfo_endpoint'], {
             headers: {
               'Authorization': `Bearer ${token}`
             }
           })).data;
 
           user = await users
-              .findByOIDCUsername(info['preferred_username'], idToken.iss);
+              .findByOIDCUsername(userinfo['preferred_username'], idToken.iss);
 
+          if (!user) {
+            // we don't have a user with this sub or username, so they don't have an account
+            req.session.errormsg = 'There is no user '+userinfo['preferred_username']+' from '+idToken.iss;
+            info('Failed OIDC login: user not found.  Redirecting to ', req.session.returnTo);
+            return res.redirect(req.session.returnTo);
+          }
           // Add sub to existing user
           // TODO: Make a link function or something
           //       instead of shoving sub where it goes?

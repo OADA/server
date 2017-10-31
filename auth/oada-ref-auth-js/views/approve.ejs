@@ -15,6 +15,23 @@
 
 <!DOCTYPE html>
 <html lang="en">
+
+  <% if (autoaccept) { %>
+    <body>
+      <form action="<%= decision_url %>" id="mainForm" method="post">
+        <input name="transaction_id" type="hidden" value="<%= transactionID %>" />
+        <% scope.forEach(function(s) { %>
+          <input name="scope[]" type="hidden" value="<%= s %>" />
+        <% }) %>
+
+        <input type="hidden" role="button" value="Allow" id="allow" />
+      </form>
+    </body>
+    <script>
+      document.getElementById('mainForm').submit();
+    </script>
+  <% } else { %>
+
   <head>
     <meta charset="utf-8">
     <title>Login</title>
@@ -108,7 +125,7 @@
 
         <div class="row">
           <div class="col">
-            <form action="<%= decision_url %>" method="post">
+            <form action="<%= decision_url %>" id="mainForm" method="post">
               <input name="transaction_id" type="hidden" value="<%= transactionID %>" />
               <% scope.forEach(function(s) { %>
                 <input name="scope[]" type="hidden" value="<%= s %>" />
@@ -134,5 +151,8 @@
 
       </div>
     </div>
+
   </body>
+
+  <% } %>
 </html>

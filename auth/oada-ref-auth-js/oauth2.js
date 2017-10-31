@@ -49,6 +49,16 @@ module.exports = function(_server,config) {
   // Code flow exchange (code)
   server.exchange(oauth2orize.exchange.code(utils.issueTokenFromCode));
 
+
+  // If the array of scopes contains ONLY openid OR openid and profile, auto-accept.
+  // Better to handle this by asking only the first time, but this is quicker to get PoC working.
+  function scopeIsOnlyOpenid(scopes) {
+    if (!scopes) return false;
+    if (scopes.length === 1 && scopes[0] === 'openid') return true;
+    if (scopes.length === 2 && _.includes(scopes, 'openid') && _.includes(scopes, 'profile')) return true;
+    return false;
+  }
+
   //////
   // Middleware
   //////
@@ -97,6 +107,7 @@ module.exports = function(_server,config) {
               name: req.user && req.user.name ? req.user.name : '',
               username: req.user && req.user.username ? req.user.username : 'nobody',
             },
+            autoaccept: scopeIsOnlyOpenid(req.oauth2.req.scope) ? true : false,
             logout: config.get('auth:endpoints:logout'),
             name: domain_config.name,
             logo_url: config.get('auth:endpointsPrefix')+'/domains/'+domain_config.domain+'/'+domain_config.logo,
