@@ -18,84 +18,90 @@
 const debug = require('debug');
 const trace = debug('rev-graph-update:trace');
 const info = debug('rev-graph-update:info');
+const warn = debug('rev-graph-update:warn');
 const error = debug('rev-graph-update:error');
 
 const Promise = require('bluebird');
 // const kf = require('kafka-node');
-const Responder = require('../../libs/oada-lib-kafka').Responder;
+const {ReResponder} = require('../../libs/oada-lib-kafka');
 const oadaLib = require('../../libs/oada-lib-arangodb');
 const config = require('./config');
 
 //---------------------------------------------------------
 // Kafka intializations:
-const responder = new Responder(
-			config.get('kafka:topics:httpResponse'),
-			config.get('kafka:topics:writeRequest'),
-			config.get('kafka:groupId'));
+const responder = new ReResponder({
+    consumeTopic: config.get('kafka:topics:httpResponse'),
+    produceTopic: config.get('kafka:topics:writeRequest'),
+    group: 'rev-graph-update'
+});
 
 module.exports = function stopResp() {
-	return responder.disconnect();
+    return responder.disconnect();
 };
 
-responder.on('request', function handleReq(req, msg) {
-	if (!req || req.msgtype !== 'write-response') {
-		return []; // not a write-response message, ignore it
-	}
-	if (req.code !== 'success') {
-		return [];
-	}
-	if(typeof req.resource_id === "undefined" ||
-		 typeof req._rev === "undefined" ) {
-		throw new Error(`Invalid http_response: there is either no resource_id or _rev.  respose = ${JSON.stringify(req)}`);
+responder.on('request', function handleReq(req) {
+    if (!req || req.msgtype !== 'write-response') {
+        return []; // not a write-response message, ignore it
     }
-	if (typeof req.user_id === "undefined") {
-		trace('WARNING: received message does not have user_id');
-	}
-	if (typeof req.authorizationid === "undefined") {
-		trace('WARNING: received message does not have authorizationid');
-	}
+    if (req.code !== 'success') {
+        return [];
+    }
+    if (typeof req['resource_id'] === 'undefined' ||
+            typeof req['_rev'] === 'undefined') {
+        throw new Error(`Invalid http_response: there is either no resource_id or _rev.  respose = ${JSON.stringify(req)}`);
+    }
+    if (typeof req['user_id'] === 'undefined') {
+        warn('Received message does not have user_id');
+    }
+    if (typeof req.authorizationid === 'undefined') {
+        warn('Received message does not have authorizationid');
+    }
 
-	// setup the write_request msg
-	const write_request_msgs = [];
-	const res = {
-		type: 'write_request',
-		resource_id: null,
-		path: null,
-		connection_id: null,
-		contentType: null,
-		body: null,
-		url: "",
-		user_id: req.user_id,
-		authorizationid: req.authorizationid
-	};
+    // setup the write_request msg
+    const res = {
+        'type': 'write_request',
+        'resource_id': null,
+        'path': null,
+        'contentType': null,
+        'body': null,
+        'url': '',
+        'user_id': req['user_id'],
+        'authorizationid': req.authorizationid
+    };
 
-	trace('find parents for resource_id = ', req.resource_id);
+    info(`finding parents for resource_id = ${req['resource_id']}`);
 
-	// find resource's parent
-	return oadaLib.resources.getParents(req.resource_id)
+    // find resource's parent
+    return oadaLib.resources.getParents(req['resource_id'])
         .then(p => {
-					if (!p || p.length === 0) {
-						info('WARNING: '+req.resource_id+' does not have a parent.');
-						return undefined;
-					}
+            if (!p || p.length === 0) {
+                warn(`${req['resource_id']} does not have a parent.`);
+                return undefined;
+            }
 
-					trace('the parents are: ', p);
+            trace('the parents are: ', p);
 
-					return Promise.map(p, item => {
-							trace('parent resource_id = ', item.resource_id);
-							let msg = Object.assign({}, res);
-							msg.resource_id = item.resource_id;
-							msg.path_leftover = item.path + '/_rev';
-							msg.contentType = item.contentType;
-							msg.body = req._rev;
+            // TODO: Real cycle detection
+            if (p.some(p => p['resource_id'] === req['resource_id'])) {
+                let err = new Error(`${req['resource_id']} is its own parent!`);
+                return Promise.reject(err);
+            }
 
-							trace('trying to produce: ', msg);
+            return Promise.map(p, item => {
+                trace('parent resource_id = ', item['resource_id']);
+                let msg = Object.assign({}, res);
+                msg['resource_id'] = item['resource_id'];
+                msg['path_leftover'] = item.path + '/_rev';
+                msg.contentType = item.contentType;
+                msg.body = req['_rev'];
 
-							return msg;
-					});
-	})
-	.catch(err => {
-		error(err);
-	});
+                trace('trying to produce: ', msg);
+
+                return msg;
+            });
+        })
+        .tapCatch(err => {
+            error(err);
+        });
 });
 
