@@ -69,12 +69,16 @@ module.exports = {
       },
       graphNodes: {
         name: 'graphNodes',
-        indexes: [],
+        indexes: [ { name: 'resource_id', unique: false } ],
         defaults: './libs/exampledocs/graphNodes'
       },
       edges: {
         name: 'edges',
-        indexes: [ { name: 'name', unique: false } ],
+        indexes: [
+          // TODO: Do we need both these indexes?
+          { name: 'name', unique: false },
+          { name: ['_from', 'name'], unique: true }
+        ],
         defaults: './libs/exampledocs/edges',
         edgeCollection: true
       },
