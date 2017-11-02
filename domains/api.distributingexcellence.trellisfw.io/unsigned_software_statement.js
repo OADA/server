@@ -1,6 +1,6 @@
 module.exports = {
   "redirect_uris": [
-    "https://api.distributingexcellence.trelisfw.io/oadaauth/id-redirect",
+    "https://api.distributingexcellence.trellisfw.io/oadaauth/id-redirect",
   ],
   "token_endpoint_auth_method": "urn:ietf:params:oauth:client-assertion-type:jwt-bearer",
   "grant_types": [
@@ -16,7 +16,7 @@ module.exports = {
     "code id_token token"
   ],
   "client_name": "Distributing Excellence",
-  "client_uri": "https://distributingexcellence.trelisfw.io",
+  "client_uri": "https://distributingexcellence.trellisfw.io",
   "contacts": [
     "Aaron Ault <aultac@purdue.edu>"
   ],

@@ -1,6 +1,6 @@
 module.exports = {
   "redirect_uris": [
-    "https://api.growersync.trelisfw.io/oadaauth/id-redirect",
+    "https://api.growersync.trellisfw.io/oadaauth/id-redirect",
   ],
   "token_endpoint_auth_method": "urn:ietf:params:oauth:client-assertion-type:jwt-bearer",
   "grant_types": [
@@ -16,7 +16,7 @@ module.exports = {
     "code id_token token"
   ],
   "client_name": "Grower Sync",
-  "client_uri": "https://growersync.trelisfw.io",
+  "client_uri": "https://growersync.trellisfw.io",
   "contacts": [
     "Aaron Ault <aultac@purdue.edu>"
   ],

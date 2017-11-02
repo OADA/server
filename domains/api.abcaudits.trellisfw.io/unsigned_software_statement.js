@@ -1,6 +1,6 @@
 module.exports = {
   "redirect_uris": [
-    "https://api.abcaudits.trelisfw.io/oadaauth/id-redirect",
+    "https://api.abcaudits.trellisfw.io/oadaauth/id-redirect",
   ],
   "token_endpoint_auth_method": "urn:ietf:params:oauth:client-assertion-type:jwt-bearer",
   "grant_types": [
@@ -16,7 +16,7 @@ module.exports = {
     "code id_token token"
   ],
   "client_name": "ABC Audits",
-  "client_uri": "https://abcaudits.trelisfw.io",
+  "client_uri": "https://abcaudits.trellisfw.io",
   "contacts": [
     "Aaron Ault <aultac@purdue.edu>"
   ],

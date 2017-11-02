@@ -1,6 +1,6 @@
 module.exports = {
   "redirect_uris": [
-    "https://api.certificationanalytics.trelisfw.io/oadaauth/id-redirect",
+    "https://api.certificationanalytics.trellisfw.io/oadaauth/id-redirect",
   ],
   "token_endpoint_auth_method": "urn:ietf:params:oauth:client-assertion-type:jwt-bearer",
   "grant_types": [
@@ -16,7 +16,7 @@ module.exports = {
     "code id_token token"
   ],
   "client_name": "Certification Analytics",
-  "client_uri": "https://certificationanalytics.trelisfw.io",
+  "client_uri": "https://certificationanalytics.trellisfw.io",
   "contacts": [
     "Aaron Ault <aultac@purdue.edu>"
   ],

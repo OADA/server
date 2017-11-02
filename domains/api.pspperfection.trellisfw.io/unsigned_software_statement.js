@@ -1,6 +1,6 @@
 module.exports = {
   "redirect_uris": [
-    "https://api.pspperfection.trelisfw.io/oadaauth/id-redirect",
+    "https://api.pspperfection.trellisfw.io/oadaauth/id-redirect",
   ],
   "token_endpoint_auth_method": "urn:ietf:params:oauth:client-assertion-type:jwt-bearer",
   "grant_types": [
@@ -16,7 +16,7 @@ module.exports = {
     "code id_token token"
   ],
   "client_name": "PSP Perfection",
-  "client_uri": "https://pspperfection.trelisfw.io",
+  "client_uri": "https://pspperfection.trellisfw.io",
   "contacts": [
     "Aaron Ault <aultac@purdue.edu>"
   ],

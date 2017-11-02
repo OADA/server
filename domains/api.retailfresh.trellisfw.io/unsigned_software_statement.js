@@ -1,6 +1,6 @@
 module.exports = {
   "redirect_uris": [
-    "https://api.retailfresh.trelisfw.io/oadaauth/id-redirect",
+    "https://api.retailfresh.trellisfw.io/oadaauth/id-redirect",
   ],
   "token_endpoint_auth_method": "urn:ietf:params:oauth:client-assertion-type:jwt-bearer",
   "grant_types": [
@@ -16,7 +16,7 @@ module.exports = {
     "code id_token token"
   ],
   "client_name": "Retail Fresh",
-  "client_uri": "https://retailfresh.trelisfw.io",
+  "client_uri": "https://retailfresh.trellisfw.io",
   "contacts": [
     "Aaron Ault <aultac@purdue.edu>"
   ],
