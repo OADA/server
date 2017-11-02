@@ -59,6 +59,7 @@ responder.on('request', function handleReq(req) {
 
     // setup the write_request msg
     const res = {
+        'connection_id': null, // TODO: Fix ReResponder for multiple responses?
         'type': 'write_request',
         'resource_id': null,
         'path': null,
