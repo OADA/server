@@ -1,6 +1,6 @@
 module.exports = {
-  domain: 'api.growersync.trelisfw.io', // just here for informational purposes
-  baseuri: 'https://api.growersync.trelisfw.io/', // just here for informational purposes
+  domain: 'api.growersync.trellisfw.io', // just here for informational purposes
+  baseuri: 'https://api.growersync.trellisfw.io/', // just here for informational purposes
   logo: 'logo.svg',
   name: 'Grower Sync',
   tagline: 'Data Connections for Growers',

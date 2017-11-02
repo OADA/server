@@ -2,8 +2,8 @@
 // and should not be considered private or protected, including the
 // private keys
 module.exports = {
-  domain: 'api.pspperfection.trelisfw.io',
-  baseuri: 'https://api.pspperfection.trelisfw.io/',
+  domain: 'api.pspperfection.trellisfw.io',
+  baseuri: 'https://api.pspperfection.trellisfw.io/',
   logo: 'logo.svg',
   name: 'PSP Perfection',
   tagline: 'We are packers, shippers, and processors',

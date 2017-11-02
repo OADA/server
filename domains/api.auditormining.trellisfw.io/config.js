@@ -2,8 +2,8 @@
 // and should not be considered private or protected, including the
 // private keys
 module.exports = {
-  domain: 'api.auditormining.trelisfw.io',
-  baseuri: 'https://api.auditormining.trelisfw.io/',
+  domain: 'api.auditormining.trellisfw.io',
+  baseuri: 'https://api.auditormining.trellisfw.io/',
   logo: 'logo.svg',
   name: 'Auditor Mining',
   tagline: 'Improving Food Safety through Analytics',

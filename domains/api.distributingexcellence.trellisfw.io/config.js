@@ -2,8 +2,8 @@
 // and should not be considered private or protected, including the
 // private keys
 module.exports = {
-  domain: 'api.distributingexcellence.trelisfw.io',
-  baseuri: 'https://api.distributingexcellence.trelisfw.io/',
+  domain: 'api.distributingexcellence.trellisfw.io',
+  baseuri: 'https://api.distributingexcellence.trellisfw.io/',
   logo: 'logo.svg',
   name: 'Distributing Excellence',
   tagline: 'We deliver excellence!',

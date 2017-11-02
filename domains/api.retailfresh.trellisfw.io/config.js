@@ -2,8 +2,8 @@
 // and should not be considered private or protected, including the
 // private keys
 module.exports = {
-  domain: 'api.retailfresh.trelisfw.io',
-  baseuri: 'https://api.retailfresh.trelisfw.io/',
+  domain: 'api.retailfresh.trellisfw.io',
+  baseuri: 'https://api.retailfresh.trellisfw.io/',
   logo: 'logo.svg',
   name: 'Retail Fresh',
   tagline: 'We sell retail stuff...fresh!',

@@ -2,8 +2,8 @@
 // and should not be considered private or protected, including the
 // private keys
 module.exports = {
-  domain: 'api.abcaudits.trelisfw.io',
-  baseuri: 'https://api.abcaudits.trelisfw.io/',
+  domain: 'api.abcaudits.trellisfw.io',
+  baseuri: 'https://api.abcaudits.trellisfw.io/',
   logo: 'logo.svg',
   name: 'ABC Audits',
   tagline: 'Audits done right!',

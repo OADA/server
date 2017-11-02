@@ -2,8 +2,8 @@
 // and should not be considered private or protected, including the
 // private keys
 module.exports = {
-  domain: 'api.certificationanalytics.trelisfw.io',
-  baseuri: 'https://api.certificationanalytics.trelisfw.io/',
+  domain: 'api.certificationanalytics.trellisfw.io',
+  baseuri: 'https://api.certificationanalytics.trellisfw.io/',
   logo: 'logo.svg',
   name: 'Certification Analytics',
   tagline: 'Helping you stay compliant and safe',
