@@ -32,19 +32,19 @@ module.exports = [
 
 
   //-------------------------------------------------------
-  // /bookmarks/fpad
+  // /bookmarks/trellisfw
   {
-    _id: 'edges/default:edges_bookmarks_fpad_999',
+    _id: 'edges/default:edges_bookmarks_trellisfw_999',
     _from: 'graphNodes/resources:default:resources_bookmarks_999',
-    _to: 'graphNodes/resources:default:resources_fpad_999',
-    name: 'fpad',
+    _to: 'graphNodes/resources:default:resources_trellisfw_999',
+    name: 'trellisfw',
     versioned: true,
   },
   //--------------------------------------------------------
-  // /bookmarks/fpad/clients
+  // /bookmarks/trellisfw/clients
   {
-    _id: 'edges/default:edges_fpad_clients_999',
-    _from: 'graphNodes/resources:default:resources_fpad_999',
+    _id: 'edges/default:edges_trellisfw_clients_999',
+    _from: 'graphNodes/resources:default:resources_trellisfw_999',
     _to: 'graphNodes/resources:default:resources_clients_999',
     name: 'clients',
     versioned: true,

@@ -66,7 +66,7 @@ responderRequester.on('request', function handleReq(req) {
 	if (req.code !== 'success') return
 	trace('request: ', req)
 	return oadaLib.resources.getResource(req.resource_id).then((res) => {
-		if (res._type !== 'application/vnd.fpad.certifications.globalgap.1+json') return
+		if (res._type !== 'application/vnd.trellisfw.certifications.globalgap.1+json') return
 		trace('res', res)
 		let writes = []
 		let owner = findNewCertifications(res, res._meta._owner).then((write) => {
@@ -113,10 +113,10 @@ function findNewCertifications(certsResource, id) {
 			'resource_id': '',
 			'path_leftover': '/resources/'+uuid.v4(),
 			'user_id': user._id,
-			'contentType': 'application/vnd.fpad.certifications.globalgap.1+json',
+			'contentType': 'application/vnd.trellisfw.certifications.globalgap.1+json',
 		}
 		certifications.body = {
-			_type: 'application/vnd.fpad.certifications.globalgap.1+json',
+			_type: 'application/vnd.trellisfw.certifications.globalgap.1+json',
 			_id: certifications.path_leftover.replace(/^\//, ''),
 			_rev: '0-0',
 		}
@@ -128,16 +128,16 @@ function findNewCertifications(certsResource, id) {
 				}
 			}
 		})
-		let fpad = {
+		let trellisfw = {
 			'resource_id': '',
 			'path_leftover': '/resources/'+uuid.v4(),
 			'user_id': user._id,
-			'contentType': 'application/vnd.fpad.1+json',
+			'contentType': 'application/vnd.trellisfw.1+json',
 			'indexer': true,
 		}
-		fpad.body = {
-			_type: 'application/vnd.fpad.1+json',
-			_id: fpad.path_leftover.replace(/^\//, ''),
+		trellisfw.body = {
+			_type: 'application/vnd.trellisfw.1+json',
+			_id: trellisfw.path_leftover.replace(/^\//, ''),
 			_rev: '0-0',
 			certifications: {
 				_id: certifications.body._id,
@@ -152,29 +152,29 @@ function findNewCertifications(certsResource, id) {
 			'indexer': true,
 		}
 		bookmarks.body = {
-			fpad: {
-				_id: fpad.body._id,
-				_rev: fpad.body._rev
+			trellisfw: {
+				_id: trellisfw.body._id,
+				_rev: trellisfw.body._rev
 			}
 		}
-    trace('FPAD RESOURCE', fpad)
+    trace('trellisfw RESOURCE', trellisfw)
     trace('CERTIFICATIONS RESOURCE', certifications)
     trace('BOOKMARKS RESOURCE', bookmarks)
-		return oadaLib.resources.lookupFromUrl('/'+user.bookmarks._id+'/fpad/certifications', user._id).then((result) => {
+		return oadaLib.resources.lookupFromUrl('/'+user.bookmarks._id+'/trellisfw/certifications', user._id).then((result) => {
 			trace('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
 			trace('lookupUrl result: ', result)
-			if (result.path_leftover === '') { // fpad and certifications exist
+			if (result.path_leftover === '') { // trellisfw and certifications exist
 				certifications.path_leftover = ''
 				certifications.resource_id = result.resource_id
-				certifications.contentType = 'application/vnd.fpad.certifications.globalgap.1+json';
+				certifications.contentType = 'application/vnd.trellisfw.certifications.globalgap.1+json';
 				delete certifications.body._id
 				delete certifications.body._rev
 				trace('GETreSource', result.resource_id)
 				return oadaLib.resources.getResource(result.resource_id).then((curCerts) => {
-					if (curCerts._type === 'application/vnd.fpad.certifications.globalgap.1+json') {
+					if (curCerts._type === 'application/vnd.trellisfw.certifications.globalgap.1+json') {
 						delete certifications.body._type
 					} else {
-						certifications.body._type = 'application/vnd.fpad.certifications.globalgap.1+json'
+						certifications.body._type = 'application/vnd.trellisfw.certifications.globalgap.1+json'
 					}
 					trace('Current CERTS', curCerts)
 					trace('New CERTS', newCerts)
@@ -192,20 +192,20 @@ function findNewCertifications(certsResource, id) {
 					writes.push(certifications)
 					return writes
 				})
-			} else if (/\/fpad/.test(result.path_leftover)) {
-			// neither fpad nor certifications exist
-				trace('2', [certifications, fpad, bookmarks])
-				writes.push(fpad, bookmarks, certifications)
+			} else if (/\/trellisfw/.test(result.path_leftover)) {
+			// neither trellisfw nor certifications exist
+				trace('2', [certifications, trellisfw, bookmarks])
+				writes.push(trellisfw, bookmarks, certifications)
 				return writes
 			} else {
-			// fpad exists, certifications doesn't exist
-				delete fpad.body._id
-				delete fpad.body._rev
-				delete fpad.body._type
-				fpad.resource_id = result.resource_id
-				fpad.path_leftover= '' 
-				trace('3', [certifications, fpad])
-				writes.push(fpad, certifications)
+			// trellisfw exists, certifications doesn't exist
+				delete trellisfw.body._id
+				delete trellisfw.body._rev
+				delete trellisfw.body._type
+				trellisfw.resource_id = result.resource_id
+				trellisfw.path_leftover= '' 
+				trace('3', [certifications, trellisfw])
+				writes.push(trellisfw, certifications)
 				return writes
 			}
 		})

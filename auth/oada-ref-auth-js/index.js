@@ -191,7 +191,7 @@ module.exports = function(conf) {
         errormsg: errormsg,
 
         // domain_hint can be set when authorization server redirects to login
-        domain_hint: "growersync.fpad.io", //req.session.domain_hint || '',
+        domain_hint: "growersync.trellisfw.io", //req.session.domain_hint || '',
       });
     });
 
@@ -206,7 +206,7 @@ module.exports = function(conf) {
 
 
     //-----------------------------------------------------------------
-    // Handle the POST from clicking the "login with OADA/fPAD" button
+    // Handle the POST from clicking the "login with OADA/trellisfw" button
     app.post(config.get('auth:endpoints:loginConnect'), function(req,res,next) {
 
       // First, get domain entered in the posted form and strip protocol if they used it

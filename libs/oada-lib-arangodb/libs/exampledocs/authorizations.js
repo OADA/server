@@ -21,7 +21,7 @@ module.exports = [
   {
     '_id': 'authorizations/default:authorization-321',
     'token': 'abc',
-    'scope': ['fpad:all'],
+    'scope': ['trellisfw:all'],
     'createTime': 1413831649937,
     'expiresIn': 60,
     'user': {'_id': 'users/default:users_sam_321'},
@@ -39,7 +39,7 @@ module.exports = [
   {
     '_id': 'authorizations/default:authorization-999',
     'token': 'aaa',
-    'scope': ['fpad:all'],
+    'scope': ['trellisfw:all'],
     'createTime': 1413831649937,
     'expiresIn': 60,
     'user': {'_id': 'users/default:users_audrey_999'},
@@ -48,7 +48,7 @@ module.exports = [
   {
     '_id': 'authorizations/default:authorization-777',
     'token': 'ggg',
-    'scope': ['fpad:all'],
+    'scope': ['trellisfw:all'],
     'createTime': 1413831649937,
     'expiresIn': 60,
     'user': {'_id': 'users/default:users_gary_growersync'},
@@ -57,7 +57,7 @@ module.exports = [
   {
     '_id': 'authorizations/default:authorization-444',
     'token': 'ppp',
-    'scope': ['fpad:all'],
+    'scope': ['trellisfw:all'],
     'createTime': 1413831649937,
     'expiresIn': 60,
     'user': {'_id': 'users/default:users_pete_pspperfection'},
@@ -66,7 +66,7 @@ module.exports = [
   {
     '_id': 'authorizations/default:authorization-555',
     'token': 'rrr',
-    'scope': ['fpad:all'],
+    'scope': ['trellisfw:all'],
     'createTime': 1413831649937,
     'expiresIn': 60,
     'user': {'_id': 'users/default:users_rick_retailfresh'},
@@ -75,7 +75,7 @@ module.exports = [
   {
     '_id': 'authorizations/default:authorization-666',
     'token': 'ddd',
-    'scope': ['fpad:all'],
+    'scope': ['trellisfw:all'],
     'createTime': 1413831649937,
     'expiresIn': 60,
     'user': {'_id': 'users/default:users_diane_distributingexcellence'},

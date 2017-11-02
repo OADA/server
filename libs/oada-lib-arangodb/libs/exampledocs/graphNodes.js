@@ -112,10 +112,10 @@ module.exports = [
     'is_resource': true,
   },
   //------------------------------------------------------
-  // fpad document:
+  // trellisfw document:
   {
-    '_id': 'graphNodes/resources:default:resources_fpad_999',
-    'resource_id': 'resources/default:resources_fpad_999',
+    '_id': 'graphNodes/resources:default:resources_trellisfw_999',
+    'resource_id': 'resources/default:resources_trellisfw_999',
     'is_resource': true,
   },
   //------------------------------------------------------

@@ -49,7 +49,7 @@ describe('shares service', () => {
 				url: 'https://vip3.ecn.purdue.edu/bookmarks/rocks/rocks-index/90j2klfdjss/_meta/_permissions',
 				headers: {
           'Authorization': 'Bearer xyz',
-					'Content-Type': 'application/vnd.fpad.client'
+					'Content-Type': 'application/vnd.trellisfw.client'
 				},
 		    data: {
 					[`users/default:user_sam_321`]: {

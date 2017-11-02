@@ -19,8 +19,8 @@ module.exports = [
     'domain': 'localhost',
     'username': 'dummy_username_oidcuser_frank2',
     'oidc': {
-      'sub': 'users/default:users_gary_growersync', // can login as Frank at growersync.fpad.io
-      'iss': 'api.growersync.fpad.io', // iss = issuer
+      'sub': 'users/default:users_gary_growersync', // can login as Frank at growersync.trellisfw.io
+      'iss': 'api.growersync.trellisfw.io', // iss = issuer
     },
     'name': 'Gary Grower 2',
     'family_name': 'Gary2',
@@ -50,7 +50,7 @@ module.exports = [
     '_id': 'users/default:users_audrey_999',
     'username': 'audrey',
     'password': 'test',
-    'domain': 'abcaudits.fpad.io',
+    'domain': 'abcaudits.trellisfw.io',
     'name': 'Auditor Audrey',
     'family_name': 'Auditor',
     'given_name': 'Audrey',
@@ -64,7 +64,7 @@ module.exports = [
     '_id': 'users/default:users_gary_growersync',
     'username': 'gary@gmail.com',
     'password': 'test',
-    'domain': 'growersync.fpad.io',
+    'domain': 'growersync.trellisfw.io',
     'name': 'Grower Gary',
     'family_name': 'Grower',
     'given_name': 'Gary',
@@ -78,7 +78,7 @@ module.exports = [
     '_id': 'users/default:users_pete_pspperfection',
     'username': 'pete@gmail.com',
     'password': 'test',
-    'domain': 'pspperfection.fpad.io',
+    'domain': 'pspperfection.trellisfw.io',
     'name': 'Packershipperprocessor Pete',
     'family_name': 'Packershipperprocessor',
     'given_name': 'Pete',
@@ -92,7 +92,7 @@ module.exports = [
     '_id': 'users/default:users_rick_retailfresh',
     'username': 'rick@gmail.com',
     'password': 'test',
-    'domain': 'retailfresh.fpad.io',
+    'domain': 'retailfresh.trellisfw.io',
     'name': 'Retailer Rick',
     'family_name': 'Retailer',
     'given_name': 'Rick',
@@ -106,7 +106,7 @@ module.exports = [
     '_id': 'users/default:users_diane_distributingexcellence',
     'username': 'diane@gmail.com',
     'password': 'test',
-    'domain': 'dstributingexcellence.fpad.io',
+    'domain': 'dstributingexcellence.trellisfw.io',
     'name': 'Distributor Diane',
     'family_name': 'Distributor',
     'given_name': 'Diane',

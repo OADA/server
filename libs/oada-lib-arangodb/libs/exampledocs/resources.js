@@ -190,8 +190,8 @@ module.exports = [
               },
               // leave out _changes in the _changes itself
             },
-            'fpad': {
-              '_id': 'resources/default:resources_fpad_999',
+            'trellisfw': {
+              '_id': 'resources/default:resources_trellisfw_999',
               '_rev': '1-abc'
             }
           },
@@ -200,7 +200,7 @@ module.exports = [
         },
       },
     },
-    'fpad': {'_id': 'resources/default:resources_clients_999', '_rev': '1-abc'}
+    'trellisfw': {'_id': 'resources/default:resources_clients_999', '_rev': '1-abc'}
   },
 
   //--------------------
@@ -640,15 +640,15 @@ module.exports = [
     },
   },
   //------------------------------------------------------
-  // fpad document (audrey):
+  // trellisfw document (audrey):
   {
-    '_id': 'resources/default:resources_fpad_999',
+    '_id': 'resources/default:resources_trellisfw_999',
     '_oada_rev': '1-abc',
-    '_type': 'application/vnd.fpad.1+json',
+    '_type': 'application/vnd.trellisfw.1+json',
     '_meta': {
-      '_id': 'resources/default:resources_fpad_999/_meta',
+      '_id': 'resources/default:resources_trellisfw_999/_meta',
       '_rev': '1-abc',
-      '_type': 'application/vnd.fpad.1+json',
+      '_type': 'application/vnd.trellisfw.1+json',
       '_owner': 'users/default:users_audrey_999',
       'stats': {
         'createdBy': 'users/default:users_audrey_999',
@@ -657,16 +657,16 @@ module.exports = [
         'modified': 1494133055
       },
       '_changes': {
-        '_id': 'resources/default:resources_fpad_999/_meta/_changes',
+        '_id': 'resources/default:resources_trellisfw_999/_meta/_changes',
         '_rev': '1-abc',
         '1-abc': {
           'merge': {
             '_rev': '1-abc',
-            '_type': 'application/vnd.fpad.1+json',
+            '_type': 'application/vnd.trellisfw.1+json',
             '_meta': {
-              '_id': 'resources/default:resources_fpad_999/_meta',
+              '_id': 'resources/default:resources_trellisfw_999/_meta',
               '_rev': '1-abc',
-              '_type': 'application/vnd.fpad.1+json',
+              '_type': 'application/vnd.trellisfw.1+json',
               '_owner': 'users/default:users_audrey_999',
               'stats': {
                 'createdBy': 'users/default:users_audrey_999',
@@ -695,11 +695,11 @@ module.exports = [
   {
     '_id': 'resources/default:resources_clients_999',
     '_oada_rev': '1-abc',
-    '_type': 'application/vnd.fpad.clients.1+json',
+    '_type': 'application/vnd.trellisfw.clients.1+json',
     '_meta': {
       '_id': 'resources/default:resources_clients_999/_meta',
       '_rev': '1-abc',
-      '_type': 'application/vnd.fpad.clients.1+json',
+      '_type': 'application/vnd.trellisfw.clients.1+json',
       '_owner': 'users/default:users_audrey_999',
       'stats': {
         'createdBy': 'users/default:users_audrey_999',
@@ -714,11 +714,11 @@ module.exports = [
         '1-abc': {
           'merge': {
             '_rev': '1-abc',
-            '_type': 'application/vnd.fpad.clients.1+json',
+            '_type': 'application/vnd.trellisfw.clients.1+json',
             '_meta': {
               '_id': 'resources/default:resources_clients_999/_meta',
               '_rev': '1-abc',
-              '_type': 'application/vnd.fpad.clients.1+json',
+              '_type': 'application/vnd.trellisfw.clients.1+json',
               '_owner': 'users/default:users_audrey_999',
               'stats': {
                 'createdBy': 'users/default:users_audrey_999',
