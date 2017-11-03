@@ -12,10 +12,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-'use strict';
 
-var path = require('path');
-var fs = require('fs');
+'use strict';
 
 module.exports = {
   //isProduction: false, // set to true and random database will be created for you
@@ -33,6 +31,12 @@ module.exports = {
                         edgeCollection: true },
            putBodies: { name: 'putBodies',      indexes: [ ], defaults: './libs/exampledocs/putBodies',
                         createOptions: { isVolatile: true } },
+    },
+    retry: {
+      deadlock: {
+        retries: 10,
+        delay: 50
+      }
     },
     init: {
       // NOTE: passwordSalt HAS to match the one in auth
