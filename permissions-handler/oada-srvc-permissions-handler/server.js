@@ -56,6 +56,7 @@ const scopeTypes = {
         'application/vnd.trellisfw.certification.primusgfs.1+json',
         'application/vnd.trellisfw.certification.globalgap.1+json',
         'application/vnd.trellisfw.certifications.globalgap.1+json',
+        'application/vnd.trellisfw.certifications.1+json',
         'application/vnd.trellisfw.client.1+json',
         'application/vnd.trellisfw.clients.1+json',
         'application/vnd.trellisfw.connection.1+json',
