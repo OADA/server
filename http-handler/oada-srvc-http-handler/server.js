@@ -17,7 +17,7 @@ var config = require('./config');
 
 /////////////////////////////////////////////////////////////////
 // Setup express:
-const http = require('http')
+const http = require('http');
 var app = express();
 var server = http.createServer(app);
 var resources = require('./resources');
@@ -26,8 +26,6 @@ var users = require('./users');
 require('./websockets')(server);
 
 var requester = require('./requester');
-
-const url = require('url')
 
 app.get('*', (req, res, next) => { console.log(req.originalUrl); next(); })
 app.get('/favicon.ico', (req, res) => res.end());
