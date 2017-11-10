@@ -416,7 +416,6 @@ function deleteResource(id) {
 
   // Query deletes resouce, its nodes, and outgoing edges (but not incoming)
   return db.query(aql`
-    WITH ${resources}, ${graphNodes}, ${edges}
     LET res = FIRST(
       REMOVE { '_key': ${key} } IN ${resources}
       RETURN OLD
@@ -454,7 +453,6 @@ function deletePartialResource(id, path, doc) {
   path = pointer.compile(path);
 
   let query = aql`
-    WITH ${resources}, ${graphNodes}, ${edges}
     LET res = DOCUMENT(${resources}, ${key})
 
     LET start = FIRST(
