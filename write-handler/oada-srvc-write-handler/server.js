@@ -1,9 +1,8 @@
 'use strict';
 
-var Promise = require('bluebird');
-const resources = require('../../libs/oada-lib-arangodb').resources;
-const putBodies = require('../../libs/oada-lib-arangodb').putBodies;
-const Responder = require('../../libs/oada-lib-kafka').Responder;
+const Promise = require('bluebird');
+const {resources, putBodies} = require('../../libs/oada-lib-arangodb');
+const {Responder} = require('../../libs/oada-lib-kafka');
 const pointer = require('json-pointer');
 const hash = require('object-hash');
 const error = require('debug')('write-handler:error');
@@ -12,15 +11,23 @@ const trace = require('debug')('write-handler:trace');
 
 var config = require('./config');
 
-var responder = new Responder(
-    config.get('kafka:topics:writeRequest'),
-    config.get('kafka:topics:httpResponse'),
-    'write-handlers'
-);
+var responder = new Responder({
+    consumeTopic: config.get('kafka:topics:writeRequest'),
+    produceTopic: config.get('kafka:topics:httpResponse'),
+    group: 'write-handlers'
+});
 
-responder.on('request', function handleReq(req, msg) {
-	  trace('~~~~~~~~~~~~~~~~~~')
-	  trace('REQUEST: ', req)
+// Only run one write at a time?
+// TODO: Maybe block separately for each resource
+let p = Promise.resolve();
+responder.on('request', (...args) => {
+    // Run once last write finishes (whether it worked or not)
+    p = p.catch(() => {}).then(() => handleReq(...args));
+    return p;
+});
+
+function handleReq(req, msg) {
+    trace('REQUEST: ', req);
     req.source = req.source || '';
     var id = req['resource_id'];
 
@@ -45,7 +52,7 @@ responder.on('request', function handleReq(req, msg) {
                 // TODO: This is gross
                 let ppath = Array.from(path);
                 method = (id, obj) =>
-                        resources.deletePartialResource(id, ppath, obj);
+                    resources.deletePartialResource(id, ppath, obj);
                 body = null;
                 changeType = 'delete';
             } else {
@@ -108,8 +115,8 @@ responder.on('request', function handleReq(req, msg) {
 
         // If the hash part of the rev is identical to last time,
         // don't re-execute a PUT to keep it idempotent
-        existingResourceInfo._rev = existingResourceInfo._rev || '0-0';
-        const oldRevHash = existingResourceInfo._rev.split('-')[1];
+        existingResourceInfo['_rev'] = existingResourceInfo['_rev'] || '0-0';
+        const oldRevHash = existingResourceInfo['_rev'].split('-')[1];
         if (oldRevHash === newRevHash) {
             info('PUT would result in same rev hash as the current one,' +
                     ' skipping write.');
@@ -149,8 +156,8 @@ responder.on('request', function handleReq(req, msg) {
             'user_id': req['user_id'],
             'authorizationid': req['authorizationid'],
             'path_leftover': req['path_leftover'],
-					'contentType': req['contentType'],
-					'indexer': req['indexer'],
+            'contentType': req['contentType'],
+            'indexer': req['indexer'],
         };
     }).catch(resources.NotFoundError, function respondNotFound(err) {
         error(err);
@@ -176,4 +183,4 @@ responder.on('request', function handleReq(req, msg) {
     });
 
     return Promise.join(upsert, cleanup, resp => resp);
-});
+}
