@@ -150,6 +150,11 @@ function getResource(id, path) {
     .split('/')
     .filter(x => !!x);
 
+  if (parts[0] === '_rev') {
+    // Get OADA rev, not arango one
+    parts[0] = '_oada_rev';
+  }
+
   let bindVars = parts.reduce((b, part, i) => {
     b[`v${i}`] = part;
     return b;
