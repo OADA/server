@@ -19,7 +19,7 @@ const config = require('./config');
 var requester = require('./requester');
 
 var router = express.Router();
-var expressWs = require('express-ws')(router)
+var expressWs = require('express-ws')(router);
 
 // Turn POSTs into PUTs at random id
 router.post('/*?', function postResource(req, res, next) {
@@ -113,7 +113,7 @@ router.get('/*', function getResource(req, res, next) {
     var doc = resources.getResource(
             req.oadaGraph['resource_id'],
             req.oadaGraph['path_leftover']
-		);
+    );
 
     return Promise
         .join(doc, function returnDoc(doc) {
@@ -187,6 +187,17 @@ router.put('/*', bodyParser.text({
     type: ['json', '+json'],
     limit: '20mb',
 }));
+router.put('/*', function checkBodyParsed(req, res, next) {
+    let err = null;
+
+    // TODO: Better way to decide if body was parsed?
+    if (typeof req.body !== 'string') {
+        // Body hasn't been parsed, assume it was bad
+        err = new OADAError('Unsupported Media Type', 415);
+    }
+
+    return next(err);
+});
 
 router.put('/*', function putResource(req, res, next) {
     info(`Saving PUT body for request ${req.id}`);
