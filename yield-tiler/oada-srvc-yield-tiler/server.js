@@ -183,13 +183,21 @@ let queue = cq().limit({concurrency: 1}).process(async function indexYield(req) 
 							}
 						}
 
-						// If the geohash resource doesn't exist, create it and put the data within
+						// If the geohash resource doesn't exist, submit a deep PUT with the
+						// additionalStats as the body
 						if (result.path_leftover !== '') {
-						  trace('YIELD TILER PATH A', bucketPath)
-							return recursiveStuff(pointer.parse(bucketPath), 0, write.body, user, [], sharedTree).then((pathWrites) => {
-								trace('return pathWrites', pathWrites)
-								return pathWrites
+							trace('YIELD TILER PATH A', bucketPath)
+							return axios({
+								method: 'PUT',
+								url: 'http://http-handler/bookmarks'+bucketPath,
+								headers: {
+									Authorization: 'Bearer '+
+									'x-oada-bookmarks-type': 'tiled-maps',
+									'Content-Type': 'application/vnd.oada.harvest.1+json'
+								},
+								data: additionalStats,
 							})
+
 						}
 
 						//Else, get the resource and update it.
@@ -241,118 +249,7 @@ let recomputeStats = function(currentStats, additionalStats) {
   return currentStats;
 };
 
-function replaceLinks(desc, example) {
-  let ret = (Array.isArray(example)) ? [] : {};
-  if (!desc) return example;  // no defined descriptors for this level
-  Object.keys(example).forEach(function(key, idx) {
-		if (key === '*') { // Don't put *s into oada. Ignore them 
-			return;
-		}
-		let val = example[key];
-    if (typeof val !== 'object' || !val) {
-      ret[key] = val; // keep it asntType: 'application/vnd.oada.harvest.1+json'
-      return;
-		}
-		trace('key:',key,'val:', val, 'has _id', val._id ? true : false)
-		if (val._id) { // If it's an object, and has an '_id', make it a link from descriptor
-      ret[key] = { _id: desc[key]._id, _rev: '0-0' };
-      return;
-    }
-    ret[key] = replaceLinks(desc[key],val); // otherwise, recurse into the object looking for more links
-  });
-  return ret;
-}
-
-function recursiveStuff(fullPathArray, i, data, user, writes, tree) {
-	// If a * occurs at this position in the setupTree, replace current element
-	// with a * so it can be checked against the setupTree
-	let currentPathArray = fullPathArray.slice(0, i+1)
-	let currentPath = pointer.compile(currentPathArray)
-	let nextPiece = fullPathArray[i+1];
-  let nextPathArray = fullPathArray.slice(0, i+2)
-	if (nextPiece) {
-	  trace('YIELD TILER AAAAAA')
-		trace('has star?', pointer.has(tree, currentPath+'/*'), currentPath+'/*')
-		//Update the tree by duplicating content below * for the nextPiece key
-		//Its this copying of the * tree that can get us into trouble.
-		if (pointer.has(tree, currentPath+'/*')) {
-			let nextPath = pointer.compile(nextPathArray)
-			trace('nextPath', nextPath)
-			if (!pointer.has(tree, nextPath)) {
-				let p = _.cloneDeep(pointer.get(tree, currentPath+'/*'));
-				trace('about to set ', nextPath, 'to', p)
-				pointer.set(tree, nextPath, p)
-				//				pointer.remove(tree, currentPath+'/*')
-			}
-		}
-		return recursiveStuff(fullPathArray, i+1, data, user, writes, tree).then((result) => {
-			return stuffToDo(currentPath, user, result, i<fullPathArray.length-1, tree)
-		})
-	}
-	trace('YIELD TILER BBBBBB', currentPath)
-	// Last part of the given path, PUT the data
-	let merged = _.cloneDeep(pointer.get(tree, currentPath))
-	trace('merged', merged)
-	_.merge(merged, data)
-	pointer.set(tree, currentPath, merged)
-	trace('merged 2', pointer.get(tree, currentPath))
-	return stuffToDo(currentPath, user, writes, i<fullPathArray.length-1, tree)
-}
-
-// Returns the current array of writes as well as the content at currentPath
-// with resources replaced with links
-async function stuffToDo(currentPath, user, writes, maxDepth, tree) {
-  trace('currentPath', currentPath)
-	// Only generate write requests for resources
-	let type = currentPath+'/_type';
-	if (pointer.has(tree, type)) {
-		let contentType = pointer.get(tree, type);
-		let path = '/'+user.bookmarks._id+currentPath;
-		// If the resource already exists, write links to potentially new children
-		return oadaLib.resources.lookupFromUrl(path).then((result) => {
-			let idPath = currentPath+'/_id';
-			// _id of the resource should be the current _id if it already exists or 
-			// if a write is already pending. It could've already made in previous
-			// geohash-length processing
-			let resId = result.path_leftover === '' ? result.resource_id : (pointer.has(tree, idPath) ? pointer.get(tree, idPath) : 'resources/'+uuid.v4());
-			trace('setting _id', resId, idPath)
-			pointer.set(tree, idPath, resId)
-
-    	let body = _.cloneDeep(pointer.get(tree, currentPath))
-	    body = replaceLinks(body, body);
-	    trace('body', body)
-			if (result.path_leftover === '' && maxDepth) {
-				// Write to resources that already exist anyways to ensure that links
-				// get made properly. They should merge in without issue.
-        writes.push({
-					'resource_id': result.path_leftover === '' ? resId : '',
-					'path_leftover': result.path_leftover === '' ? '' : resId,
-					'user_id': user._id,
-				  contentType,
-					body
-				})
-				return writes
-			} else {
-			  writes.push({
-					'resource_id': '',
-					'path_leftover': '/'+resId,
-					'user_id': user._id,
-					contentType,
-					body
-				})
-				return writes
-			}
-		})
-	}
-	//Not a resource, just return an object with the parent resource linked
-	return writes
-}
-
 queue.drained(function queueDrained() {
   trace('THE QUEUE IS DRAINED')
-  trace('*****************************************')
-  trace('*****************************************')
-  trace('*****************************************')
-  trace('*****************************************')
   trace('*****************************************')
 })

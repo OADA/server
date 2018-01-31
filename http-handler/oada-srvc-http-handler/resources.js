@@ -227,7 +227,7 @@ function replaceLinks(desc) {
 }
 
 let trees = {
-    yield: {
+    'as-harvested': {
         'harvest': {
             '_type': "application/vnd.oada.harvest.1+json",
             'as-harvested': {
@@ -251,7 +251,10 @@ let trees = {
                     }
                 }
             },
-            /*
+        },
+    },
+    'tiled-maps': {
+        'harvest': {
             'tiled-maps': {
                 '_type': "application/vnd.oada.tiled-maps.1+json",
                 'dry-yield-map': {
@@ -277,7 +280,6 @@ let trees = {
                     }
                 }
             }
-            */
         }
     }
 }
@@ -321,7 +323,6 @@ router.put('/*', function ensureTreeExists(req, res, next) {
             let parentId = req.oadaGraph.resource_id.replace(/^\//, '');
             let parentPath = ''
             return Promise.each(pieces, (piece, i) => {
-
                 trace('subtree', subTree)
                 trace('next piece', i, path+ '/' + piece)
                 let nextPiece = pointer.has(subTree, '/'+piece) ? '/'+piece : undefined;

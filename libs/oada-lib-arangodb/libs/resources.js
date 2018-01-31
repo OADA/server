@@ -503,7 +503,7 @@ function deletePartialResource(id, path, doc) {
 
     LET e = (
       FOR edge IN ${edges}
-        FILTER (v[*]._id ANY == edge._to) || (v[*]._id ANY == edge._from)
+        FILTER (v[*]._id ANY == edge._to) || (v[*]._id ANY == edge._from) || (edge._from == start._id && edge.name == ${name})
         REMOVE edge IN ${edges}
         RETURN OLD
     )
