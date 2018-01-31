@@ -32,7 +32,7 @@ const error = debug('yield-tiler:error');
 const Promise = require('bluebird');
 const URL = require('url');
 const oadaLib = require('../../libs/oada-lib-arangodb');
-const {ResponderRequester} = require('../../libs/oada-lib-kafka');
+const {Responder} = require('../../libs/oada-lib-kafka');
 const {resources, remoteResources} = require('../../libs/oada-lib-arangodb');
 const config = require('./config');
 const axios = require('axios');
@@ -50,52 +50,16 @@ const cq = require('concurrent-queue');
 
 //---------------------------------------------------------
 // Kafka intializations:
-const responderRequester = new ResponderRequester({
-		requestTopics: {
-		produceTopic: config.get('kafka:topics:writeRequest'),
-			},
-		respondTopics: {
-		consumeTopic: config.get('kafka:topics:httpResponse'),
-			},
-  group: 'yield-tiler'
+const responder = new Responder({
+	consumeTopic: config.get('kafka:topics:httpResponse'),
+	group: 'yield-tiler'
 });
 
-let setupTree = {
-	'harvest': {
-		'_type': "application/vnd.oada.harvest.1+json",
-		'tiled-maps': {
-			'_type': "application/vnd.oada.tiled-maps.1+json",
-			'dry-yield-map': {
-				'_type': "application/vnd.oada.tiled-maps.dry-yield-map.1+json",
-				'crop-index': {
-					'*': {
-						"_type": "application/vnd.oada.tiled-maps.dry-yield-map.1+json",
-						'geohash-length-index': {
-							'*': {              
-								"_type": "application/vnd.oada.tiled-maps.dry-yield-map.1+json",
-								'geohash-index': {
-									'*': {
-										"_type": "application/vnd.oada.tiled-maps.dry-yield-map.1+json",
-										"datum": "WGS84",
-										"geohash-data": {},
-										"stats": {},
-										"templates": {}
-									}
-								}
-							}
-						}
-					}
-				}
-			}
-		}
-	}
-}
-
 module.exports = function stopResp() {
-    return responderRequester.disconnect();
+    return responder.disconnect();
 };
 
-responderRequester.on('request', async function handleReq(req) {
+responder.on('request', async function handleReq(req) {
 
 	if (req.msgtype !== 'write-response') {
     return;
@@ -103,22 +67,17 @@ responderRequester.on('request', async function handleReq(req) {
 	if (req.code !== 'success') {
 	  return;
 	}
-	trace('queueing up', req.resource_id)
 	queue(req)
   return undefined
 })
 
 let queue = cq().limit({concurrency: 1}).process(async function indexYield(req) { 
-	trace('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
-	trace('running queue item with id:', req.resource_id)
 
 	let id = req['resource_id'];
 
 	let orev = req['_orev'];
 	let desc = await resources.getChanges(id, orev||'0-0')
 
-	let sharedTree = _.cloneDeep(setupTree)
-	let writes = [];
 	return Promise.map(desc, (change) => {
 		return Promise.map(Object.keys(change.changes.merge.data || {}), (key) => {
 			let pt = change.changes.merge.data[key];
@@ -167,22 +126,6 @@ let queue = cq().limit({concurrency: 1}).process(async function indexYield(req) 
 							template: templateId
 						}
 
-						let write = {
-							'resource_id': user.bookmarks._id+bucketPath,
-							'path_leftover': '',
-							'user_id': user._id,
-							'contentType': 'application/vnd.oada.tiled-maps.dry-yield-map.1+json',
-							'body': {
-								'geohash-data': {
-									[aggregate]: additionalStats
-								},
-								stats: additionalStats,
-								templates: {
-									[templateId]: template
-								}
-							}
-						}
-
 						// If the geohash resource doesn't exist, submit a deep PUT with the
 						// additionalStats as the body
 						if (result.path_leftover !== '') {
@@ -191,13 +134,14 @@ let queue = cq().limit({concurrency: 1}).process(async function indexYield(req) 
 								method: 'PUT',
 								url: 'http://http-handler/bookmarks'+bucketPath,
 								headers: {
-									Authorization: 'Bearer '+
+									Authorization: 'Bearer def',
 									'x-oada-bookmarks-type': 'tiled-maps',
 									'Content-Type': 'application/vnd.oada.harvest.1+json'
 								},
 								data: additionalStats,
+							}).then((result) => {
+								trace('AXIOS ReSULT', result)
 							})
-
 						}
 
 						//Else, get the resource and update it.
@@ -205,36 +149,51 @@ let queue = cq().limit({concurrency: 1}).process(async function indexYield(req) 
 						return oadaLib.resources.getResource(result.resource_id).then((resource) => {
 							trace('B Path id', resource._id)
 							if (resource['geohash-data'][aggregate]) {
-								// 3) increment/compute new geohash bucket values
+								// increment/compute new geohash bucket values
 								//TODO: should probably check that they use the same template
-								write.resource_id = resource._id;
-								write.body['geohash-data'][aggregate] = recomputeStats(resource['geohash-data'][aggregate], additionalStats)
-								write.body.stats = recomputeStats(resource.stats, additionalStats)
-							  trace('HERES TE BODY', write.body)
-								return [write]
+								let data = {
+									'geohash-data': {
+										[aggregate]: recomputeStats(resource['geohash-data'][aggregate], additionalStats),
+									},
+									stats: recomputeStats(resource.stats, additionalStats)
+								}
+
+								return axios({
+									method: 'PUT',
+									url: 'http://http-handler/bookmarks'+bucketPath,
+									headers: {
+										Authorization: 'Bearer def',
+										'x-oada-bookmarks-type': 'tiled-maps',
+										'Content-Type': 'application/vnd.oada.harvest.1+json'
+									},
+									data,
+								}).then((result) => {
+									trace('AXIOS ReSULT', result)
+								})
 							} else {
 								// new aggregate. Push stats
-								return [write]
+								return axios({
+									method: 'PUT',
+									url: 'http://http-handler/bookmarks'+bucketPath,
+									headers: {
+										Authorization: 'Bearer def',
+										'x-oada-bookmarks-type': 'tiled-maps',
+										'Content-Type': 'application/vnd.oada.harvest.1+json'
+									},
+									data: {
+										'geohash-data': {
+											[aggregate]: additionalStats,
+										},
+										'stats': additionalStats
+									}
+								}).then((result) => {
+									trace('AXIOS ReSULT', result)
+								})
 							}
 						})
 					})
-				}, {concurrency: 1}).then((ghLengthWrites) => {
-					ghLengthWrites.forEach(write => writes.push(...write))
-					return writes
 				})
 			})
-		}, {concurrency: 1}).then((ptWrites) => {
-			ptWrites.forEach(write => writes.push(...write))
-      return writes
-		})
-	}, {concurrency: 1}).then((changes) => {
-		trace('..............................................')
-		trace('changes.................................', changes)
-		trace('..............................................')
-		changes.forEach(write => writes.push(...write))
-		//return writes
-		return Promise.map(writes, (write) => {
-			return responderRequester.send(write)
 		})
 	})
 })
@@ -248,8 +207,3 @@ let recomputeStats = function(currentStats, additionalStats) {
   currentStats['sum-yield-squared-area'] = currentStats['sum-yield-squared-area'] + additionalStats['sum-yield-squared-area'];
   return currentStats;
 };
-
-queue.drained(function queueDrained() {
-  trace('THE QUEUE IS DRAINED')
-  trace('*****************************************')
-})

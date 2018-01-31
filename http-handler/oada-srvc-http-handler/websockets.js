@@ -76,7 +76,7 @@ module.exports = function wsHandler(server) {
                 return;
             }
 
-            if (!msg.authorization) {
+            if (!msg.headers.authorization) {
                 let err = {
                     status: 400,
                     headers: [],
@@ -113,13 +113,9 @@ module.exports = function wsHandler(server) {
 
             let request = {
                 baseURL: 'http://127.0.0.1',
-                headers: {
-                    authorization: msg.authorization
-                }
+                headers: msg.headers
+
             };
-            if (msg.contentType) {
-                request.headers['Content-Type'] = msg.contentType;
-            }
 
             switch(msg.method.toLowerCase()) {
                 case 'watch':

@@ -912,6 +912,10 @@ supports-color@3.1.2:
   dependencies:
     has-flag "^1.0.0"
 
+timed-cache@^1.1.0:
+  version "1.1.0"
+  resolved "https://registry.yarnpkg.com/timed-cache/-/timed-cache-1.1.0.tgz#1f1425cc26cfac00294de703118e2f08c04805e2"
+
 trim@0.0.1:
   version "0.0.1"
   resolved "https://registry.yarnpkg.com/trim/-/trim-0.0.1.tgz#5858547f6b290757ee95cccc666fb50084c460dd"

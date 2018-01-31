@@ -359,10 +359,6 @@ function putResource(id, obj) {
           )
           RETURN resup.orev
       `
-      console.log('thingy!!!!!!!!!!!!!!!!!!!!!!!', thingy)
-      console.log(thingy.query)
-      console.dir(thingy.bindVars)
-      console.log(JSON.stringify(thingy.bindVars, null, 2))
       q = db.query(thingy);
 
     } else {

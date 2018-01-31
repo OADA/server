@@ -8,6 +8,7 @@ const hash = require('object-hash');
 const error = require('debug')('write-handler:error');
 const info = require('debug')('write-handler:info');
 const trace = require('debug')('write-handler:trace');
+const Cache = require('timed-cache');
 
 var config = require('./config');
 
@@ -20,13 +21,14 @@ var responder = new Responder({
 // Only run one write at a time?
 // TODO: Maybe block separately for each resource
 let p = Promise.resolve();
+let cache = new Cache({defaultTtl: 60 * 1000});
 responder.on('request', (...args) => {
     // Run once last write finishes (whether it worked or not)
     p = p.catch(() => {}).then(() => handleReq(...args));
     return p;
 });
 
-function handleReq(req, msg) {
+async function handleReq(req, msg) {
     trace('REQUEST: ', req);
     req.source = req.source || '';
     var id = req['resource_id'];
@@ -38,7 +40,19 @@ function handleReq(req, msg) {
     let existingResourceInfo = {};
 
     var start = new Date().getTime();
-    info(`PUTing to "${req['path_leftover']}" in "${id}"`);
+	  info(`PUTing to "${req['path_leftover']}" in "${id}"`);
+
+		if (req.rev) {
+			let cacheRev = cache.get(req.resource_id)
+			if (!cacheRev) {
+				cacheRev = await resources.getResource(req.resource_id, '_rev')
+			}
+			if (cacheRev !== req.rev) {
+				throw new Error(`Rev Mismatch. Request\'s: ${req.rev} Cache\'s: ${cacheRev}`)
+			}
+		}
+
+
     var upsert = body.then(function doUpsert(body) {
         var path = pointer.parse(req['path_leftover'].replace(/\/*$/, ''));
 
@@ -146,7 +160,11 @@ function handleReq(req, msg) {
         return method(id, obj).then(orev => ({rev, orev}));
     }).then(function respond({rev, orev}) {
         var end = new Date().getTime();
-        info(`Finished PUTing to "${req['path_leftover']}". +${end - start}ms`);
+			  info(`Finished PUTing to "${req['path_leftover']}". +${end - start}ms`);
+
+		  	// Put the new rev into the cache
+			  cache.put(id, rev);
+
         return {
             'msgtype': 'write-response',
             'code': 'success',
