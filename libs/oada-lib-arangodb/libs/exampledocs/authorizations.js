@@ -1,8 +1,8 @@
 module.exports = [
   {
     '_id': 'authorizations/default:authorization-123',
-    'token': 'xyz',
-    'scope': ['oada.rocks:all'],
+    'token': 'abc',
+    'scope': ['oada.yield:all'],
     'createTime': 1413831649937,
     'expiresIn': 60,
     'user': {'_id': 'users/default:users_frank_123'},
@@ -20,8 +20,8 @@ module.exports = [
 
   {
     '_id': 'authorizations/default:authorization-321',
-    'token': 'abc',
-    'scope': ['trellisfw:all'],
+    'token': 'def',
+    'scope': ['oada.yield:all'],
     'createTime': 1413831649937,
     'expiresIn': 60,
     'user': {'_id': 'users/default:users_sam_321'},
@@ -29,7 +29,7 @@ module.exports = [
   },
   {
     '_id': 'authorizations/default:authorization-654',
-    'token': 'def',
+    'token': 'yyy',
     'scope': ['oada.rocks:all'],
     'createTime': 1413831649937,
     'expiresIn': 60,

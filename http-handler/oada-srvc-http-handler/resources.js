@@ -4,6 +4,8 @@ var Promise = require('bluebird');
 const uuid = require('uuid');
 const express = require('express');
 const bodyParser = require('body-parser');
+const pointer = require('json-pointer');
+const _ = require('lodash');
 
 const info = require('debug')('http-handler:info');
 const warn = require('debug')('http-handler:warn');
@@ -199,11 +201,200 @@ router.put('/*', function checkBodyParsed(req, res, next) {
     return next(err);
 });
 
+function replaceLinks(desc) {
+    let ret = (Array.isArray(desc)) ? [] : {};
+    if (!desc) return desc;  // no defined descriptors for this level
+    Object.keys(desc).forEach(function(key, idx) {
+        if (key === '*') { // Don't put *s into oada. Ignore them
+			return;
+		}
+		let val = desc[key];
+        if (typeof val !== 'object' || !val) {
+            ret[key] = val; // keep it asntType: 'application/vnd.oada.harvest.1+json'
+            return;
+		}
+        if (val._type) { // If it has a '_type' key, don't worry about it.
+            //It'll get created in future iterations of ensureTreeExists
+            return;
+        }
+		if (val._id) { // If it's an object, and has an '_id', make it a link from descriptor
+            ret[key] = { _id: desc[key]._id, _rev: '0-0' };
+            return;
+        }
+        ret[key] = replaceLinks(val); // otherwise, recurse into the object looking for more links
+    });
+    return ret;
+}
+
+let trees = {
+    yield: {
+        'harvest': {
+            '_type': "application/vnd.oada.harvest.1+json",
+            'as-harvested': {
+                '_type': "application/vnd.oada.as-harvested.1+json",
+                'yield-moisture-dataset': {
+                    '_type': "application/vnd.oada.as-harvested.yield-moisture-dataset.1+json",
+                    'crop-index': {
+                        '*': {
+                            '_type': "application/vnd.oada.as-harvested.yield-moisture-dataset.1+json",
+                            'geohash-length-index': {
+                                '*': {
+                                    '_type': "application/vnd.oada.as-harvested.yield-moisture-dataset.1+json",
+                                    'geohash-index': {
+                                        '*': {
+                                            '_type': "application/vnd.oada.as-harvested.yield-moisture-dataset.1+json",
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            /*
+            'tiled-maps': {
+                '_type': "application/vnd.oada.tiled-maps.1+json",
+                'dry-yield-map': {
+                    '_type': "application/vnd.oada.tiled-maps.dry-yield-map.1+json",
+                    'crop-index': {
+                        '*': {
+                            "_type": "application/vnd.oada.tiled-maps.dry-yield-map.1+json",
+                            'geohash-length-index': {
+                                '*': {
+                                    "_type": "application/vnd.oada.tiled-maps.dry-yield-map.1+json",
+                                    'geohash-index': {
+                                        '*': {
+                                            "_type": "application/vnd.oada.tiled-maps.dry-yield-map.1+json",
+                                            "datum": "WGS84",
+                                            "geohash-data": {},
+                                            "stats": {},
+                                            "templates": {}
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            */
+        }
+    }
+}
+
+function getFromStarredTree(path, tree) {
+    let pieces = pointer.parse(path);
+    let subTree = tree;
+    return Promise.each(pieces, (piece, i) => {
+        let nextPath = pointer.compile(pieces.slice(0, i+1))
+        // If a star is present in the tree, proceed
+        if (nextPath && pointer.has(tree, nextPath+'/*')) {
+            subTree = pointer.get(tree, nextPath+'/*')
+        }
+        return
+    }).then(() => {
+        return subTree
+    })
+}
+
+router.put('/*', function ensureTreeExists(req, res, next) {
+    if (req.headers['x-oada-bookmarks-type']) {
+        let tree = trees[req.headers['x-oada-bookmarks-type']];// Get the tree
+
+        //First, get the appropriate subTree rooted at the resource returned by
+        //graph lookup
+        //TODO: make this more robust. Currently, the second time this is run
+        //after deleting between deep puts, it blows up.
+        let path = req.url.split(req.oadaGraph.path_leftover)[0];
+        trace('oadaGraph', req.url, req.oadaGraph)
+        trace('prefix', path)
+        return getFromStarredTree(path, tree).then((subTree) => {
+            trace('returned subTree', subTree)
+
+            // Find all resources in the subTree that haven't been created
+            //let existsPieces = pointer.parse(req.oadaGraph.path_leftover_exists);
+            //let notExistsPieces = pointer.parse(req.oadaGraph.path_leftover_not_exists);
+            let pieces = pointer.parse(req.oadaGraph.path_leftover);
+            trace('commencing creation of pieces', pieces)
+            let piecesPath = '';
+            let id = req.oadaGraph.resource_id.replace(/^\//, '');
+            let parentId = req.oadaGraph.resource_id.replace(/^\//, '');
+            let parentPath = ''
+            return Promise.each(pieces, (piece, i) => {
+
+                trace('subtree', subTree)
+                trace('next piece', i, path+ '/' + piece)
+                let nextPiece = pointer.has(subTree, '/'+piece) ? '/'+piece : undefined;
+                nextPiece = pointer.has(subTree, '/*') ? '/*' : nextPiece;
+                path += '/'+piece;
+                piecesPath += nextPiece
+                parentPath+= '/'+piece
+                trace('path', path)
+                trace('piecesPath', piecesPath)
+                subTree = pointer.get(subTree, nextPiece)
+                trace('subtreee now', subTree)
+                if (nextPiece) {
+                    if (pointer.has(subTree, '/_type')) {
+                        let contentType = pointer.get(subTree, '/_type');
+                        id = 'resources/'+uuid.v4();
+                        let body = replaceLinks(_.cloneDeep(subTree))
+                        // Write new resource. This may potentially become an
+                        // orphan if concurrent requests make links below
+                        trace('NEW RESOURCE', {
+                            resource_id: '',
+                            path_leftover: '/'+id,
+                            user_id: req.user.doc.user_id,
+                            contentType,
+                            body
+                        })
+                        return requester.send({
+                            resource_id: '',
+                            path_leftover: '/'+id,
+                            user_id: req.user.doc.user_id,
+                            contentType,
+                            body
+                        }, config.get('kafka:topics:writeRequest')).then(() => {
+                        // Write link from parent. These writes reference the
+                        // path from the known resource returned by graph lookup
+                            trace('PARENT LINK', {
+                                resource_id: parentId,
+                                path_leftover: parentPath,
+                                user_id: req.user.doc.user_id,
+                                contentType,
+                                body: {_id: id, _rev: '0-0'}
+                            })
+                            return requester.send({
+                                resource_id: parentId,
+                                path_leftover: parentPath,
+                                user_id: req.user.doc.user_id,
+                                contentType,
+                                body: {_id: id, _rev: '0-0'}
+                            }, config.get('kafka:topics:writeRequest'));
+
+                        }).catch((err) => {
+
+                        }).then(() => {
+                            parentId = id;
+                            parentPath = '';
+                            return
+                        })
+                    }
+                }
+                return
+            }).then(() => {
+                req.oadaGraph.resource_id = parentId;
+                req.oadaGraph.path_leftover = parentPath;
+            }).asCallback(next)
+        })
+    }
+})
+
 router.put('/*', function putResource(req, res, next) {
     info(`Saving PUT body for request ${req.id}`);
     return putBodies.savePutBody(req.body)
         .tap(() => info(`PUT body saved for request ${req.id}`))
         .get('_id')
+
         .then(bodyid => {
             return requester.send({
                 'connection_id': req.id,

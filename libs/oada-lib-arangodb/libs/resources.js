@@ -51,19 +51,17 @@ function lookupFromUrl(url, userId) {
       )
       RETURN MERGE(path, {permissions})
     `;
-    //    trace(`lookupFromUrl(${url})`, `running query: ${query}`);
     return db.query({query}).call('next').then((result) => {
 
-      //      trace('query result = ', JSON.stringify(result, false, '  '));
-      let resourceId = '';
-      let pathLeftover = pointer.compile(id.concat(pieces));
-      // Also return info about parent?
+      let resource_id = '';
+      let path_leftover_not_exists = '';
+      let path_leftover_exists = '';
+
+      let path_leftover = pointer.compile(id.concat(pieces));
       let from = {'resource_id': '', 'path_leftover': ''};
 
       if (!result) {
-        //        trace('lookupFromUrl(' + url + '): result path length < 1');
-        return {'resource_id': resourceId, 'path_leftover': pathLeftover,
-          from, permissions: {}};
+        return {resource_id, path_leftover, from, permissions: {}};
       }
 
       let permissions = { owner: null, read: null, write: null};
@@ -86,54 +84,50 @@ function lookupFromUrl(url, userId) {
         }
       });
 
+
       // Check for a traversal that did not finish (aka not found)
       if (result.vertices[0] === null) {
-        //        trace('lookupFromUrl(' + url + '):', 'result.vertices[0] === null');
-        return {'resource_id': resourceId, 'path_leftover': pathLeftover,
-          from, permissions};
+        return {resource_id, path_leftover, from, permissions};
       }
 
-      //      trace('longest path has ' + result.vertices.length + ' vertices');
+      //TODO: Strange edge case where the last node in vertices is undefined
       if (!result.vertices[result.vertices.length - 1]) {
-        //TODO: fix this wierd edge case...I'm not quite sure why it occurs
-        //        trace('THIS WIERD EDGE CASE')
-        resourceId = result.vertices[result.vertices.length -2]['resource_id']
-          /*
-        pathLeftover = result.edges[result.edges.length - 1]._to
-            .replace(/^graphNodes\//, '/')
-            .replace(/resources:/, 'resources/');
-            */
+        resource_id = result.vertices[result.vertices.length -2]['resource_id']
         let lastResource = (result.vertices.length - 1) -
             (_.findIndex(_.reverse(result.vertices), 'is_resource'));
         // Slice a negative value to take the last n pieces of the array
-        pathLeftover =
+        path_leftover =
             pointer.compile(pieces.slice(lastResource - pieces.length));
+        path_leftover_exists =
+            pointer.compile(pieces.slice(lastResource, result.vertices.length));
+        path_leftover_not_exists =
+            pointer.compile(pieces.slice(-(result.vertices.length - pieces.length)))
 
-        return {'resource_id': resourceId, 'path_leftover': pathLeftover,
-          from, permissions};
+        return {resource_id, path_leftover, from, permissions};
       }
-      resourceId = result.vertices[result.vertices.length - 1]['resource_id'];
+
+      resource_id = result.vertices[result.vertices.length - 1]['resource_id'];
       from = result.vertices[result.vertices.length - 2];
       let edge = result.edges[result.edges.length - 1];
       // If the desired url has more pieces than the longest path, the
       // pathLeftover is the extra pieces
       if (result.vertices.length - 1 < pieces.length) {
-        //        trace('lookupFromUrl(' + url + '):',
-        //            'more URL pieces than vertices, computing path');
         let lastResource = (result.vertices.length - 1) -
             (_.findIndex(_.reverse(result.vertices), 'is_resource'));
         // Slice a negative value to take the last n pieces of the array
-        pathLeftover =
+        path_leftover =
             pointer.compile(pieces.slice(lastResource - pieces.length));
+        path_leftover_exists =
+            pointer.compile(pieces.slice(lastResource, result.vertices.length));
+        path_leftover_not_exists =
+            pointer.compile(pieces.slice(-(result.vertices.length - pieces.length)))
       } else {
-        //        trace('lookupFromUrl(' + url + '):',
-        //            'same number URL pieces as vertices, path is on graphNode');
-        pathLeftover = result.vertices[result.vertices.length - 1].path || '';
+        path_leftover = result.vertices[result.vertices.length - 1].path || '';
       }
 
       return {
-        'resource_id': resourceId,
-        'path_leftover': pathLeftover,
+        resource_id,
+        path_leftover,
         permissions,
         'from': {
           'resource_id': from ? from['resource_id'] : '',
@@ -259,6 +253,31 @@ function getNewDescendants(id, rev) {
   `).call('all');
 }
 
+function getChanges(id, rev) {
+  // Currently utilizes fixed depth search "7..7" to get data points down
+  return db.query(aql`
+    WITH ${graphNodes}, ${edges}, ${resources}
+    LET node = FIRST(
+      FOR node in ${graphNodes}
+        FILTER node.resource_id == ${id}
+        RETURN node
+    )
+
+    LET objs = (FOR v, e, p IN 7..7 OUTBOUND node ${edges}
+      FILTER v.is_resource
+      LET ver = SPLIT(DOCUMENT(v.resource_id)._oada_rev, '-', 1)
+      FILTER TO_NUMBER(ver) >= ${+rev.split('-', 1)}
+      RETURN DISTINCT {
+        id: v.resource_id,
+        rev: DOCUMENT(v.resource_id)._oada_rev
+      }
+    )
+    FOR obj in objs
+      LET doc = DOCUMENT(obj.id)
+      RETURN {id: obj.id, changes: doc._meta._changes[obj.rev]}
+  `).call('all');
+}
+
 function putResource(id, obj) {
   // Fix rev
   obj['_oada_rev'] = obj['_rev'];
@@ -278,7 +297,7 @@ function putResource(id, obj) {
     // TODO: Should it check that graphNodes exist but are wrong?
     var q;
     if (links.length > 0) {
-      q = db.query(aql`
+      let thingy = aql`
         LET reskey = ${obj['_key']}
         LET resup = FIRST(
           LET res = ${obj}
@@ -339,7 +358,13 @@ function putResource(id, obj) {
               RETURN NEW
           )
           RETURN resup.orev
-      `);
+      `
+      console.log('thingy!!!!!!!!!!!!!!!!!!!!!!!', thingy)
+      console.log(thingy.query)
+      console.dir(thingy.bindVars)
+      console.log(JSON.stringify(thingy.bindVars, null, 2))
+      q = db.query(thingy);
+
     } else {
       q = db.query(aql`
         LET resup = FIRST(
@@ -504,6 +529,7 @@ module.exports = {
   deletePartialResource,
   getParents,
   getNewDescendants,
+  getChanges,
   makeRemote,
   // TODO: Better way to handler errors?
   // ErrorNum from: https://docs.arangodb.com/2.8/ErrorCodes/

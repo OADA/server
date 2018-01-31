@@ -40,29 +40,46 @@ const scopeTypes = {
     'application/vnd.oada.mirrors.1:json',
   ],
   'oada.rocks': [
-        'application/vnd.oada.bookmarks.1+json',
-        'application/vnd.oada.shares.1+json',
-        'application/vnd.oada.rocks.1+json',
-        'application/vnd.oada.rock.1+json',
-        'application/vnd.trellisfw.audit.globalgap.1+json',
-    ],
-    'trellisfw': [
-        'application/vnd.oada.bookmarks.1+json',
-        'application/vnd.oada.shares.1+json',
-        'application/vnd.oada.rocks.1+json',
-        'application/vnd.oada.rock.1+json',
-        'application/vnd.trellisfw.audit.primusgfs.1+json',
-        'application/vnd.trellisfw.audit.globalgap.1+json',
-        'application/vnd.trellisfw.certification.primusgfs.1+json',
-        'application/vnd.trellisfw.certification.globalgap.1+json',
-        'application/vnd.trellisfw.certifications.globalgap.1+json',
-        'application/vnd.trellisfw.certifications.1+json',
-        'application/vnd.trellisfw.client.1+json',
-        'application/vnd.trellisfw.clients.1+json',
-        'application/vnd.trellisfw.connection.1+json',
-        'application/vnd.trellisfw.1+json',
-        'application/json',
-    ]
+		'application/vnd.oada.bookmarks.1+json',
+		'application/vnd.oada.shares.1+json',
+		'application/vnd.oada.rocks.1+json',
+		'application/vnd.oada.rock.1+json',
+		'application/vnd.trellisfw.audit.globalgap.1+json',
+  ],
+  'trellisfw': [
+		'application/vnd.oada.bookmarks.1+json',
+		'application/vnd.oada.shares.1+json',
+		'application/vnd.oada.rocks.1+json',
+		'application/vnd.oada.rock.1+json',
+		'application/vnd.trellisfw.audit.primusgfs.1+json',
+		'application/vnd.trellisfw.audit.globalgap.1+json',
+		'application/vnd.trellisfw.certification.primusgfs.1+json',
+		'application/vnd.trellisfw.certification.globalgap.1+json',
+		'application/vnd.trellisfw.certifications.globalgap.1+json',
+		'application/vnd.trellisfw.certifications.1+json',
+		'application/vnd.trellisfw.client.1+json',
+		'application/vnd.trellisfw.clients.1+json',
+		'application/vnd.trellisfw.connection.1+json',
+		'application/vnd.trellisfw.1+json',
+		'application/json',
+	],
+	'oada.yield': [
+		'application/vnd.oada.bookmarks.1+json',
+		'application/vnd.oada.shares.1+json',
+		'application/vnd.oada.tiled-maps.1+json',
+		'application/vnd.oada.tiled-maps.dry-yield-map.1+json',
+		'application/vnd.oada.harvest.1+json',
+		'application/vnd.oada.as-harvested.1+json',
+		'application/vnd.oada.as-harvested.yield-moisture-dataset.1+json',
+		'application/vnd.oada.as-harvested.yield-moisture-dataset.1+json',
+		'application/vnd.oada.data-index.1+json',
+		'application/vnd.oada.data-index.tiled-maps.1+json',
+		'application/vnd.oada.connection.1+json',
+		'application/vnd.oada.field.1+json',
+		'application/vnd.oada.fields.1+json',
+		'application/vnd.oada.grower.1+json',
+		'application/vnd.oada.farm.1+json',
+	],
 };
 function scopePerm(perm, has) {
   return perm === has || perm === 'all';
@@ -85,8 +102,8 @@ responder.on('request', function handleReq(req) {
         if (process.env.IGNORE_SCOPE === 'yes') {
             trace('IGNORE_SCOPE environment variable is true');
             responder.scopes = { read: true, write: true };
-        } else {
-            //TODO: fix duplicated code here.......
+				} else {
+					  // Check for read permission
             response.scopes.read = req.scope.some(function chkScope(scope) {
                 var type;
                 var perm;
@@ -96,15 +113,16 @@ responder.on('request', function handleReq(req) {
                     warn('Unsupported scope type "' + type + '"');
                     return false;
                 }
-
-                trace('resource exist? ', resource, req.contentType)
+							  trace('Content type derived from resource._type or req.contentType?', resource ? 'resource._type' : 'req.contentType')
+                trace('User scope:', type)
                 let contentType = resource ? resource._type : req.contentType;
-                trace(contentType, 'on the list? ', scopeTypes[type].indexOf(contentType))
-                trace('user scope all/read?', scopePerm(perm, 'read'))
+                trace('Does user have scope?', contentType, typeis.is(contentType, scopeTypes[type]))
+                trace('Does user have read scope?', scopePerm(perm, 'read'))
                 return typeis.is(contentType, scopeTypes[type]) &&
                         scopePerm(perm, 'read');
             });
 
+					  // Check for write permission
             response.scopes.write = req.scope.some(function chkScope(scope) {
                 var type;
                 var perm;
@@ -114,10 +132,8 @@ responder.on('request', function handleReq(req) {
                     warn('Unsupported scope type "' + type + '"');
                     return false;
                 }
-                trace('resource exist? ', resource, req.contentType)
               let contentType = resource ? resource._type : req.contentType;
-              trace(contentType, 'on the list? ', scopeTypes[type].indexOf(contentType))
-              trace('user scope all/write?', scopePerm(perm, 'write'))
+              trace('Does user have write scope?', scopePerm(perm, 'write'))
                 return typeis.is(contentType, scopeTypes[type]) &&
                         scopePerm(perm, 'write');
             });

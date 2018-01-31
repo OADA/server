@@ -1,0 +1,35 @@
+{
+  "name": "oada-srvc-yield-tiler",
+  "version": "1.0.0",
+  "description": "",
+  "main": "server.js",
+  "scripts": {
+    "test": "mocha"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/OADA/oada-srvc-yield-tiler.git"
+  },
+  "author": "awlayton",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/OADA/oada-srvc-yield-tiler/issues"
+  },
+  "homepage": "https://github.com/OADA/oada-srvc-yield-tiler#readme",
+  "dependencies": {
+    "axios": "^0.16.2",
+    "bluebird": "^3.5.0",
+    "concurrent-queue": "^7.0.2",
+    "debug": "^2.6.9",
+    "md5": "^2.2.1",
+    "nconf": "^0.8.4",
+    "ngeohash": "^0.6.0"
+  },
+  "devDependencies": {
+    "chai": "^3.5.0",
+    "mocha": "^3.3.0",
+    "mocha-steps": "^1.0.2",
+    "mock-require": "^2.0.2",
+    "supertest": "^3.0.0"
+  }
+}
