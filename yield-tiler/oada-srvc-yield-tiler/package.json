@@ -21,9 +21,12 @@
     "bluebird": "^3.5.0",
     "concurrent-queue": "^7.0.2",
     "debug": "^2.6.9",
+    "json-pointer": "^0.6.0",
+    "lodash": "^4.17.4",
     "md5": "^2.2.1",
     "nconf": "^0.8.4",
-    "ngeohash": "^0.6.0"
+    "ngeohash": "^0.6.0",
+    "uuid": "^3.2.1"
   },
   "devDependencies": {
     "chai": "^3.5.0",

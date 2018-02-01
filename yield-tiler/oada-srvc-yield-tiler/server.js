@@ -187,7 +187,7 @@ let queue = cq().limit({concurrency: 1}).process(async function indexYield(req) 
 										'stats': additionalStats
 									}
 								}).then((result) => {
-									trace('AXIOS ReSULT', result)
+									trace('AXIOS ReSULT', result.status)
 								})
 							}
 						})
