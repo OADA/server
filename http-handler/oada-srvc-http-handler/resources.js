@@ -2,6 +2,7 @@
 
 var Promise = require('bluebird');
 const uuid = require('uuid');
+const axios = require('axios');
 const express = require('express');
 const bodyParser = require('body-parser');
 const pointer = require('json-pointer');
@@ -204,99 +205,106 @@ router.put('/*', function checkBodyParsed(req, res, next) {
 
 router.put('/*', async function ensureTypeTreeExists(req, res, next) {
     if (req.headers['x-oada-bookmarks-type']) {
-        let rev = await resources.getResource(req.oadaGraph.resource_id, '_rev')
+        trace('originalURL', req.originalUrl)
+        trace('oadaGraph', req.oadaGraph)
+        let rev = req.oadaGraph.rev
         let tree = trees[req.headers['x-oada-bookmarks-type']];// Get the tree
 
         //First, get the appropriate subTree rooted at the resource returned by
         //graph lookup
-        //TODO: make this more robust. Currently, the second time this is run
-        //after deleting between deep puts, it blows up.
         let path =
             req.originalUrl.split(req.oadaGraph.path_leftover)[0].replace(/^\/bookmarks/,'');
-        trace('originalURL', req.originalUrl)
-        trace('oadaGraph', req.oadaGraph)
         trace('PATH to get subTree', path)
-        return getFromStarredTree(path, tree).then((subTree) => {
-            trace('returned subTree', subTree)
-
-            // Find all resources in the subTree that haven't been created
-            //let existsPieces = pointer.parse(req.oadaGraph.path_leftover_exists);
-            //let notExistsPieces = pointer.parse(req.oadaGraph.path_leftover_not_exists);
-            let pieces = pointer.parse(req.oadaGraph.path_leftover);
-            trace('commencing creation of pieces', pieces)
-            let piecesPath = '';
-            let id = req.oadaGraph.resource_id.replace(/^\//, '');
-            let parentId = req.oadaGraph.resource_id.replace(/^\//, '');
-            let parentPath = '';
-            let parentRev = rev;
-            return Promise.each(pieces, (piece, i) => {
-                trace('subtree', subTree)
-                trace('next piece', i, path+ '/' + piece)
-                let nextPiece = pointer.has(subTree, '/'+piece) ? '/'+piece : undefined;
-                nextPiece = pointer.has(subTree, '/*') ? '/*' : nextPiece;
-                path += '/'+piece;
-                piecesPath += nextPiece
-                parentPath+= '/'+piece
-                trace('path', path)
-                trace('piecesPath', piecesPath)
+        let subTree = await getFromStarredTree(path, tree)
+        trace('First subTree', subTree)
+        // Find all resources in the subTree that haven't been created
+        let pieces = pointer.parse(req.oadaGraph.path_leftover);
+        trace('commencing creation of pieces', pieces)
+        let piecesPath = '';
+        let id = req.oadaGraph.resource_id.replace(/^\//, '');
+        let parentId = req.oadaGraph.resource_id.replace(/^\//, '');
+        let parentPath = '';
+        let parentRev = rev;
+        trace('starting rev', rev)
+        return Promise.each(pieces, (piece, i) => {
+            trace('piece', piece)
+            let nextPiece = pointer.has(subTree, '/'+piece) ? '/'+piece : (pointer.has(subTree, '/*') ? '/*' : undefined);
+            trace('nextPiece', nextPiece);
+            path += '/'+piece;
+            piecesPath += nextPiece
+            parentPath += '/'+piece
+            trace('path', path)
+            trace('piecesPath', piecesPath)
+            if (nextPiece) {
                 subTree = pointer.get(subTree, nextPiece)
-                trace('subtreee now', subTree)
-                if (nextPiece) {
-                    if (pointer.has(subTree, '/_type')) {
-                        let contentType = pointer.get(subTree, '/_type');
-                        id = 'resources/'+uuid.v4();
-                        let body = replaceLinks(_.cloneDeep(subTree))
-                        // Write new resource. This may potentially become an
-                        // orphan if concurrent requests make links below
-                        trace('NEW RESOURCE', {
-                            resource_id: '',
-                            path_leftover: '/'+id,
-                            user_id: req.user.doc.user_id,
-                            contentType,
-                            body
-                        })
+                trace('subtree', subTree)
+                if (pointer.has(subTree, '/_type')) {
+                    let contentType = pointer.get(subTree, '/_type');
+                    id = 'resources/'+uuid.v4();
+                    let body = replaceLinks(_.cloneDeep(subTree))
+                    // Write new resource. This may potentially become an
+                    // orphan if concurrent requests make links below
+                    return requester.send({
+                        resource_id: '',
+                        path_leftover: '/'+id,
+                        user_id: req.user.doc.user_id,
+                        contentType,
+                        body
+                    }, config.get('kafka:topics:writeRequest')).tap((resp) => {
 
+                        switch (resp.code) {
+                            case 'success':
+                                return;
+                            default:
+                                return Promise.reject(new Error(resp.code));
+                        }
+                    }).then(() => {
+                    // Write link from parent. These writes reference the
+                    // path from the known resource returned by graph lookup
                         return requester.send({
-                            resource_id: '',
-                            path_leftover: '/'+id,
+                            rev: parentRev,
+                            resource_id: parentId,
+                            path_leftover: parentPath,
                             user_id: req.user.doc.user_id,
                             contentType,
-                            body
-                        }, config.get('kafka:topics:writeRequest')).then((result) => {
-                        // Write link from parent. These writes reference the
-                        // path from the known resource returned by graph lookup
-                            trace('PARENT LINK', {
-                                rev: parentRev,
-                                resource_id: parentId,
-                                path_leftover: parentPath,
-                                user_id: req.user.doc.user_id,
-                                contentType,
-                                body: {_id: id, _rev: '0-0'}
-                            })
-                            return requester.send({
-                                rev: parentRev,
-                                resource_id: parentId,
-                                path_leftover: parentPath,
-                                user_id: req.user.doc.user_id,
-                                contentType,
-                                body: {_id: id, _rev: '0-0'}
-                            }, config.get('kafka:topics:writeRequest'));
-
-                        }).catch((err) => {
-                            error('ERRORRRRRRR', err);
-                        }).then(() => {
-                            parentId = id;
-                            parentPath = '';
-                            parentRev = '';
-                            return
+                            body: {_id: id, _rev: '0-0'}
+                        }, config.get('kafka:topics:writeRequest')).tap((result) => {
+                            switch (result.code) {
+                                case 'success':
+                                    return;
+                                default:
+                                    return Promise.reject(new Error(result.code));
+                            }
                         })
-                    }
+                    }).then((result) => {
+                    // Write link from parent. These writes reference the
+                    }).then(() => {
+                        parentId = id;
+                        parentPath = '';
+                        parentRev = '';
+                        return
+                    })
                 }
-                return
-            }).then(() => {
-                req.oadaGraph.resource_id = parentId;
-                req.oadaGraph.path_leftover = parentPath;
-            }).asCallback(next)
+            }
+            return
+        }).then(() => {
+            req.oadaGraph.resource_id = parentId;
+            req.oadaGraph.path_leftover = parentPath;
+            next()
+        }).catch({message: 'rev mismatch'}, (err) => {
+            trace('rev mismatch, rerunning', req.get('Authorization'))
+            return axios({
+                method: 'PUT',
+                url: 'http://http-handler'+req.originalUrl,
+                data: req.body,
+                headers: {
+                    Authorization: 'Bearer def',
+                    'x-oada-bookmarks-type': req.get('x-oada-bookmarks-type'),
+                    'Content-Type': req.get('Content-Type'),
+                }
+            })
+        }).catch((error) => {
+            next(error)
         })
     } else {
         next()
@@ -496,19 +504,17 @@ let trees = {
     }
 }
 
-function getFromStarredTree(path, tree) {
-    if (path === '/') return tree
+async function getFromStarredTree(path, tree) {
+    trace('PATH IS', path)
+    if (path === '/' || path === '') return tree
     let pieces = pointer.parse(path);
     let subTree = tree;
+    let starPath = '';
     return Promise.each(pieces, (piece, i) => {
-        let nextPath = pointer.compile(pieces.slice(0, i+1))
-        console.log('nextpath 1', nextPath)
-        if (pointer.has(tree, nextPath+'/*')) {
-        console.log('yup')
-            nextPath = pointer.compile(pieces.slice(0, i))+'/*';
-        }
-        console.log('nextpath 2', nextPath)
-        subTree = pointer.get(tree, nextPath)
+        let nextPiece = pointer.has(tree, starPath+'/*') ? '/*' : '/'+piece;
+        starPath += nextPiece;
+        console.log(starPath)
+        subTree = pointer.get(tree, starPath)
         return
     }).then(() => {
         return subTree

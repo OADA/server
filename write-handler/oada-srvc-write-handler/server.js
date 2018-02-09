@@ -28,7 +28,7 @@ responder.on('request', (...args) => {
     return p;
 });
 
-async function handleReq(req, msg) {
+function handleReq(req, msg) {
     trace('REQUEST: ', req);
     req.source = req.source || '';
     var id = req['resource_id'];
@@ -42,18 +42,20 @@ async function handleReq(req, msg) {
     var start = new Date().getTime();
 	  info(`PUTing to "${req['path_leftover']}" in "${id}"`);
 
-		if (req.rev) {
-			let cacheRev = cache.get(req.resource_id)
-			if (!cacheRev) {
-				cacheRev = await resources.getResource(req.resource_id, '_rev')
-			}
-			if (cacheRev !== req.rev) {
-				throw new Error(`Rev Mismatch. Request\'s: ${req.rev} Cache\'s: ${cacheRev}`)
-			}
-		}
+		
 
 
-    var upsert = body.then(function doUpsert(body) {
+	var upsert = body.then(async function doUpsert(body) {
+			if (req.rev) {
+					let cacheRev = cache.get(req.resource_id)
+					if (!cacheRev) {
+							cacheRev = await resources.getResource(req.resource_id, '_rev')
+					}
+				if (cacheRev !== req.rev) {
+					trace(cacheRev, req.rev)
+							throw new Error(`rev mismatch`)
+					}
+			}
         var path = pointer.parse(req['path_leftover'].replace(/\/*$/, ''));
 
         let method = resources.putResource;

@@ -49,20 +49,23 @@ function lookupFromUrl(url, userId) {
           write: r._meta._owner == '${userId}' || r._meta._permissions['${userId}'].write
         }
       )
-      RETURN MERGE(path, {permissions})
+      LET rev = DOCUMENT(LAST(path.vertices).resource_id)._oada_rev
+      RETURN MERGE(path, {permissions, rev})
     `;
     return db.query({query}).call('next').then((result) => {
 
       let resource_id = '';
       let path_leftover_not_exists = '';
       let path_leftover_exists = '';
+      let rev = result.rev;
 
       let path_leftover = pointer.compile(id.concat(pieces));
       let from = {'resource_id': '', 'path_leftover': ''};
 
       if (!result) {
-        return {resource_id, path_leftover, from, permissions: {}};
+        return {resource_id, path_leftover, from, permissions: {}, rev};
       }
+
 
       let permissions = { owner: null, read: null, write: null};
       result.permissions.reverse().some(p => {
@@ -87,7 +90,7 @@ function lookupFromUrl(url, userId) {
 
       // Check for a traversal that did not finish (aka not found)
       if (result.vertices[0] === null) {
-        return {resource_id, path_leftover, from, permissions};
+        return {resource_id, path_leftover, from, permissions, rev};
       }
 
       //TODO: Strange edge case where the last node in vertices is undefined
@@ -103,7 +106,13 @@ function lookupFromUrl(url, userId) {
         path_leftover_not_exists =
             pointer.compile(pieces.slice(-(result.vertices.length - pieces.length)))
 
-        return {resource_id, path_leftover, from, permissions};
+        return {
+          resource_id,
+          path_leftover,
+          from,
+          permissions,
+          rev
+        }
       }
 
       resource_id = result.vertices[result.vertices.length - 1]['resource_id'];
@@ -126,6 +135,7 @@ function lookupFromUrl(url, userId) {
       }
 
       return {
+        rev,
         resource_id,
         path_leftover,
         permissions,
@@ -250,6 +260,31 @@ function getNewDescendants(id, rev) {
         id: v.resource_id,
         changed: TO_NUMBER(ver) >= ${+rev.split('-', 1)}
       }
+  `).call('all');
+}
+
+function getStuff(id, rev) {
+  // Currently utilizes fixed depth search "7..7" to get data points down
+  return db.query(aql`
+    WITH ${graphNodes}, ${edges}, ${resources}
+    LET node = FIRST(
+      FOR node in ${graphNodes}
+        FILTER node.resource_id == ${id}
+        RETURN node
+    )
+
+    LET objs = (FOR v, e, p IN 7..7 OUTBOUND node ${edges}
+      FILTER v.is_resource
+      LET ver = SPLIT(DOCUMENT(v.resource_id)._oada_rev, '-', 1)
+      FILTER TO_NUMBER(ver) >= ${+rev.split('-', 1)}
+      RETURN DISTINCT {
+        id: v.resource_id,
+        rev: DOCUMENT(v.resource_id)._oada_rev
+      }
+    )
+    FOR obj in objs
+      LET doc = DOCUMENT(obj.id)
+      RETURN {id: obj.id, changes: doc._meta._changes[obj.rev]}
   `).call('all');
 }
 
