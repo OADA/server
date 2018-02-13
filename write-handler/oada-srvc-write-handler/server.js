@@ -1,7 +1,7 @@
 'use strict';
 
 const Promise = require('bluebird');
-const {resources, putBodies} = require('../../libs/oada-lib-arangodb');
+const {resources, putBodies, changes} = require('../../libs/oada-lib-arangodb');
 const {Responder} = require('../../libs/oada-lib-kafka');
 const pointer = require('json-pointer');
 const hash = require('object-hash');
@@ -146,21 +146,26 @@ function handleReq(req, msg) {
         pointer.set(obj, '/_meta/_rev', rev);
 
         // Compute new change
-        var change = {
-            '_id': id + '/_meta/_changes',
-            '_rev': rev,
-            [rev]: {
-                [changeType]: Object.assign({}, obj),
-                'userId': req['user_id'],
-                'authorizationID': req['authorizationid']
-            },
-        };
-        obj['_meta'] = Object.assign({'_changes': change}, obj['_meta']);
+				let change_id = await changes.putChange({
+					change: obj,
+					resId: id,
+					rev,
+					type: changeType,
+					child: req['from_change_id'],
+					path: req['change_path'],
+					userId: req['user_id'],
+					authorizationId: req['authorizationid'],
+				})
+				trace('HEERERERERERER', change_id)
+				pointer.set(obj, '/_meta/_changes', {
+					_id: id+'/_meta/_changes',
+					_rev: rev
+				});
 
         // Update rev of meta?
         obj['_meta']['_rev'] = rev;
-        return method(id, obj).then(orev => ({rev, orev}));
-    }).then(function respond({rev, orev}) {
+        return method(id, obj).then(orev => ({rev, orev, change_id}));
+    }).then(function respond({rev, orev, change_id}) {
         var end = new Date().getTime();
 			  info(`Finished PUTing to "${req['path_leftover']}". +${end - start}ms`);
 
@@ -177,7 +182,8 @@ function handleReq(req, msg) {
             'authorizationid': req['authorizationid'],
             'path_leftover': req['path_leftover'],
             'contentType': req['contentType'],
-            'indexer': req['indexer'],
+					  'indexer': req['indexer'],
+						'change_id': change_id
         };
     }).catch(resources.NotFoundError, function respondNotFound(err) {
         error(err);

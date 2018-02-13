@@ -79,6 +79,7 @@ const scopeTypes = {
 		'application/vnd.oada.fields.1+json',
 		'application/vnd.oada.grower.1+json',
 		'application/vnd.oada.farm.1+json',
+		'application/vnd.oada.yield.1+json',
 	],
 };
 function scopePerm(perm, has) {

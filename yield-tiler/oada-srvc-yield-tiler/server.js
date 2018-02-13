@@ -33,7 +33,7 @@ const Promise = require('bluebird');
 const URL = require('url');
 const oadaLib = require('../../libs/oada-lib-arangodb');
 const {Responder} = require('../../libs/oada-lib-kafka');
-const {resources, remoteResources} = require('../../libs/oada-lib-arangodb');
+const {resources, changes, remoteResources} = require('../../libs/oada-lib-arangodb');
 const config = require('./config');
 const axios = require('axios');
 const gh = require('ngeohash');
@@ -78,9 +78,18 @@ let queue = cq().limit({concurrency: 1}).process(async function indexYield(req) 
 
 	let orev = req['_orev'];
 	trace('PATH', id)
+	let changeUrl = 'http://http-handler/'+req.resource_id+'/_meta/_changes/'+req['rev']
+	trace('CHANGEURL', changeUrl)
+	let changes = await axios({
+		url: 'http://http-handler/'+req.resource_id+'/_meta/_changes/'+req['rev'],
+		method: 'GET',
+		headers: {
+			Authorization: 'Bearer def',
+		}
+	})
 	let resources = await recursiveGet([], id, {'_rev': orev}, 0)
 	trace('RESOUCES', resources.length)
-	//	let resources = await resources.getChanges(id, orev||'0-0')
+	//	let resources = await changes.getChanges(id, orev||'0-0')
 
 	// Loop through all resources, changes, and data points
 	return Promise.map(resources, (resource) => {

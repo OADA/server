@@ -67,6 +67,7 @@ responder.on('request', function handleReq(req) {
         'body': null,
         'url': '',
         'user_id': req['user_id'],
+        'from_change_id': req.change_id,
         'authorizationid': req.authorizationid
     };
 
@@ -90,7 +91,9 @@ responder.on('request', function handleReq(req) {
 
             return Promise.map(p, item => {
                 trace('parent resource_id = ', item['resource_id']);
+                trace('parent path = ', item['path']);
                 let msg = Object.assign({}, res);
+                msg['change_path'] = item['path']
                 msg['resource_id'] = item['resource_id'];
                 msg['path_leftover'] = item.path + '/_rev';
                 msg.contentType = item.contentType;

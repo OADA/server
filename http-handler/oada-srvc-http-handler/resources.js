@@ -14,6 +14,7 @@ const error = require('debug')('http-handler:error');
 const trace = require('debug')('http-handler:trace');
 
 const resources = require('../../libs/oada-lib-arangodb').resources;
+const changes = require('../../libs/oada-lib-arangodb').changes;
 const putBodies = require('../../libs/oada-lib-arangodb').putBodies;
 const OADAError = require('oada-error').OADAError;
 
@@ -108,6 +109,33 @@ router.get('/*', function checkScope(req, res, next) {
     }).asCallback(next);
 });
 
+router.get('/*', async function getChanges(req, res, next) {
+    try {
+        if (req.oadaGraph.path_leftover === '/_meta/_changes') {
+            let ch = await changes.getChanges(req.oadaGraph.resource_id);
+            return res.json(ch.map((item) => {
+                return {
+                    [item]: {
+                        _id: req.oadaGraph.resource_id+'/_meta/_changes/'+item,
+                        _rev: item
+                    }
+                }
+            }).reduce((a,b) => {
+                return {...a, ...b}
+            }))
+        } else if (/^\/_meta\/_changes\/.*?/.test(req.oadaGraph.path_leftover)) {
+            let rev = req.oadaGraph.path_leftover.split('/')[3];
+            let ch = await changes.getChange(req.oadaGraph.resource_id, rev);
+            trace('CHANGE', ch)
+            return res.json(ch)
+        } else {
+            return next()
+        }
+    } catch (e) {
+        next(e)
+    }
+});
+
 router.get('/*', function getResource(req, res, next) {
     // TODO: Should it not get the whole meta document?
     // TODO: Make getResource accept an array of paths and return an array of
@@ -144,12 +172,7 @@ function unflattenMeta(doc) {
             _rev: doc._meta._rev,
         };
     }
-    if (doc._changes) {
-        doc._changes = {
-            _id: doc._changes._id,
-            _rev: doc._changes._rev,
-        };
-    }/*
+    /*
     Object.keys(doc).forEach((key) => {
         if (doc[key]._id) {
             if (doc[key]['_oada_rev']) {
