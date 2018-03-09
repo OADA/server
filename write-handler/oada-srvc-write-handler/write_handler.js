@@ -26,6 +26,14 @@ let p = Promise.resolve();
 let cache = new Cache({defaultTtl: 60 * 1000});
 responder.on('request', (...args) => {
 	// Run once last write finishes (whether it worked or not)
+	if (counter++ > 500) {
+		counter = 0;
+		console.log('RUNNING GARBAGE COLLECTOR')
+		let aa = new Date();
+		global.gc();
+		let ba = new Date();
+		console.log('DONE RUNNING GC', ba-aa)
+	}
 	p = p.catch(() => {}).then(() => handleReq(...args));
 	return p;
 });

@@ -83,6 +83,7 @@ module.exports = class Responder extends Base {
 
                     return;
                 }
+                console.log('requests length:', Object.keys(this.requests).length);
 
                 this.requests[id] = true;
                 if (listener.length === 3) {
