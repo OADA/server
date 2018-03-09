@@ -228,8 +228,6 @@ router.put('/*', function checkBodyParsed(req, res, next) {
 
 router.put('/*', async function ensureTypeTreeExists(req, res, next) {
     if (req.headers['x-oada-bookmarks-type']) {
-        trace('originalURL', req.originalUrl)
-        trace('oadaGraph', req.oadaGraph)
         let rev = req.oadaGraph.rev
         let tree = trees[req.headers['x-oada-bookmarks-type']];// Get the tree
 
@@ -237,30 +235,21 @@ router.put('/*', async function ensureTypeTreeExists(req, res, next) {
         //graph lookup
         let path =
             req.originalUrl.split(req.oadaGraph.path_leftover)[0].replace(/^\/bookmarks/,'');
-        trace('PATH to get subTree', path)
         let subTree = await getFromStarredTree(path, tree)
-        trace('First subTree', subTree)
         // Find all resources in the subTree that haven't been created
         let pieces = pointer.parse(req.oadaGraph.path_leftover);
-        trace('commencing creation of pieces', pieces)
         let piecesPath = '';
         let id = req.oadaGraph.resource_id.replace(/^\//, '');
         let parentId = req.oadaGraph.resource_id.replace(/^\//, '');
         let parentPath = '';
         let parentRev = rev;
-        trace('starting rev', rev)
         return Promise.each(pieces, (piece, i) => {
-            trace('piece', piece)
             let nextPiece = pointer.has(subTree, '/'+piece) ? '/'+piece : (pointer.has(subTree, '/*') ? '/*' : undefined);
-            trace('nextPiece', nextPiece);
             path += '/'+piece;
             piecesPath += nextPiece
             parentPath += '/'+piece
-            trace('path', path)
-            trace('piecesPath', piecesPath)
             if (nextPiece) {
                 subTree = pointer.get(subTree, nextPiece)
-                trace('subtree', subTree)
                 if (pointer.has(subTree, '/_type')) {
                     let contentType = pointer.get(subTree, '/_type');
                     id = 'resources/'+uuid.v4();
@@ -327,6 +316,7 @@ router.put('/*', async function ensureTypeTreeExists(req, res, next) {
                 }
             })
         }).catch((error) => {
+            trace('ERROR', error)
             next(error)
         })
     } else {
@@ -335,7 +325,6 @@ router.put('/*', async function ensureTypeTreeExists(req, res, next) {
 })
 
 router.put('/*', function putResource(req, res, next) {
-    info('REQ', req.oadaGraph)
     info(`Saving PUT body for request ${req.id}`);
     return putBodies.savePutBody(req.body)
         .tap(() => info(`PUT body saved for request ${req.id}`))
@@ -528,7 +517,6 @@ let trees = {
 }
 
 async function getFromStarredTree(path, tree) {
-    trace('PATH IS', path)
     if (path === '/' || path === '') return tree
     let pieces = pointer.parse(path);
     let subTree = tree;

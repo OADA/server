@@ -164,7 +164,7 @@ function getResource(id, path) {
     return b;
   }, {});
   bindVars.id = id;
-  bindVars['@collection'] = id.split('/')[0];
+  bindVars['@collection'] = resources.name;
 
   const returnPath = parts.reduce((p, part, i) => p.concat(`[@v${i}]`), '');
 

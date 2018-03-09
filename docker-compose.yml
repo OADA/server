@@ -142,6 +142,8 @@ services:
       - startup_net
       - kafka_net
       - arango_net
+    ports:
+      - "9229:9229"
     volumes:
       - .:/code
       - ./oada-srvc-docker-config.js:/oada-srvc-docker-config.js
@@ -301,6 +303,7 @@ services:
       context: ./yarn
       args:
         NODE_VERSION: 8.7.0
+    restart: "no"
     volumes:
       - .:/code
 
@@ -339,6 +342,7 @@ services:
       - arangodb_data:/var/lib/arangodb3-apps
     ports:
       - "8529:8529"
+    command: arangod --log.level trace
     environment:
       # - ARANGO_RANDOM_ROOT_PASSWORD=1
       - ARANGO_NO_AUTH=1
@@ -372,6 +376,7 @@ services:
       KAFKA_ZOOKEEPER_CONNECT: "zookeeper:2181"
       KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
       KAFKA_HEAP_OPTS: "-Xmx1g -Xms512M"
+      #      KAFKA_OPTS: -javaagent:/usr/app/jmx_prometheus_javaagent.jar=7071:/usr/app/prom-jmx-agent-config.yml
       KAFKA_BROKER_ID: 1
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
@@ -385,6 +390,15 @@ services:
   #   volumes:
   #      - /var/run/docker.sock:/var/run/docker.sock
   #    command: pumba --random --interval 1h kill --signal SIGKILL
+
+        #  prometheus:
+        #   image: prom/prometheus
+        #    ports:
+        #   - 9090:9090/tcp
+        # volumes:
+        #- ./prometheus/mount:/etc/prometheus
+        # links:
+        #- kafka
 
   indexer:
     depends_on:

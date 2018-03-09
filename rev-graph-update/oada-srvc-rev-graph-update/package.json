@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "DEBUG=* mocha test/rev-graph-update.js",
-    "start": "DEBUG=* node index.js"
+    "start": "node index.js"
   },
   "author": "",
   "license": "ISC",

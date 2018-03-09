@@ -5,7 +5,7 @@
   "main": "server.js",
   "scripts": {
     "test": "mocha",
-    "start": "node server.js"
+    "start": "CONTAINER_NAME=\"HTTP Handler\" node server.js"
   },
   "repository": {
     "type": "git",

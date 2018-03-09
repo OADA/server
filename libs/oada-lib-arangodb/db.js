@@ -33,7 +33,7 @@ db.query = function(...args) {
         return Promise.reject(err);
       }
 
-      warn(`Retrying query due to deadlock (retry #${tries})`, err);
+      //      warn(`Retrying query due to deadlock (retry #${tries})`, err);
       return Promise.resolve().delay(deadlockDelay).then(tryquery);
     });
   }

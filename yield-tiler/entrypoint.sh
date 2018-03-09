@@ -3,4 +3,4 @@
 chmod u+x /code/yield-tiler/wait-for-it.sh && \
   /code/yield-tiler/wait-for-it.sh startup:80 -t 0 && \
   cd /code/yield-tiler/oada-srvc-yield-tiler && \
-  DEBUG="*" npm run start -- --config=/oada-srvc-docker-config.js
+  npm run start -- --config=/oada-srvc-docker-config.js

@@ -4,4 +4,4 @@
 # to index.js inside the service directory because it will be required
 # there.
 cd /code/well-known/oada-srvc-well-known && \
-  DEBUG="*" npm run start -- --config=/oada-srvc-docker-config.js
+  npm run start -- --config=/oada-srvc-docker-config.js

@@ -5,7 +5,7 @@
   "main": "server.js",
   "scripts": {
     "test": "mocha",
-    "start": "node server.js"
+    "start": "node --expose-gc write_handler.js"
   },
   "repository": {
     "type": "git",

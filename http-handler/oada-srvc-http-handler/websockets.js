@@ -162,22 +162,13 @@ module.exports = function wsHandler(server) {
                         }
 
                         let handleChange = function(change) {
-                            let c = change.change.merge || change.change.delete;
-                            trace('*******************', c);
-                            trace('###################', path_leftover);
-                            if (jsonpointer.get(c, path_leftover) !== undefined) {
+                            //let c = change.change.merge || change.change.delete;
+                            if (jsonpointer.get(change.change.body, path_leftover) !== undefined) {
                                 let message = {
                                     requestId: msg.requestId,
                                     resourceId,
+                                    change: change.change,
                                 };
-
-                                if (change.change.merge) {
-                                    message.merge = change.change.merge;
-                                }
-
-                                if (change.change.delete) {
-                                    message.delete = change.change.delete;
-                                }
 
                                 socket.send(JSON.stringify(message));
                             }
@@ -251,8 +242,8 @@ writeResponder.on('request', function handleReq(req) {
 
 		trace('@@@@@@@@@@@@@@@', req.resource_id);
 
-    oadaLib.resources
-        .getResource(req.resource_id, `/_meta/_changes/${req._rev}`)
+    oadaLib.changes
+        .getChange(req.resource_id, req._rev)
         .then((change) => {
             trace('00000000000000000 Emitted change for:', req.resource_id);
             emitter.emit(req.resource_id, {

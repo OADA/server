@@ -68,145 +68,123 @@ responder.on('request', async function handleReq(req) {
 	if (req.code !== 'success') {
 	  return;
 	}
-	queue(req)
-  return undefined
+	if (req.contentType === 'application/vnd.oada.as-harvested.1+json') {
+		queue(req)
+	}
+	return undefined
 })
 
 let queue = cq().limit({concurrency: 1}).process(async function indexYield(req) { 
 
 	let id = req['resource_id'];
 
-	let orev = req['_orev'];
-	trace('PATH', id)
-	let changeUrl = 'http://http-handler/'+req.resource_id+'/_meta/_changes/'+req['rev']
-	trace('CHANGEURL', changeUrl)
-	let changes = await axios({
-		url: 'http://http-handler/'+req.resource_id+'/_meta/_changes/'+req['rev'],
-		method: 'GET',
-		headers: {
-			Authorization: 'Bearer def',
-		}
-	})
-	let resources = await recursiveGet([], id, {'_rev': orev}, 0)
-	trace('RESOUCES', resources.length)
-	//	let resources = await changes.getChanges(id, orev||'0-0')
+	let change = await changes.getRootChange(req.resource_id, req._rev);
 
-	// Loop through all resources, changes, and data points
-	return Promise.map(resources, (resource) => {
-		trace('resource', resource.change.data)
-		return Promise.map(Object.keys(resource.change.data || {}), (key) => {
-			COUNTER++;
-			let pt = resource.change.data[key];
-			//TODO: handle multiple added data points
-			//TODO: handle added geohashash buckets (no data points yet)
+	COUNTER++;
+	return Promise.map(Object.keys(change.body.data || {}), (key) => {
+		let pt = change.body.data[key];
+		let cropType = 'corn'
+		return oadaLib.users.findById(req.user_id).then((user) => {
+			return Promise.map([1,2,3,4,5,6,7], (ghLength) => {
+				// 1) Find the data point's geohash of length ghLength
+				let bucket = gh.encode(pt.location.lat, pt.location.lon, ghLength)
+				let aggregate = gh.encode(pt.location.lat, pt.location.lon, ghLength+2)
 
-			let cropType = 'corn'
-			return oadaLib.users.findById(req.user_id).then((user) => {
-				return Promise.map([1,2,3,4,5,6,7], (ghLength) => {
-					// 1) Find the data point's geohash of length ghLength
-					let bucket = gh.encode(pt.location.lat, pt.location.lon, ghLength)
-					let aggregate = gh.encode(pt.location.lat, pt.location.lon, ghLength+2)
+				// 2) GET Current geohash bucket values
+				let bucketPath = '/harvest/tiled-maps/dry-yield-map/crop-index/'+cropType+'/geohash-length-index/geohash-'+ghLength.toString()+'/geohash-index/'+bucket
+				return oadaLib.resources.lookupFromUrl('/'+user.bookmarks._id+bucketPath, req.user_id).then((result) => {
 
-					// 2) GET Current geohash bucket values
-					let bucketPath = '/harvest/tiled-maps/dry-yield-map/crop-index/'+cropType+'/geohash-length-index/geohash-'+ghLength.toString()+'/geohash-index/'+bucket
-					return oadaLib.resources.lookupFromUrl('/'+user.bookmarks._id+bucketPath, req.user_id).then((result) => {
+					let template = {
+						area: { units: 'acres' },
+						weight: { units: 'bushels' },
+						moisture: {
+							units: '%H2O',
+							value: tradeMoisture[cropType]
+						},
+						location: { datum: 'WGS84' },
+					}
+					let templateId = md5(JSON.stringify(template));
 
-						let template = {
-							area: { units: 'acres' },
-							weight: { units: 'bushels' },
-							moisture: {
-								units: '%H2O',
-								value: tradeMoisture[cropType]
+					let weight = pt.weight;
+					if (pt.moisture > tradeMoisture[cropType]) {
+						weight = weight*(100-pt.moisture)/(100-tradeMoisture[cropType]);// Adjust weight for moisture content
+					}
+
+					let additionalStats = {
+						count: 1,
+						weight: {
+							sum: weight,
+							'sum-of-squares': Math.pow(weight, 2),
+						},
+						'yield-squared-area': Math.pow(weight/pt.area, 2)*pt.area,
+						area: {
+							sum: pt.area,
+							'sum-of-squares': Math.pow(pt.area, 2)
+						},
+						'sum-yield-squared-area': Math.pow(weight/pt.area, 2)*pt.area,
+						template: templateId
+					}
+
+					// If the geohash resource doesn't exist, submit a deep PUT with the
+					// additionalStats as the body
+					if (result.path_leftover !== '') {
+						return axios({
+							method: 'PUT',
+							url: 'http://http-handler/bookmarks'+bucketPath,
+							headers: {
+								//TODO: Don't hardcode this
+								Authorization: 'Bearer def',
+								'x-oada-bookmarks-type': 'tiled-maps',
+								'Content-Type': 'application/vnd.oada.as-harvested.yield-moisture-dataset.1+json'
 							},
-							location: { datum: 'WGS84' },
-						}
-						let templateId = md5(JSON.stringify(template));
-
-						let weight = pt.weight;
-						if (pt.moisture > tradeMoisture[cropType]) {
-							weight = weight*(100-pt.moisture)/(100-tradeMoisture[cropType]);// Adjust weight for moisture content
-						}
-
-						let additionalStats = {
-							count: 1,
-							weight: {
-								sum: weight,
-								'sum-of-squares': Math.pow(weight, 2),
+							data: {
+								'geohash-data': {
+									[aggregate]: additionalStats,
+								},
+								stats: additionalStats
 							},
-							'yield-squared-area': Math.pow(weight/pt.area, 2)*pt.area,
-							area: {
-								sum: pt.area,
-								'sum-of-squares': Math.pow(pt.area, 2)
-							},
-							'sum-yield-squared-area': Math.pow(weight/pt.area, 2)*pt.area,
-							template: templateId
-						}
+						})
+					}
 
-						// If the geohash resource doesn't exist, submit a deep PUT with the
-						// additionalStats as the body
-						if (result.path_leftover !== '') {
-							trace('YIELD TILER PATH A', bucketPath)
+					//Else, get the resource and update it.
+					return oadaLib.resources.getResource(result.resource_id).then((res) => {
+						if (res['geohash-data'][aggregate]) {
+							// increment/compute new geohash bucket values
+							//TODO: should probably check that they use the same template
+							let data = {
+								'geohash-data': {
+									[aggregate]: recomputeStats(res['geohash-data'][aggregate], additionalStats),
+								},
+								stats: recomputeStats(res.stats, additionalStats)
+							}
 							return axios({
 								method: 'PUT',
 								url: 'http://http-handler/bookmarks'+bucketPath,
 								headers: {
-									//TODO: Don't hardcode this
 									Authorization: 'Bearer def',
 									'x-oada-bookmarks-type': 'tiled-maps',
-									'Content-Type': 'application/vnd.oada.harvest.1+json'
+									'Content-Type': 'application/vnd.oada.as-harvested.yield-moisture-dataset.1+json'
+								},
+								data,
+							})
+						} else {
+							// new aggregate. Push stats
+							return axios({
+								method: 'PUT',
+								url: 'http://http-handler/bookmarks'+bucketPath,
+								headers: {
+									Authorization: 'Bearer def',
+									'x-oada-bookmarks-type': 'tiled-maps',
+									'Content-Type': 'application/vnd.oada.as-harvested.yield-moisture-dataset.1+json'
 								},
 								data: {
 									'geohash-data': {
 										[aggregate]: additionalStats,
 									},
-									stats: additionalStats
-								},
-							})
-						}
-
-						//Else, get the resource and update it.
-						trace('YIELD TILER PATH B')
-						return oadaLib.resources.getResource(result.resource_id).then((res) => {
-							trace('B Path id', res._id)
-							if (res['geohash-data'][aggregate]) {
-								// increment/compute new geohash bucket values
-								//TODO: should probably check that they use the same template
-								let data = {
-									'geohash-data': {
-										[aggregate]: recomputeStats(res['geohash-data'][aggregate], additionalStats),
-									},
 									stats: recomputeStats(res.stats, additionalStats)
 								}
-
-								return axios({
-									method: 'PUT',
-									url: 'http://http-handler/bookmarks'+bucketPath,
-									headers: {
-										Authorization: 'Bearer def',
-										'x-oada-bookmarks-type': 'tiled-maps',
-										'Content-Type': 'application/vnd.oada.harvest.1+json'
-									},
-									data,
-								})
-							} else {
-								// new aggregate. Push stats
-								return axios({
-									method: 'PUT',
-									url: 'http://http-handler/bookmarks'+bucketPath,
-									headers: {
-										Authorization: 'Bearer def',
-										'x-oada-bookmarks-type': 'tiled-maps',
-										'Content-Type': 'application/vnd.oada.harvest.1+json'
-									},
-									data: {
-										'geohash-data': {
-											[aggregate]: additionalStats,
-										},
-										'stats': additionalStats
-									}
-								})
-							}
-						})
+							})
+						}
 					})
 				})
 			})
@@ -223,84 +201,3 @@ let recomputeStats = function(currentStats, additionalStats) {
   currentStats['sum-yield-squared-area'] = currentStats['sum-yield-squared-area'] + additionalStats['sum-yield-squared-area'];
   return currentStats;
 };
-
-/*
-let recursiveGet = function(resArray, path, rev, stuff, depth) {
-	if (depth > 7) {
-		resArray.push(stuff)
-		return 
-	}
-	depth++;
-	return Promise.map(Object.keys(stuff) || {}, (key) => {
-		//1. trim oada-reserved keys _rev, _meta, _type
-		if (key === '_type' || key === '_rev' || key === '_meta') return
-		if (stuff[key]._rev) {
-			//get the merge document
-			return axios({
-				method: 'GET',
-				url: 'http://http-handler/'+path+'/_meta/_changes/'+stuff[key]._rev,
-				headers: {
-					Authorization: req.get('Authorization')
-				},
-			}).then((result) => {
-				//can't assume a merge key exists
-				if (result.data.merge) {
-					return recursiveGet(resArray, path+'/'+key, stuff[key]._rev, result.data.merge, depth)
-				}
-				return
-			})
-		}
-		return recursiveGet(resArray, path+'/'+key, rev, stuff[key], depth)
-	})
-}
-*/
-
-
-
-		
-
-
-let recursiveGet = async function(resArray, path, stuff, depth) {
-	//	if (depth > 10) return resArray
-	if (typeof stuff === 'string') {
-		return resArray
-	}
-	if (stuff._rev) {
-		return axios({
-			method: 'GET',
-			url: 'http://http-handler/'+path+'/_meta/_changes/'+stuff._rev,
-			headers: {
-				Authorization: 'Bearer def',// req.get('Authorization')
-			},
-		}).then((result) => {
-			if (depth >= 8) {
-				if (result.data.merge) {
-					resArray.push({change: result.data.merge})
-				}
-				return resArray
-			}
-			//can't assume a merge key exists
-			if (result.data.merge) {
-				depth++;
-				return Promise.map(Object.keys(result.data.merge || {}), (key) => {
-					if (key === '_type' || key === '_rev' || key === '_meta') return
-					return recursiveGet(resArray, path+'/'+key, result.data.merge[key], depth).then((res) => {
-						return
-					})
-				}).then(() => {
-					return resArray
-				})
-			}
-			return resArray
-		})
-	}
-	depth++
-	return Promise.map(Object.keys(stuff || {}), (key) => {
-		//if (key === '_type' || key === '_rev' || key === '_meta') return
-		return recursiveGet(resArray, path+'/'+key, stuff[key], depth).then((res) => {
-			return resArray
-		})
-	}).then(() => {
-		return resArray
-	})
-}

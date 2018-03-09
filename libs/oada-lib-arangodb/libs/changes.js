@@ -35,21 +35,11 @@ function getChanges(resourceId, changeRev) {
   })
 }
 
-
+// Produces a bare tree has a top level key at resourceId and traces down to the actual
+// change that induced this rev update
+// TODO: using .body allows the changes to be nested, but doesn't allow us to
+// specify all of the other change details along the way down.
 function getChange(resourceId, changeRev) {
-  trace(aql`
-    LET change = FIRST(
-      FOR change in ${changes}
-      FILTER change.resource_id == ${resourceId}
-      FILTER change.number == ${+changeRev.split('-')[0]}
-      RETURN change
-    )
-    LET path = LAST(
-      FOR v, e, p IN 0..${MAX_DEPTH} OUTBOUND change ${changeEdges}
-      RETURN p
-    )
-    RETURN path
-  `)
   return db.query(aql`
     LET change = FIRST(
       FOR change in ${changes}
@@ -64,16 +54,33 @@ function getChange(resourceId, changeRev) {
     RETURN path
   `).call('next').then((result) => {
     if (!result.vertices[0]) return
-    let change = result.vertices[0].body;
+    let change = {
+      body: result.vertices[0].body,
+      type: result.vertices[result.vertices.length-1].type
+    }
     let path = '';
     for (let i = 0; i < result.vertices.length-1; i++) {
-      trace(result.edges[i])
       path += result.edges[i].path;
-      trace(path)
-      pointer.set(change, path, result.vertices[i+1].body)
+      pointer.set(change.body, path, result.vertices[i+1].body)
     }
     return change
   })
+}
+
+function getRootChange(resourceId, changeRev) {
+  return db.query(aql`
+    LET change = FIRST(
+      FOR change in ${changes}
+      FILTER change.resource_id == ${resourceId}
+      FILTER change.number == ${+changeRev.split('-')[0]}
+      RETURN change
+    )
+    LET path = LAST(
+      FOR v, e, p IN 0..${MAX_DEPTH} OUTBOUND change ${changeEdges}
+      RETURN v
+    )
+    RETURN path
+  `).call('next')
 }
 
 function putChange({change, resId, rev, type, child, path, userId, authorizationId}) {
@@ -90,8 +97,8 @@ function putChange({change, resId, rev, type, child, path, userId, authorization
         resource_id: ${resId},
         hash: ${hash},
         number: ${number},
-        authorization_id: ${authorizationId},
-        user_id: ${userId}
+        authorization_id: ${authorizationId || null},
+        user_id: ${userId || null}
       } IN ${changes}
       RETURN NEW
     )
@@ -110,6 +117,7 @@ function putChange({change, resId, rev, type, child, path, userId, authorization
 
 module.exports = {
   getChange,
+  getRootChange,
   getChanges,
   putChange
 };
