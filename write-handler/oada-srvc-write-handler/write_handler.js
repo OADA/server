@@ -4,12 +4,13 @@ const Promise = require('bluebird');
 const {resources, putBodies, changes} = require('../../libs/oada-lib-arangodb');
 const {Responder} = require('../../libs/oada-lib-kafka');
 const pointer = require('json-pointer');
-const nhash = require('node-object-hash');
+const nhash = require('node-object-hash')();
 const hash = require('object-hash');
 const error = require('debug')('write-handler:error');
 const info = require('debug')('write-handler:info');
 const trace = require('debug')('write-handler:trace');
 const Cache = require('timed-cache');
+
 let counter = 0;
 
 var config = require('./config');
@@ -38,20 +39,33 @@ responder.on('request', (...args) => {
 	return p;
 });
 
+let requestStart = new Date();
+let requestEnd = new Date();
+
 function handleReq(req, msg) {
-	var start = new Date();
+	requestStart = new Date();
+  let requestCur = new Date();
+	console.log('-------------------------------------------------------------');
+	console.log('################### handleReq: since last end ', requestStart - requestEnd);
+
 	req.source = req.source || '';
 	var id = req['resource_id'];
 
 	// Get body and check permission in parallel
 	var body = Promise.try(function getBody() {
-		return req.body || req.bodyid && putBodies.getPutBody(req.bodyid);
+		let getBodyStart = new Date();
+		return req.body || req.bodyid && putBodies.getPutBody(req.bodyid).tap(() => {
+	    console.log('################### handleReq: getPutBody took ', new Date() - getBodyStart);
+		});
 	});
 	let existingResourceInfo = {};
 
+
 	info(`PUTing to "${req['path_leftover']}" in "${id}"`);
 
+	let upsertMethodStart = new Date(); // will reset below when method() starts
 	var upsert = body.then(async function doUpsert(body) {
+	  let upsertStart = new Date();
 		if (req.rev) {
 				let cacheRev = cache.get(req.resource_id)
 			if (!cacheRev) {
@@ -62,6 +76,9 @@ function handleReq(req, msg) {
 						throw new Error(`rev mismatch`)
 			}
 		}
+		console.log('################### handleReq: upsert: first part took ', new Date() - upsertStart);
+		let upsertSecondPartStart = new Date();
+
 
 		var path = pointer.parse(req['path_leftover'].replace(/\/*$/, ''));
 		let method = resources.putResource;
@@ -69,6 +86,7 @@ function handleReq(req, msg) {
 		// Perform delete
 		// TODO: Should deletes be a separate topic?
 		if (body === undefined) {
+			  console.log('####################### handleReq: upsert: SHOULD NEVER GET HERE BECAUSE THIS IS DELETE!!!');
 				// TODO: How to handle rev etc. on DELETE?
 				if (path.length > 0) {
 						// TODO: This is gross
@@ -81,6 +99,9 @@ function handleReq(req, msg) {
 						return resources.deleteResource(id);
 				}
 		}
+
+		console.log('################### handleReq: upsert: second part took ', new Date() - upsertSecondPartStart);
+		let upsertThirdPartStart = new Date();
 
 		var obj = {};
 		var ts = Date.now();
@@ -126,7 +147,7 @@ function handleReq(req, msg) {
 
 		// Precompute new rev ignoring _meta and such
 		//let newRevHash = hash(JSON.stringify(obj), {algorithm: 'md5'});
-		let newRevHash = nhash(obj);
+		let newRevHash = nhash.hash(obj);
 
 		// Update meta
 		var meta = {
@@ -153,6 +174,9 @@ function handleReq(req, msg) {
 		obj['_rev'] = rev;
 		pointer.set(obj, '/_meta/_rev', rev);
 
+		console.log('################### handleReq: upsert: third part took ', new Date() - upsertThirdPartStart);
+		let upsertFourthPartStart = new Date();
+
 		// Compute new change
 		//
 		let change_id = await changes.putChange({
@@ -170,18 +194,26 @@ function handleReq(req, msg) {
 			_id: id+'/_meta/_changes',
 			_rev: rev
 		});
+		//		let change_id = '132';
 
 		// Update rev of meta?
 		obj['_meta']['_rev'] = rev;
 		
 		//return {rev, orev: 'c', change_id};
+		console.log('################### handleReq: upsert: fourth part took ', new Date() - upsertThirdPartStart);
+
+		console.log('################### handleReq: upsert: starting method');
+		upsertMethodStart = new Date();
 		return method(id, obj).then(orev => ({rev, orev, change_id}));
 	}).then(function respond({rev, orev, change_id}) {
-			let end = new Date();
-			info(`Finished PUTing to "${req['path_leftover']}". +${end - start}ms`);
+		console.log('################### handleReq: upsert: method finished ', new Date() - upsertMethodStart);
+		let upsertCachePutStart = new Date();
+		//info(`Finished PUTing to "${req['path_leftover']}". +${end - start}ms`);
 
-			// Put the new rev into the cache
-			cache.put(id, rev);
+
+	  // Put the new rev into the cache
+		cache.put(id, rev);
+		console.log('################### handleReq: upsert: cachePut took ', new Date() - upsertCachePutStart);
 
 			return {
 					'msgtype': 'write-response',
@@ -215,10 +247,14 @@ function handleReq(req, msg) {
 	});
 
 	var cleanup = body.then(() => {
+    let cleanupStart = new Date();
+		//		console.log('################### cleanup: start (since requestStart): ', cleanupStart - requestStart );
 		// Remove putBody, if there was one
+		//		const result = req.bodyid && putBodies.removePutBody(req.bodyid);
+		//console.log('################### cleanup: removePutBody: ', new Date() - cleanupStart);
 		return req.bodyid && putBodies.removePutBody(req.bodyid);
-		return;
 	});
 
-	return Promise.join(upsert, cleanup, resp => resp);
+	return Promise.join(upsert, cleanup, resp => resp)
+		.tap(() => { requestEnd = new Date() });
 }

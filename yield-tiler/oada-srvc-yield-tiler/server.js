@@ -47,7 +47,6 @@ const tradeMoisture = {
   wheat: 13,
 };
 const cq = require('concurrent-queue');
-let COUNTER = 0;
 
 //---------------------------------------------------------
 // Kafka intializations:
@@ -61,7 +60,7 @@ module.exports = function stopResp() {
 };
 
 responder.on('request', async function handleReq(req) {
-
+	info(req.msgtype, req.code, req.contentType)
 	if (req.msgtype !== 'write-response') {
     return;
   }
@@ -69,18 +68,19 @@ responder.on('request', async function handleReq(req) {
 	  return;
 	}
 	if (req.contentType === 'application/vnd.oada.as-harvested.1+json') {
+		info('queueing')
 		queue(req)
 	}
 	return undefined
 })
 
 let queue = cq().limit({concurrency: 1}).process(async function indexYield(req) { 
+	info('processinging')
 
 	let id = req['resource_id'];
 
 	let change = await changes.getRootChange(req.resource_id, req._rev);
 
-	COUNTER++;
 	return Promise.map(Object.keys(change.body.data || {}), (key) => {
 		let pt = change.body.data[key];
 		let cropType = 'corn'

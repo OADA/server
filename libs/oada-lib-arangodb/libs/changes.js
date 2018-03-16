@@ -112,7 +112,9 @@ function putChange({change, resId, rev, type, child, path, userId, authorization
         } in ${changeEdges}
     )
     RETURN doc._id
-  `).call('next');
+  `).tap((cursor) => {
+    console.log('PUTCHANGE', cursor.extra.stats.executionTime);
+  }).call('next');
 }
 
 module.exports = {
