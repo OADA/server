@@ -306,6 +306,7 @@ services:
     restart: "no"
     volumes:
       - .:/code
+    command: /code/yarn/do-yarn-install.sh
 
   # letsencrypt will go get HTTPS certificates for you if DOMAIN is not localhost
   # NOTE: letsencrypt has a limit of 5 certificates per top domain per week,
