@@ -182,8 +182,8 @@ function findNewCertifications(certsResource, id) {
           Object.keys(newCerts).forEach((key) => {
             if (key.charAt(0) !== '_') {
               if (curCerts[key]) {
-                delete certifications.body[key];
                 trace('cert already exists', certifications.body[key])
+                delete certifications.body[key];
               }
             }
           })

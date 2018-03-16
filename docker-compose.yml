@@ -95,8 +95,6 @@ services:
       - http_net
       - kafka_net
       - arango_net
-    ports:
-      - "34135:80"
     volumes:
       - .:/code
       - ./oada-srvc-docker-config.js:/oada-srvc-docker-config.js

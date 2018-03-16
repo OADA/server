@@ -50,7 +50,12 @@ passport.serializeUser(function(user, done) {
 
 passport.deserializeUser(function(username, done) {
   users.findByUsername(username, function(err, user) {
-    done(err, user);
+    console.log(user)
+    if(Array.isArray(user) && user.length === 0) {
+	done(err, false);
+    } else {
+	done(err, user);
+    }
   });
 });
 

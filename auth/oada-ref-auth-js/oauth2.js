@@ -73,6 +73,10 @@ module.exports = function(_server,config) {
         }
         next();
       },
+      function(req, res, next) {
+         console.log(req.session);
+        next();
+      },
       // can access it to pre-fill the domain box
       // ensureLoggedIn fills in req.session.returnTo to let you redirect
       // back after logging in
@@ -107,7 +111,7 @@ module.exports = function(_server,config) {
               name: req.user && req.user.name ? req.user.name : '',
               username: req.user && req.user.username ? req.user.username : 'nobody',
             },
-            autoaccept: scopeIsOnlyOpenid(req.oauth2.req.scope) ? true : false,
+            autoaccept: false, //scopeIsOnlyOpenid(req.oauth2.req.scope) ? true : false,
             logout: config.get('auth:endpoints:logout'),
             name: domain_config.name,
             logo_url: config.get('auth:endpointsPrefix')+'/domains/'+domain_config.domain+'/'+domain_config.logo,

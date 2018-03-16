@@ -174,6 +174,29 @@ module.exports = function(conf) {
 
       // Load the login info for this domain from the public directory:
       const domain_config = domainConfigs[req.hostname] || domainConfigs.localhost;
+      let domain_hint = '';
+      switch (domain_config.domain) {
+        case "api.abcaudits.trellisfw.io":
+          domain_hint = "growersync.trellisfw.io";
+          break;
+          
+        case "api.growersync.trellisfw.io":
+          domain_hint = "pspperfection.trellisfw.io";
+          break;
+            
+        case "api.pspperfection.trellisfw.io":
+          domain_hint = "distributingexcellence.trellisfw.io";
+          break;
+            
+        case "api.distributingexcellence.trellisfw.io":
+          domain_hint = "retailfresh.trellisfw.io";
+          break;
+
+        default:
+          domain_hint = "growersync.trellisfw.io";
+          break;
+      }
+
       res.render('login', {
         // Where should the local login form post:
         login_url: config.get('auth:endpoints:login'),
@@ -191,7 +214,7 @@ module.exports = function(conf) {
         errormsg: errormsg,
 
         // domain_hint can be set when authorization server redirects to login
-        domain_hint: "growersync.trellisfw.io", //req.session.domain_hint || '',
+        domain_hint
       });
     });
 
@@ -265,7 +288,7 @@ module.exports = function(conf) {
             // we don't have a user with this sub or username, so they don't have an account
             req.session.errormsg = 'There is no user '+userinfo['preferred_username']+' from '+idToken.iss;
             info('Failed OIDC login: user not found.  Redirecting to ', req.session.returnTo);
-            return res.redirect(req.session.returnTo);
+            return res.redirect(req.session.returnTo);//'auth:endpoints:login');
           }
           // Add sub to existing user
           // TODO: Make a link function or something
