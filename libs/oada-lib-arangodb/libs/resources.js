@@ -175,8 +175,8 @@ function getResource(id, path) {
         FILTER r._id == @id
         RETURN r${returnPath}`,
     bindVars
-  }).tap((cursor) => {
-    console.log('getResources', cursor.extra.stats.executionTime);
+    //  }).tap((cursor) => {
+    //console.log('getResources', cursor.extra.stats.executionTime);
   })
   .then(result => result.next())
   .then(util.sanitizeResult)

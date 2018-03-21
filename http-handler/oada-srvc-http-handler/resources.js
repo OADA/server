@@ -155,7 +155,10 @@ router.get('/*', function getResource(req, res, next) {
 
             doc = unflattenMeta(doc);
             info('doc unflattened now');
-            return res.json(doc);
+            return res
+                .set('X-OADA-Rev', doc['_rev'])
+                .json(doc);
+
         })
         .catch(next);
 });
@@ -475,6 +478,7 @@ let trees = {
                                     'geohash-index': {
                                         '*': {
                                             '_type': "application/vnd.oada.as-harvested.yield-moisture-dataset.1+json",
+
                                         }
                                     }
                                 }

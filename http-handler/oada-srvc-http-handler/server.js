@@ -54,7 +54,7 @@ app.use(function(req, res, next) {
 });
 // Turn on CORS for all domains, allow the necessary headers
 app.use(cors({
-    exposedHeaders: ['x-oada-rev', 'location'],
+    exposedHeaders: ['x-oada-rev', 'location', 'content-location'],
 }));
 app.options('*', cors());
 

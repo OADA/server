@@ -83,7 +83,8 @@ let queue = cq().limit({concurrency: 1}).process(async function indexYield(req) 
 
 	return Promise.map(Object.keys(change.body.data || {}), (key) => {
 		let pt = change.body.data[key];
-		let cropType = 'corn'
+		//		let cropType = await resources.getResource(req.resource_id, 'context/crop-index');
+		let cropType = 'corn';
 		return oadaLib.users.findById(req.user_id).then((user) => {
 			return Promise.map([1,2,3,4,5,6,7], (ghLength) => {
 				// 1) Find the data point's geohash of length ghLength
