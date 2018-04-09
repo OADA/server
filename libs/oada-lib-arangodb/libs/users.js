@@ -120,7 +120,7 @@ function update(u) {
 }
 
 function like(u) {
-  return util.bluebirdCursor(users.byExample(flatt(u)));
+  return util.bluebirdCursor(users.byExample(flatten(u)));
 }
 
 function hashPw(pw) {

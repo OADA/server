@@ -48,17 +48,19 @@ module.exports = function stopResp() {
 };
 
 responder.on('request', function handleReq(req) {
+  console.log('got a message')
     // TODO: Sanitize?
     let user = req.user;
 
     return users.create(user, true)
         .then(function ensureUserResources(user) {
-            // Create empty resources for user
+					// Create empty resources for user
+					console.log('got user', user)
             ['bookmarks', 'shares'].forEach(function ensureResource(res) {
                 if (!(user[res] && user[res]['_id'])) {
                     let resid = 'resources/' + uuid();
 
-                    trace(`Creating ${resid} for ${res} of ${user.id}`);
+                    console.log(`Creating ${resid} for ${res} of ${user.id}`);
                     user[res] =
                         responder.send({
                             'url': '/' + resid,
@@ -76,7 +78,7 @@ responder.on('request', function handleReq(req) {
                                 return Promise.resolve();
                             } else {
                                 // TODO: Clean up on failure?
-                                error(resp.code);
+                                console.log(resp.code);
                                 let err = new Error(`Failed to create ${res}`);
                                 return Promise.reject(err);
                             }
@@ -88,14 +90,14 @@ responder.on('request', function handleReq(req) {
         })
         .props()
         .then(users.update)
-        .tap(user => info(`Created user ${user['_id']}`))
+        .tap(user => console.log(`Created user ${user['_id']}`))
         .then(user => ({
             code: 'success',
             new: true,
             user,
         }))
         .catch(users.UniqueConstraintError, () => {
-            info(`User ${user} already exists`);
+            console.log(`User ${JSON.stringify(user)} already exists`);
             // TODO: Implement updating users?
             return users.like(user).call('next').then(user => ({
                 code: 'success',
@@ -104,7 +106,7 @@ responder.on('request', function handleReq(req) {
             }));
         })
         .catch(err => {
-            error(err);
+            console.log(err);
             return {code: err.message || 'error'};
         });
 });

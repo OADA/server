@@ -3,7 +3,7 @@ module.exports = [
   //------------------------------------------------
   // Bookmarks document (for frank):
   {
-    '_id': 'changes/default:resources_bookmarks_123/_meta/_changes',
+    '_id': 'changes/default:resources_bookmarks_123',
     'resource_id': 'resources/default:resources_bookmarks_123',
     'number': 1,
     'hash': 'a',
@@ -36,7 +36,7 @@ module.exports = [
   },
 
   {
-    '_id': 'changes/default:resources_bookmarks_124/_meta/_changes',
+    '_id': 'changes/default:resources_bookmarks_124',
     'resource_id': 'resources/default:resources_bookmarks_124',
     'hash': 'b',
     'number': 2,
@@ -64,7 +64,7 @@ module.exports = [
 
   //user sam's bookmarks changes doc
   {
-    '_id': 'changes/default:resources_bookmarks_321/_meta/_changes',
+    '_id': 'changes/default:resources_bookmarks_321',
     'resource_id': 'resources/default:resources_bookmarks_321',
     'number': 3,
     'hash': 'c',
@@ -93,7 +93,7 @@ module.exports = [
   },
 
   {
-    '_id': 'changes/default:resources_bookmarks_999/_meta/_changes',
+    '_id': 'changes/default:resources_bookmarks_999',
     'resource_id': 'resources/default:resources_bookmarks_999',
     'hash': 'd',
     'number': 4,
@@ -126,7 +126,7 @@ module.exports = [
   },
 
   {
-    '_id': 'changes/default:resources_bookmarks_777/_meta/_changes',
+    '_id': 'changes/default:resources_bookmarks_777',
     'resource_id': 'resources/default:resources_bookmarks_777',
     'number': 5,
     'hash': 'e',
@@ -155,7 +155,7 @@ module.exports = [
   },
 
   {
-    '_id': 'changes/default:resources_bookmarks_444/_meta/_changes',
+    '_id': 'changes/default:resources_bookmarks_444',
     'resource_id': 'resources/default:resources_bookmarks_444',
     'number': 6,
     'hash': 'f',
@@ -184,7 +184,7 @@ module.exports = [
   },
 
   {
-    '_id': 'changes/default:resources_bookmarks_555_meta/_changes',
+    '_id': 'changes/default:resources_bookmarks_555',
     'resource_id': 'resources/default:resources_bookmarks_555',
     'number': 7,
     'hash': 'g',
@@ -213,7 +213,7 @@ module.exports = [
   },
 
   {
-    '_id': 'changes/default:resources_bookmarks_666/_meta/_changes',
+    '_id': 'changes/default:resources_bookmarks_666',
     'resource_id': 'resources/default:resources_bookmarks_666',
     'number': 8,
     'hash': 'h',
@@ -244,7 +244,7 @@ module.exports = [
   //------------------------------------------------------
   // Rocks document:
   {
-    '_id': 'changes/default:resources_rocks_123/_meta/_changes',
+    '_id': 'changes/default:resources_rocks_123',
     'resource_id': 'resources/default:resources_rocks_123',
     'number': 9,
     'hash': 'i',
@@ -276,7 +276,7 @@ module.exports = [
   },
 
   {
-    '_id': 'changes/default:resources_trellisfw_999/_meta/_changes',
+    '_id': 'changes/default:resources_trellisfw_999',
     'resource_id': 'resources/default:resources_trellisfw_999',
     'number': 10,
     'hash': 'j',
@@ -306,7 +306,7 @@ module.exports = [
   },
 
   {
-    '_id': 'changes/default:resources_audrey_999/_meta/_changes',
+    '_id': 'changes/default:resources_audrey_999',
     'resource_id': 'resources/default:resources_audrey_999',
     'number': 11,
     'hash': 'k',
@@ -332,7 +332,7 @@ module.exports = [
   },
 
   {
-    '_id': 'changes/default:resources_rock_123/_meta/_changes',
+    '_id': 'changes/default:resources_rock_123',
     'resource_id': 'resources/default:resources_rock_123',
     'number': 12,
     'hash': 'l',
