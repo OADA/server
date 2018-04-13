@@ -1,5 +1,4 @@
-ARG NODE_VERSION=latest
-FROM mhart/alpine-node:${NODE_VERSION}
+FROM mhart/alpine-node:latest
 
 # Make librdkafka work
 ENV WITH_SASL=0
