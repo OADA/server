@@ -9,14 +9,16 @@
     "chai": "^3.5.0",
     "debug": "^2.6.6",
     "kafka-node": "^1.6.1",
+    "md5": "^2.2.1",
     "mocha": "^3.3.0",
     "node-exec-promise": "^1.0.1",
     "uuid": "^3.0.1",
-    "validator": "^7.0.0"
+    "validator": "^7.0.0",
+    "ws": "^5.1.1"
   },
   "devDependencies": {
-    "express": "^4.15.2",
-    "axios-debug": "0.0.4"
+    "axios-debug": "0.0.4",
+    "express": "^4.15.2"
   },
   "scripts": {
     "selftestserver": "IP=localhost PORT=80 node server",

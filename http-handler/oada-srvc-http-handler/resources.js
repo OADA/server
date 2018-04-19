@@ -75,11 +75,11 @@ router.put('/*', function checkScope(req, res, next) {
         } else if (!response.permissions.owner && !response.permissions.write) {
                 warn(req.user.doc['user_id'] +
                     ' tried to GET resource without proper permissions');
-            throw new OADAError('Not Authorized', 403,
+            throw new OADAError('Forbidden', 403,
                     'User does not have write permission for this resource');
         }
         if (!response.scopes.write) {
-            throw new OADAError('Not Authorized', 403,
+            throw new OADAError('Forbidden', 403,
                     'Token does not have required scope');
         }
     }).asCallback(next);
@@ -98,12 +98,12 @@ router.get('/*', function checkScope(req, res, next) {
         if (!response.permissions.owner && !response.permissions.read) {
             warn(req.user.doc['user_id'] +
                     ' tried to GET resource without proper permissions');
-            throw new OADAError('Not Authorized', 403,
+            throw new OADAError('Forbidden', 403,
                     'User does not have read permission for this resource');
         }
 
         if (!response.scopes.read) {
-            throw new OADAError('Not Authorized', 403,
+            throw new OADAError('Forbidden', 403,
                     'Token does not have required scope');
         }
     }).asCallback(next);
@@ -355,7 +355,7 @@ router.put('/*', function putResource(req, res, next) {
                 case 'success':
                     return;
                 case 'permission':
-                    return Promise.reject(new OADAError('Not Authorized', 403,
+                    return Promise.reject(new OADAError('Forbidden', 403,
                             'User does not own this resource'));
                 default:
                     let msg = 'write failed with code ' + resp.code;
@@ -421,7 +421,7 @@ router.delete('/*', function deleteResource(req, res, next) {
                 // fall-through
                 // TODO: Is 403 a good response for DELETE on non-existent?
             case 'permission':
-                return Promise.reject(new OADAError('Not Authorized', 403,
+                return Promise.reject(new OADAError('Forbidden', 403,
                         'User does not own this resource'));
             default:
                 let err = new OADAError('delete failed with code ' + resp.code);

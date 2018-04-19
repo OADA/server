@@ -53,7 +53,7 @@ router.get('/:authId', function(req, res, next) {
                 }
             } catch (e) {} // eslint-disable-line no-empty
 
-            return Promise.reject(new OADAError('Not Authorized', 403));
+            return Promise.reject(new OADAError('Forbidden', 403));
 
         // Get the full client out of the DB to send out with this auth document
         // That way anybody listing authorizations can print the name, etc. of the client
@@ -85,7 +85,7 @@ router.post('/', function(req, res, next) {
 
         // Don't allow making tokens for other users
         if (auth.user['_id'] !== req.user.doc['user_id']) {
-            return Promise.reject(new OADAError('Not Authorized', 403));
+            return Promise.reject(new OADAError('Forbidden', 403));
         }
 
         return authorizations.save(auth);
@@ -103,7 +103,7 @@ router.delete('/:authId', function(req, res, next) {
                 }
             } catch (e) {} // eslint-disable-line no-empty
 
-            return Promise.reject(new OADAError('Not Authorized', 403));
+            return Promise.reject(new OADAError('Forbidden', 403));
         })
         .then(() => authorizations.revoke(req.params.authId))
         .then(() => res.sendStatus(204))

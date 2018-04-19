@@ -48,19 +48,16 @@ module.exports = function stopResp() {
 };
 
 responder.on('request', function handleReq(req) {
-  console.log('got a message')
     // TODO: Sanitize?
     let user = req.user;
-
     return users.create(user, true)
         .then(function ensureUserResources(user) {
 					// Create empty resources for user
-					console.log('got user', user)
             ['bookmarks', 'shares'].forEach(function ensureResource(res) {
                 if (!(user[res] && user[res]['_id'])) {
                     let resid = 'resources/' + uuid();
 
-                    console.log(`Creating ${resid} for ${res} of ${user.id}`);
+                    console.log(`Creating ${resid} for ${res} of ${user._id}`);
                     user[res] =
                         responder.send({
                             'url': '/' + resid,

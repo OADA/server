@@ -21,7 +21,7 @@ module.exports = [
   {
     '_id': 'authorizations/default:authorization-321',
     'token': 'def',
-    'scope': ['oada.yield:all'],
+    'scope': ['oada.yield:all', 'trellisfw:all'],
     'createTime': 1413831649937,
     'expiresIn': 60,
     'user': {'_id': 'users/default:users_sam_321'},

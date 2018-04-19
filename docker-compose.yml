@@ -24,6 +24,7 @@ services:
       - DEBUG=${DEBUG:-""}
       # set RESETDATABASE to "yes" if you want to drop database on startup and recreate
       - RESETDATABASE=${RESETDATABASE:-no}
+      - isTest=${isTest:-false}
 
   # proxy routes OAuth2 requests (/auth, /code) to auth service,
   # and the rest to main http-handlers.  TODO: add load balancing with multiple handlers.
@@ -52,6 +53,7 @@ services:
       - NODE_ENV=${NODE_ENV:-development}
       - DEBUG=${DEBUG:-""}
       - DOMAIN=${DOMAIN:-localhost}
+      - isTest=${isTest:-false}
     command:
       - /entrypoint.sh
 
@@ -76,6 +78,7 @@ services:
     environment:
       - NODE_ENV=${NODE_ENV:-development}
       - DEBUG=${DEBUG:-""}
+      - isTest=${isTest:-false}
     command:
       - /entrypoint.sh
 
@@ -102,8 +105,10 @@ services:
       - ./oada-srvc-docker-config.js:/oada-srvc-docker-config.js
     environment:
       - NODE_ENV=${NODE_ENV:-development}
+      - NODE_TLS_REJECT_UNAUTHORIZED=${NODE_TLS_REJECT_UNAUTHORIZED:-""}
       - DEBUG=${DEBUG:-""}
       - IGNORE_SCOPE=${IGNORE_SCOPE:-""}
+      - isTest=${isTest:-false}
 
   sync-handler:
     depends_on:
@@ -128,6 +133,7 @@ services:
       - DEBUG=${DEBUG:-""}
       - NODE_TLS_REJECT_UNAUTHORIZED=${NODE_TLS_REJECT_UNAUTHORIZED:-""}
       - IGNORE_SCOPE=${IGNORE_SCOPE:-""}
+      - isTest=${isTest:-false}
 
   write-handler:
     depends_on:
@@ -150,6 +156,7 @@ services:
     environment:
       - NODE_ENV=${NODE_ENV:-development}
       - DEBUG=${DEBUG:-""}
+      - isTest=${isTest:-false}
 
   users:
     depends_on:
@@ -170,6 +177,7 @@ services:
     environment:
       - NODE_ENV=${NODE_ENV:-development}
       - DEBUG=${DEBUG:-""}
+      - isTest=${isTest:-false}
 
   token-lookup:
     depends_on:
@@ -190,6 +198,7 @@ services:
     environment:
       - NODE_ENV=${NODE_ENV:-development}
       - DEBUG=${DEBUG:-""}
+      - isTest=${isTest:-false}
 
   rev-graph-update:
     depends_on:
@@ -210,6 +219,7 @@ services:
     environment:
       - NODE_ENV=${NODE_ENV:-development}
       - DEBUG=${DEBUG:-""}
+      - isTest=${isTest:-false}
 
   graph-lookup:
     depends_on:
@@ -230,6 +240,7 @@ services:
     environment:
       - NODE_ENV=${NODE_ENV:-development}
       - DEBUG=${DEBUG:-""}
+      - isTest=${isTest:-false}
 
   well-known:
     depends_on:
@@ -251,6 +262,7 @@ services:
     environment:
       - NODE_ENV=${NODE_ENV:-development}
       - DEBUG=${DEBUG:-""}
+      - isTest=${isTest:-false}
 
   tests:
     # depends_on:
@@ -271,6 +283,7 @@ services:
     environment:
       - NODE_ENV=${NODE_ENV:-development}
       - DEBUG=${DEBUG:-""}
+      - isTest=${isTest:-false}
 
   # admin container has all the service names and volumes mapped, so you
   # can interact with them easily from this service.
@@ -296,6 +309,7 @@ services:
     environment:
       - NODE_ENV=${NODE_ENV:-development}
       - DEBUG=${DEBUG:-""}
+      - isTest=${isTest:-false}
 
   # Needed for installing native Node dependencies
   yarn:
@@ -330,6 +344,7 @@ services:
       - WEBROOT_PATH=/var/www/letsencrypt
       - CERTS_PATH=/certs/${DOMAIN:-nodomain}
       - CHECK_FREQ=7
+      - isTest=${isTest:-false}
 
   # Arango is the main backend where core data and graph is stored
   arangodb:
@@ -347,6 +362,7 @@ services:
     environment:
       # - ARANGO_RANDOM_ROOT_PASSWORD=1
       - ARANGO_NO_AUTH=1
+      - isTest=${isTest:-false}
 
 
   # zookeeper and kafka entries are based on:
@@ -420,6 +436,7 @@ services:
     environment:
       - NODE_ENV=${NODE_ENV:-development}
       - DEBUG=${DEBUG:-""}
+      - isTest=${isTest:-false}
 
   yield-tiler:
     depends_on:
@@ -440,6 +457,7 @@ services:
     environment:
       - NODE_ENV=${NODE_ENV:-development}
       - DEBUG=${DEBUG:-""}
+      - isTest=${isTest:-false}
 
   webhooks:
     depends_on:
@@ -463,6 +481,7 @@ services:
       - NODE_ENV=${NODE_ENV:-development}
       - DEBUG=${DEBUG:-""}
       - SSL_ALLOW_SELF_SIGNED=1
+      - isTest=${isTest:-false}
 
   permissions-handler:
     depends_on:
@@ -483,6 +502,7 @@ services:
     environment:
       - NODE_ENV=${NODE_ENV:-development}
       - DEBUG=${DEBUG:-""}
+      - isTest=${isTest:-false}
 
   shares:
     depends_on:
@@ -503,6 +523,7 @@ services:
     environment:
       - NODE_ENV=${NODE_ENV:-development}
       - DEBUG=${DEBUG:-""}
+      - isTest=${isTest:-false}
 
 volumes:
   arangodb_data:

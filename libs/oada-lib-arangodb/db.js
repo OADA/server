@@ -10,6 +10,7 @@ const db = arangojs({
   url: config.get('arangodb:connectionString'),
   promise: Promise
 });
+
 if (config.get('isTest')) {
   config.set('arangodb:database', 'oada-test');
 }
