@@ -22,6 +22,7 @@
     "debug": "^2.6.6",
     "json-pointer": "^0.6.0",
     "nconf": "^0.8.4",
+    "node-object-hash": "^1.3.0",
     "object-hash": "^1.1.8",
     "tic-toc": "^0.1.0",
     "timed-cache": "^1.1.0"

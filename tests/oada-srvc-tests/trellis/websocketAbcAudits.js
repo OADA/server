@@ -38,9 +38,6 @@ describe(`A client shouldn't exist before adding one`, () => {
 		return oadaLib.init.run()
 	})
 
-	let clientId;
-	let text = 'Grower Gary';
-
 	it(`GET on bookmarks/trellisfw/clients/ should return an empty resource`, () => {
 		return socket.http({                                                                 
 			method: 'GET',                                                               
@@ -54,9 +51,6 @@ describe(`A client shouldn't exist before adding one`, () => {
 			expect(response.data._type).to.equal('application/vnd.trellisfw.clients.1+json');
 		})
 	})
-})
-
-describe(`The auditor should begin with no certifications resource`, () => {
 
 	it(`GET on bookmarks/trellisfw/client/X/certifications/ should not exist`, () => {
 		return socket.http({                                                                 
@@ -138,7 +132,8 @@ describe('Trellis demo testing...', () => {
 	})
 })
 
-describe('Sharing a client with another user...', function() {
+
+describe('Creating new users...', function() {
 	this.timeout(10000);
 	let oidc = {
 		username: 'bob@gmail.com',
@@ -149,6 +144,7 @@ describe('Sharing a client with another user...', function() {
 		oidc
 	}
 
+	//TODO: check response status code 201 vs 200 for created or already exists
 	it('POSTing a new user should be successful', () => {
 		return socket.http({
 			method: 'post',
@@ -185,13 +181,10 @@ describe('Sharing a client with another user...', function() {
 describe('Read/write/owner permissions should apply accordingly', function() {
 	this.timeout(10000);
 
-	before('get a token for the new user', () => {
-
-	})
-
 	it(`should not be accessible before sharing`, () => {
 		return socket.http({                                                                 
 			method: 'get',                                                               
+			//TODO: baseUrl+'/shares/'
 			url: baseUrl+'/bookmarks/trellisfw/clients/'+clientId+'/certifications/',
 			headers: {
 				'Authorization': 'Bearer '+GROWER_TOKEN,
@@ -224,6 +217,7 @@ describe('Adding read permission', function() {
 	})
 
 	it('The GROWER should have the same certifications resource as the AUDITOR in /shares', () => {
+		//Getting resource Id to compare to GROWER's 
 		return socket.http({                                                                 
 			method: 'get',                                                               
 			url: baseUrl+'/bookmarks/trellisfw/clients/'+clientId+'/certifications/',
