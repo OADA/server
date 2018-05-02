@@ -111,7 +111,8 @@ responder.on('request', function handleReq(req) {
                     msg.doc.user_id = t.user._id || msg.doc.user_id;
                     msg.doc.bookmarks_id = t.user.bookmarks._id || msg.doc.bookmarks_id;
                     msg.doc.shares_id = t.user.shares._id || msg.doc.shares_id;
-                    msg.doc.scope = t.scope || msg.doc.scope;
+										msg.doc.scope = t.scope || msg.doc.scope;
+										console.log('WTF')
 
                     return msg;
             })

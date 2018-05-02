@@ -240,9 +240,9 @@ nan@2.x:
   version "2.6.2"
   resolved "https://registry.yarnpkg.com/nan/-/nan-2.6.2.tgz#e4ff34e6c95fdfb5aecc08de6596f43605a7db45"
 
-node-rdkafka@^2.3.2:
-  version "2.3.2"
-  resolved "https://registry.yarnpkg.com/node-rdkafka/-/node-rdkafka-2.3.2.tgz#6b2fb950d34f92b7e12fc319041e621781db415f"
+node-rdkafka@^1.0.6:
+  version "1.0.6"
+  resolved "https://registry.yarnpkg.com/node-rdkafka/-/node-rdkafka-1.0.6.tgz#b1a4566f5396aaa97d4e29733b552baba651dd1c"
   dependencies:
     bindings "1.x"
     nan "2.x"

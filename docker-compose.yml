@@ -3,11 +3,12 @@ version: '3'
 services:
 
   startup:
+    image: oada/startup:oada-v1.0.0
     depends_on:
       - zookeeper
       - kafka
       - arangodb
-    build: ./startup
+    #    build: ./startup
     restart: always
     container_name: startup
     networks:
@@ -29,11 +30,12 @@ services:
   # proxy routes OAuth2 requests (/auth, /code) to auth service,
   # and the rest to main http-handlers.  TODO: add load balancing with multiple handlers.
   proxy:
+    image: oada/proxy:oada-v1.0.0
     depends_on:
       - auth
       - http-handler
       - well-known
-    build: ./proxy
+        #    build: ./proxy
     container_name: proxy
     restart: always
     networks:
@@ -58,12 +60,13 @@ services:
       - /entrypoint.sh
 
   auth:
+    image: oada/auth:oada-v1.0.0
     depends_on:
       - startup
-    build:
-      context: ./auth
-      args:
-        NODE_VERSION: 8.7.0
+        #    build:
+        #   context: ./auth
+        # args:
+        # NODE_VERSION: 8.7.0
     container_name: auth
     restart: always
     networks:
@@ -85,12 +88,13 @@ services:
   # http-handler is in charge of maintaining connectiongs to clients and starting
   # the first message for a request into Kafka
   http-handler:
+    image: oada/http-handler:oada-v1.0.0
     depends_on:
       - startup
-    build:
-      context: ./http-handler
-      args:
-        NODE_VERSION: 8.7.0
+        #    build:
+        # context: ./http-handler
+        # args:
+        # NODE_VERSION: 8.7.0
     restart: always
     container_name: http-handler
     networks:
@@ -111,13 +115,14 @@ services:
       - isTest=${isTest:-false}
 
   sync-handler:
+    image: oada/sync-handler:oada-v1.0.0
     depends_on:
       - startup
       - proxy
-    build:
-      context: ./sync-handler
-      args:
-        NODE_VERSION: 8.7.0
+        #    build:
+        #  context: ./sync-handler
+        #      args:
+        # NODE_VERSION: 8.7.0
     restart: always
     container_name: sync-handler
     networks:
@@ -136,12 +141,13 @@ services:
       - isTest=${isTest:-false}
 
   write-handler:
+    image: oada/http-handler:oada-v1.0.0
     depends_on:
       - startup
-    build:
-      context: ./write-handler
-      args:
-        NODE_VERSION: 8.7.0
+        #    build:
+        #    context: ./write-handler
+        #      args:
+        #   NODE_VERSION: 8.7.0
     restart: always
     container_name: write-handler
     networks:
@@ -159,12 +165,13 @@ services:
       - isTest=${isTest:-false}
 
   users:
+    image: oada/http-handler:oada-v1.0.0
     depends_on:
       - startup
-    build:
-      context: ./users
-      args:
-        NODE_VERSION: 8.7.0
+        #    build:
+        #    context: ./users
+        #  args:
+        #  NODE_VERSION: 8.7.0
     restart: always
     container_name: users
     networks:
@@ -180,12 +187,13 @@ services:
       - isTest=${isTest:-false}
 
   token-lookup:
+    image: oada/token-lookup:oada-v1.0.0
     depends_on:
       - startup
-    build:
-      context: ./token-lookup
-      args:
-        NODE_VERSION: 8.7.0
+        #    build:
+        #   context: ./token-lookup
+        #   args:
+        # NODE_VERSION: 8.7.0
     restart: always
     container_name: token-lookup
     networks:
@@ -201,12 +209,13 @@ services:
       - isTest=${isTest:-false}
 
   rev-graph-update:
+    image: oada/rev-graph-update:v1.0.0
     depends_on:
       - startup
-    build:
-      context: ./rev-graph-update
-      args:
-        NODE_VERSION: 8.7.0
+        #    build:
+        #   context: ./rev-graph-update
+        #   args:
+        #     NODE_VERSION: 8.7.0
     restart: always
     container_name: rev-graph-update
     networks:
@@ -222,12 +231,13 @@ services:
       - isTest=${isTest:-false}
 
   graph-lookup:
+    image: oada/graph-lookup:oada-v1.0.0
     depends_on:
       - startup
-    build:
-      context: ./graph-lookup
-      args:
-        NODE_VERSION: 8.7.0
+        #   build:
+        #   context: ./graph-lookup
+        #   args:
+        #  NODE_VERSION: 8.7.0
     restart: always
     container_name: graph-lookup
     networks:
@@ -243,12 +253,13 @@ services:
       - isTest=${isTest:-false}
 
   well-known:
+    image: oada/well-known:oada-v1.0.0
     depends_on:
       - startup
-    build:
-      context: ./well-known
-      args:
-        NODE_VERSION: 8.7.0
+        #  build:
+        #  context: ./well-known
+        #  args:
+        #  NODE_VERSION: 8.7.0
     restart: always
     container_name: well-known
     networks:
@@ -265,12 +276,13 @@ services:
       - isTest=${isTest:-false}
 
   tests:
+    image: oada/tests:oada-v1.0.0
     # depends_on:
     #   - startup
-    build:
-      context: ./tests
-      args:
-        NODE_VERSION: 8.7.0
+    #    build:
+    #   context: ./tests
+    #   args:
+    #     NODE_VERSION: 8.7.0
     container_name: tests
     networks:
       - startup_net
@@ -288,7 +300,8 @@ services:
   # admin container has all the service names and volumes mapped, so you
   # can interact with them easily from this service.
   admin:
-    build: ./admin
+    image: oada/admin:oada-v1.0.0
+    #   build: ./admin
     volumes:
       - ./oada-srvc-docker-config.js:/oada-srvc-docker-config.js
       - arangodb_data:/volumes/arangodb
@@ -313,10 +326,11 @@ services:
 
   # Needed for installing native Node dependencies
   yarn:
-    build:
-      context: ./yarn
-      args:
-        NODE_VERSION: 8.7.0
+    image: oada/yarn:oada-v1.0.0
+    #  build:
+    #   context: ./yarn
+    #   args:
+    #    NODE_VERSION: 8.7.0
     restart: "no"
     volumes:
       - .:/code
@@ -328,7 +342,8 @@ services:
   # TO A SAFE PLACE.  Otherwise if you go over the request limit and lost the private
   # key, you're just out of luck for 7 days.
   letsencrypt:
-    build: ./letsencrypt
+    image: oada/letsencrypt:oada-v1.0.0
+    #    build: ./letsencrypt
     container_name: letsencrypt
     restart: "no"
     volumes:
@@ -418,12 +433,13 @@ services:
         #- kafka
 
   indexer:
+    image: oada/indexer:oada-v1.0.0
     depends_on:
       - startup
-    build:
-      context: ./indexer
-      args:
-        NODE_VERSION: 8.7.0
+        #    build:
+        #   context: ./indexer
+        #   args:
+        #  NODE_VERSION: 8.7.0
     restart: always
     container_name: indexer
     networks:
@@ -439,6 +455,7 @@ services:
       - isTest=${isTest:-false}
 
   yield-tiler:
+    #    image: oada/yield-tiler:oada-v1.0.0
     depends_on:
       - startup
     build:
@@ -460,13 +477,14 @@ services:
       - isTest=${isTest:-false}
 
   webhooks:
+    image: oada/webhooks:oada-v1.0.0
     depends_on:
       - startup
       - proxy
-    build:
-      context: ./webhooks
-      args:
-        NODE_VERSION: 8.7.0
+        # build:
+        #   context: ./webhooks
+        # args:
+        # NODE_VERSION: 8.7.0
     restart: always
     container_name: webhooks
     networks:
@@ -484,12 +502,13 @@ services:
       - isTest=${isTest:-false}
 
   permissions-handler:
+    image: oada/permissions-handler:oada-v1.0.0
     depends_on:
       - startup
-    build:
-      context: ./permissions-handler
-      args:
-        NODE_VERSION: 8.7.0
+        #    build:
+        #  context: ./permissions-handler
+        # args:
+        # NODE_VERSION: 8.7.0
     restart: always
     container_name: permissions-handler
     networks:
@@ -505,12 +524,13 @@ services:
       - isTest=${isTest:-false}
 
   shares:
+    image: oada/shares:oada-v1.0.0
     depends_on:
       - startup
-    build:
-      context: ./shares
-      args:
-        NODE_VERSION: 8.7.0
+        #    build:
+        #  context: ./shares
+        # args:
+        # NODE_VERSION: 8.7.0
     restart: always
     container_name: shares
     networks:
