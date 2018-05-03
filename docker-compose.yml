@@ -3,12 +3,11 @@ version: '3'
 services:
 
   startup:
-    image: oada/startup:oada-v1.0.0
     depends_on:
       - zookeeper
       - kafka
       - arangodb
-    #    build: ./startup
+    build: ./startup
     restart: always
     container_name: startup
     networks:
@@ -25,24 +24,22 @@ services:
       - DEBUG=${DEBUG:-""}
       # set RESETDATABASE to "yes" if you want to drop database on startup and recreate
       - RESETDATABASE=${RESETDATABASE:-no}
-      - isTest=${isTest:-false}
 
   # proxy routes OAuth2 requests (/auth, /code) to auth service,
   # and the rest to main http-handlers.  TODO: add load balancing with multiple handlers.
   proxy:
-    image: oada/proxy:oada-v1.0.0
     depends_on:
       - auth
       - http-handler
       - well-known
-        #    build: ./proxy
+    build: ./proxy
     container_name: proxy
     restart: always
     networks:
       - http_net
     ports:
         - "${BIND:-0.0.0.0}:${PORT_HTTPS:-443}:443"
-          #        - "${BIND:-0.0.0.0}:${PORT_HTTP:-80}:80"
+        - "${BIND:-0.0.0.0}:${PORT_HTTP:-80}:80"
     volumes:
       - ./proxy/nginx.conf:/etc/nginx/nginx.conf
       - ./proxy/dev-sites-enabled/:/etc/nginx/sites-templates/
@@ -55,18 +52,16 @@ services:
       - NODE_ENV=${NODE_ENV:-development}
       - DEBUG=${DEBUG:-""}
       - DOMAIN=${DOMAIN:-localhost}
-      - isTest=${isTest:-false}
     command:
       - /entrypoint.sh
 
   auth:
-    image: oada/auth:oada-v1.0.0
     depends_on:
       - startup
-        #    build:
-        #   context: ./auth
-        # args:
-        # NODE_VERSION: 8.7.0
+    build:
+      context: ./auth
+      args:
+        NODE_VERSION: 8.7.0
     container_name: auth
     restart: always
     networks:
@@ -81,20 +76,18 @@ services:
     environment:
       - NODE_ENV=${NODE_ENV:-development}
       - DEBUG=${DEBUG:-""}
-      - isTest=${isTest:-false}
     command:
       - /entrypoint.sh
 
   # http-handler is in charge of maintaining connectiongs to clients and starting
   # the first message for a request into Kafka
   http-handler:
-    image: oada/http-handler:oada-v1.0.0
     depends_on:
       - startup
-        #    build:
-        # context: ./http-handler
-        # args:
-        # NODE_VERSION: 8.7.0
+    build:
+      context: ./http-handler
+      args:
+        NODE_VERSION: 8.7.0
     restart: always
     container_name: http-handler
     networks:
@@ -109,20 +102,17 @@ services:
       - ./oada-srvc-docker-config.js:/oada-srvc-docker-config.js
     environment:
       - NODE_ENV=${NODE_ENV:-development}
-      - NODE_TLS_REJECT_UNAUTHORIZED=${NODE_TLS_REJECT_UNAUTHORIZED:-""}
       - DEBUG=${DEBUG:-""}
       - IGNORE_SCOPE=${IGNORE_SCOPE:-""}
-      - isTest=${isTest:-false}
 
   sync-handler:
-    image: oada/sync-handler:oada-v1.0.0
     depends_on:
       - startup
       - proxy
-        #    build:
-        #  context: ./sync-handler
-        #      args:
-        # NODE_VERSION: 8.7.0
+    build:
+      context: ./sync-handler
+      args:
+        NODE_VERSION: 8.7.0
     restart: always
     container_name: sync-handler
     networks:
@@ -138,40 +128,34 @@ services:
       - DEBUG=${DEBUG:-""}
       - NODE_TLS_REJECT_UNAUTHORIZED=${NODE_TLS_REJECT_UNAUTHORIZED:-""}
       - IGNORE_SCOPE=${IGNORE_SCOPE:-""}
-      - isTest=${isTest:-false}
 
   write-handler:
-    image: oada/http-handler:oada-v1.0.0
     depends_on:
       - startup
-        #    build:
-        #    context: ./write-handler
-        #      args:
-        #   NODE_VERSION: 8.7.0
+    build:
+      context: ./write-handler
+      args:
+        NODE_VERSION: 8.7.0
     restart: always
     container_name: write-handler
     networks:
       - startup_net
       - kafka_net
       - arango_net
-    ports:
-      - "9229:9229"
     volumes:
       - .:/code
       - ./oada-srvc-docker-config.js:/oada-srvc-docker-config.js
     environment:
       - NODE_ENV=${NODE_ENV:-development}
       - DEBUG=${DEBUG:-""}
-      - isTest=${isTest:-false}
 
   users:
-    image: oada/http-handler:oada-v1.0.0
     depends_on:
       - startup
-        #    build:
-        #    context: ./users
-        #  args:
-        #  NODE_VERSION: 8.7.0
+    build:
+      context: ./users
+      args:
+        NODE_VERSION: 8.7.0
     restart: always
     container_name: users
     networks:
@@ -184,16 +168,14 @@ services:
     environment:
       - NODE_ENV=${NODE_ENV:-development}
       - DEBUG=${DEBUG:-""}
-      - isTest=${isTest:-false}
 
   token-lookup:
-    image: oada/token-lookup:oada-v1.0.0
     depends_on:
       - startup
-        #    build:
-        #   context: ./token-lookup
-        #   args:
-        # NODE_VERSION: 8.7.0
+    build:
+      context: ./token-lookup
+      args:
+        NODE_VERSION: 8.7.0
     restart: always
     container_name: token-lookup
     networks:
@@ -206,16 +188,14 @@ services:
     environment:
       - NODE_ENV=${NODE_ENV:-development}
       - DEBUG=${DEBUG:-""}
-      - isTest=${isTest:-false}
 
   rev-graph-update:
-    image: oada/rev-graph-update:v1.0.0
     depends_on:
       - startup
-        #    build:
-        #   context: ./rev-graph-update
-        #   args:
-        #     NODE_VERSION: 8.7.0
+    build:
+      context: ./rev-graph-update
+      args:
+        NODE_VERSION: 8.7.0
     restart: always
     container_name: rev-graph-update
     networks:
@@ -228,16 +208,14 @@ services:
     environment:
       - NODE_ENV=${NODE_ENV:-development}
       - DEBUG=${DEBUG:-""}
-      - isTest=${isTest:-false}
 
   graph-lookup:
-    image: oada/graph-lookup:oada-v1.0.0
     depends_on:
       - startup
-        #   build:
-        #   context: ./graph-lookup
-        #   args:
-        #  NODE_VERSION: 8.7.0
+    build:
+      context: ./graph-lookup
+      args:
+        NODE_VERSION: 8.7.0
     restart: always
     container_name: graph-lookup
     networks:
@@ -250,16 +228,14 @@ services:
     environment:
       - NODE_ENV=${NODE_ENV:-development}
       - DEBUG=${DEBUG:-""}
-      - isTest=${isTest:-false}
 
   well-known:
-    image: oada/well-known:oada-v1.0.0
     depends_on:
       - startup
-        #  build:
-        #  context: ./well-known
-        #  args:
-        #  NODE_VERSION: 8.7.0
+    build:
+      context: ./well-known
+      args:
+        NODE_VERSION: 8.7.0
     restart: always
     container_name: well-known
     networks:
@@ -273,16 +249,14 @@ services:
     environment:
       - NODE_ENV=${NODE_ENV:-development}
       - DEBUG=${DEBUG:-""}
-      - isTest=${isTest:-false}
 
   tests:
-    image: oada/tests:oada-v1.0.0
     # depends_on:
     #   - startup
-    #    build:
-    #   context: ./tests
-    #   args:
-    #     NODE_VERSION: 8.7.0
+    build:
+      context: ./tests
+      args:
+        NODE_VERSION: 8.7.0
     container_name: tests
     networks:
       - startup_net
@@ -295,13 +269,11 @@ services:
     environment:
       - NODE_ENV=${NODE_ENV:-development}
       - DEBUG=${DEBUG:-""}
-      - isTest=${isTest:-false}
 
   # admin container has all the service names and volumes mapped, so you
   # can interact with them easily from this service.
   admin:
-    image: oada/admin:oada-v1.0.0
-    #   build: ./admin
+    build: ./admin
     volumes:
       - ./oada-srvc-docker-config.js:/oada-srvc-docker-config.js
       - arangodb_data:/volumes/arangodb
@@ -322,19 +294,15 @@ services:
     environment:
       - NODE_ENV=${NODE_ENV:-development}
       - DEBUG=${DEBUG:-""}
-      - isTest=${isTest:-false}
 
   # Needed for installing native Node dependencies
   yarn:
-    image: oada/yarn:oada-v1.0.0
-    #  build:
-    #   context: ./yarn
-    #   args:
-    #    NODE_VERSION: 8.7.0
-    restart: "no"
+    build:
+      context: ./yarn
+      args:
+        NODE_VERSION: 8.7.0
     volumes:
       - .:/code
-    command: /code/yarn/do-yarn-install.sh
 
   # letsencrypt will go get HTTPS certificates for you if DOMAIN is not localhost
   # NOTE: letsencrypt has a limit of 5 certificates per top domain per week,
@@ -342,8 +310,7 @@ services:
   # TO A SAFE PLACE.  Otherwise if you go over the request limit and lost the private
   # key, you're just out of luck for 7 days.
   letsencrypt:
-    image: oada/letsencrypt:oada-v1.0.0
-    #    build: ./letsencrypt
+    build: ./letsencrypt
     container_name: letsencrypt
     restart: "no"
     volumes:
@@ -359,7 +326,6 @@ services:
       - WEBROOT_PATH=/var/www/letsencrypt
       - CERTS_PATH=/certs/${DOMAIN:-nodomain}
       - CHECK_FREQ=7
-      - isTest=${isTest:-false}
 
   # Arango is the main backend where core data and graph is stored
   arangodb:
@@ -373,11 +339,9 @@ services:
       - arangodb_data:/var/lib/arangodb3-apps
     ports:
       - "8529:8529"
-    command: arangod --log.level trace
     environment:
       # - ARANGO_RANDOM_ROOT_PASSWORD=1
       - ARANGO_NO_AUTH=1
-      - isTest=${isTest:-false}
 
 
   # zookeeper and kafka entries are based on:
@@ -408,7 +372,6 @@ services:
       KAFKA_ZOOKEEPER_CONNECT: "zookeeper:2181"
       KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
       KAFKA_HEAP_OPTS: "-Xmx1g -Xms512M"
-      #      KAFKA_OPTS: -javaagent:/usr/app/jmx_prometheus_javaagent.jar=7071:/usr/app/prom-jmx-agent-config.yml
       KAFKA_BROKER_ID: 1
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
@@ -423,23 +386,13 @@ services:
   #      - /var/run/docker.sock:/var/run/docker.sock
   #    command: pumba --random --interval 1h kill --signal SIGKILL
 
-        #  prometheus:
-        #   image: prom/prometheus
-        #    ports:
-        #   - 9090:9090/tcp
-        # volumes:
-        #- ./prometheus/mount:/etc/prometheus
-        # links:
-        #- kafka
-
   indexer:
-    image: oada/indexer:oada-v1.0.0
     depends_on:
       - startup
-        #    build:
-        #   context: ./indexer
-        #   args:
-        #  NODE_VERSION: 8.7.0
+    build:
+      context: ./indexer
+      args:
+        NODE_VERSION: 8.7.0
     restart: always
     container_name: indexer
     networks:
@@ -452,39 +405,15 @@ services:
     environment:
       - NODE_ENV=${NODE_ENV:-development}
       - DEBUG=${DEBUG:-""}
-      - isTest=${isTest:-false}
-
-  yield-tiler:
-    #    image: oada/yield-tiler:oada-v1.0.0
-    depends_on:
-      - startup
-    build:
-      context: ./yield-tiler
-      args:
-        NODE_VERSION: 8.7.0
-    restart: always
-    container_name: yield-tiler
-    networks:
-      - startup_net
-      - kafka_net
-      - arango_net
-    volumes:
-      - .:/code
-      - ./oada-srvc-docker-config.js:/oada-srvc-docker-config.js
-    environment:
-      - NODE_ENV=${NODE_ENV:-development}
-      - DEBUG=${DEBUG:-""}
-      - isTest=${isTest:-false}
 
   webhooks:
-    image: oada/webhooks:oada-v1.0.0
     depends_on:
       - startup
       - proxy
-        # build:
-        #   context: ./webhooks
-        # args:
-        # NODE_VERSION: 8.7.0
+    build:
+      context: ./webhooks
+      args:
+        NODE_VERSION: 8.7.0
     restart: always
     container_name: webhooks
     networks:
@@ -499,16 +428,14 @@ services:
       - NODE_ENV=${NODE_ENV:-development}
       - DEBUG=${DEBUG:-""}
       - SSL_ALLOW_SELF_SIGNED=1
-      - isTest=${isTest:-false}
 
   permissions-handler:
-    image: oada/permissions-handler:oada-v1.0.0
     depends_on:
       - startup
-        #    build:
-        #  context: ./permissions-handler
-        # args:
-        # NODE_VERSION: 8.7.0
+    build:
+      context: ./permissions-handler
+      args:
+        NODE_VERSION: 8.7.0
     restart: always
     container_name: permissions-handler
     networks:
@@ -521,16 +448,14 @@ services:
     environment:
       - NODE_ENV=${NODE_ENV:-development}
       - DEBUG=${DEBUG:-""}
-      - isTest=${isTest:-false}
 
   shares:
-    image: oada/shares:oada-v1.0.0
     depends_on:
       - startup
-        #    build:
-        #  context: ./shares
-        # args:
-        # NODE_VERSION: 8.7.0
+    build:
+      context: ./shares
+      args:
+        NODE_VERSION: 8.7.0
     restart: always
     container_name: shares
     networks:
@@ -543,7 +468,6 @@ services:
     environment:
       - NODE_ENV=${NODE_ENV:-development}
       - DEBUG=${DEBUG:-""}
-      - isTest=${isTest:-false}
 
 volumes:
   arangodb_data:
