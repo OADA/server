@@ -1,8 +1,10 @@
 FROM ubuntu:latest
 
+ENV DEBIAN_FRONTEND=noninteractive
+
 RUN apt-get update \
     && apt-get install -y \
-               wget git python vim \
+               wget git python vim gpg \
                make gcc g++ \
                iputils-ping dnsutils
 
