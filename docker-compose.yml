@@ -39,7 +39,7 @@ services:
       - http_net
     ports:
         - "${BIND:-0.0.0.0}:${PORT_HTTPS:-443}:443"
-        - "${BIND:-0.0.0.0}:${PORT_HTTP:-80}:80"
+          #     - "${BIND:-0.0.0.0}:${PORT_HTTP:-80}:80"
     volumes:
       - ./proxy/nginx.conf:/etc/nginx/nginx.conf
       - ./proxy/dev-sites-enabled/:/etc/nginx/sites-templates/
@@ -468,6 +468,27 @@ services:
     environment:
       - NODE_ENV=${NODE_ENV:-development}
       - DEBUG=${DEBUG:-""}
+
+  yield-tiler:
+    depends_on:
+      - startup
+    build:
+      context: ./yield-tiler
+      args:
+        NODE_VERSION: 8.7.0
+    restart: always
+    container_name: yield-tiler
+    networks:
+      - startup_net
+      - kafka_net
+      - arango_net
+    volumes:
+      - .:/code
+      - ./oada-srvc-docker-config.js:/oada-srvc-docker-config.js
+    environment:
+      - NODE_ENV=${NODE_ENV:-development}
+      - DEBUG=${DEBUG:-""}
+      - isTest=${isTest:-false}
 
 volumes:
   arangodb_data:
