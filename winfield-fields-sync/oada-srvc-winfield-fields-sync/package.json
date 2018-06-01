@@ -1,10 +1,10 @@
 {
-  "name": "oada-srvc-indexer",
+  "name": "oada-srvc-winfield-fields-sync",
   "version": "1.0.0",
   "description": "",
   "main": "server.js",
   "scripts": {
-    "test": "DEBUG=* mocha test/indexer.js"
+    "test": "DEBUG=* mocha test/winfield-fields-sync.js"
   },
   "author": "",
   "license": "ISC",
