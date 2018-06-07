@@ -60,7 +60,7 @@ class Base extends EventEmitter {
             ...rdkafkaOpts
         });
         this.producer = producer || new kf.Producer({
-            'dr_cb': true, //delivery report callback
+            'dr_cb': false, //delivery report callback
             ...rdkafkaOpts
         });
 
@@ -70,6 +70,17 @@ class Base extends EventEmitter {
         this.producer.on('error', (...args) =>
             super.emit('error', ...args)
         );
+        this.producer.on('delivery-report', function(err, report) {
+            if (err) console.log('!!!!!!!!!!!!!!!!!!!!!!!', err)
+            console.log('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
+            console.log('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
+            console.log('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
+            console.log(report)
+            console.log('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
+            console.log('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
+            console.log('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
+        });
+
         this.consumer.on('event.error', (...args) =>
             super.emit('error', ...args)
         );
@@ -85,6 +96,7 @@ class Base extends EventEmitter {
         });
         let producerReady = Promise.fromCallback(done => {
             this.producer.on('ready', () => {
+                //        this.producer.setPollInterval(1000);
                 info(`${this.group}'s producer ready`);
                 done();
             });

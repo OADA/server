@@ -71,7 +71,6 @@ const scopeTypes = {
 		'application/vnd.oada.harvest.1+json',
 		'application/vnd.oada.as-harvested.1+json',
 		'application/vnd.oada.as-harvested.yield-moisture-dataset.1+json',
-		'application/vnd.oada.as-harvested.yield-moisture-dataset.1+json',
 		'application/vnd.oada.data-index.1+json',
 		'application/vnd.oada.data-index.tiled-maps.1+json',
 		'application/vnd.oada.connection.1+json',
@@ -148,7 +147,8 @@ responder.on('request', function handleReq(req) {
                 owner: true
             };
         //Check permissions. 2. Check if otherwise permissioned.
-        } else {
+				} else {
+						console.log(req.oadaGraph.permissions)
             response.permissions = req.oadaGraph.permissions;
         }
         trace('END RESULT', response);

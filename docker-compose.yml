@@ -295,6 +295,94 @@ services:
       - NODE_ENV=${NODE_ENV:-development}
       - DEBUG=${DEBUG:-""}
 
+  kafka:
+    image: wurstmeister/kafka
+    depends_on:
+      - zookeeper
+    ports:
+      - "9092:9092"
+    restart: always
+    hostname: kafka
+    networks:
+      - kafka_net
+    environment:
+      KAFKA_ADVERTISED_HOST_NAME: "kafka"  # NOTE: this only allows services inside this docker network
+      KAFKA_ADVERTISED_PORT: "9092"        # to connect to kafka.  Set to machine's IP if you want external.
+      KAFKA_ZOOKEEPER_CONNECT: "zookeeper:2181"
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+      KAFKA_HEAP_OPTS: "-Xmx1g -Xms512M"
+      KAFKA_BROKER_ID: 1
+      JMX_PORT: 9999
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - kafka_data:/var/lib/kafka
+
+  exporter:
+    image: prom/node-exporter:latest
+    ports: 
+      - "9100:9100"
+    networks:
+      - prometheus
+
+  grafana:
+    image: grafana/grafana
+    ports: 
+      - "3000:3000"
+    depends_on:
+      - prometheus
+
+        # cadvisor:
+        # image: google/cadvisor
+        #volumes:
+        #- /:/rootfs:ro
+        #- /var/run:/var/run:rw
+        #- /sys:/sys:ro
+        #- /var/lib/docker/:/var/lib/docker:ro
+        #ports: 
+        #- "8080:8080"
+        #networks:
+        #- arango_net
+        #- kafka_net
+        #- http_net
+        #restart: always
+        #deploy:
+        #mode: global
+
+  jmx-exporter:
+    build: ./jmx-exporter
+    ports:
+      - "8080:8080"
+    networks:
+      - prometheus
+      - kafka_net
+    links:
+      - kafka
+    environment:
+      - JMX_PORT=9999
+      - JMX_HOST=kafka
+      - HTTP_PORT=8080
+      - JMX_EXPORTER_CONFIG_FILE=kafka.yml
+
+  prometheus:
+    image: prom/prometheus
+    container_name: prometheus
+    restart: always
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - kafka_data:/var/lib/kafka
+      - arangodb_data:/var/lib/arangodb3
+      - arangodb_data:/var/lib/arangodb3-apps
+    command: "--config.file=/etc/prometheus/prometheus.yml --storage.tsdb.path=/prometheus"
+    networks:
+      - kafka_net
+      - prometheus
+    ports: 
+      - "9090:9090"
+    depends_on:
+      - exporter
+    links:
+      - jmx-exporter
+
   # Needed for installing native Node dependencies
   yarn:
     build:
@@ -356,28 +444,7 @@ services:
     volumes:
       - zookeeper_data:/var/lib/zookeeper
 
-  kafka:
-    image: wurstmeister/kafka
-    depends_on:
-      - zookeeper
-    ports:
-      - "9092"
-    restart: always
-    hostname: kafka
-    networks:
-      - kafka_net
-    environment:
-      KAFKA_ADVERTISED_HOST_NAME: "kafka"  # NOTE: this only allows services inside this docker network
-      KAFKA_ADVERTISED_PORT: "9092"        # to connect to kafka.  Set to machine's IP if you want external.
-      KAFKA_ZOOKEEPER_CONNECT: "zookeeper:2181"
-      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
-      KAFKA_HEAP_OPTS: "-Xmx1g -Xms512M"
-      KAFKA_BROKER_ID: 1
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-      - kafka_data:/var/lib/kafka
-
-  # hitman container will kill other containers using Pumba for resiliency test.
+    # hitman container will kill other containers using Pumba for resiliency test.
   #  hitman:
   #    image: gaiaadm/pumba:master
   #    container_name: hitman
@@ -502,3 +569,4 @@ networks:
   kafka_net:
   http_net:
   startup_net:
+  prometheus:
