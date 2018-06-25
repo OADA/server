@@ -45,6 +45,7 @@ const scopeTypes = {
 		'application/vnd.oada.rocks.1+json',
 		'application/vnd.oada.rock.1+json',
 		'application/vnd.trellisfw.audit.globalgap.1+json',
+		'application/json',
   ],
   'trellisfw': [
 		'application/vnd.oada.bookmarks.1+json',
@@ -79,6 +80,7 @@ const scopeTypes = {
 		'application/vnd.oada.grower.1+json',
 		'application/vnd.oada.farm.1+json',
 		'application/vnd.oada.yield.1+json',
+		'application/json',
 	],
 };
 function scopePerm(perm, has) {

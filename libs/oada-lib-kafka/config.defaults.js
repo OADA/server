@@ -17,6 +17,9 @@
 
 module.exports = {
     kafka: {
+        producer: {
+            pollInterval: 1000, // ms
+        },
         broker: 'kafka',
         // https://github.com/edenhill/librdkafka/blob/master/CONFIGURATION.md
         librdkafka: {

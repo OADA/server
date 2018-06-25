@@ -331,22 +331,20 @@ services:
     depends_on:
       - prometheus
 
-        # cadvisor:
-        # image: google/cadvisor
-        #volumes:
-        #- /:/rootfs:ro
-        #- /var/run:/var/run:rw
-        #- /sys:/sys:ro
-        #- /var/lib/docker/:/var/lib/docker:ro
-        #ports: 
-        #- "8080:8080"
-        #networks:
-        #- arango_net
-        #- kafka_net
-        #- http_net
-        #restart: always
-        #deploy:
-        #mode: global
+  cadvisor:
+    image: google/cadvisor
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:rw
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+    ports: 
+      - "8090:8080"
+    networks:
+      - arango_net
+      - kafka_net
+      - http_net
+    restart: always
 
   jmx-exporter:
     build: ./jmx-exporter

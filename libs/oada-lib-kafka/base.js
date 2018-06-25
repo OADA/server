@@ -31,6 +31,7 @@ const rdkafkaOpts = Object.assign(config.get('kafka:librdkafka'), {
 
 const CONNECT = Symbol('kafka-lib-connect');
 const DATA = Symbol('kafa-lib-data');
+const pollInterval = 1000;
 
 function topicTimeout(topic) {
     let timeout = config.get('kafka:timeouts:default');
@@ -96,7 +97,7 @@ class Base extends EventEmitter {
         });
         let producerReady = Promise.fromCallback(done => {
             this.producer.on('ready', () => {
-                //        this.producer.setPollInterval(1000);
+                this.producer.setPollInterval(config.get('kafka:producer:pollInterval') || pollInterval);
                 info(`${this.group}'s producer ready`);
                 done();
             });
