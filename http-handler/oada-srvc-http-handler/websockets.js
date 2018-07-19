@@ -150,7 +150,6 @@ module.exports = function wsHandler(server) {
                     request.url = msg.path;
                 break;
             }
-
             axios(request)
                 .then(function(res) {
                     if(msg.method === 'watch') {
@@ -240,7 +239,7 @@ writeResponder.on('request', function handleReq(req) {
         return;
     }
 
-		trace('@@@@@@@@@@@@@@@', req.resource_id);
+	trace('@@@@@@@@@@@@@@@', req.resource_id);
 
     oadaLib.changes
         .getChange(req.resource_id, req._rev)

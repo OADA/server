@@ -60,39 +60,43 @@ module.exports = function stopResp() {
 };
 
 responder.on('request', async function handleReq(req) {
-	info(req.msgtype, req.code, req.contentType)
 	if (req.msgtype !== 'write-response') {
     return;
   }
 	if (req.code !== 'success') {
 	  return;
 	}
-	if (req.contentType === 'application/vnd.oada.as-harvested.1+json') {
-		info('queueing')
+  if (req.contentType === 'application/vnd.oada.as-harvested.1+json') {
+    console.log('queueing');
 		queue(req)
 	}
 	return undefined
 })
 
 let queue = cq().limit({concurrency: 1}).process(async function indexYield(req) { 
-	info('processinging')
+	info('processing', req)
 
-	let id = req['resource_id'];
+  let id = req['resource_id'];
+  let change;
+  try {
+    change = await changes.getRootChange(req.resource_id, req._rev);
+  } catch(err) {
+    console.log('uh oh', err)
+    throw err
+  }
 
-	let change = await changes.getRootChange(req.resource_id, req._rev);
-
-	return Promise.map(Object.keys(change.body.data || {}), (key) => {
-		let pt = change.body.data[key];
-		//		let cropType = await resources.getResource(req.resource_id, 'context/crop-index');
-		let cropType = 'corn';
-		return oadaLib.users.findById(req.user_id).then((user) => {
+  return Promise.map(Object.keys(change.body.data || {}), (key) => {
+    let pt = change.body.data[key];
+    console.log(change.body._context);
+		let cropType = change.body._context['crop-index'];
+    return oadaLib.users.findById(req.user_id).then((user) => {
 			return Promise.map([1,2,3,4,5,6,7], (ghLength) => {
 				// 1) Find the data point's geohash of length ghLength
 				let bucket = gh.encode(pt.location.lat, pt.location.lon, ghLength)
 				let aggregate = gh.encode(pt.location.lat, pt.location.lon, ghLength+2)
 
 				// 2) GET Current geohash bucket values
-				let bucketPath = '/harvest/tiled-maps/dry-yield-map/crop-index/'+cropType+'/geohash-length-index/geohash-'+ghLength.toString()+'/geohash-index/'+bucket
+				let bucketPath = '/harvest/tiled-maps/dry-yield-map/crop-index/'+cropType+'/geohash-length-index/geohash-'+ghLength.toString()+'/geohash-index/'+bucket;
 				return oadaLib.resources.lookupFromUrl('/'+user.bookmarks._id+bucketPath, req.user_id).then((result) => {
 
 					let template = {
@@ -128,7 +132,7 @@ let queue = cq().limit({concurrency: 1}).process(async function indexYield(req) 
 
 					// If the geohash resource doesn't exist, submit a deep PUT with the
 					// additionalStats as the body
-					if (result.path_leftover !== '') {
+          if (result.path_leftover !== '') {
 						return axios({
 							method: 'PUT',
 							url: 'http://http-handler/bookmarks'+bucketPath,

@@ -17,6 +17,7 @@
 
 const EventEmitter = require('events');
 var Promise = require('bluebird');
+var uuid = require('uuid');
 const kf = require('node-rdkafka');
 const config = require('./config');
 const info = require('debug')('oada-lib-kafka:info');
@@ -31,7 +32,8 @@ const rdkafkaOpts = Object.assign(config.get('kafka:librdkafka'), {
 
 const CONNECT = Symbol('kafka-lib-connect');
 const DATA = Symbol('kafa-lib-data');
-const pollInterval = 1000;
+const pollInterval = 500;
+const healthInterval = 5*60*1000;
 
 function topicTimeout(topic) {
     let timeout = config.get('kafka:timeouts:default');
@@ -99,6 +101,12 @@ class Base extends EventEmitter {
             this.producer.on('ready', () => {
                 this.producer.setPollInterval(config.get('kafka:producer:pollInterval') || pollInterval);
                 info(`${this.group}'s producer ready`);
+                // Health loop to keep the broker alive.
+                setInterval(() => {
+                    var value = new Buffer(produceTopic+ 'is alive.')
+                    //TODO: other health messages here
+                    this.producer.produce('health', 0, value, uuid())
+                }, config.get('kafka:producer:healthIterval') || healthInterval)
                 done();
             });
         });

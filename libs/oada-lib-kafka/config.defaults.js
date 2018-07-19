@@ -17,8 +17,9 @@
 
 module.exports = {
     kafka: {
+        healthInterval: 5*60*1000, // ms
         producer: {
-            pollInterval: 1000, // ms
+            pollInterval: 500, // ms
         },
         broker: 'kafka',
         // https://github.com/edenhill/librdkafka/blob/master/CONFIGURATION.md

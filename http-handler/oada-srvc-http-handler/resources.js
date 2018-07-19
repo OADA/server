@@ -236,6 +236,7 @@ router.put('/*', async function ensureTypeTreeExists(req, res, next) {
 
         //First, get the appropriate subTree rooted at the resource returned by
         //graph lookup
+        console.log('ABC123', req.originalUrl, req.oadaGraph.path_leftover)
         let path =
             req.originalUrl.split(req.oadaGraph.path_leftover)[0].replace(/^\/bookmarks/,'');
         let subTree = await getFromStarredTree(path, tree)
@@ -246,7 +247,7 @@ router.put('/*', async function ensureTypeTreeExists(req, res, next) {
         let parentId = req.oadaGraph.resource_id.replace(/^\//, '');
         let parentPath = '';
         let parentRev = rev;
-        return Promise.each(pieces, (piece, i) => {
+        return Promise.each(pieces, async function(piece, i) {
             let nextPiece = pointer.has(subTree, '/'+piece) ? '/'+piece : (pointer.has(subTree, '/*') ? '/*' : undefined);
             path += '/'+piece;
             piecesPath += nextPiece
@@ -256,7 +257,7 @@ router.put('/*', async function ensureTypeTreeExists(req, res, next) {
                 if (pointer.has(subTree, '/_type')) {
                     let contentType = pointer.get(subTree, '/_type');
                     id = 'resources/'+uuid.v4();
-                    let body = replaceLinks(_.cloneDeep(subTree))
+                    let body = await replaceLinks(_.cloneDeep(subTree))
                     // Write new resource. This may potentially become an
                     // orphan if concurrent requests make links below
                     return requester.send({
@@ -276,13 +277,15 @@ router.put('/*', async function ensureTypeTreeExists(req, res, next) {
                     }).then(() => {
                     // Write link from parent. These writes reference the
                     // path from the known resource returned by graph lookup
+                        let linkBody = {_id: id};
+                        if (body._rev) linkBody._rev = body._rev;
                         return requester.send({
                             rev: parentRev,
                             resource_id: parentId,
                             path_leftover: parentPath,
                             user_id: req.user.doc.user_id,
                             contentType,
-                            body: {_id: id, _rev: '0-0'}
+                            body: linkBody,
                         }, config.get('kafka:topics:writeRequest')).tap((result) => {
                             switch (result.code) {
                                 case 'success':
@@ -436,49 +439,28 @@ router.delete('/*', function deleteResource(req, res, next) {
     .catch(next);
 });
 
-function replaceLinks(desc) {
-    let ret = (Array.isArray(desc)) ? [] : {};
-    if (!desc) return desc;  // no defined descriptors for this level
-    Object.keys(desc).forEach(function(key, idx) {
-        if (key === '*') { // Don't put *s into oada. Ignore them
-			return;
-		}
-		let val = desc[key];
-        if (typeof val !== 'object' || !val) {
-            ret[key] = val; // keep it asntType: 'application/vnd.oada.harvest.1+json'
-            return;
-		}
-        if (val._type) { // If it has a '_type' key, don't worry about it.
-            //It'll get created in future iterations of ensureTreeExists
-            return;
-        }
-		if (val._id) { // If it's an object, and has an '_id', make it a link from descriptor
-            ret[key] = { _id: desc[key]._id, _rev: '0-0' };
-            return;
-        }
-        ret[key] = replaceLinks(val); // otherwise, recurse into the object looking for more links
-    });
-    return ret;
-}
-
 let trees = {
     'as-harvested': {
         'harvest': {
             '_type': "application/vnd.oada.harvest.1+json",
+            '_rev': '0-0',
             'as-harvested': {
                 '_type': "application/vnd.oada.as-harvested.1+json",
+                '_rev': '0-0',
                 'yield-moisture-dataset': {
                     '_type': "application/vnd.oada.as-harvested.yield-moisture-dataset.1+json",
+                    '_rev': '0-0',
                     'crop-index': {
                         '*': {
                             '_type': "application/vnd.oada.as-harvested.yield-moisture-dataset.1+json",
+                            '_rev': '0-0',
                             'geohash-length-index': {
                                 '*': {
                                     '_type': "application/vnd.oada.as-harvested.yield-moisture-dataset.1+json",
+                                    '_rev': '0-0',
                                     'geohash-index': {
                                         '*': {
                                             '_type': "application/vnd.oada.as-harvested.yield-moisture-dataset.1+json",
-
                                         }
                                     }
                                 }
@@ -491,19 +473,26 @@ let trees = {
     },
     'tiled-maps': {
         'harvest': {
+            '_type': "application/vnd.oada.harvest.1+json",
+            '_rev': '0-0',
             'tiled-maps': {
                 '_type': "application/vnd.oada.tiled-maps.1+json",
+                '_rev': '0-0',
                 'dry-yield-map': {
                     '_type': "application/vnd.oada.tiled-maps.dry-yield-map.1+json",
+                    '_rev': '0-0',
                     'crop-index': {
                         '*': {
                             "_type": "application/vnd.oada.tiled-maps.dry-yield-map.1+json",
+                            '_rev': '0-0',
                             'geohash-length-index': {
                                 '*': {
                                     "_type": "application/vnd.oada.tiled-maps.dry-yield-map.1+json",
+                                    '_rev': '0-0',
                                     'geohash-index': {
                                         '*': {
                                             "_type": "application/vnd.oada.tiled-maps.dry-yield-map.1+json",
+                                            '_rev': '0-0',
                                             "datum": "WGS84",
                                             "geohash-data": {},
                                             "stats": {},
@@ -518,6 +507,37 @@ let trees = {
             }
         }
     }
+}
+
+function replaceLinks(obj) {
+  let ret = (Array.isArray(obj)) ? [] : {};
+  if (!obj) return obj;  // no defined objriptors for this level
+  return Promise.map(Object.keys(obj || {}), (key)  => {
+    if (key === '*') { // Don't put *s into oada. Ignore them
+      return;
+    }
+    let val = obj[key];
+    if (typeof val !== 'object' || !val) {
+      ret[key] = val; // keep it asntType: 'application/vnd.oada.harvest.1+json'
+      return;
+    }
+    if (val._type) { // If it has a '_type' key, don't worry about it.
+      //It'll get created in future iterations of ensureTreeExists
+      return;
+    }
+    if (val._id) { // If it's an object, and has an '_id', make it a link from descriptor
+      ret[key] = { _id: obj[key]._id};
+      if (val._rev) ret[key]._rev = '0-0'
+      return;
+    }
+    // otherwise, recurse into the object looking for more links
+    return replaceLinks(val).then((result) => {
+      ret[key] = result;
+      return;
+    })
+  }).then(() => {
+    return ret;
+  })
 }
 
 async function getFromStarredTree(path, tree) {

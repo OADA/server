@@ -10,7 +10,6 @@ const aql = require('arangojs').aqlQuery;
 const pointer = require('json-pointer');
 const config = require('../config');
 const util = require('../util');
-config.set('isTest', true);
 const changes =
     db.collection(config.get('arangodb:collections:changes:name'));
 const resources =

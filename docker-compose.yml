@@ -104,6 +104,7 @@ services:
       - NODE_ENV=${NODE_ENV:-development}
       - DEBUG=${DEBUG:-""}
       - IGNORE_SCOPE=${IGNORE_SCOPE:-""}
+      - NODE_TLS_REJECT_UNAUTHORIZED=${NODE_TLS_REJECT_UNAUTHORIZED:-""}
 
   sync-handler:
     depends_on:
@@ -250,25 +251,25 @@ services:
       - NODE_ENV=${NODE_ENV:-development}
       - DEBUG=${DEBUG:-""}
 
-  tests:
-    # depends_on:
-    #   - startup
-    build:
-      context: ./tests
-      args:
-        NODE_VERSION: 8.7.0
-    container_name: tests
-    networks:
-      - startup_net
-      - kafka_net
-      - arango_net
-      - http_net
-    volumes:
-      - .:/code
-      - ./oada-srvc-docker-config.js:/oada-srvc-docker-config.js
-    environment:
-      - NODE_ENV=${NODE_ENV:-development}
-      - DEBUG=${DEBUG:-""}
+#  tests:
+#    # depends_on:
+#    #   - startup
+#    build:
+#      context: ./tests
+#      args:
+#        NODE_VERSION: 8.7.0
+#    container_name: tests
+#    networks:
+#      - startup_net
+#      - kafka_net
+#      - arango_net
+#      - http_net
+#    volumes:
+#      - .:/code
+#      - ./oada-srvc-docker-config.js:/oada-srvc-docker-config.js
+#    environment:
+#      - NODE_ENV=${NODE_ENV:-development}
+#      - DEBUG=${DEBUG:-""}
 
   # admin container has all the service names and volumes mapped, so you
   # can interact with them easily from this service.
@@ -553,7 +554,6 @@ services:
     environment:
       - NODE_ENV=${NODE_ENV:-development}
       - DEBUG=${DEBUG:-""}
-      - isTest=${isTest:-false}
 
 volumes:
   arangodb_data:
