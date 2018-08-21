@@ -210,14 +210,24 @@ module.exports = function wsHandler(server) {
                         trace('%%%%%%%%%%%%', resourceId);
 
                         emitter.on(resourceId, handleChange);
-                        oadaLib.changes.getChangesSinceRev(resourceId, request.headers['x-oada-rev']).then((changes) => {
-                          changes.forEach((change) => {
-                            emitter.emit(resourceId, {
-                              path_leftover,
-                              change
+                        if (request.headers['x-oada-rev']) {
+                          oadaLib.changes.getChangesSinceRev(resourceId, request.headers['x-oada-rev']).then((changes) => {
+                            var rev = request.headers['x-oada-rev'];
+                            changes.forEach((change) => {
+                              console.log('!!!!!!!!!!!!!!')
+                              console.log('!!!!!!!!!!!!!!')
+                              console.log('okay', rev, rev.split('-'), rev.split('-')[1], parseInt(rev.split('-')[1]))
+                              console.log('change since ', request.headers['x-oada-rev'], change)
+                              console.log('!!!!!!!!!!!!!!')
+                              console.log('!!!!!!!!!!!!!!')
+                              emitter.emit(resourceId, {
+                                path_leftover,
+                                change
+                              })
                             })
                           })
-                        })
+                        }
+
                         socket.on('close', function handleClose() {
                             emitter.removeListener(resourceId, handleChange);
                         });

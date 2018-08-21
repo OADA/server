@@ -32,18 +32,37 @@ function getChanges(resourceId, changeRev) {
     if (!result) return
     return result
   })
+
 }
 
-function getChangesSinceRev(resourceId, changeRev) {
-  let num = changeRev ? parseInt(changeRev.split('-')[1]) : 0;
+function getChangesSinceRev(resourceId, rev) {
+  console.log('okay', rev, rev.split('-'), rev.split('-')[1], parseInt(rev.split('-')[1]))
+  let num = parseInt(rev.split('-')[0]);
+  console.log('CHANGES SINCE num', num)
   return db.query(aql`
     FOR change in ${changes}
       FILTER change.resource_id == ${resourceId}
       FILTER change.number > ${num}
       SORT change.number
-      RETURN change
-  `).call('all').then((result) => {
-    return result
+      LET path = LAST(
+        FOR v, e, p IN 0..${MAX_DEPTH} OUTBOUND change ${changeEdges}
+        RETURN p
+      )
+      RETURN path
+  `).call('all').then((results) => {
+    return Promise.map(results, (result) => {
+      if (!result.vertices[0]) return
+      let change = {
+        body: result.vertices[0].body,
+        type: result.vertices[result.vertices.length-1].type
+      }
+      let path = '';
+      for (let i = 0; i < result.vertices.length-1; i++) {
+        path += result.edges[i].path;
+        pointer.set(change.body, path, result.vertices[i+1].body)
+      }
+      return change
+    })
   })
 }
 
@@ -64,7 +83,8 @@ function getChange(resourceId, changeRev) {
       RETURN p
     )
     RETURN path
-  `).call('next').then((result) => {
+  
+`).call('next').then((result) => {
     if (!result.vertices[0]) return
     let change = {
       body: result.vertices[0].body,
