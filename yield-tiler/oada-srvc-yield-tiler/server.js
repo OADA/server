@@ -65,9 +65,8 @@ responder.on('request', async function handleReq(req) {
   }
 	if (req.code !== 'success') {
 	  return;
-	}
+  }
   if (req.contentType === 'application/vnd.oada.as-harvested.1+json') {
-    console.log('queueing');
 		queue(req)
 	}
 	return undefined
@@ -81,13 +80,10 @@ let queue = cq().limit({concurrency: 1}).process(async function indexYield(req) 
   try {
     change = await changes.getRootChange(req.resource_id, req._rev);
   } catch(err) {
-    console.log('uh oh', err)
     throw err
   }
-
   return Promise.map(Object.keys(change.body.data || {}), (key) => {
     let pt = change.body.data[key];
-    console.log(change.body._context);
 		let cropType = change.body._context['crop-index'];
     return oadaLib.users.findById(req.user_id).then((user) => {
 			return Promise.map([1,2,3,4,5,6,7], (ghLength) => {
@@ -173,7 +169,7 @@ let queue = cq().limit({concurrency: 1}).process(async function indexYield(req) 
 								data,
 							})
 						} else {
-							// new aggregate. Push stats
+              // new aggregate. Push stats
 							return axios({
 								method: 'PUT',
 								url: 'http://http-handler/bookmarks'+bucketPath,
@@ -194,7 +190,12 @@ let queue = cq().limit({concurrency: 1}).process(async function indexYield(req) 
 				})
 			})
 		})
-	})
+  }).catch((err) => {
+    console.log('!!!!!!')
+    console.log('!!!!!!')
+    console.log('!!!!!!')
+    console.log(err)
+  })
 })
 
 let recomputeStats = function(currentStats, additionalStats) {

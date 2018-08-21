@@ -1,4 +1,4 @@
 node_modules
-
+package.lock
 *.log
 .DS_Store

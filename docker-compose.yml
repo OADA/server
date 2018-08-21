@@ -52,6 +52,7 @@ services:
       - NODE_ENV=${NODE_ENV:-development}
       - DEBUG=${DEBUG:-""}
       - DOMAIN=${DOMAIN:-localhost}
+      - NODE_TLS_REJECT_UNAUTHORIZED=${NODE_TLS_REJECT_UNAUTHORIZED:-""}
     command:
       - /entrypoint.sh
 
@@ -429,6 +430,7 @@ services:
     environment:
       # - ARANGO_RANDOM_ROOT_PASSWORD=1
       - ARANGO_NO_AUTH=1
+      - ARANGO_STORAGE_ENGINE=rocksdb
 
 
   # zookeeper and kafka entries are based on:
@@ -554,6 +556,28 @@ services:
     environment:
       - NODE_ENV=${NODE_ENV:-development}
       - DEBUG=${DEBUG:-""}
+
+  winfield-fields-sync:
+    depends_on:
+      - startup
+    build:
+      context: ./winfield-fields-sync
+      args:
+        NODE_VERSION: 8.7.0
+    restart: always
+    container_name: winfield-fields-sync 
+    networks:
+      - startup_net
+      - kafka_net
+      - arango_net
+    volumes:
+      - .:/code
+      - ./oada-srvc-docker-config.js:/oada-srvc-docker-config.js
+    environment:
+      - NODE_ENV=${NODE_ENV:-development}
+      - DEBUG=${DEBUG:-""}
+
+
 
 volumes:
   arangodb_data:

@@ -27,7 +27,7 @@ require('./websockets')(server);
 
 var requester = require('./requester');
 
-app.get('*', (req, res, next) => { console.log(req.originalUrl); next(); })
+app.get('*', (req, res, next) => { next(); })
 app.get('/favicon.ico', (req, res) => res.end())
 
 function start() {

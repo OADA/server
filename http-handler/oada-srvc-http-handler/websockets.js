@@ -100,7 +100,7 @@ module.exports = function wsHandler(server) {
                 return;
             }
 
-            if (['watch', 'head', 'get', 'put', 'post', 'delete'].includes(msg.method.toLowerCase()) == false) {
+            if (['unwatch', 'watch', 'head', 'get', 'put', 'post', 'delete'].includes(msg.method.toLowerCase()) == false) {
                 let err = {
                     status: 400,
                     headers: [],
@@ -116,8 +116,12 @@ module.exports = function wsHandler(server) {
                 headers: msg.headers
 
             };
-
             switch(msg.method.toLowerCase()) {
+                case 'unwatch':
+                    request.method = 'head';
+                    request.url = msg.path;
+                break;
+
                 case 'watch':
                     request.method = 'head';
                     request.url = msg.path;
@@ -152,7 +156,37 @@ module.exports = function wsHandler(server) {
             }
             axios(request)
                 .then(function(res) {
-                    if(msg.method === 'watch') {
+                    if (msg.method === 'unwatch') {
+                        let parts = res.headers['content-location'].split('/');
+                        let resourceId = `${parts[1]}/${parts[2]}`;
+                        let path_leftover = parts.slice(3).join('/');
+                        if(path_leftover) {
+                            path_leftover = `/${path_leftover}`;
+                        }
+
+                      let handleChange = function(change) {
+                            //let c = change.change.merge || change.change.delete;
+                            if (jsonpointer.get(change.change.body, path_leftover) !== undefined) {
+                                let message = {
+                                    requestId: msg.requestId,
+                                    resourceId,
+                                    change: change.change,
+                                };
+
+                                socket.send(JSON.stringify(message));
+                            }
+                        };
+
+                        trace('************, closing watch', resourceId);
+
+                        emitter.removeListener(resourceId, handleChange);
+
+                        socket.send(JSON.stringify({
+                            requestId: msg.requestId,
+                            status: 'success'
+                        }));
+
+                    } else if (msg.method === 'watch') {
                         let parts = res.headers['content-location'].split('/');
                         let resourceId = `${parts[1]}/${parts[2]}`;
                         let path_leftover = parts.slice(3).join('/');
@@ -176,7 +210,14 @@ module.exports = function wsHandler(server) {
                         trace('%%%%%%%%%%%%', resourceId);
 
                         emitter.on(resourceId, handleChange);
-
+                        oadaLib.changes.getChangesSinceRev(resourceId, request.headers['x-oada-rev']).then((changes) => {
+                          changes.forEach((change) => {
+                            emitter.emit(resourceId, {
+                              path_leftover,
+                              change
+                            })
+                          })
+                        })
                         socket.on('close', function handleClose() {
                             emitter.removeListener(resourceId, handleChange);
                         });

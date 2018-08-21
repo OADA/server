@@ -2,7 +2,7 @@ module.exports = [
   {
     '_id': 'authorizations/default:authorization-123',
     'token': 'abc',
-    'scope': ['oada.yield:all'],
+    'scope': ['oada.yield:all', 'oada.rocks:all'],
     'createTime': 1413831649937,
     'expiresIn': 60,
     'user': {'_id': 'users/default:users_frank_123'},

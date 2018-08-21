@@ -34,6 +34,19 @@ function getChanges(resourceId, changeRev) {
   })
 }
 
+function getChangesSinceRev(resourceId, changeRev) {
+  let num = changeRev ? parseInt(changeRev.split('-')[1]) : 0;
+  return db.query(aql`
+    FOR change in ${changes}
+      FILTER change.resource_id == ${resourceId}
+      FILTER change.number > ${num}
+      SORT change.number
+      RETURN change
+  `).call('all').then((result) => {
+    return result
+  })
+}
+
 // Produces a bare tree has a top level key at resourceId and traces down to the actual
 // change that induced this rev update
 // TODO: using .body allows the changes to be nested, but doesn't allow us to
@@ -117,8 +130,9 @@ function putChange({change, resId, rev, type, child, path, userId, authorization
 }
 
 module.exports = {
+  getChangesSinceRev,
   getChange,
   getRootChange,
   getChanges,
-  putChange
+  putChange,
 };

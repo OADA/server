@@ -29,11 +29,7 @@ responder.on('request', (...args) => {
 	// Run once last write finishes (whether it worked or not)
 	if (counter++ > 500) {
 		counter = 0;
-		console.log('RUNNING GARBAGE COLLECTOR')
-		let aa = new Date();
 		global.gc();
-		let ba = new Date();
-		console.log('DONE RUNNING GC', ba-aa)
 	}
 	p = p.catch(() => {}).then(() => handleReq(...args));
 	return p;
@@ -45,8 +41,6 @@ let requestEnd = new Date();
 function handleReq(req, msg) {
 	requestStart = new Date();
   let requestCur = new Date();
-	console.log('-------------------------------------------------------------');
-	console.log('################### handleReq: since last end ', requestStart - requestEnd);
 
 	req.source = req.source || '';
 	var id = req['resource_id'];
@@ -55,7 +49,6 @@ function handleReq(req, msg) {
 	var body = Promise.try(function getBody() {
 		let getBodyStart = new Date();
 		return req.body || req.bodyid && putBodies.getPutBody(req.bodyid).tap(() => {
-	    console.log('################### handleReq: getPutBody took ', new Date() - getBodyStart);
 		});
 	});
 	let existingResourceInfo = {};
@@ -76,7 +69,6 @@ function handleReq(req, msg) {
 						throw new Error(`rev mismatch`)
 			}
 		}
-		console.log('################### handleReq: upsert: first part took ', new Date() - upsertStart);
 		let upsertSecondPartStart = new Date();
 
 
@@ -86,7 +78,6 @@ function handleReq(req, msg) {
 		// Perform delete
 		// TODO: Should deletes be a separate topic?
 		if (body === undefined) {
-			  console.log('####################### handleReq: upsert: SHOULD NEVER GET HERE BECAUSE THIS IS DELETE!!!');
 				// TODO: How to handle rev etc. on DELETE?
 				if (path.length > 0) {
 						// TODO: This is gross
@@ -100,7 +91,6 @@ function handleReq(req, msg) {
 				}
 		}
 
-		console.log('################### handleReq: upsert: second part took ', new Date() - upsertSecondPartStart);
 		let upsertThirdPartStart = new Date();
 
 		var obj = {};
@@ -174,7 +164,6 @@ function handleReq(req, msg) {
 		obj['_rev'] = rev;
 		pointer.set(obj, '/_meta/_rev', rev);
 
-		console.log('################### handleReq: upsert: third part took ', new Date() - upsertThirdPartStart);
 		let upsertFourthPartStart = new Date();
 
 		// Compute new change
@@ -200,20 +189,16 @@ function handleReq(req, msg) {
 		obj['_meta']['_rev'] = rev;
 		
 		//return {rev, orev: 'c', change_id};
-		console.log('################### handleReq: upsert: fourth part took ', new Date() - upsertThirdPartStart);
 
-		console.log('################### handleReq: upsert: starting method');
 		upsertMethodStart = new Date();
 		return method(id, obj).then(orev => ({rev, orev, change_id}));
 	}).then(function respond({rev, orev, change_id}) {
-		console.log('################### handleReq: upsert: method finished ', new Date() - upsertMethodStart);
 		let upsertCachePutStart = new Date();
 		//info(`Finished PUTing to "${req['path_leftover']}". +${end - start}ms`);
 
 
 	  // Put the new rev into the cache
 		cache.put(id, rev);
-		console.log('################### handleReq: upsert: cachePut took ', new Date() - upsertCachePutStart);
 
 			return {
 					'msgtype': 'write-response',
@@ -248,10 +233,8 @@ function handleReq(req, msg) {
 
 	var cleanup = body.then(() => {
     let cleanupStart = new Date();
-		//		console.log('################### cleanup: start (since requestStart): ', cleanupStart - requestStart );
 		// Remove putBody, if there was one
 		//		const result = req.bodyid && putBodies.removePutBody(req.bodyid);
-		//console.log('################### cleanup: removePutBody: ', new Date() - cleanupStart);
 		return req.bodyid && putBodies.removePutBody(req.bodyid);
 	});
 

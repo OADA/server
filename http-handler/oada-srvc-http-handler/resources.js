@@ -236,7 +236,6 @@ router.put('/*', async function ensureTypeTreeExists(req, res, next) {
 
         //First, get the appropriate subTree rooted at the resource returned by
         //graph lookup
-        console.log('ABC123', req.originalUrl, req.oadaGraph.path_leftover)
         let path =
             req.originalUrl.split(req.oadaGraph.path_leftover)[0].replace(/^\/bookmarks/,'');
         let subTree = await getFromStarredTree(path, tree)
@@ -440,6 +439,24 @@ router.delete('/*', function deleteResource(req, res, next) {
 });
 
 let trees = {
+    'fields': {
+      'fields': {
+        '_type': "application/vnd.oada.fields.1+json",
+        '_rev': '0-0',
+        'fields-index': {
+          '*': {
+            '_type': "application/vnd.oada.fields.1+json",
+            '_rev': '0-0',
+            'fields-index': {
+              '*': {
+                '_type': "application/vnd.oada.field.1+json",
+                '_rev': '0-0',
+              }
+            }
+          }
+        }
+      },
+    },
     'as-harvested': {
         'harvest': {
             '_type': "application/vnd.oada.harvest.1+json",
@@ -492,7 +509,6 @@ let trees = {
                                     'geohash-index': {
                                         '*': {
                                             "_type": "application/vnd.oada.tiled-maps.dry-yield-map.1+json",
-                                            '_rev': '0-0',
                                             "datum": "WGS84",
                                             "geohash-data": {},
                                             "stats": {},
@@ -548,7 +564,6 @@ async function getFromStarredTree(path, tree) {
     return Promise.each(pieces, (piece, i) => {
         let nextPiece = pointer.has(tree, starPath+'/*') ? '/*' : '/'+piece;
         starPath += nextPiece;
-        console.log(starPath)
         subTree = pointer.get(tree, starPath)
         return
     }).then(() => {

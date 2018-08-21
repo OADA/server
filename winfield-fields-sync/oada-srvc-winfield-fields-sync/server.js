@@ -20,16 +20,16 @@ const warn = debug('winfield-fields-sync:trace');
 const trace = debug('winfield-fields-sync:trace');
 const info = debug('winfield-fields-sync:info');
 const error = debug('winfield-fields-sync:error');
-const uuid = require('uuid')
 
 const Promise = require('bluebird');
-const _ = require('lodash')
 const {ResponderRequester} = require('../../libs/oada-lib-kafka');
 const oadaLib = require('../../libs/oada-lib-arangodb');
 const config = require('./config');
 const axios = require('axios')
 const awsSign = require('aws-v4-sign-small').sign;
 const datasilo = require('./datasilo');
+const wicket = require('wicket');
+const moment = require('moment');
 
 //---------------------------------------------------------
 // Kafka intializations:
@@ -43,75 +43,51 @@ const responderRequester = new ResponderRequester({
   },
   group: 'winfield-fields-sync'
 });
+var intervalTime = 5;
+var since = moment().subtract(4, 'years').format('ddd, DD MMM YYYY HH:mm:ss +0000');
 
 module.exports = function stopResp() {
   return responderRequester.disconnect(); 
 };
 
-responderRequester.on('request', function handleReq(req) {
-  trace('write-response?', req.msgtype === 'write-response', 'success?', req.code ==='success')
-  if (req.msgtype !== 'write-response') return
-  if (req.code !== 'success') return
-  trace('request: ', req)
-  return oadaLib.resources.getResource(req.resource_id).then((res) => {
-    if (res._type !== 'application/vnd.trellisfw.certifications.1+json') return
-    trace('res', res)
-    let writes = []
-    let owner = findNewCertifications(res, res._meta._owner).then((write) => {
-      return writes.push(...write)
-    })
-    // Check other permissioned users for any writes and reindexes needed
-    trace('res._meta._permissions', res._meta._permissions)
-    let other_users = Promise.map(Object.keys(res._meta._permissions || {}), (id) => {
-      // If this user hasn't been indexed before, all certifications are "new", else use only recent _changes
-      return findNewCertifications(res, id).then((write) => {
-        return writes.push(...write)
+function checkWinfieldFields() {
+  var path = 'grower'
+  var query = {expand: 'farm,field,season,boundary'}
+  var nextSince = moment().format('ddd, DD MMM YYYY HH:mm:ss +0000');
+  datasilo.get(path, query, since).then((res) => {
+    since = nextSince;
+    Promise.map(res.data[0].farm || [], (farm) => {
+      Promise.map(farm.field || [], (field) => {
+        console.log('GOT ONE')
+        console.log(farm)
+        axios({
+          url: `http://http-handler/bookmarks/fields/fields-index/${farm.name}/fields-index/${field.name}`,
+          method: field.status === 'deleted' ? 'delete': 'put',
+          headers: {
+            'x-oada-bookmarks-type': 'fields',
+            'Authorization': 'Bearer def',
+            'Content-Type': 'application/vnd.oada.field.1+json',
+          },
+          data: {
+            boundary: {geojson: (new wicket.Wkt(field.boundary[0].boundary)).toJson()},
+            _context: {
+              farm: farm.name,
+            }
+          }
+        }).catch((error) => {
+          console.log(error)
+        })
       })
     })
-   // Combine all of the resolved write requests into a single array to return
-    return Promise.join(owner, other_users, ()=> {})
-    .then((result) => {
-      trace('WRITES', writes)
-      return Promise.map(writes, (write) => {
-        return responderRequester.send(write)
-          .catch(Promise.TimeoutError, (err) => {
-            trace(err, write)
-          })
-      }).return(undefined)
-    })
+  }).catch((err) => {
+    console.log('!!!time', since)
+    since = nextSince;
+    console.log('---')
+    console.log('twas an error')
+    console.log('---')
   })
-})
+}
 
-responderRequester.on('request', function handleReq(req) {
-  trace('write-response?', req.msgtype === 'write-response', 'success?', req.code ==='success')
-  if (req.msgtype !== 'write-response') return
-  if (req.code !== 'success') return
-  trace('request: ', req)
-  return oadaLib.resources.getResource(req.resource_id).then((res) => {
-    if (res._type !== 'application/vnd.trellisfw.certifications.1+json') return
-    trace('res', res)
-    let writes = []
-    let owner = findNewCertifications(res, res._meta._owner).then((write) => {
-      return writes.push(...write)
-    })
-    // Check other permissioned users for any writes and reindexes needed
-    trace('res._meta._permissions', res._meta._permissions)
-    let other_users = Promise.map(Object.keys(res._meta._permissions || {}), (id) => {
-      // If this user hasn't been indexed before, all certifications are "new", else use only recent _changes
-      return findNewCertifications(res, id).then((write) => {
-        return writes.push(...write)
-      })
-    })
-   // Combine all of the resolved write requests into a single array to return
-    return Promise.join(owner, other_users, ()=> {})
-    .then((result) => {
-      trace('WRITES', writes)
-      return Promise.map(writes, (write) => {
-        return responderRequester.send(write)
-          .catch(Promise.TimeoutError, (err) => {
-            trace(err, write)
-          })
-      }).return(undefined)
-    })
-  })
-})
+checkWinfieldFields()
+console.log('checked');
+setInterval(checkWinfieldFields, intervalTime*1000)

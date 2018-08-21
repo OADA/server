@@ -75,11 +75,14 @@ const scopeTypes = {
 		'application/vnd.oada.data-index.1+json',
 		'application/vnd.oada.data-index.tiled-maps.1+json',
 		'application/vnd.oada.connection.1+json',
+		'application/vnd.oada.note.1+json',
+		'application/vnd.oada.notes.1+json',
 		'application/vnd.oada.field.1+json',
 		'application/vnd.oada.fields.1+json',
 		'application/vnd.oada.grower.1+json',
 		'application/vnd.oada.farm.1+json',
 		'application/vnd.oada.yield.1+json',
+		'application/vnd.oada.as-harvested.geohash.1+json',
 		'application/json',
 	],
 };
@@ -150,7 +153,6 @@ responder.on('request', function handleReq(req) {
             };
         //Check permissions. 2. Check if otherwise permissioned.
 				} else {
-						console.log(req.oadaGraph.permissions)
             response.permissions = req.oadaGraph.permissions;
         }
         trace('END RESULT', response);
