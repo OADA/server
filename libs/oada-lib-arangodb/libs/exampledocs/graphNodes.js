@@ -14,6 +14,13 @@ module.exports = [
     'is_resource': true,
   },
   //------------------------------------------------
+  // Bookmarks document (for user servio):
+  {
+    '_id': 'graphNodes/resources:default:resources_bookmarks_012',
+    'resource_id': 'resources/default:resources_bookmarks_012',
+    'is_resource': true,
+  },
+  //------------------------------------------------
   // Bookmarks document (for user pete):
   {
     '_id': 'graphNodes/resources:default:resources_bookmarks_444',
@@ -60,6 +67,13 @@ module.exports = [
   {
     '_id': 'graphNodes/resources:default:resources_shares_123',
     'resource_id': 'resources/default:resources_shares_123',
+    'is_resource': true,
+  },
+  //------------------------------------------------
+  // Shares document (for user servio):
+  {
+    '_id': 'graphNodes/resources:default:resources_shares_012',
+    'resource_id': 'resources/default:resources_shares_012',
     'is_resource': true,
   },
   //------------------------------------------------

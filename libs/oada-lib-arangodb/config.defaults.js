@@ -33,7 +33,7 @@ module.exports = {
                edges: { name: 'edges',          indexes: [ { name: 'name', unique: false } ], defaults: './libs/exampledocs/edges',
                         edgeCollection: true },
            putBodies: { name: 'putBodies',      indexes: [ ], defaults: './libs/exampledocs/putBodies',
-                        createOptions: { isVolatile: true } },
+                        createOptions: { isVolatile: false } },
     },
     retry: {
       deadlock: {

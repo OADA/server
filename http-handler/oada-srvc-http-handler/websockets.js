@@ -214,12 +214,6 @@ module.exports = function wsHandler(server) {
                           oadaLib.changes.getChangesSinceRev(resourceId, request.headers['x-oada-rev']).then((changes) => {
                             var rev = request.headers['x-oada-rev'];
                             changes.forEach((change) => {
-                              console.log('!!!!!!!!!!!!!!')
-                              console.log('!!!!!!!!!!!!!!')
-                              console.log('okay', rev, rev.split('-'), rev.split('-')[1], parseInt(rev.split('-')[1]))
-                              console.log('change since ', request.headers['x-oada-rev'], change)
-                              console.log('!!!!!!!!!!!!!!')
-                              console.log('!!!!!!!!!!!!!!')
                               emitter.emit(resourceId, {
                                 path_leftover,
                                 change
