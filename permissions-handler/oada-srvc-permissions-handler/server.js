@@ -39,6 +39,20 @@ const scopeTypes = {
   'oada.mirrors': [
     'application/vnd.oada.mirrors.1:json',
   ],
+  'oada.fields': [
+		'application/vnd.oada.bookmarks.1+json',
+		'application/vnd.oada.shares.1+json',
+		'application/vnd.oada.fields.1+json',
+		'application/vnd.oada.field.1+json',
+		'application/json',
+  ],
+  'oada.operations': [
+		'application/vnd.oada.bookmarks.1+json',
+		'application/vnd.oada.shares.1+json',
+		'application/vnd.oada.operation.1+json',
+		'application/vnd.oada.operations.1+json',
+		'application/json',
+  ],
   'oada.rocks': [
 		'application/vnd.oada.bookmarks.1+json',
 		'application/vnd.oada.shares.1+json',

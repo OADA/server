@@ -47,6 +47,20 @@ module.exports = [
     'shares': {'_id': 'resources/default:resources_shares_321'}
   },
   {
+    '_id': 'users/default:users_servio_012',
+    'username': 'spalacios',
+    'password': '01010011',
+    'domain': 'localhost',
+    'name': 'Servio Palacios',
+    'family_name': 'Palacios',
+    'given_name': 'Servio',
+    'middle_name': '',
+    'nickname': 'Servio',
+    'email': 'spalacios@purdue.edu',
+    'bookmarks': {'_id': 'resources/default:resources_bookmarks_012'},
+    'shares': {'_id': 'resources/default:resources_shares_012'}
+  },
+  {
     '_id': 'users/default:users_audrey_999',
     'username': 'audrey',
     'password': 'test',

@@ -26,6 +26,31 @@ module.exports = [
     },
     'rocks': {'_id': 'resources/default:resources_rocks_123', '_rev': '1-abc'}
   },
+  //------------------------------------------------
+  // Bookmarks document (for servio):
+  {
+    '_id': 'resources/default:resources_bookmarks_012',
+    '_oada_rev': '1-abc',
+    '_type': 'application/vnd.oada.bookmarks.1+json',
+    '_meta': {
+      '_id': 'resources/default:resources_bookmarks_012/_meta',
+      '_rev': '1-abc',
+      '_type': 'application/vnd.oada.bookmarks.1+json',
+      '_owner': 'users/default:users_servio_012',
+      'stats': {
+        // stats on meta is exempt from _changes
+        // because that would generate loop of rev updates with resource
+        'createdBy': 'users/default:users_frank_012',
+        'created': 1494133055,
+        'modifiedBy': 'users/default:users_frank_012',
+        'modified': 1494133055
+      },
+      '_changes': {
+        '_id': 'resources/default:changes_bookmarks_012/_meta/_changes',
+        '_rev': '1-abc',
+      },
+    },
+  },
   {
     '_id': 'resources/default:resources_bookmarks_124',
     '_oada_rev': '1-abc',
@@ -210,6 +235,27 @@ module.exports = [
 
   //------------------------------------------------
   // Shares document (for user frank):
+  {
+    '_id': 'resources/default:resources_shares_012',
+    '_oada_rev': '1-abc',
+    '_type': 'application/vnd.oada.shares.1+json',
+    '_meta': {
+      '_id': 'resources/default:resources_shares_012/_meta',
+      '_rev': '1-abc',
+      '_type': 'application/vnd.oada.shares.1+json',
+      '_owner': 'users/default:users_servio_012', // TODO: Who "owns" /shares?
+      'stats': {
+        // stats on meta is exempt from _changes
+        // because that would generate loop of rev updates with resource
+        'createdBy': 'system',
+        'created': 1494133055,
+        'modifiedBy': 'system',
+        'modified': 1494133055
+      },
+      '_changes': {
+      },
+    },
+  },
   {
     '_id': 'resources/default:resources_shares_123',
     '_oada_rev': '1-abc',
