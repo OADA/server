@@ -159,27 +159,10 @@ module.exports = function wsHandler(server) {
                     if (msg.method === 'unwatch') {
                         let parts = res.headers['content-location'].split('/');
                         let resourceId = `${parts[1]}/${parts[2]}`;
-                        let path_leftover = parts.slice(3).join('/');
-                        if(path_leftover) {
-                            path_leftover = `/${path_leftover}`;
-                        }
+                        console.log('closing watch', resourceId)
+                      //trace('************, closing watch', resourceId);
 
-                      let handleChange = function(change) {
-                            //let c = change.change.merge || change.change.delete;
-                            if (jsonpointer.get(change.change.body, path_leftover) !== undefined) {
-                                let message = {
-                                    requestId: msg.requestId,
-                                    resourceId,
-                                    change: change.change,
-                                };
-
-                                socket.send(JSON.stringify(message));
-                            }
-                        };
-
-                        trace('************, closing watch', resourceId);
-
-                        emitter.removeListener(resourceId, handleChange);
+                        emitter.removeAllListeners(resourceId);
 
                         socket.send(JSON.stringify({
                             requestId: msg.requestId,
@@ -195,7 +178,8 @@ module.exports = function wsHandler(server) {
                         }
 
                         let handleChange = function(change) {
-                            //let c = change.change.merge || change.change.delete;
+                          //let c = change.change.merge || change.change.delete;
+                          console.log('responding watch', resourceId)
                             if (jsonpointer.get(change.change.body, path_leftover) !== undefined) {
                                 let message = {
                                     requestId: msg.requestId,
@@ -207,7 +191,9 @@ module.exports = function wsHandler(server) {
                             }
                         };
 
-                        trace('%%%%%%%%%%%%', resourceId);
+                      //trace('%%%%%%%%%%%%', resourceId);
+                        console.log('opening watch', resourceId)
+                        console.log('listeners', emitter.eventNames())
 
                         emitter.on(resourceId, handleChange);
                         if (request.headers['x-oada-rev']) {

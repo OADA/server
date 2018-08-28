@@ -73,7 +73,6 @@ responder.on('request', async function handleReq(req) {
 })
 
 let queue = cq().limit({concurrency: 1}).process(async function indexYield(req) { 
-	info('processing', req)
 
   let id = req['resource_id'];
   let change;
@@ -82,19 +81,20 @@ let queue = cq().limit({concurrency: 1}).process(async function indexYield(req) 
   } catch(err) {
     throw err
   }
-  return Promise.map(Object.keys(change.body.data || {}), (key) => {
-    let pt = change.body.data[key];
-		let cropType = change.body._context['crop-index'];
-    return oadaLib.users.findById(req.user_id).then((user) => {
-			return Promise.map([1,2,3,4,5,6,7], (ghLength) => {
-				// 1) Find the data point's geohash of length ghLength
-				let bucket = gh.encode(pt.location.lat, pt.location.lon, ghLength)
-				let aggregate = gh.encode(pt.location.lat, pt.location.lon, ghLength+2)
+  if (!change.body.data) return
+  return oadaLib.users.findById(req.user_id).then((user) => {
+    console.log('YIELD TILER CHANGE', change.body.data)
+		return Promise.map([1,2,3,4,5,6,7], (ghLength) => {
+      let cropType = change.body._context['crop-index'];
+      // 1) Find the data point's geohash of length ghLength
+      let bucket = change.body._context['geohash-index'].slice(0, ghLength)
 
-				// 2) GET Current geohash bucket values
-				let bucketPath = '/harvest/tiled-maps/dry-yield-map/crop-index/'+cropType+'/geohash-length-index/geohash-'+ghLength.toString()+'/geohash-index/'+bucket;
-				return oadaLib.resources.lookupFromUrl('/'+user.bookmarks._id+bucketPath, req.user_id).then((result) => {
-
+      // 2) GET Current geohash bucket values
+      let bucketPath = '/harvest/tiled-maps/dry-yield-map/crop-index/'+cropType+'/geohash-length-index/geohash-'+ghLength.toString()+'/geohash-index/'+bucket;
+      return oadaLib.resources.lookupFromUrl('/'+user.bookmarks._id+bucketPath, req.user_id).then((result) => {
+        return Promise.map(Object.keys(change.body.data || {}), async function(key) {
+          let pt = change.body.data[key];
+          let aggregate = gh.encode(pt.location.lat, pt.location.lon, ghLength+2)
 					let template = {
 						area: { units: 'acres' },
 						weight: { units: 'bushels' },
@@ -111,7 +111,7 @@ let queue = cq().limit({concurrency: 1}).process(async function indexYield(req) 
 						weight = weight*(100-pt.moisture)/(100-tradeMoisture[cropType]);// Adjust weight for moisture content
 					}
 
-					let additionalStats = {
+					let stats = {
 						count: 1,
 						weight: {
 							sum: weight,
@@ -124,69 +124,43 @@ let queue = cq().limit({concurrency: 1}).process(async function indexYield(req) 
 						},
 						'sum-yield-squared-area': Math.pow(weight/pt.area, 2)*pt.area,
 						template: templateId
-					}
+          }
 
 					// If the geohash resource doesn't exist, submit a deep PUT with the
-					// additionalStats as the body
+          // additionalStats as the body
+          let data;
           if (result.path_leftover !== '') {
-						return axios({
-							method: 'PUT',
-							url: 'http://http-handler/bookmarks'+bucketPath,
-							headers: {
-								//TODO: Don't hardcode this
-								Authorization: 'Bearer def',
-								'x-oada-bookmarks-type': 'tiled-maps',
-								'Content-Type': 'application/vnd.oada.as-harvested.yield-moisture-dataset.1+json'
-							},
-							data: {
-								'geohash-data': {
-									[aggregate]: additionalStats,
-								},
-								stats: additionalStats
-							},
-						})
-					}
-
-					//Else, get the resource and update it.
-					return oadaLib.resources.getResource(result.resource_id).then((res) => {
-						if (res['geohash-data'][aggregate]) {
-							// increment/compute new geohash bucket values
-							//TODO: should probably check that they use the same template
-							let data = {
-								'geohash-data': {
-									[aggregate]: recomputeStats(res['geohash-data'][aggregate], additionalStats),
-								},
-								stats: recomputeStats(res.stats, additionalStats)
-							}
-							return axios({
-								method: 'PUT',
-								url: 'http://http-handler/bookmarks'+bucketPath,
-								headers: {
-									Authorization: 'Bearer def',
-									'x-oada-bookmarks-type': 'tiled-maps',
-									'Content-Type': 'application/vnd.oada.as-harvested.yield-moisture-dataset.1+json'
-								},
-								data,
-							})
-						} else {
-              // new aggregate. Push stats
-							return axios({
-								method: 'PUT',
-								url: 'http://http-handler/bookmarks'+bucketPath,
-								headers: {
-									Authorization: 'Bearer def',
-									'x-oada-bookmarks-type': 'tiled-maps',
-									'Content-Type': 'application/vnd.oada.as-harvested.yield-moisture-dataset.1+json'
-								},
-								data: {
-									'geohash-data': {
-										[aggregate]: additionalStats,
-									},
-									stats: recomputeStats(res.stats, additionalStats)
-								}
-							})
-						}
-					})
+            data = {
+              'geohash-data': {
+                [aggregate]: stats,
+              },
+              stats,
+            }
+          } else {
+            //Else, get the resource and update it.
+            let res = await oadaLib.resources.getResource(result.resource_id)
+            //TODO: should probably check that they use the same template
+            console.log('AAA RECOMPUTING', stats)
+            console.log('BBB OLD RES', res)
+            console.log('CCC OLD RES', res.stats)
+            data = {
+              'geohash-data': {
+                [aggregate]: recomputeStats(res['geohash-data'][aggregate], stats),
+              },
+              stats: recomputeStats(res.stats, stats)
+            }            
+          }
+          return axios({
+            method: 'PUT',
+            url: 'http://http-handler/bookmarks'+bucketPath,
+            headers: {
+              //TODO: Don't hardcode this
+              Authorization: 'Bearer def',
+              'x-oada-bookmarks-type': 'tiled-maps',
+              'Content-Type': 'application/vnd.oada.as-harvested.yield-moisture-dataset.1+json'
+            },
+            data
+          })
 				})
 			})
 		})
@@ -199,6 +173,19 @@ let queue = cq().limit({concurrency: 1}).process(async function indexYield(req) 
 })
 
 let recomputeStats = function(currentStats, additionalStats) {
+  currentStats = currentStats || {
+    area: {
+      sum: 0,
+      'sum-of-squares': 0,
+    },
+    weight: {
+      sum: 0,
+      'sum-of-squares': 0,
+    },
+    'sum-yield-squared-area': 0,
+    'yield-squared-area': 0,
+    count: 0,
+  }
   currentStats.count = currentStats.count + additionalStats.count;
   currentStats.area.sum = currentStats.area.sum + additionalStats.area.sum;
   currentStats.area['sum-of-squares'] = currentStats.area['sum-of-squares'] + additionalStats.area['sum-of-squares'];

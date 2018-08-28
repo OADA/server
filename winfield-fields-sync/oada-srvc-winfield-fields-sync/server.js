@@ -58,8 +58,6 @@ function checkWinfieldFields() {
     since = nextSince;
     Promise.map(res.data[0].farm || [], (farm) => {
       Promise.map(farm.field || [], (field) => {
-        console.log('GOT ONE')
-        console.log(farm)
         axios({
           url: `http://http-handler/bookmarks/fields/fields-index/${farm.name}/fields-index/${field.name}`,
           method: field.status === 'deleted' ? 'delete': 'put',
@@ -80,14 +78,9 @@ function checkWinfieldFields() {
       })
     })
   }).catch((err) => {
-    console.log('!!!time', since)
     since = nextSince;
-    console.log('---')
-    console.log('twas an error')
-    console.log('---')
   })
 }
 
 checkWinfieldFields()
-console.log('checked');
 setInterval(checkWinfieldFields, intervalTime*1000)

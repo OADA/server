@@ -36,9 +36,7 @@ function getChanges(resourceId, changeRev) {
 }
 
 function getChangesSinceRev(resourceId, rev) {
-  console.log('okay', rev, rev.split('-'), rev.split('-')[1], parseInt(rev.split('-')[1]))
   let num = parseInt(rev.split('-')[0]);
-  console.log('CHANGES SINCE num', num)
   return db.query(aql`
     FOR change in ${changes}
       FILTER change.resource_id == ${resourceId}
@@ -145,7 +143,6 @@ function putChange({change, resId, rev, type, child, path, userId, authorization
     )
     RETURN doc._id
   `).tap((cursor) => {
-    console.log('PUTCHANGE', cursor.extra.stats.executionTime);
   }).call('next');
 }
 
