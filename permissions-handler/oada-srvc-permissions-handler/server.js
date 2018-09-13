@@ -78,7 +78,9 @@ const scopeTypes = {
 		'application/vnd.trellisfw.1+json',
 		'application/json',
 	],
-	'oada.yield': [
+  'oada.yield': [
+    'application/vnd.oada.services.1+json',
+    'application/vnd.oada.service.1+json',
 		'application/vnd.oada.bookmarks.1+json',
 		'application/vnd.oada.shares.1+json',
 		'application/vnd.oada.tiled-maps.1+json',

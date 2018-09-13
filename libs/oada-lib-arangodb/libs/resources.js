@@ -10,6 +10,7 @@ const aql = require('arangojs').aqlQuery;
 const pointer = require('json-pointer');
 const config = require('../config');
 const util = require('../util');
+const users = require('./users');
 const resources =
     db.collection(config.get('arangodb:collections:resources:name'));
 const graphNodes =
@@ -19,7 +20,15 @@ const edges =
 
 const MAX_DEPTH = 100; // TODO: Is this good?
 
-function lookupFromUrl(url, userId) {
+async function lookupFromUrl(url, userId) {
+  var user = await users.findById(userId)
+  if (!user) throw 'No User Found for given userId'
+  if (/^\/bookmarks/.test(url)) {
+    url = url.replace(/^\/bookmarks/, '/'+user.bookmarks._id)
+  }
+  if (/^\/shares/.test(url)) {
+    url = url.replace(/^\/shares/, '/'+user.shares._id)
+  }
   return Promise.try(() => {
     //    trace(userId);
     let pieces = pointer.parse(url);

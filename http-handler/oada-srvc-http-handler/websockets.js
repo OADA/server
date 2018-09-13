@@ -155,7 +155,15 @@ module.exports = function wsHandler(server) {
                 break;
             }
             axios(request)
-                .then(function(res) {
+            .then(function(res) {
+                    if (msg.method === 'delete') {
+                        let parts = res.headers['content-location'].split('/');
+                        if (parts.length === 3) { // it is a resource
+                          let resourceId = `${parts[1]}/${parts[2]}`;
+                          console.log('deleting a watched resource. closing watch', resourceId)
+                          emitter.removeAllListeners(resourceId);
+                        }
+                    }
                     if (msg.method === 'unwatch') {
                         let parts = res.headers['content-location'].split('/');
                         let resourceId = `${parts[1]}/${parts[2]}`;
@@ -225,7 +233,8 @@ module.exports = function wsHandler(server) {
                         }));
                     }
                 })
-                .catch(function(err) {
+            .catch(function(err) {
+
                     let e;
                     if (err.response) {
                         e = {

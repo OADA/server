@@ -254,7 +254,7 @@ router.put('/*', async function ensureTypeTreeExists(req, res, next) {
             if (nextPiece) {
                 subTree = pointer.get(subTree, nextPiece)
                 if (pointer.has(subTree, '/_type')) {
-                    let contentType = pointer.get(subTree, '/_type');
+                  let contentType = pointer.get(subTree, '/_type');
                     id = 'resources/'+uuid.v4();
                     let body = await replaceLinks(_.cloneDeep(subTree))
                     // Write new resource. This may potentially become an
@@ -439,90 +439,96 @@ router.delete('/*', function deleteResource(req, res, next) {
 });
 
 let trees = {
+  'fields': {
     'fields': {
-      'fields': {
-        '_type': "application/vnd.oada.fields.1+json",
-        '_rev': '0-0',
-        'fields-index': {
-          '*': {
-            '_type': "application/vnd.oada.fields.1+json",
-            '_rev': '0-0',
-            'fields-index': {
-              '*': {
-                '_type': "application/vnd.oada.field.1+json",
-                '_rev': '0-0',
-              }
+      '_type': "application/vnd.oada.fields.1+json",
+      '_rev': '0-0',
+      'fields-index': {
+        '*': {
+          '_type': "application/vnd.oada.field.1+json",
+          '_rev': '0-0',
+          'fields-index': {
+            '*': {
+              '_type': "application/vnd.oada.field.1+json",
+              '_rev': '0-0',
             }
           }
         }
+      }
+    },
+  },
+  'as-harvested': {
+      'harvest': {
+          '_type': "application/vnd.oada.harvest.1+json",
+          '_rev': '0-0',
+          'as-harvested': {
+              '_type': "application/vnd.oada.as-harvested.1+json",
+              '_rev': '0-0',
+              'yield-moisture-dataset': {
+                  '_type': "application/vnd.oada.as-harvested.yield-moisture-dataset.1+json",
+                  '_rev': '0-0',
+                  'crop-index': {
+                      '*': {
+                          '_type': "application/vnd.oada.as-harvested.yield-moisture-dataset.1+json",
+                          '_rev': '0-0',
+                          'geohash-length-index': {
+                              '*': {
+                                  '_type': "application/vnd.oada.as-harvested.yield-moisture-dataset.1+json",
+                                  '_rev': '0-0',
+                                  'geohash-index': {
+                                      '*': {
+                                          '_type': "application/vnd.oada.as-harvested.yield-moisture-dataset.1+json",
+                                      }
+                                  }
+                              }
+                          }
+                      }
+                  }
+              }
+          },
       },
-    },
-    'as-harvested': {
-        'harvest': {
-            '_type': "application/vnd.oada.harvest.1+json",
-            '_rev': '0-0',
-            'as-harvested': {
-                '_type': "application/vnd.oada.as-harvested.1+json",
-                '_rev': '0-0',
-                'yield-moisture-dataset': {
-                    '_type': "application/vnd.oada.as-harvested.yield-moisture-dataset.1+json",
-                    '_rev': '0-0',
-                    'crop-index': {
-                        '*': {
-                            '_type': "application/vnd.oada.as-harvested.yield-moisture-dataset.1+json",
-                            '_rev': '0-0',
-                            'geohash-length-index': {
-                                '*': {
-                                    '_type': "application/vnd.oada.as-harvested.yield-moisture-dataset.1+json",
-                                    '_rev': '0-0',
-                                    'geohash-index': {
-                                        '*': {
-                                            '_type': "application/vnd.oada.as-harvested.yield-moisture-dataset.1+json",
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            },
-        },
-    },
-    'tiled-maps': {
-        'harvest': {
-            '_type': "application/vnd.oada.harvest.1+json",
-            '_rev': '0-0',
-            'tiled-maps': {
-                '_type': "application/vnd.oada.tiled-maps.1+json",
-                '_rev': '0-0',
-                'dry-yield-map': {
-                    '_type': "application/vnd.oada.tiled-maps.dry-yield-map.1+json",
-                    '_rev': '0-0',
-                    'crop-index': {
-                        '*': {
-                            "_type": "application/vnd.oada.tiled-maps.dry-yield-map.1+json",
-                            '_rev': '0-0',
-                            'geohash-length-index': {
-                                '*': {
-                                    "_type": "application/vnd.oada.tiled-maps.dry-yield-map.1+json",
-                                    '_rev': '0-0',
-                                    'geohash-index': {
-                                        '*': {
-                                            "_type": "application/vnd.oada.tiled-maps.dry-yield-map.1+json",
-                                            "datum": "WGS84",
-                                            "geohash-data": {},
-                                            "stats": {},
-                                            "templates": {}
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
+  },
+  'tiled-maps': {
+      'harvest': {
+          '_type': "application/vnd.oada.harvest.1+json",
+          '_rev': '0-0',
+          'tiled-maps': {
+              '_type': "application/vnd.oada.tiled-maps.1+json",
+              '_rev': '0-0',
+              'dry-yield-map': {
+                  '_type': "application/vnd.oada.tiled-maps.dry-yield-map.1+json",
+                  '_rev': '0-0',
+                  'crop-index': {
+                      '*': {
+                          "_type": "application/vnd.oada.tiled-maps.dry-yield-map.1+json",
+                          '_rev': '0-0',
+                          'geohash-length-index': {
+                              '*': {
+                                  "_type": "application/vnd.oada.tiled-maps.dry-yield-map.1+json",
+                                  '_rev': '0-0',
+                                  'geohash-index': {
+                                      '*': {
+                                          "_type": "application/vnd.oada.tiled-maps.dry-yield-map.1+json",
+                                      }
+                                  }
+                              }
+                          }
+                      }
+                  }
+              }
+          }
+      }
+  },
+  'services': {
+    'services': {
+      '_type': 'application/vnd.oada.services.1+json',
+      '_rev': '0-0',
+      'datasilo': {
+        '_type': 'application/vnd.oada.services.1+json',
+        '_rev': '0-0',
+      }
     }
+  }
 }
 
 function replaceLinks(obj) {

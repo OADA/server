@@ -21,7 +21,7 @@ const edges =
 const changeEdges =
     db.collection(config.get('arangodb:collections:changeEdges:name'));
 
-const MAX_DEPTH = 100; // TODO: Is this good?
+const MAX_DEPTH = 100;
 
 function getChanges(resourceId, changeRev) {
   return db.query(aql`

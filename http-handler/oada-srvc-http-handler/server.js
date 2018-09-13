@@ -146,6 +146,21 @@ app.use(function handleShares(req, res, next) {
         `/${req.user.doc['shares_id']}`);
     next();
 });
+/*
+// Rewrite the URL if it starts with /services
+app.use(function handleServices(req, res, next) {
+    req.url = req.url.replace(/^\/services/,
+        `/${req.user.doc['services_id']}`);
+    next();
+});
+
+// Rewrite the URL if it starts with /trash
+app.use(function handleTrash(req, res, next) {
+    req.url = req.url.replace(/^\/trash/,
+        `/${req.user.doc['trash_id']}`);
+    next();
+});
+*/
 
 app.use('/resources', resources);
 app.use('/authorizations', authorizations);
