@@ -90,7 +90,7 @@ responder.on('request', async function handleReq(req) {
 	return
 })
 
-var intervalTime = 10;
+var intervalTime = 2;
 var beginning = moment().subtract(4, 'years').format('ddd, DD MMM YYYY HH:mm:ss +0000');
 var since = moment().subtract(4, 'years').format('ddd, DD MMM YYYY HH:mm:ss +0000');
 var _rev = '0-0';
@@ -103,8 +103,8 @@ cache.default.connect({
   //noWebsocket: true,
 }).then((result) => {
   CONNECTION = result
-  //  checkWinfieldFields()
-  //setInterval(checkWinfieldFields, intervalTime*1000)
+  checkWinfieldFields()
+  setInterval(checkWinfieldFields, intervalTime*1000)
 })
 
 async function checkGrower(grower, user) {
@@ -140,6 +140,7 @@ async function checkField(field, farm, farm_id, user, grower_id) {
   var fieldKey;
   var fieldKey;
   var boundary_id;
+  console.log('IDENTIFIER', field.identifier)
   if (field.identifier && field.identifier['OADAPOC-field-ID']) {
     field_id = field.identifier['OADAPOC-field-ID'];
     fieldKey = field_id.replace(/^resources\//, '');
@@ -180,6 +181,9 @@ async function checkField(field, farm, farm_id, user, grower_id) {
         _context: {
           farm: farm_id
         }
+      }
+      if (field.boundary && field.boundary.geojson.coordinates) {
+        field.boundary.geojson.coordinates[0].pop()
       }
 
       if (JSON.stringify(data) !== JSON.stringify(oadaFieldData)) {
@@ -392,8 +396,12 @@ function oadaToDataSiloField(fieldChange, oadaField, grower_id, farm_id, field_i
   return dsField
 }
 
-function oadaToDataSiloBoundary(fieldChange, oadaField, grower_id, farm_id, field_id, boundary_id) {
-  if (!oadaField.boundary || !oadaField.boundary.geojson) return
+function oadaToDataSiloBoundary(oadaField, grower_id, farm_id, field_id, boundary_id) {
+  if (!(oadaField.boundary && oadaField.boundary.geojson)) return
+  var geojson = oadaField.boundary.geojson
+  if (geojson.coordinates && JSON.stringify(geojson.coordinates[0][0]) !== JSON.stringify(geojson.coordinates[0][geojson.coordinates[0].length-1])) {
+    geojson.coordinates[0].push(geojson.coordinates[0][0])
+  }
   var wkt = new wicket.Wkt();
   var dsBoundary = {
     grower_id,
@@ -401,17 +409,15 @@ function oadaToDataSiloBoundary(fieldChange, oadaField, grower_id, farm_id, fiel
     parent_id: field_id,
     boundary_id,
     field_id,
-    name: fieldChange.name ? fieldChange.name+'_boundary' : oadaField.name+'_boundary',
-    boundary: fieldChange.boundary ? 
-      wkt.read(JSON.stringify(fieldChange.boundary.geojson)).write()
-      : wkt.read(JSON.stringify(oadaField.boundary.geojson)).write()
+    name: oadaField.name+'_boundary',
+    boundary: wkt.read(JSON.stringify(geojson)).write()
   }
   // Handle optional keys
-  if (oadaField.season || fieldChange.season) dsBoundary.season = fieldChange.season || oadaField.season;
-  if (oadaField.acres || fieldChange.acres) dsBoundary.acres = fieldChange.acres || oadaField.acres;
-  if (oadaField.sum_acres || fieldChange.sum_acres) dsBoundary.sum_acres = fieldChange.sum_acres || oadaField.sum_acres;
-  if (oadaField.failure_acres || fieldChange.failure_acres) dsBoundary.failure_acres = fieldChange.failure_acres || oadaField.failure_acres;
-  if (oadaField.imported_acres || fieldChange.imported_acres) dsBoundary.imported_acres = fieldChange.imported_acres || oadaField.imported_acres;
+  if (oadaField.season) dsBoundary.season = oadaField.season;
+  if (oadaField.acres) dsBoundary.acres = oadaField.acres;
+  if (oadaField.sum_acres) dsBoundary.sum_acres = oadaField.sum_acres;
+  if (oadaField.failure_acres) dsBoundary.failure_acres = oadaField.failure_acres;
+  if (oadaField.imported_acress) dsBoundary.imported_acres = oadaField.imported_acres;
   return dsBoundary
 }
 
@@ -429,23 +435,25 @@ var queue = cq().limit({concurrency: 1}).process(async function handleFieldChang
   console.log('GOT ONE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
   var id = req['resource_id'];
   var change;
+  let grower_id;
   try {
     change = await oadaLib.changes.getChange(req.resource_id, req._rev);
+    console.log('CHANGE', change.body)
+    let growerLookup = await oadaLib.resources.lookupFromUrl(`/bookmarks/services/datasilo`, req.user_id)
+    if (!growerLookup || growerLookup.path_leftover !== '') return
+    let grower = await oadaLib.resources.getResource(growerLookup.resource_id);
+    grower_id = grower.grower_id;
   } catch(err) {
+    //TODO: HANDLE GROER INFO MISSING IN OADA wi
+    var beginning = moment().subtract(4, 'years').format('ddd, DD MMM YYYY HH:mm:ss +0000');
+    var path = 'grower'
+    let growerData = await datasilo.get(path, {}, beginning)
+    grower_id = growerData.data[0];
+    await checkGrower(grower_id, 'users/default:users_sam_321')
     console.log(err)
     throw err
   }
-    /*  if (change.type === 'delete') {
-    return
-    //    return handleDelete(req, change)
-  }*/
 
-  let growerLookup = await oadaLib.resources.lookupFromUrl(`/bookmarks/services/datasilo`, req.user_id)
-  if (!growerLookup || growerLookup.path_leftover !== '') return
-  let grower = await oadaLib.resources.getResource(growerLookup.resource_id);
-  let grower_id = grower.grower_id;
-
-  console.log('CHANGE', change.body)
   return Promise.map(Object.keys(change.body['fields-index'] || {}), async function(farmKey) {
     // Handle farm addition/change
     let farmLookup = await oadaLib.resources.lookupFromUrl(`/bookmarks/fields/fields-index/${farmKey}`,req.user_id)
@@ -480,7 +488,7 @@ var queue = cq().limit({concurrency: 1}).process(async function handleFieldChang
           console.log('BOUNDARY!!!!', fieldChange.boundary)
           if (fieldChange.boundary) {
             var boundary_id = oadaField._id+'_boundary';
-            let dsBoundary = oadaToDataSiloBoundary(fieldChange, oadaField, grower_id, farm_id, field_id, boundary_id);
+            let dsBoundary = oadaToDataSiloBoundary(oadaField, grower_id, farm_id, field_id, boundary_id);
             console.log('BOUNDARY REQUEST', dsBoundary)
             await dsReq('boundary', dsBoundary)
           }
@@ -492,4 +500,3 @@ var queue = cq().limit({concurrency: 1}).process(async function handleFieldChang
     console.log(err)
   })
 })
-
