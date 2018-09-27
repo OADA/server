@@ -69,6 +69,14 @@ function getChangesSinceRev(resourceId, rev) {
 // TODO: using .body allows the changes to be nested, but doesn't allow us to
 // specify all of the other change details along the way down.
 function getChange(resourceId, changeRev) {
+//TODO: This is meant to handle when resources are deleted directly. Edge cases
+  //remain to be tested. Does this suffice regarding the need send down a bare tree?
+  if (!changeRev) {
+    return Promise.resolve({
+      body: null,
+      type: 'delete'
+    })
+  }
   return db.query(aql`
     LET change = FIRST(
       FOR change in ${changes}
