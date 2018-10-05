@@ -4,7 +4,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 
 RUN apt-get update \
     && apt-get install -y \
-               wget git python vim gpg \
+               wget git python vim gnupg \
                make gcc g++ \
                iputils-ping dnsutils
 
