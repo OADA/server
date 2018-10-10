@@ -1,6 +1,6 @@
 'use strict';
 
-var Promise = require('bluebird');
+global.Promise = require('bluebird');
 const uuid = require('uuid');
 const axios = require('axios');
 const express = require('express');
@@ -39,13 +39,7 @@ router.post('/*?', function postResource(req, res, next) {
 });
 
 router.use(function graphHandler(req, res, next) {
-    return requester.send({
-        'connection_id': req.id,
-        'domain': req.get('host'),
-        'token': req.get('authorization'),
-        'url': '/resources' + req.url,
-        'user_id': req.user.doc.user_id
-    }, config.get('kafka:topics:graphRequest'))
+  Promise.resolve(resources.lookupFromUrl('/resources'+req.url, req.user.doc.user_id))
     .then(function handleGraphRes(resp) {
         if (resp['resource_id']) {
             // Rewire URL to resource found by graph
@@ -55,9 +49,9 @@ router.use(function graphHandler(req, res, next) {
         }
         res.set('Content-Location', req.baseUrl + req.url);
         // TODO: Just use express parameters rather than graph thing?
-        req.oadaGraph = resp;
-    })
-    .asCallback(next);
+      req.oadaGraph = resp;
+  })
+  .asCallback(next);
 });
 
 router.put('/*', function checkScope(req, res, next) {
@@ -86,6 +80,7 @@ router.put('/*', function checkScope(req, res, next) {
 });
 
 router.get('/*', function checkScope(req, res, next) {
+  console.log('CHECK SCOPE', req)
     requester.send({
         'connection_id': req.id,
         'domain': req.get('host'),
@@ -94,6 +89,7 @@ router.get('/*', function checkScope(req, res, next) {
         'scope': req.user.doc.scope,
     }, config.get('kafka:topics:permissionsRequest'))
     .then(function handlePermissionsRequest(response) {
+    console.log('CHECK SCOPE THEN', response)
         trace('permissions response:' + response);
         if (!response.permissions.owner && !response.permissions.read) {
             warn(req.user.doc['user_id'] +
