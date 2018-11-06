@@ -31,6 +31,101 @@ function get(path, query, since) {
 		headers: req.headers
 	})
 }
+
+function del(path) {
+	var opts = {
+		host: conf.host,
+		region: conf.region,
+		service: conf.service,
+		method: 'delete',
+		path: `/${conf.environment}/${path}`,
+		headers: {
+			'Content-Type': 'application/vnd.datasilo.v1.json',
+			'Accept': 'application/json',
+			'x-api-key': conf.apiKey,
+		},
+	};
+
+	const req = aws.sign(opts, {
+		accessKeyId: conf.secretKeyId,
+		secretAccessKey: conf.secretKey
+	});
+	return axios({
+		method: 'delete',
+		url: `https://${conf.host}${opts.path}`,
+		headers: req.headers
+	})
+}
+
+function put(path, data, since) {
+  var opts = {
+    body: JSON.stringify(data),
+		host: conf.host,
+		region: conf.region,
+    service: conf.service,
+		method: 'put',
+		path: `/${conf.environment}/${path}`,
+		headers: {
+			'Content-Type': 'application/vnd.datasilo.v1.json',
+			'Accept': 'application/json',
+			'x-api-key': conf.apiKey,
+		},
+	};
+  if (since) opts.headers['if-modified-since'] = since;
+
+  console.log('OPTS', opts)
+	const req = aws.sign(opts, {
+		accessKeyId: conf.secretKeyId,
+		secretAccessKey: conf.secretKey
+  });
+  console.log('DONE SIGNED ~~~~~~~~~~~~~')
+	return axios({
+    method: 'put',
+    data,
+		url: `https://${conf.host}${opts.path}`,
+		headers: req.headers
+  }).catch((err) => {
+    console.log('error')
+    console.log(err)
+  })
+}
+
+function post(path, data, since) {
+	var opts = {
+    body: JSON.stringify(data),
+    host: conf.host,
+		region: conf.region,
+		service: conf.service,
+		method: 'post',
+		path: `/${conf.environment}/${path}`,
+		headers: {
+			'Content-Type': 'application/vnd.datasilo.v1.json',
+			'Accept': 'application/vnd.datasilo.v1.json',
+			'x-api-key': conf.apiKey,
+		},
+	};
+  if (since) opts.headers['if-modified-since'] = since;
+	const req = aws.sign(opts, {
+		accessKeyId: conf.secretKeyId,
+		secretAccessKey: conf.secretKey
+	});
+	return axios({
+    method: 'post',
+    data,
+		url: `https://${conf.host}${opts.path}`,
+		headers: req.headers
+  }).catch((err) => {
+    console.log('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
+    console.log('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
+    console.log(err)
+    console.log('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
+    console.log('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
+	})
+}
+
 module.exports = {
-	get,
+  get,
+  post,
+  delete: del,
+  put,
 }

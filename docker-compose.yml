@@ -431,6 +431,8 @@ services:
       # - ARANGO_RANDOM_ROOT_PASSWORD=1
       - ARANGO_NO_AUTH=1
       - ARANGO_STORAGE_ENGINE=rocksdb
+      - ARANGO_STATISTICS=0 
+    command: ["arangod", "--server.statistics", "true"]
 
 
   # zookeeper and kafka entries are based on:
@@ -555,6 +557,7 @@ services:
       - ./oada-srvc-docker-config.js:/oada-srvc-docker-config.js
     environment:
       - NODE_ENV=${NODE_ENV:-development}
+      - NODE_TLS_REJECT_UNAUTHORIZED=${NODE_TLS_REJECT_UNAUTHORIZED:-""}
       - DEBUG=${DEBUG:-""}
 
   winfield-fields-sync:

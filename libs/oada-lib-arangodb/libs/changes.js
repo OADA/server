@@ -21,7 +21,7 @@ const edges =
 const changeEdges =
     db.collection(config.get('arangodb:collections:changeEdges:name'));
 
-const MAX_DEPTH = 100; // TODO: Is this good?
+const MAX_DEPTH = 100;
 
 function getChanges(resourceId, changeRev) {
   return db.query(aql`
@@ -36,9 +36,7 @@ function getChanges(resourceId, changeRev) {
 }
 
 function getChangesSinceRev(resourceId, rev) {
-  console.log('okay', rev, rev.split('-'), rev.split('-')[1], parseInt(rev.split('-')[1]))
   let num = parseInt(rev.split('-')[0]);
-  console.log('CHANGES SINCE num', num)
   return db.query(aql`
     FOR change in ${changes}
       FILTER change.resource_id == ${resourceId}
@@ -71,6 +69,14 @@ function getChangesSinceRev(resourceId, rev) {
 // TODO: using .body allows the changes to be nested, but doesn't allow us to
 // specify all of the other change details along the way down.
 function getChange(resourceId, changeRev) {
+//TODO: This is meant to handle when resources are deleted directly. Edge cases
+  //remain to be tested. Does this suffice regarding the need send down a bare tree?
+  if (!changeRev) {
+    return Promise.resolve({
+      body: null,
+      type: 'delete'
+    })
+  }
   return db.query(aql`
     LET change = FIRST(
       FOR change in ${changes}
@@ -121,6 +127,7 @@ function putChange({change, resId, rev, type, child, path, userId, authorization
   let hash = parts.slice(1).join('-');
   // The FOR loop below is an if statement handling the case where no child
   // exists
+console.log('PUTCHANGE', child)
   return db.query(aql`
     LET doc = FIRST(
       INSERT {
@@ -145,7 +152,6 @@ function putChange({change, resId, rev, type, child, path, userId, authorization
     )
     RETURN doc._id
   `).tap((cursor) => {
-    console.log('PUTCHANGE', cursor.extra.stats.executionTime);
   }).call('next');
 }
 

@@ -5,11 +5,12 @@ const debug = require('debug');
 const info = debug('arangodb#resources:info');
 const trace = debug('arangodb#resources:trace');
 const _ = require('lodash');
-var Promise = require('bluebird');
+global.Promise = require('bluebird');
 const aql = require('arangojs').aqlQuery;
 const pointer = require('json-pointer');
 const config = require('../config');
 const util = require('../util');
+const users = require('./users');
 const resources =
     db.collection(config.get('arangodb:collections:resources:name'));
 const graphNodes =
@@ -19,7 +20,15 @@ const edges =
 
 const MAX_DEPTH = 100; // TODO: Is this good?
 
-function lookupFromUrl(url, userId) {
+async function lookupFromUrl(url, userId) {
+  var user = await users.findById(userId)
+  if (!user) throw 'No User Found for given userId'
+  if (/^\/bookmarks/.test(url)) {
+    url = url.replace(/^\/bookmarks/, '/'+user.bookmarks._id)
+  }
+  if (/^\/shares/.test(url)) {
+    url = url.replace(/^\/shares/, '/'+user.shares._id)
+  }
   return Promise.try(() => {
     //    trace(userId);
     let pieces = pointer.parse(url);
@@ -174,8 +183,6 @@ function getResource(id, path) {
         FILTER r._id == @id
         RETURN r${returnPath}`,
     bindVars
-    //  }).tap((cursor) => {
-    //console.log('getResources', cursor.extra.stats.executionTime);
   })
   .then(result => result.next())
   .then(util.sanitizeResult)
@@ -217,15 +224,8 @@ function getResourceOwnerIdRev(id) {
 function getParents(id) {
   return db.query(aql`
     WITH ${edges}, ${graphNodes}, ${resources}
-    LET node = FIRST(
-      FOR node IN ${graphNodes}
-      FILTER node.resource_id == ${id}
-      FILTER node.is_resource
-      RETURN node
-    )
-
     FOR v, e IN 0..1
-      INBOUND node
+      INBOUND ${'graphNodes/'+id.replace(/\//, ':')}
       ${edges}
       FILTER e.versioned == true
       LET res = DOCUMENT(v.resource_id)
@@ -316,8 +316,6 @@ function getChanges(id, rev) {
 }
 
 function putResource(id, obj) {
-  const putResourceStart = new Date();
-console.log('................................. putResource: start');
   // Fix rev
   obj['_oada_rev'] = obj['_rev'];
   obj['_rev'] = undefined;
@@ -325,15 +323,9 @@ console.log('................................. putResource: start');
   // TODO: Sanitize OADA keys?
 
   obj['_key'] = id.replace(/^resources\//, '');
-  var start = new Date().getTime();
   trace(`Adding links for resource ${id}...`);
 
-  let putResourceQueryStart = null;
-  let putResourceNextStart = null;
   return addLinks(obj).then(function docUpsert(links) {
-    console.log('................................. putResource: addLinks took ', new  Date() - putResourceStart);
-    putResourceQueryStart = new Date();
-    //trace(`Links added for resource ${id}. Upserting. +${end - start}ms`);
     info(`Upserting resource ${obj['_key']}`);
     trace(`Upserting links: ${JSON.stringify(links, null, 2)}`);
 
@@ -403,11 +395,9 @@ console.log('................................. putResource: start');
           RETURN resup.orev
       `
 
-      console.log('................................. putResource: starting query option 1');
       q = db.query(thingy);
 
     } else {
-      console.log('................................. putResource: starting query option 2');
       q = db.query(aql`
         LET resup = FIRST(
           LET res = ${obj}
@@ -432,15 +422,6 @@ console.log('................................. putResource: start');
     }
 
     return q
-      .tap((cursor) => {
-        console.log('......................... putResource: query in node took ', new Date() - putResourceQueryStart);
-        console.log('......................... putResource: query says it took', cursor.extra.stats.executionTime);
-        putResourceNextStart = new Date();
-      })
-      .call('next')
-      .tap(() => {
-        console.log('......................... putResource: next took ', new Date() - putResourceNextStart);
-      });
   });
 }
 
@@ -458,6 +439,7 @@ function forLinks(res, cb, path) {
 
 // TODO: Remove links as well
 function addLinks(res) {
+console.log('addlinks res', res)
   // TODO: Use fewer queries or something?
   var links = [];
   return forLinks(res, function processLinks(link, path) {

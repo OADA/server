@@ -298,6 +298,10 @@ etag@~1.8.1:
   version "1.8.1"
   resolved "https://registry.yarnpkg.com/etag/-/etag-1.8.1.tgz#41ae2eeb65efa62268aebfea83ac7d79299b0887"
 
+express-preconditions@^1.0.5:
+  version "1.0.5"
+  resolved "https://registry.yarnpkg.com/express-preconditions/-/express-preconditions-1.0.5.tgz#4f8ee6bd60dd2baf10764bb3637d3464ff7af700"
+
 express-promise@^0.4.0:
   version "0.4.0"
   resolved "https://registry.yarnpkg.com/express-promise/-/express-promise-0.4.0.tgz#043c3cb7788d0ff299b06506df445722fdfad1e4"

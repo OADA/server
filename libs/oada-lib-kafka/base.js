@@ -75,13 +75,6 @@ class Base extends EventEmitter {
         );
         this.producer.on('delivery-report', function(err, report) {
             if (err) console.log('!!!!!!!!!!!!!!!!!!!!!!!', err)
-            console.log('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
-            console.log('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
-            console.log('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
-            console.log(report)
-            console.log('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
-            console.log('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
-            console.log('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
         });
 
         this.consumer.on('event.error', (...args) =>

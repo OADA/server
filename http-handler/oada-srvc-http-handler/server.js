@@ -20,6 +20,7 @@ var config = require('./config');
 const http = require('http');
 var app = express();
 var server = http.createServer(app);
+const tokenLookup = require('./tokenLookup');
 var resources = require('./resources');
 var authorizations = require('./authorizations');
 var users = require('./users');
@@ -113,12 +114,13 @@ app.use(function bearerAsBasic(req, res, next) {
 
 app.use(function tokenHandler(req, res, next) {
     info('********************** 1');
-    return requester.send({
+    return tokenLookup({
         'connection_id': req.id,
         'domain': req.get('host'),
         'token': req.get('authorization'),
-    }, config.get('kafka:topics:tokenRequest'))
+    })
     .tap(function checkTok(tok) {
+      console.log('TOK', tok)
         if (!tok['token_exists']) {
             throw new OADAError('Unauthorized', 401);
         }
@@ -132,6 +134,7 @@ app.use(function tokenHandler(req, res, next) {
 // Rewrite the URL if it starts with /bookmarks
 app.use(function handleBookmarks(req, res, next) {
     info('********************** ' + req.url);
+console.log(req)
     req.url = req.url.replace(/^\/bookmarks/,
         `/${req.user.doc['bookmarks_id']}`);
 
@@ -146,6 +149,21 @@ app.use(function handleShares(req, res, next) {
         `/${req.user.doc['shares_id']}`);
     next();
 });
+/*
+// Rewrite the URL if it starts with /services
+app.use(function handleServices(req, res, next) {
+    req.url = req.url.replace(/^\/services/,
+        `/${req.user.doc['services_id']}`);
+    next();
+});
+
+// Rewrite the URL if it starts with /trash
+app.use(function handleTrash(req, res, next) {
+    req.url = req.url.replace(/^\/trash/,
+        `/${req.user.doc['trash_id']}`);
+    next();
+});
+*/
 
 app.use('/resources', resources);
 app.use('/authorizations', authorizations);

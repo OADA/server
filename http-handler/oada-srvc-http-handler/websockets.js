@@ -76,7 +76,7 @@ module.exports = function wsHandler(server) {
                 return;
             }
 
-            if (!msg.headers.authorization) {
+            if (!msg.headers || !msg.headers.authorization) {
                 let err = {
                     status: 400,
                     headers: [],
@@ -155,31 +155,22 @@ module.exports = function wsHandler(server) {
                 break;
             }
             axios(request)
-                .then(function(res) {
+            .then(function(res) {
+                    if (msg.method === 'delete') {
+                        let parts = res.headers['content-location'].split('/');
+                        if (parts.length === 3) { // it is a resource
+                          let resourceId = `${parts[1]}/${parts[2]}`;
+                          trace('deleting a watched resource. closing watch', resourceId)
+                          emitter.removeAllListeners(resourceId);
+                        }
+                    }
                     if (msg.method === 'unwatch') {
                         let parts = res.headers['content-location'].split('/');
                         let resourceId = `${parts[1]}/${parts[2]}`;
-                        let path_leftover = parts.slice(3).join('/');
-                        if(path_leftover) {
-                            path_leftover = `/${path_leftover}`;
-                        }
-
-                      let handleChange = function(change) {
-                            //let c = change.change.merge || change.change.delete;
-                            if (jsonpointer.get(change.change.body, path_leftover) !== undefined) {
-                                let message = {
-                                    requestId: msg.requestId,
-                                    resourceId,
-                                    change: change.change,
-                                };
-
-                                socket.send(JSON.stringify(message));
-                            }
-                        };
-
-                        trace('************, closing watch', resourceId);
-
-                        emitter.removeListener(resourceId, handleChange);
+                        trace('closing watch', resourceId)
+                      //trace('************, closing watch', resourceId);
+                        //TODO: ensure this doesn't remove others
+                        emitter.removeAllListeners(resourceId);
 
                         socket.send(JSON.stringify({
                             requestId: msg.requestId,
@@ -191,39 +182,50 @@ module.exports = function wsHandler(server) {
                         let resourceId = `${parts[1]}/${parts[2]}`;
                         let path_leftover = parts.slice(3).join('/');
                         if(path_leftover) {
-                            path_leftover = `/${path_leftover}`;
+                          path_leftover = `/${path_leftover}`;
+                          /*
+                          socket.send(JSON.stringify({
+                              requestId: msg.requestId,
+                              status: 'success'
+                          }));*/
                         }
 
-                        let handleChange = function(change) {
+                        var listeners = emitter.listeners(resourceId)
+                        trace('listeners', listeners)
+                        if (listeners.length === 0) {
+                          let handleChange = function(change) {
                             //let c = change.change.merge || change.change.delete;
-                            if (jsonpointer.get(change.change.body, path_leftover) !== undefined) {
-                                let message = {
-                                    requestId: msg.requestId,
-                                    resourceId,
-                                    change: change.change,
-                                };
+                            trace('responding watch', resourceId, change.change.body)
+                              if (jsonpointer.get(change.change.body, path_leftover) !== undefined) {
+                                  let message = {
+                                      requestId: msg.requestId,
+                                      resourceId,
+                                      change: change.change,
+                                  };
 
-                                socket.send(JSON.stringify(message));
-                            }
-                        };
+                                  socket.send(JSON.stringify(message));
+                              }
+                          };
 
-                        trace('%%%%%%%%%%%%', resourceId);
+                          trace('opening watch', resourceId)
+                          emitter.on(resourceId, handleChange);
 
-                        emitter.on(resourceId, handleChange);
-                        if (request.headers['x-oada-rev']) {
-                          oadaLib.changes.getChangesSinceRev(resourceId, request.headers['x-oada-rev']).then((changes) => {
-                            var rev = request.headers['x-oada-rev'];
-                            changes.forEach((change) => {
-                              emitter.emit(resourceId, {
-                                path_leftover,
-                                change
+                          // Emit all new changes from the given rev in the request
+                          if (request.headers['x-oada-rev']) {
+                            oadaLib.changes.getChangesSinceRev(resourceId, request.headers['x-oada-rev']).then((changes) => {
+                              var rev = request.headers['x-oada-rev'];
+                              changes.forEach((change) => {
+                                emitter.emit(resourceId, {
+                                  path_leftover,
+                                  change
+                                })
                               })
                             })
-                          })
+                          }
                         }
 
                         socket.on('close', function handleClose() {
-                            emitter.removeListener(resourceId, handleChange);
+                            emitter.removeAllListeners(resourceId);
                         });
 
                         socket.send(JSON.stringify({
@@ -239,11 +241,13 @@ module.exports = function wsHandler(server) {
                         }));
                     }
                 })
-                .catch(function(err) {
+            .catch(function(err) {
+
                     let e;
                     if (err.response) {
                         e = {
                             status: err.response.status,
+                            statusText: err.response.statusText,
                             headers: err.response.headers,
                             data: err.response.data
                         };
@@ -289,7 +293,7 @@ writeResponder.on('request', function handleReq(req) {
     oadaLib.changes
         .getChange(req.resource_id, req._rev)
         .then((change) => {
-            trace('00000000000000000 Emitted change for:', req.resource_id);
+            trace('00000000000000000 Emitted change for:', req.resource_id, req, change);
             emitter.emit(req.resource_id, {
                 path_leftover: req.path_leftover,
                 change

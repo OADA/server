@@ -1,6 +1,6 @@
 'use strict';
 
-var Promise = require('bluebird');
+global.Promise = require('bluebird');
 const uuid = require('uuid');
 const axios = require('axios');
 const express = require('express');
@@ -39,13 +39,7 @@ router.post('/*?', function postResource(req, res, next) {
 });
 
 router.use(function graphHandler(req, res, next) {
-    return requester.send({
-        'connection_id': req.id,
-        'domain': req.get('host'),
-        'token': req.get('authorization'),
-        'url': '/resources' + req.url,
-        'user_id': req.user.doc.user_id
-    }, config.get('kafka:topics:graphRequest'))
+  Promise.resolve(resources.lookupFromUrl('/resources'+req.url, req.user.doc.user_id))
     .then(function handleGraphRes(resp) {
         if (resp['resource_id']) {
             // Rewire URL to resource found by graph
@@ -55,9 +49,35 @@ router.use(function graphHandler(req, res, next) {
         }
         res.set('Content-Location', req.baseUrl + req.url);
         // TODO: Just use express parameters rather than graph thing?
-        req.oadaGraph = resp;
-    })
-    .asCallback(next);
+      req.oadaGraph = resp;
+  })
+  .asCallback(next);
+});
+
+router.delete('/*', function checkScope(req, res, next) {
+    requester.send({
+        'connection_id': req.id,
+        'domain': req.get('host'),
+        'oadaGraph': req.oadaGraph,
+        'user_id': req.user.doc['user_id'],
+        'scope': req.user.doc.scope,
+        'contentType': req.get('content-type'),
+	'requestType': 'put'
+    }, config.get('kafka:topics:permissionsRequest'))
+    .then(function handlePermissionsRequest(response) {
+        if (!req.oadaGraph['resource_id']) { // PUTing non-existant resource
+            return;
+        } else if (!response.permissions.owner && !response.permissions.write) {
+                warn(req.user.doc['user_id'] +
+                    ' tried to GET resource without proper permissions');
+            throw new OADAError('Forbidden', 403,
+                    'User does not have write permission for this resource');
+        }
+        if (!response.scopes.write) {
+            throw new OADAError('Forbidden', 403,
+                    'Token does not have required scope');
+        }
+    }).asCallback(next);
 });
 
 router.put('/*', function checkScope(req, res, next) {
@@ -67,7 +87,8 @@ router.put('/*', function checkScope(req, res, next) {
         'oadaGraph': req.oadaGraph,
         'user_id': req.user.doc['user_id'],
         'scope': req.user.doc.scope,
-        'contentType': req.get('Content-Type'),
+        'contentType': req.get('content-type'),
+	'requestType': 'put'
     }, config.get('kafka:topics:permissionsRequest'))
     .then(function handlePermissionsRequest(response) {
         if (!req.oadaGraph['resource_id']) { // PUTing non-existant resource
@@ -86,14 +107,17 @@ router.put('/*', function checkScope(req, res, next) {
 });
 
 router.get('/*', function checkScope(req, res, next) {
+  console.log('CHECK SCOPE', req)
     requester.send({
         'connection_id': req.id,
         'domain': req.get('host'),
         'oadaGraph': req.oadaGraph,
         'user_id': req.user.doc['user_id'],
         'scope': req.user.doc.scope,
+	'requestType': 'get'
     }, config.get('kafka:topics:permissionsRequest'))
     .then(function handlePermissionsRequest(response) {
+    console.log('CHECK SCOPE THEN', response)
         trace('permissions response:' + response);
         if (!response.permissions.owner && !response.permissions.read) {
             warn(req.user.doc['user_id'] +
@@ -156,7 +180,7 @@ router.get('/*', function getResource(req, res, next) {
             doc = unflattenMeta(doc);
             info('doc unflattened now');
             return res
-                .set('X-OADA-Rev', doc['_rev'])
+                .set('X-OADA-Rev', req.oadaGraph.rev)
                 .json(doc);
 
         })
@@ -254,7 +278,7 @@ router.put('/*', async function ensureTypeTreeExists(req, res, next) {
             if (nextPiece) {
                 subTree = pointer.get(subTree, nextPiece)
                 if (pointer.has(subTree, '/_type')) {
-                    let contentType = pointer.get(subTree, '/_type');
+                  let contentType = pointer.get(subTree, '/_type');
                     id = 'resources/'+uuid.v4();
                     let body = await replaceLinks(_.cloneDeep(subTree))
                     // Write new resource. This may potentially become an
@@ -317,7 +341,7 @@ router.put('/*', async function ensureTypeTreeExists(req, res, next) {
                 headers: {
                     Authorization: 'Bearer def',
                     'x-oada-bookmarks-type': req.get('x-oada-bookmarks-type'),
-                    'Content-Type': req.get('Content-Type'),
+                    'Content-Type': req.get('content-type'),
                 }
             })
         }).catch((error) => {
@@ -346,9 +370,9 @@ router.put('/*', function putResource(req, res, next) {
                 'user_id': req.user.doc['user_id'],
                 'authorizationid': req.user.doc['authorizationid'],
                 'client_id': req.user.doc['client_id'],
-                'contentType': req.get('Content-Type'),
+                'contentType': req.get('content-type'),
                 'bodyid': bodyid,
-                //body: req.body
+                'if-match': req.get('if-match')
             }, config.get('kafka:topics:writeRequest'));
         })
         .tap(function checkWrite(resp) {
@@ -359,9 +383,12 @@ router.put('/*', function putResource(req, res, next) {
                 case 'permission':
                     return Promise.reject(new OADAError('Forbidden', 403,
                             'User does not own this resource'));
+		case 'if-match failed':
+			console.log('if-match failed')
+			return Promise.reject(new OADAError('Precondition Failed', 412,
+				'If-Match header does not match current resource _rev'));
                 default:
                     let msg = 'write failed with code ' + resp.code;
-
                     return Promise.reject(new OADAError(msg));
             }
         })
@@ -411,6 +438,7 @@ router.delete('/*', function deleteResource(req, res, next) {
         'user_id': req.user.doc['user_id'],
         'authorizationid': req.user.doc['authorizationid'],
         'client_id': req.user.doc['client_id'],
+	'if-match': req.get('if-match')
         //'bodyid': bodyid, // No body means delete?
         //body: req.body
     }, config.get('kafka:topics:writeRequest'))
@@ -439,90 +467,96 @@ router.delete('/*', function deleteResource(req, res, next) {
 });
 
 let trees = {
+  'fields': {
     'fields': {
-      'fields': {
-        '_type': "application/vnd.oada.fields.1+json",
-        '_rev': '0-0',
-        'fields-index': {
-          '*': {
-            '_type': "application/vnd.oada.fields.1+json",
-            '_rev': '0-0',
-            'fields-index': {
-              '*': {
-                '_type': "application/vnd.oada.field.1+json",
-                '_rev': '0-0',
-              }
+      '_type': "application/vnd.oada.fields.1+json",
+      '_rev': '0-0',
+      'fields-index': {
+        '*': {
+          '_type': "application/vnd.oada.field.1+json",
+          '_rev': '0-0',
+          'fields-index': {
+            '*': {
+              '_type': "application/vnd.oada.field.1+json",
+              '_rev': '0-0',
             }
           }
         }
+      }
+    },
+  },
+  'as-harvested': {
+      'harvest': {
+          '_type': "application/vnd.oada.harvest.1+json",
+          '_rev': '0-0',
+          'as-harvested': {
+              '_type': "application/vnd.oada.as-harvested.1+json",
+              '_rev': '0-0',
+              'yield-moisture-dataset': {
+                  '_type': "application/vnd.oada.as-harvested.yield-moisture-dataset.1+json",
+                  '_rev': '0-0',
+                  'crop-index': {
+                      '*': {
+                          '_type': "application/vnd.oada.as-harvested.yield-moisture-dataset.1+json",
+                          '_rev': '0-0',
+                          'geohash-length-index': {
+                              '*': {
+                                  '_type': "application/vnd.oada.as-harvested.yield-moisture-dataset.1+json",
+                                  '_rev': '0-0',
+                                  'geohash-index': {
+                                      '*': {
+                                          '_type': "application/vnd.oada.as-harvested.yield-moisture-dataset.1+json",
+                                      }
+                                  }
+                              }
+                          }
+                      }
+                  }
+              }
+          },
       },
-    },
-    'as-harvested': {
-        'harvest': {
-            '_type': "application/vnd.oada.harvest.1+json",
-            '_rev': '0-0',
-            'as-harvested': {
-                '_type': "application/vnd.oada.as-harvested.1+json",
-                '_rev': '0-0',
-                'yield-moisture-dataset': {
-                    '_type': "application/vnd.oada.as-harvested.yield-moisture-dataset.1+json",
-                    '_rev': '0-0',
-                    'crop-index': {
-                        '*': {
-                            '_type': "application/vnd.oada.as-harvested.yield-moisture-dataset.1+json",
-                            '_rev': '0-0',
-                            'geohash-length-index': {
-                                '*': {
-                                    '_type': "application/vnd.oada.as-harvested.yield-moisture-dataset.1+json",
-                                    '_rev': '0-0',
-                                    'geohash-index': {
-                                        '*': {
-                                            '_type': "application/vnd.oada.as-harvested.yield-moisture-dataset.1+json",
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            },
-        },
-    },
-    'tiled-maps': {
-        'harvest': {
-            '_type': "application/vnd.oada.harvest.1+json",
-            '_rev': '0-0',
-            'tiled-maps': {
-                '_type': "application/vnd.oada.tiled-maps.1+json",
-                '_rev': '0-0',
-                'dry-yield-map': {
-                    '_type': "application/vnd.oada.tiled-maps.dry-yield-map.1+json",
-                    '_rev': '0-0',
-                    'crop-index': {
-                        '*': {
-                            "_type": "application/vnd.oada.tiled-maps.dry-yield-map.1+json",
-                            '_rev': '0-0',
-                            'geohash-length-index': {
-                                '*': {
-                                    "_type": "application/vnd.oada.tiled-maps.dry-yield-map.1+json",
-                                    '_rev': '0-0',
-                                    'geohash-index': {
-                                        '*': {
-                                            "_type": "application/vnd.oada.tiled-maps.dry-yield-map.1+json",
-                                            "datum": "WGS84",
-                                            "geohash-data": {},
-                                            "stats": {},
-                                            "templates": {}
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
+  },
+  'tiled-maps': {
+      'harvest': {
+          '_type': "application/vnd.oada.harvest.1+json",
+          '_rev': '0-0',
+          'tiled-maps': {
+              '_type': "application/vnd.oada.tiled-maps.1+json",
+              '_rev': '0-0',
+              'dry-yield-map': {
+                  '_type': "application/vnd.oada.tiled-maps.dry-yield-map.1+json",
+                  '_rev': '0-0',
+                  'crop-index': {
+                      '*': {
+                          "_type": "application/vnd.oada.tiled-maps.dry-yield-map.1+json",
+                          '_rev': '0-0',
+                          'geohash-length-index': {
+                              '*': {
+                                  "_type": "application/vnd.oada.tiled-maps.dry-yield-map.1+json",
+                                  '_rev': '0-0',
+                                  'geohash-index': {
+                                      '*': {
+                                          "_type": "application/vnd.oada.tiled-maps.dry-yield-map.1+json",
+                                      }
+                                  }
+                              }
+                          }
+                      }
+                  }
+              }
+          }
+      }
+  },
+  'services': {
+    'services': {
+      '_type': 'application/vnd.oada.services.1+json',
+      '_rev': '0-0',
+      'datasilo': {
+        '_type': 'application/vnd.oada.services.1+json',
+        '_rev': '0-0',
+      }
     }
+  }
 }
 
 function replaceLinks(obj) {
