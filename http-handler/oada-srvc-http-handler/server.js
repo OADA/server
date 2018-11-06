@@ -20,6 +20,7 @@ var config = require('./config');
 const http = require('http');
 var app = express();
 var server = http.createServer(app);
+const tokenLookup = require('./tokenLookup');
 var resources = require('./resources');
 var authorizations = require('./authorizations');
 var users = require('./users');
@@ -113,12 +114,13 @@ app.use(function bearerAsBasic(req, res, next) {
 
 app.use(function tokenHandler(req, res, next) {
     info('********************** 1');
-    return requester.send({
+    return tokenLookup({
         'connection_id': req.id,
         'domain': req.get('host'),
         'token': req.get('authorization'),
-    }, config.get('kafka:topics:tokenRequest'))
+    })
     .tap(function checkTok(tok) {
+      console.log('TOK', tok)
         if (!tok['token_exists']) {
             throw new OADAError('Unauthorized', 401);
         }

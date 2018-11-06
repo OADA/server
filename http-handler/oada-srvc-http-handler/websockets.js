@@ -76,7 +76,7 @@ module.exports = function wsHandler(server) {
                 return;
             }
 
-            if (!msg.headers.authorization) {
+            if (!msg.headers || !msg.headers.authorization) {
                 let err = {
                     status: 400,
                     headers: [],
@@ -169,7 +169,7 @@ module.exports = function wsHandler(server) {
                         let resourceId = `${parts[1]}/${parts[2]}`;
                         trace('closing watch', resourceId)
                       //trace('************, closing watch', resourceId);
-
+                        //TODO: ensure this doesn't remove others
                         emitter.removeAllListeners(resourceId);
 
                         socket.send(JSON.stringify({
@@ -182,7 +182,12 @@ module.exports = function wsHandler(server) {
                         let resourceId = `${parts[1]}/${parts[2]}`;
                         let path_leftover = parts.slice(3).join('/');
                         if(path_leftover) {
-                            path_leftover = `/${path_leftover}`;
+                          path_leftover = `/${path_leftover}`;
+                          /*
+                          socket.send(JSON.stringify({
+                              requestId: msg.requestId,
+                              status: 'success'
+                          }));*/
                         }
 
                         var listeners = emitter.listeners(resourceId)
@@ -204,6 +209,8 @@ module.exports = function wsHandler(server) {
 
                           trace('opening watch', resourceId)
                           emitter.on(resourceId, handleChange);
+
+                          // Emit all new changes from the given rev in the request
                           if (request.headers['x-oada-rev']) {
                             oadaLib.changes.getChangesSinceRev(resourceId, request.headers['x-oada-rev']).then((changes) => {
                               var rev = request.headers['x-oada-rev'];

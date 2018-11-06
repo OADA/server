@@ -431,6 +431,8 @@ services:
       # - ARANGO_RANDOM_ROOT_PASSWORD=1
       - ARANGO_NO_AUTH=1
       - ARANGO_STORAGE_ENGINE=rocksdb
+      - ARANGO_STATISTICS=0 
+    command: ["arangod", "--server.statistics", "true"]
 
 
   # zookeeper and kafka entries are based on:

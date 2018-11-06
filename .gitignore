@@ -3,3 +3,4 @@ winfield-fields-sync/oada-srvc-winfield-fields-sync/secret-config.js
 package.lock
 *.log
 .DS_Store
+*yarn.lock
