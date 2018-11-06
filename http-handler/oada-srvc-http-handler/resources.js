@@ -60,6 +60,32 @@ router.use(function graphHandler(req, res, next) {
     .asCallback(next);
 });
 
+router.delete('/*', function checkScope(req, res, next) {
+    requester.send({
+        'connection_id': req.id,
+        'domain': req.get('host'),
+        'oadaGraph': req.oadaGraph,
+        'user_id': req.user.doc['user_id'],
+        'scope': req.user.doc.scope,
+        'contentType': req.get('content-type'),
+	'requestType': 'put'
+    }, config.get('kafka:topics:permissionsRequest'))
+    .then(function handlePermissionsRequest(response) {
+        if (!req.oadaGraph['resource_id']) { // PUTing non-existant resource
+            return;
+        } else if (!response.permissions.owner && !response.permissions.write) {
+                warn(req.user.doc['user_id'] +
+                    ' tried to GET resource without proper permissions');
+            throw new OADAError('Forbidden', 403,
+                    'User does not have write permission for this resource');
+        }
+        if (!response.scopes.write) {
+            throw new OADAError('Forbidden', 403,
+                    'Token does not have required scope');
+        }
+    }).asCallback(next);
+});
+
 router.put('/*', function checkScope(req, res, next) {
     requester.send({
         'connection_id': req.id,
@@ -67,7 +93,8 @@ router.put('/*', function checkScope(req, res, next) {
         'oadaGraph': req.oadaGraph,
         'user_id': req.user.doc['user_id'],
         'scope': req.user.doc.scope,
-        'contentType': req.get('Content-Type'),
+        'contentType': req.get('content-type'),
+	'requestType': 'put'
     }, config.get('kafka:topics:permissionsRequest'))
     .then(function handlePermissionsRequest(response) {
         if (!req.oadaGraph['resource_id']) { // PUTing non-existant resource
@@ -92,6 +119,7 @@ router.get('/*', function checkScope(req, res, next) {
         'oadaGraph': req.oadaGraph,
         'user_id': req.user.doc['user_id'],
         'scope': req.user.doc.scope,
+	'requestType': 'get'
     }, config.get('kafka:topics:permissionsRequest'))
     .then(function handlePermissionsRequest(response) {
         trace('permissions response:' + response);
@@ -156,7 +184,7 @@ router.get('/*', function getResource(req, res, next) {
             doc = unflattenMeta(doc);
             info('doc unflattened now');
             return res
-                .set('X-OADA-Rev', doc['_rev'])
+                .set('X-OADA-Rev', req.oadaGraph.rev)
                 .json(doc);
 
         })
@@ -317,7 +345,7 @@ router.put('/*', async function ensureTypeTreeExists(req, res, next) {
                 headers: {
                     Authorization: 'Bearer def',
                     'x-oada-bookmarks-type': req.get('x-oada-bookmarks-type'),
-                    'Content-Type': req.get('Content-Type'),
+                    'Content-Type': req.get('content-type'),
                 }
             })
         }).catch((error) => {
@@ -346,9 +374,9 @@ router.put('/*', function putResource(req, res, next) {
                 'user_id': req.user.doc['user_id'],
                 'authorizationid': req.user.doc['authorizationid'],
                 'client_id': req.user.doc['client_id'],
-                'contentType': req.get('Content-Type'),
+                'contentType': req.get('content-type'),
                 'bodyid': bodyid,
-                //body: req.body
+                'if-match': req.get('if-match')
             }, config.get('kafka:topics:writeRequest'));
         })
         .tap(function checkWrite(resp) {
@@ -359,9 +387,12 @@ router.put('/*', function putResource(req, res, next) {
                 case 'permission':
                     return Promise.reject(new OADAError('Forbidden', 403,
                             'User does not own this resource'));
+		case 'if-match failed':
+			console.log('if-match failed')
+			return Promise.reject(new OADAError('Precondition Failed', 412,
+				'If-Match header does not match current resource _rev'));
                 default:
                     let msg = 'write failed with code ' + resp.code;
-
                     return Promise.reject(new OADAError(msg));
             }
         })
@@ -411,6 +442,7 @@ router.delete('/*', function deleteResource(req, res, next) {
         'user_id': req.user.doc['user_id'],
         'authorizationid': req.user.doc['authorizationid'],
         'client_id': req.user.doc['client_id'],
+	'if-match': req.get('if-match')
         //'bodyid': bodyid, // No body means delete?
         //body: req.body
     }, config.get('kafka:topics:writeRequest'))

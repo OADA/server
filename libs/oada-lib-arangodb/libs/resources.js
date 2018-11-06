@@ -224,15 +224,8 @@ function getResourceOwnerIdRev(id) {
 function getParents(id) {
   return db.query(aql`
     WITH ${edges}, ${graphNodes}, ${resources}
-    LET node = FIRST(
-      FOR node IN ${graphNodes}
-      FILTER node.resource_id == ${id}
-      FILTER node.is_resource
-      RETURN node
-    )
-
     FOR v, e IN 0..1
-      INBOUND node
+      INBOUND ${'graphNodes/'+id.replace(/\//, ':')}
       ${edges}
       FILTER e.versioned == true
       LET res = DOCUMENT(v.resource_id)
@@ -446,6 +439,7 @@ function forLinks(res, cb, path) {
 
 // TODO: Remove links as well
 function addLinks(res) {
+console.log('addlinks res', res)
   // TODO: Use fewer queries or something?
   var links = [];
   return forLinks(res, function processLinks(link, path) {

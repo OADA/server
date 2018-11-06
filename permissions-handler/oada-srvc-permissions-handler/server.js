@@ -134,16 +134,15 @@ responder.on('request', function handleReq(req) {
                     warn('Unsupported scope type "' + type + '"');
                     return false;
                 }
-							  trace('Content type derived from resource._type or req.contentType?', resource ? 'resource._type' : 'req.contentType')
                 trace('User scope:', type)
-                let contentType = resource ? resource._type : req.contentType;
+                let contentType = req.requestType === 'put' ? req.contentType : (resource ? resource._type : undefined);
                 trace('Does user have scope?', contentType, typeis.is(contentType, scopeTypes[type]))
                 trace('Does user have read scope?', scopePerm(perm, 'read'))
                 return typeis.is(contentType, scopeTypes[type]) &&
                         scopePerm(perm, 'read');
             });
 
-					  // Check for write permission
+	// Check for write permission
             response.scopes.write = req.scope.some(function chkScope(scope) {
                 var type;
                 var perm;
@@ -153,7 +152,7 @@ responder.on('request', function handleReq(req) {
                     warn('Unsupported scope type "' + type + '"');
                     return false;
                 }
-              let contentType = resource ? resource._type : req.contentType;
+                let contentType = req.requestType === 'put' ? req.contentType : (resource ? resource._type : undefined);
               trace('Does user have write scope?', scopePerm(perm, 'write'))
                 return typeis.is(contentType, scopeTypes[type]) &&
                         scopePerm(perm, 'write');

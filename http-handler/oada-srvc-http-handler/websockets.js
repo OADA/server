@@ -240,6 +240,7 @@ module.exports = function wsHandler(server) {
                     if (err.response) {
                         e = {
                             status: err.response.status,
+                            statusText: err.response.statusText,
                             headers: err.response.headers,
                             data: err.response.data
                         };

@@ -132,6 +132,7 @@ app.use(function tokenHandler(req, res, next) {
 // Rewrite the URL if it starts with /bookmarks
 app.use(function handleBookmarks(req, res, next) {
     info('********************** ' + req.url);
+console.log(req)
     req.url = req.url.replace(/^\/bookmarks/,
         `/${req.user.doc['bookmarks_id']}`);
 

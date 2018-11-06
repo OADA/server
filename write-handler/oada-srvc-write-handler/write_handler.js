@@ -1,5 +1,6 @@
 'use strict';
 
+const OADAError = require('oada-error').OADAError;
 const Promise = require('bluebird');
 const {resources, putBodies, changes} = require('../../libs/oada-lib-arangodb');
 const {Responder} = require('../../libs/oada-lib-kafka');
@@ -35,19 +36,14 @@ responder.on('request', (...args) => {
 	return p;
 });
 
-let requestStart = new Date();
-let requestEnd = new Date();
 
 function handleReq(req, msg) {
-	requestStart = new Date();
-  let requestCur = new Date();
 
 	req.source = req.source || '';
 	var id = req['resource_id'];
 
 	// Get body and check permission in parallel
 	var body = Promise.try(function getBody() {
-		let getBodyStart = new Date();
 		return req.body || req.bodyid && putBodies.getPutBody(req.bodyid).tap(() => {
 		});
 	});
@@ -56,42 +52,42 @@ function handleReq(req, msg) {
 
 	info(`PUTing to "${req['path_leftover']}" in "${id}"`);
 
-	let upsertMethodStart = new Date(); // will reset below when method() starts
+	var changeType;
 	var upsert = body.then(async function doUpsert(body) {
-	  let upsertStart = new Date();
-		if (req.rev) {
-				let cacheRev = cache.get(req.resource_id)
-			if (!cacheRev) {
-					cacheRev = await resources.getResource(req.resource_id, '_rev')
-			}
-			if (cacheRev !== req.rev) {
-				//trace(cacheRev, req.rev)
-						throw new Error(`rev mismatch`)
+		if (req['if-match']) {
+			var rev = await resources.getResource(req.resource_id, '_rev')
+			console.log('WRITE HANDLER', rev, req['if-match'])
+			if (req['if-match'] !== rev) {
+				throw new Error('if-match failed');
 			}
 		}
-		let upsertSecondPartStart = new Date();
+		if (req.rev) {
+			let cacheRev = cache.get(req.resource_id)
+			if (!cacheRev) {
+				cacheRev = await resources.getResource(req.resource_id, '_rev')
+			}
+			if (cacheRev !== req.rev) {
+				throw new Error(`rev mismatch`)
+			}
+		}
 
 
 		var path = pointer.parse(req['path_leftover'].replace(/\/*$/, ''));
 		let method = resources.putResource;
-		let changeType = 'merge';
+		changeType = 'merge';
 		// Perform delete
-		// TODO: Should deletes be a separate topic?
 		if (body === undefined) {
-				// TODO: How to handle rev etc. on DELETE?
-				if (path.length > 0) {
-						// TODO: This is gross
-						let ppath = Array.from(path);
-						method = (id, obj) =>
-								resources.deletePartialResource(id, ppath, obj);
-						body = null;
-						changeType = 'delete';
-				} else {
-						return resources.deleteResource(id);
-				}
+			if (path.length > 0) {
+				// TODO: This is gross
+				let ppath = Array.from(path);
+				method = (id, obj) =>
+					resources.deletePartialResource(id, ppath, obj);
+					body = null;
+					changeType = 'delete';
+			} else {
+				return resources.deleteResource(id);
+			}
 		}
-
-		let upsertThirdPartStart = new Date();
 
 		var obj = {};
 		var ts = Date.now();
@@ -99,22 +95,22 @@ function handleReq(req, msg) {
 
 		// Create new resource
 		if (!id) {
-				id = 'resources/' + path[1];
-				path = path.slice(2);
+			id = 'resources/' + path[1];
+			path = path.slice(2);
 
 				// Initialize resource stuff
-				obj = {
-						'_type': req['contentType'],
-						'_meta': {
-								'_id': id + '/_meta',
-								'_type': req['contentType'],
-								'_owner': req['user_id'],
-								'stats': {
-										'createdBy': req['user_id'],
-										'created': ts
-								},
-						}
-				};
+			obj = {
+				'_type': req['contentType'],
+				'_meta': {
+					'_id': id + '/_meta',
+					'_type': req['contentType'],
+					'_owner': req['user_id'],
+					'stats': {
+						'createdBy': req['user_id'],
+						'created': ts
+					},
+				}
+			};
 		}
 
 		// Create object to recursively merge into the resource
@@ -141,8 +137,8 @@ function handleReq(req, msg) {
 
 		// Update meta
 		var meta = {
-				'modifiedBy': req['user_id'],
-				'modified': ts
+			'modifiedBy': req['user_id'],
+			'modified': ts
 		};
 		obj['_meta'] = Object.assign(obj['_meta'] || {}, meta);
 
@@ -153,30 +149,23 @@ function handleReq(req, msg) {
 		existingResourceInfo['_rev'] = existingResourceInfo['_rev'] || '0-0';
 		const oldRevHash = existingResourceInfo['_rev'].split('-')[1];
 		if (oldRevHash === newRevHash) {
-			//            info('PUT would result in same rev hash as the current one,' +
-			//                    ' skipping write.');
-				return rev;
-		} else {
-			//            trace(`PUT is a new hash (${newRevHash}, old = ${oldRevHash}),` +
-			//                    ' performing write');
+			return rev;
 		}
 
 		obj['_rev'] = rev;
 		pointer.set(obj, '/_meta/_rev', rev);
 
-		let upsertFourthPartStart = new Date();
 
 		// Compute new change
-		//
 		let change_id = await changes.putChange({
-				change: obj,
-				resId: id,
-				rev,
-				type: changeType,
-				child: req['from_change_id'],
-				path: req['change_path'],
-				userId: req['user_id'],
-				authorizationId: req['authorizationid'],
+			change: obj,
+			resId: id,
+			rev,
+			type: changeType,
+			child: req['from_change_id'],
+			path: req['change_path'],
+			userId: req['user_id'],
+			authorizationId: req['authorizationid'],
 		})
 
 		pointer.set(obj, '/_meta/_changes', {
@@ -190,54 +179,50 @@ function handleReq(req, msg) {
 		
 		//return {rev, orev: 'c', change_id};
 
-		upsertMethodStart = new Date();
 		return method(id, obj).then(orev => ({rev, orev, change_id}));
 	}).then(function respond({rev, orev, change_id}) {
-		let upsertCachePutStart = new Date();
 		//info(`Finished PUTing to "${req['path_leftover']}". +${end - start}ms`);
 
 
 	  // Put the new rev into the cache
 		cache.put(id, rev);
 
-			return {
-					'msgtype': 'write-response',
-					'code': 'success',
-					'resource_id': id,
-					'_rev': rev,
-					'_orev': orev,
-					'user_id': req['user_id'],
-					'authorizationid': req['authorizationid'],
-					'path_leftover': req['path_leftover'],
-					'contentType': req['contentType'],
-					'indexer': req['indexer'],
-					'change_id': change_id
-			};
+		return {
+			'msgtype': 'write-response',
+			'code': 'success',
+			'resource_id': id,
+			'_rev': rev || "0-0",
+			'_orev': orev,
+			'user_id': req['user_id'],
+			'authorizationid': req['authorizationid'],
+			'path_leftover': req['path_leftover'],
+			'contentType': req['contentType'],
+			'indexer': req['indexer'],
+			'change_id': change_id,
+		};
 	}).catch(resources.NotFoundError, function respondNotFound(err) {
-			error(err);
-			return {
-					'msgtype': 'write-response',
-					'code': 'not_found',
-					'user_id': req['user_id'],
-					'authorizationid': req['authorizationid'],
-			};
+		error(err);
+		return {
+			'msgtype': 'write-response',
+			'code': 'not_found',
+			'user_id': req['user_id'],
+			'authorizationid': req['authorizationid'],
+		};
 	}).catch(function respondErr(err) {
-			error(err);
-			return {
-					'msgtype': 'write-response',
-					'code': err.message || 'error',
-					'user_id': req['user_id'],
-					'authorizationid': req['authorizationid'],
-			};
+		error(err);
+		return {
+			'msgtype': 'write-response',
+			'code': err.message || 'error',
+			'user_id': req['user_id'],
+			'authorizationid': req['authorizationid'],
+		};
 	});
 
 	var cleanup = body.then(() => {
-    let cleanupStart = new Date();
 		// Remove putBody, if there was one
 		//		const result = req.bodyid && putBodies.removePutBody(req.bodyid);
 		return req.bodyid && putBodies.removePutBody(req.bodyid);
 	});
 
 	return Promise.join(upsert, cleanup, resp => resp)
-		.tap(() => { requestEnd = new Date() });
 }

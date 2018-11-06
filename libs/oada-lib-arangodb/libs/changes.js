@@ -127,6 +127,7 @@ function putChange({change, resId, rev, type, child, path, userId, authorization
   let hash = parts.slice(1).join('-');
   // The FOR loop below is an if statement handling the case where no child
   // exists
+console.log('PUTCHANGE', child)
   return db.query(aql`
     LET doc = FIRST(
       INSERT {

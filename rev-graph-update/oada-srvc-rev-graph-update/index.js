@@ -46,9 +46,8 @@ responder.on('request', function handleReq(req) {
     if (req.code !== 'success') {
         return [];
     }
-    if (typeof req['resource_id'] === 'undefined' ||
-            typeof req['_rev'] === 'undefined') {
-        throw new Error(`Invalid http_response: there is either no resource_id or _rev.  respose = ${JSON.stringify(req)}`);
+    if (!req['resource_id'] || !req['_rev']) {
+        throw new Error(`Invalid http_response: keys resource_id or _rev are missing.  response = ${JSON.stringify(req)}`);
     }
     if (typeof req['user_id'] === 'undefined') {
         warn('Received message does not have user_id');
@@ -76,6 +75,7 @@ responder.on('request', function handleReq(req) {
     // find resource's parent
     return oadaLib.resources.getParents(req['resource_id'])
         .then(p => {
+	console.log('PEE PEEE', p)
             if (!p || p.length === 0) {
                 warn(`${req['resource_id']} does not have a parent.`);
                 return undefined;
