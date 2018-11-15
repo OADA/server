@@ -2,9 +2,9 @@
 # yarn lockfile v1
 
 
-"@oada/oada-cache@^1.2.2":
-  version "1.2.2"
-  resolved "https://registry.yarnpkg.com/@oada/oada-cache/-/oada-cache-1.2.2.tgz#2d4042bfd3249c0b5081d737ddbc658bdd4e13ef"
+"@oada/oada-cache@^1.2.3":
+  version "1.3.1"
+  resolved "https://registry.yarnpkg.com/@oada/oada-cache/-/oada-cache-1.3.1.tgz#13b922b47d5fb4350c21b8fa0cc6157d48d27234"
   dependencies:
     "@oada/oada-id-client" "^1.0.0"
     axios "^0.18.0"
