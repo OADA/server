@@ -5,12 +5,12 @@ const debug = require('debug');
 const info = debug('arangodb#resources:info');
 const trace = debug('arangodb#resources:trace');
 const _ = require('lodash');
-var Promise = require('bluebird');
+global.Promise = require('bluebird');
 const aql = require('arangojs').aqlQuery;
 const pointer = require('json-pointer');
 const config = require('../config');
 const util = require('../util');
-config.set('isTest', true);
+const users = require('./users');
 const resources =
     db.collection(config.get('arangodb:collections:resources:name'));
 const graphNodes =
@@ -20,7 +20,15 @@ const edges =
 
 const MAX_DEPTH = 100; // TODO: Is this good?
 
-function lookupFromUrl(url, userId) {
+async function lookupFromUrl(url, userId) {
+  var user = await users.findById(userId)
+  if (!user) throw 'No User Found for given userId'
+  if (/^\/bookmarks/.test(url)) {
+    url = url.replace(/^\/bookmarks/, '/'+user.bookmarks._id)
+  }
+  if (/^\/shares/.test(url)) {
+    url = url.replace(/^\/shares/, '/'+user.shares._id)
+  }
   return Promise.try(() => {
     //    trace(userId);
     let pieces = pointer.parse(url);
@@ -49,22 +57,23 @@ function lookupFromUrl(url, userId) {
           write: r._meta._owner == '${userId}' || r._meta._permissions['${userId}'].write
         }
       )
-      RETURN MERGE(path, {permissions})
+      LET rev = DOCUMENT(LAST(path.vertices).resource_id)._oada_rev
+      RETURN MERGE(path, {permissions, rev})
     `;
-    //    trace(`lookupFromUrl(${url})`, `running query: ${query}`);
     return db.query({query}).call('next').then((result) => {
 
-      //      trace('query result = ', JSON.stringify(result, false, '  '));
-      let resourceId = '';
-      let pathLeftover = pointer.compile(id.concat(pieces));
-      // Also return info about parent?
+      let resource_id = '';
+      let path_leftover_not_exists = '';
+      let path_leftover_exists = '';
+      let rev = result.rev;
+
+      let path_leftover = pointer.compile(id.concat(pieces));
       let from = {'resource_id': '', 'path_leftover': ''};
 
       if (!result) {
-        //        trace('lookupFromUrl(' + url + '): result path length < 1');
-        return {'resource_id': resourceId, 'path_leftover': pathLeftover,
-          from, permissions: {}};
+        return {resource_id, path_leftover, from, permissions: {}, rev};
       }
+
 
       let permissions = { owner: null, read: null, write: null};
       result.permissions.reverse().some(p => {
@@ -86,54 +95,57 @@ function lookupFromUrl(url, userId) {
         }
       });
 
+
       // Check for a traversal that did not finish (aka not found)
       if (result.vertices[0] === null) {
-        //        trace('lookupFromUrl(' + url + '):', 'result.vertices[0] === null');
-        return {'resource_id': resourceId, 'path_leftover': pathLeftover,
-          from, permissions};
+        return {resource_id, path_leftover, from, permissions, rev};
       }
 
-      //      trace('longest path has ' + result.vertices.length + ' vertices');
+      //TODO: Strange edge case where the last node in vertices is undefined
       if (!result.vertices[result.vertices.length - 1]) {
-        //TODO: fix this wierd edge case...I'm not quite sure why it occurs
-        //        trace('THIS WIERD EDGE CASE')
-        resourceId = result.vertices[result.vertices.length -2]['resource_id']
-          /*
-        pathLeftover = result.edges[result.edges.length - 1]._to
-            .replace(/^graphNodes\//, '/')
-            .replace(/resources:/, 'resources/');
-            */
+        resource_id = result.vertices[result.vertices.length -2]['resource_id']
         let lastResource = (result.vertices.length - 1) -
             (_.findIndex(_.reverse(result.vertices), 'is_resource'));
         // Slice a negative value to take the last n pieces of the array
-        pathLeftover =
+        path_leftover =
             pointer.compile(pieces.slice(lastResource - pieces.length));
+        path_leftover_exists =
+            pointer.compile(pieces.slice(lastResource, result.vertices.length));
+        path_leftover_not_exists =
+            pointer.compile(pieces.slice(-(result.vertices.length - pieces.length)))
 
-        return {'resource_id': resourceId, 'path_leftover': pathLeftover,
-          from, permissions};
+        return {
+          resource_id,
+          path_leftover,
+          from,
+          permissions,
+          rev
+        }
       }
-      resourceId = result.vertices[result.vertices.length - 1]['resource_id'];
+
+      resource_id = result.vertices[result.vertices.length - 1]['resource_id'];
       from = result.vertices[result.vertices.length - 2];
       let edge = result.edges[result.edges.length - 1];
       // If the desired url has more pieces than the longest path, the
       // pathLeftover is the extra pieces
       if (result.vertices.length - 1 < pieces.length) {
-        //        trace('lookupFromUrl(' + url + '):',
-        //            'more URL pieces than vertices, computing path');
         let lastResource = (result.vertices.length - 1) -
             (_.findIndex(_.reverse(result.vertices), 'is_resource'));
         // Slice a negative value to take the last n pieces of the array
-        pathLeftover =
+        path_leftover =
             pointer.compile(pieces.slice(lastResource - pieces.length));
+        path_leftover_exists =
+            pointer.compile(pieces.slice(lastResource, result.vertices.length));
+        path_leftover_not_exists =
+            pointer.compile(pieces.slice(-(result.vertices.length - pieces.length)))
       } else {
-        //        trace('lookupFromUrl(' + url + '):',
-        //            'same number URL pieces as vertices, path is on graphNode');
-        pathLeftover = result.vertices[result.vertices.length - 1].path || '';
+        path_leftover = result.vertices[result.vertices.length - 1].path || '';
       }
 
       return {
-        'resource_id': resourceId,
-        'path_leftover': pathLeftover,
+        rev,
+        resource_id,
+        path_leftover,
         permissions,
         'from': {
           'resource_id': from ? from['resource_id'] : '',
@@ -171,7 +183,8 @@ function getResource(id, path) {
         FILTER r._id == @id
         RETURN r${returnPath}`,
     bindVars
-  }).then(result => result.next())
+  })
+  .then(result => result.next())
   .then(util.sanitizeResult)
   .catch({
       isArangoError: true,
@@ -211,15 +224,8 @@ function getResourceOwnerIdRev(id) {
 function getParents(id) {
   return db.query(aql`
     WITH ${edges}, ${graphNodes}, ${resources}
-    LET node = FIRST(
-      FOR node IN ${graphNodes}
-      FILTER node.resource_id == ${id}
-      FILTER node.is_resource
-      RETURN node
-    )
-
     FOR v, e IN 0..1
-      INBOUND node
+      INBOUND ${'graphNodes/'+id.replace(/\//, ':')}
       ${edges}
       FILTER e.versioned == true
       LET res = DOCUMENT(v.resource_id)
@@ -259,6 +265,56 @@ function getNewDescendants(id, rev) {
   `).call('all');
 }
 
+function getStuff(id, rev) {
+  // Currently utilizes fixed depth search "7..7" to get data points down
+  return db.query(aql`
+    WITH ${graphNodes}, ${edges}, ${resources}
+    LET node = FIRST(
+      FOR node in ${graphNodes}
+        FILTER node.resource_id == ${id}
+        RETURN node
+    )
+
+    LET objs = (FOR v, e, p IN 7..7 OUTBOUND node ${edges}
+      FILTER v.is_resource
+      LET ver = SPLIT(DOCUMENT(v.resource_id)._oada_rev, '-', 1)
+      FILTER TO_NUMBER(ver) >= ${+rev.split('-', 1)}
+      RETURN DISTINCT {
+        id: v.resource_id,
+        rev: DOCUMENT(v.resource_id)._oada_rev
+      }
+    )
+    FOR obj in objs
+      LET doc = DOCUMENT(obj.id)
+      RETURN {id: obj.id, changes: doc._meta._changes[obj.rev]}
+  `).call('all');
+}
+
+function getChanges(id, rev) {
+  // Currently utilizes fixed depth search "7..7" to get data points down
+  return db.query(aql`
+    WITH ${graphNodes}, ${edges}, ${resources}
+    LET node = FIRST(
+      FOR node in ${graphNodes}
+        FILTER node.resource_id == ${id}
+        RETURN node
+    )
+
+    LET objs = (FOR v, e, p IN 7..7 OUTBOUND node ${edges}
+      FILTER v.is_resource
+      LET ver = SPLIT(DOCUMENT(v.resource_id)._oada_rev, '-', 1)
+      FILTER TO_NUMBER(ver) >= ${+rev.split('-', 1)}
+      RETURN DISTINCT {
+        id: v.resource_id,
+        rev: DOCUMENT(v.resource_id)._oada_rev
+      }
+    )
+    FOR obj in objs
+      LET doc = DOCUMENT(obj.id)
+      RETURN {id: obj.id, changes: doc._meta._changes[obj.rev]}
+  `).call('all');
+}
+
 function putResource(id, obj) {
   // Fix rev
   obj['_oada_rev'] = obj['_rev'];
@@ -267,18 +323,16 @@ function putResource(id, obj) {
   // TODO: Sanitize OADA keys?
 
   obj['_key'] = id.replace(/^resources\//, '');
-  var start = new Date().getTime();
   trace(`Adding links for resource ${id}...`);
+
   return addLinks(obj).then(function docUpsert(links) {
-    var end = new Date().getTime();
-    trace(`Links added for resource ${id}. Upserting. +${end - start}ms`);
     info(`Upserting resource ${obj['_key']}`);
     trace(`Upserting links: ${JSON.stringify(links, null, 2)}`);
 
     // TODO: Should it check that graphNodes exist but are wrong?
     var q;
     if (links.length > 0) {
-      q = db.query(aql`
+      let thingy = aql`
         LET reskey = ${obj['_key']}
         LET resup = FIRST(
           LET res = ${obj}
@@ -339,7 +393,10 @@ function putResource(id, obj) {
               RETURN NEW
           )
           RETURN resup.orev
-      `);
+      `
+
+      q = db.query(thingy);
+
     } else {
       q = db.query(aql`
         LET resup = FIRST(
@@ -364,7 +421,7 @@ function putResource(id, obj) {
       `);
     }
 
-    return q.call('next');
+    return q
   });
 }
 
@@ -478,7 +535,7 @@ function deletePartialResource(id, path, doc) {
 
     LET e = (
       FOR edge IN ${edges}
-        FILTER (v[*]._id ANY == edge._to) || (v[*]._id ANY == edge._from)
+        FILTER (v[*]._id ANY == edge._to) || (v[*]._id ANY == edge._from) || (edge._from == start._id && edge.name == ${name})
         REMOVE edge IN ${edges}
         RETURN OLD
     )
@@ -490,7 +547,7 @@ function deletePartialResource(id, path, doc) {
     RETURN OLD._oada_rev
   `; // TODO: Why the heck does arango error if I update resource before graph?
 
-  trace('Sending partial delete query:', query);
+  //trace('Sending partial delete query:', query);
 
   return db.query(query).call('next');
 }
@@ -504,6 +561,7 @@ module.exports = {
   deletePartialResource,
   getParents,
   getNewDescendants,
+  getChanges,
   makeRemote,
   // TODO: Better way to handler errors?
   // ErrorNum from: https://docs.arangodb.com/2.8/ErrorCodes/

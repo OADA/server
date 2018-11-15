@@ -27,10 +27,13 @@ module.exports = {
                codes: { name: 'codes',          indexes: [ 'code'     ], defaults: './libs/exampledocs/codes'      },
            resources: { name: 'resources',      indexes: [            ], defaults: './libs/exampledocs/resources'  },
           graphNodes: { name: 'graphNodes',     indexes: [            ], defaults: './libs/exampledocs/graphNodes' },
+             changes: { name: 'changes',        indexes: [            ], defaults: './libs/exampledocs/changes'    },
+               changeEdges: { name: 'changeEdges',          indexes: [ { name: 'name', unique: false } ], defaults: './libs/exampledocs/changeEdges',
+                        edgeCollection: true },
                edges: { name: 'edges',          indexes: [ { name: 'name', unique: false } ], defaults: './libs/exampledocs/edges',
                         edgeCollection: true },
            putBodies: { name: 'putBodies',      indexes: [ ], defaults: './libs/exampledocs/putBodies',
-                        createOptions: { isVolatile: true } },
+                        createOptions: { isVolatile: false } },
     },
     retry: {
       deadlock: {

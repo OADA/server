@@ -1,10 +1,10 @@
 {
-  "name": "oada-srvc-permissions-handler",
+  "name": "oada-srvc-indexer",
   "version": "1.0.0",
   "description": "",
   "main": "server.js",
   "scripts": {
-    "test": "DEBUG=* mocha test/permissions-handler.js"
+    "test": "DEBUG=* mocha test/indexer.js"
   },
   "author": "",
   "license": "ISC",

@@ -3,9 +3,8 @@
 CDIR=`pwd`
 
 echo "----------"
-echo $(basename $2)
+echo "cd $2 && yarn $1"
 echo "----------"
-cd $2
-yarn $1
+cd $2 && yarn --cache-folder /code/yarn/yarn-cache $1
 
 cd $CDIR

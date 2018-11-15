@@ -1,16 +1,20 @@
 'use strict';
 
-var Promise = require('bluebird');
+global.Promise = require('bluebird');
 const uuid = require('uuid');
+const axios = require('axios');
 const express = require('express');
 const bodyParser = require('body-parser');
+const pointer = require('json-pointer');
+const _ = require('lodash');
 
 const info = require('debug')('http-handler:info');
 const warn = require('debug')('http-handler:warn');
-//const error = require('debug')('http-handler:error');
+const error = require('debug')('http-handler:error');
 const trace = require('debug')('http-handler:trace');
 
 const resources = require('../../libs/oada-lib-arangodb').resources;
+const changes = require('../../libs/oada-lib-arangodb').changes;
 const putBodies = require('../../libs/oada-lib-arangodb').putBodies;
 const OADAError = require('oada-error').OADAError;
 
@@ -35,13 +39,7 @@ router.post('/*?', function postResource(req, res, next) {
 });
 
 router.use(function graphHandler(req, res, next) {
-    return requester.send({
-        'connection_id': req.id,
-        'domain': req.get('host'),
-        'token': req.get('authorization'),
-        'url': '/resources' + req.url,
-        'user_id': req.user.doc.user_id
-    }, config.get('kafka:topics:graphRequest'))
+  Promise.resolve(resources.lookupFromUrl('/resources'+req.url, req.user.doc.user_id))
     .then(function handleGraphRes(resp) {
         if (resp['resource_id']) {
             // Rewire URL to resource found by graph
@@ -51,9 +49,35 @@ router.use(function graphHandler(req, res, next) {
         }
         res.set('Content-Location', req.baseUrl + req.url);
         // TODO: Just use express parameters rather than graph thing?
-        req.oadaGraph = resp;
-    })
-    .asCallback(next);
+      req.oadaGraph = resp;
+  })
+  .asCallback(next);
+});
+
+router.delete('/*', function checkScope(req, res, next) {
+    requester.send({
+        'connection_id': req.id,
+        'domain': req.get('host'),
+        'oadaGraph': req.oadaGraph,
+        'user_id': req.user.doc['user_id'],
+        'scope': req.user.doc.scope,
+        'contentType': req.get('content-type'),
+	'requestType': 'put'
+    }, config.get('kafka:topics:permissionsRequest'))
+    .then(function handlePermissionsRequest(response) {
+        if (!req.oadaGraph['resource_id']) { // PUTing non-existant resource
+            return;
+        } else if (!response.permissions.owner && !response.permissions.write) {
+                warn(req.user.doc['user_id'] +
+                    ' tried to GET resource without proper permissions');
+            throw new OADAError('Forbidden', 403,
+                    'User does not have write permission for this resource');
+        }
+        if (!response.scopes.write) {
+            throw new OADAError('Forbidden', 403,
+                    'Token does not have required scope');
+        }
+    }).asCallback(next);
 });
 
 router.put('/*', function checkScope(req, res, next) {
@@ -63,7 +87,8 @@ router.put('/*', function checkScope(req, res, next) {
         'oadaGraph': req.oadaGraph,
         'user_id': req.user.doc['user_id'],
         'scope': req.user.doc.scope,
-        'contentType': req.get('Content-Type'),
+        'contentType': req.get('content-type'),
+	'requestType': 'put'
     }, config.get('kafka:topics:permissionsRequest'))
     .then(function handlePermissionsRequest(response) {
         if (!req.oadaGraph['resource_id']) { // PUTing non-existant resource
@@ -71,11 +96,11 @@ router.put('/*', function checkScope(req, res, next) {
         } else if (!response.permissions.owner && !response.permissions.write) {
                 warn(req.user.doc['user_id'] +
                     ' tried to GET resource without proper permissions');
-            throw new OADAError('Not Authorized', 403,
+            throw new OADAError('Forbidden', 403,
                     'User does not have write permission for this resource');
         }
         if (!response.scopes.write) {
-            throw new OADAError('Not Authorized', 403,
+            throw new OADAError('Forbidden', 403,
                     'Token does not have required scope');
         }
     }).asCallback(next);
@@ -88,21 +113,49 @@ router.get('/*', function checkScope(req, res, next) {
         'oadaGraph': req.oadaGraph,
         'user_id': req.user.doc['user_id'],
         'scope': req.user.doc.scope,
+	'requestType': 'get'
     }, config.get('kafka:topics:permissionsRequest'))
     .then(function handlePermissionsRequest(response) {
         trace('permissions response:' + response);
         if (!response.permissions.owner && !response.permissions.read) {
             warn(req.user.doc['user_id'] +
                     ' tried to GET resource without proper permissions');
-            throw new OADAError('Not Authorized', 403,
+            throw new OADAError('Forbidden', 403,
                     'User does not have read permission for this resource');
         }
 
         if (!response.scopes.read) {
-            throw new OADAError('Not Authorized', 403,
+            throw new OADAError('Forbidden', 403,
                     'Token does not have required scope');
         }
     }).asCallback(next);
+});
+
+router.get('/*', async function getChanges(req, res, next) {
+    try {
+        if (req.oadaGraph.path_leftover === '/_meta/_changes') {
+            let ch = await changes.getChanges(req.oadaGraph.resource_id);
+            return res.json(ch.map((item) => {
+                return {
+                    [item]: {
+                        _id: req.oadaGraph.resource_id+'/_meta/_changes/'+item,
+                        _rev: item
+                    }
+                }
+            }).reduce((a,b) => {
+                return {...a, ...b}
+            }))
+        } else if (/^\/_meta\/_changes\/.*?/.test(req.oadaGraph.path_leftover)) {
+            let rev = req.oadaGraph.path_leftover.split('/')[3];
+            let ch = await changes.getChange(req.oadaGraph.resource_id, rev);
+            trace('CHANGE', ch)
+            return res.json(ch)
+        } else {
+            return next()
+        }
+    } catch (e) {
+        next(e)
+    }
 });
 
 router.get('/*', function getResource(req, res, next) {
@@ -124,7 +177,10 @@ router.get('/*', function getResource(req, res, next) {
 
             doc = unflattenMeta(doc);
             info('doc unflattened now');
-            return res.json(doc);
+            return res
+                .set('X-OADA-Rev', req.oadaGraph.rev)
+                .json(doc);
+
         })
         .catch(next);
 });
@@ -141,12 +197,7 @@ function unflattenMeta(doc) {
             _rev: doc._meta._rev,
         };
     }
-    if (doc._changes) {
-        doc._changes = {
-            _id: doc._changes._id,
-            _rev: doc._changes._rev,
-        };
-    }/*
+    /*
     Object.keys(doc).forEach((key) => {
         if (doc[key]._id) {
             if (doc[key]['_oada_rev']) {
@@ -199,11 +250,113 @@ router.put('/*', function checkBodyParsed(req, res, next) {
     return next(err);
 });
 
+
+router.put('/*', async function ensureTypeTreeExists(req, res, next) {
+    if (req.headers['x-oada-bookmarks-type']) {
+        let rev = req.oadaGraph.rev
+        let tree = trees[req.headers['x-oada-bookmarks-type']];// Get the tree
+
+        //First, get the appropriate subTree rooted at the resource returned by
+        //graph lookup
+        let path =
+            req.originalUrl.split(req.oadaGraph.path_leftover)[0].replace(/^\/bookmarks/,'');
+        let subTree = await getFromStarredTree(path, tree)
+        // Find all resources in the subTree that haven't been created
+        let pieces = pointer.parse(req.oadaGraph.path_leftover);
+        let piecesPath = '';
+        let id = req.oadaGraph.resource_id.replace(/^\//, '');
+        let parentId = req.oadaGraph.resource_id.replace(/^\//, '');
+        let parentPath = '';
+        let parentRev = rev;
+        return Promise.each(pieces, async function(piece, i) {
+            let nextPiece = pointer.has(subTree, '/'+piece) ? '/'+piece : (pointer.has(subTree, '/*') ? '/*' : undefined);
+            path += '/'+piece;
+            piecesPath += nextPiece
+            parentPath += '/'+piece
+            if (nextPiece) {
+                subTree = pointer.get(subTree, nextPiece)
+                if (pointer.has(subTree, '/_type')) {
+                  let contentType = pointer.get(subTree, '/_type');
+                    id = 'resources/'+uuid.v4();
+                    let body = await replaceLinks(_.cloneDeep(subTree))
+                    // Write new resource. This may potentially become an
+                    // orphan if concurrent requests make links below
+                    return requester.send({
+                        resource_id: '',
+                        path_leftover: '/'+id,
+                        user_id: req.user.doc.user_id,
+                        contentType,
+                        body
+                    }, config.get('kafka:topics:writeRequest')).tap((resp) => {
+
+                        switch (resp.code) {
+                            case 'success':
+                                return;
+                            default:
+                                return Promise.reject(new Error(resp.code));
+                        }
+                    }).then(() => {
+                    // Write link from parent. These writes reference the
+                    // path from the known resource returned by graph lookup
+                        let linkBody = {_id: id};
+                        if (body._rev) linkBody._rev = body._rev;
+                        return requester.send({
+                            rev: parentRev,
+                            resource_id: parentId,
+                            path_leftover: parentPath,
+                            user_id: req.user.doc.user_id,
+                            contentType,
+                            body: linkBody,
+                        }, config.get('kafka:topics:writeRequest')).tap((result) => {
+                            switch (result.code) {
+                                case 'success':
+                                    return;
+                                default:
+                                    return Promise.reject(new Error(result.code));
+                            }
+                        })
+                    }).then((result) => {
+                    // Write link from parent. These writes reference the
+                    }).then(() => {
+                        parentId = id;
+                        parentPath = '';
+                        parentRev = '';
+                        return
+                    })
+                }
+            }
+            return
+        }).then(() => {
+            req.oadaGraph.resource_id = parentId;
+            req.oadaGraph.path_leftover = parentPath;
+            next()
+        }).catch({message: 'rev mismatch'}, (err) => {
+            trace('rev mismatch, rerunning', req.get('Authorization'))
+            return axios({
+                method: 'PUT',
+                url: 'http://http-handler'+req.originalUrl,
+                data: req.body,
+                headers: {
+                    Authorization: 'Bearer def',
+                    'x-oada-bookmarks-type': req.get('x-oada-bookmarks-type'),
+                    'Content-Type': req.get('content-type'),
+                }
+            })
+        }).catch((error) => {
+            trace('ERROR', error)
+            next(error)
+        })
+    } else {
+        next()
+    }
+})
+
 router.put('/*', function putResource(req, res, next) {
     info(`Saving PUT body for request ${req.id}`);
     return putBodies.savePutBody(req.body)
         .tap(() => info(`PUT body saved for request ${req.id}`))
         .get('_id')
+
         .then(bodyid => {
             return requester.send({
                 'connection_id': req.id,
@@ -215,9 +368,9 @@ router.put('/*', function putResource(req, res, next) {
                 'user_id': req.user.doc['user_id'],
                 'authorizationid': req.user.doc['authorizationid'],
                 'client_id': req.user.doc['client_id'],
-                'contentType': req.get('Content-Type'),
+                'contentType': req.get('content-type'),
                 'bodyid': bodyid,
-                //body: req.body
+                'if-match': req.get('if-match')
             }, config.get('kafka:topics:writeRequest'));
         })
         .tap(function checkWrite(resp) {
@@ -226,11 +379,13 @@ router.put('/*', function putResource(req, res, next) {
                 case 'success':
                     return;
                 case 'permission':
-                    return Promise.reject(new OADAError('Not Authorized', 403,
+                    return Promise.reject(new OADAError('Forbidden', 403,
                             'User does not own this resource'));
+		case 'if-match failed':
+			return Promise.reject(new OADAError('Precondition Failed', 412,
+				'If-Match header does not match current resource _rev'));
                 default:
                     let msg = 'write failed with code ' + resp.code;
-
                     return Promise.reject(new OADAError(msg));
             }
         })
@@ -280,6 +435,7 @@ router.delete('/*', function deleteResource(req, res, next) {
         'user_id': req.user.doc['user_id'],
         'authorizationid': req.user.doc['authorizationid'],
         'client_id': req.user.doc['client_id'],
+	'if-match': req.get('if-match')
         //'bodyid': bodyid, // No body means delete?
         //body: req.body
     }, config.get('kafka:topics:writeRequest'))
@@ -292,8 +448,11 @@ router.delete('/*', function deleteResource(req, res, next) {
                 // fall-through
                 // TODO: Is 403 a good response for DELETE on non-existent?
             case 'permission':
-                return Promise.reject(new OADAError('Not Authorized', 403,
+                return Promise.reject(new OADAError('Forbidden', 403,
                         'User does not own this resource'));
+	    case 'if-match failed':
+		return Promise.reject(new OADAError('Precondition Failed', 412,
+			'If-Match header does not match current resource _rev'));
             default:
                 let err = new OADAError('delete failed with code ' + resp.code);
                 return Promise.reject(err);
@@ -307,6 +466,143 @@ router.delete('/*', function deleteResource(req, res, next) {
     .catch(next);
 });
 
+let trees = {
+  'fields': {
+    'fields': {
+      '_type': "application/vnd.oada.fields.1+json",
+      '_rev': '0-0',
+      'fields-index': {
+        '*': {
+          '_type': "application/vnd.oada.field.1+json",
+          '_rev': '0-0',
+          'fields-index': {
+            '*': {
+              '_type': "application/vnd.oada.field.1+json",
+              '_rev': '0-0',
+            }
+          }
+        }
+      }
+    },
+  },
+  'as-harvested': {
+      'harvest': {
+          '_type': "application/vnd.oada.harvest.1+json",
+          '_rev': '0-0',
+          'as-harvested': {
+              '_type': "application/vnd.oada.as-harvested.1+json",
+              '_rev': '0-0',
+              'yield-moisture-dataset': {
+                  '_type': "application/vnd.oada.as-harvested.yield-moisture-dataset.1+json",
+                  '_rev': '0-0',
+                  'crop-index': {
+                      '*': {
+                          '_type': "application/vnd.oada.as-harvested.yield-moisture-dataset.1+json",
+                          '_rev': '0-0',
+                          'geohash-length-index': {
+                              '*': {
+                                  '_type': "application/vnd.oada.as-harvested.yield-moisture-dataset.1+json",
+                                  '_rev': '0-0',
+                                  'geohash-index': {
+                                      '*': {
+                                          '_type': "application/vnd.oada.as-harvested.yield-moisture-dataset.1+json",
+                                      }
+                                  }
+                              }
+                          }
+                      }
+                  }
+              }
+          },
+      },
+  },
+  'tiled-maps': {
+      'harvest': {
+          '_type': "application/vnd.oada.harvest.1+json",
+          '_rev': '0-0',
+          'tiled-maps': {
+              '_type': "application/vnd.oada.tiled-maps.1+json",
+              '_rev': '0-0',
+              'dry-yield-map': {
+                  '_type': "application/vnd.oada.tiled-maps.dry-yield-map.1+json",
+                  '_rev': '0-0',
+                  'crop-index': {
+                      '*': {
+                          "_type": "application/vnd.oada.tiled-maps.dry-yield-map.1+json",
+                          '_rev': '0-0',
+                          'geohash-length-index': {
+                              '*': {
+                                  "_type": "application/vnd.oada.tiled-maps.dry-yield-map.1+json",
+                                  '_rev': '0-0',
+                                  'geohash-index': {
+                                      '*': {
+                                          "_type": "application/vnd.oada.tiled-maps.dry-yield-map.1+json",
+                                      }
+                                  }
+                              }
+                          }
+                      }
+                  }
+              }
+          }
+      }
+  },
+  'services': {
+    'services': {
+      '_type': 'application/vnd.oada.services.1+json',
+      '_rev': '0-0',
+      'datasilo': {
+        '_type': 'application/vnd.oada.services.1+json',
+        '_rev': '0-0',
+      }
+    }
+  }
+}
 
+function replaceLinks(obj) {
+  let ret = (Array.isArray(obj)) ? [] : {};
+  if (!obj) return obj;  // no defined objriptors for this level
+  return Promise.map(Object.keys(obj || {}), (key)  => {
+    if (key === '*') { // Don't put *s into oada. Ignore them
+      return;
+    }
+    let val = obj[key];
+    if (typeof val !== 'object' || !val) {
+      ret[key] = val; // keep it asntType: 'application/vnd.oada.harvest.1+json'
+      return;
+    }
+    if (val._type) { // If it has a '_type' key, don't worry about it.
+      //It'll get created in future iterations of ensureTreeExists
+      return;
+    }
+    if (val._id) { // If it's an object, and has an '_id', make it a link from descriptor
+      ret[key] = { _id: obj[key]._id};
+      if (val._rev) ret[key]._rev = '0-0'
+      return;
+    }
+    // otherwise, recurse into the object looking for more links
+    return replaceLinks(val).then((result) => {
+      ret[key] = result;
+      return;
+    })
+  }).then(() => {
+    return ret;
+  })
+}
+
+async function getFromStarredTree(path, tree) {
+    if (path === '/' || path === '') return tree
+    let pieces = pointer.parse(path);
+    let subTree = tree;
+    let starPath = '';
+    return Promise.each(pieces, (piece, i) => {
+        let nextPiece = pointer.has(tree, starPath+'/*') ? '/*' : '/'+piece;
+        starPath += nextPiece;
+        subTree = pointer.get(tree, starPath)
+        return
+    }).then(() => {
+        return subTree
+    })
+}
 
 module.exports = router;

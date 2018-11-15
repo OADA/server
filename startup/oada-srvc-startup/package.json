@@ -4,7 +4,7 @@
   "description": "Handles startup of services for docker in OADA docker implementation.",
   "main": "index.js",
   "scripts": {
-    "start": "DEBUG='*' node index.js",
+    "start": "node index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {

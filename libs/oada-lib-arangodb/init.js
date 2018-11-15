@@ -33,8 +33,8 @@ module.exports = {
     .then(dbs => {
       dbs = _.filter(dbs, d => d === dbname);
       if (dbs.length > 0) {
-        if (!config.get('isProduction') &&
-            process.env.RESETDATABASE === 'yes') {
+        if ((!config.get('isProduction') &&
+          process.env.RESETDATABASE === 'yes') || config.get('isTest')) {
           trace('isProduction is false and process.env.RESETDATABASE is "yes"',
               'dropping database and recreating');
           db.useDatabase('_system');
@@ -105,7 +105,7 @@ module.exports = {
     //----------------------------------------------------------------------
     // Finally, import default data if they want some:
     ).then(() => _.keys(config.get('arangodb:collections')))
-    .map(colname => {
+      .map(colname => {
       const colinfo = config.get('arangodb:collections')[colname];
       if (typeof colinfo.defaults !== 'string') {
         return; // nothing to import for this colname
@@ -132,9 +132,10 @@ module.exports = {
                 ' does not exist in collection ' + colname + '.  Creating...');
             return db.collection(colname).save(doc)
               .then(() => { trace('Document ' + doc._id +
-                    ' successfully creatd in collection ' + colname); });
+                    ' successfully created in collection ' + colname); });
           });
-      });
+      })
+
     }).catch(err => {
       if (err && err.response) {
         info('ERROR: something went wrong.  err.body = ', err.response.body);

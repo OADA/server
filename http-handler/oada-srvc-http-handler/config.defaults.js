@@ -12,6 +12,7 @@ module.exports = {
     arango: {
         connectionString: 'http://arangodb:8529',
     },
+    'http-handler': {websockets: {maxWatches: 100000}},
     kafka: {
         broker: 'zookeeper:2181',
         topics: {

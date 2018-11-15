@@ -46,9 +46,8 @@ responder.on('request', function handleReq(req) {
     if (req.code !== 'success') {
         return [];
     }
-    if (typeof req['resource_id'] === 'undefined' ||
-            typeof req['_rev'] === 'undefined') {
-        throw new Error(`Invalid http_response: there is either no resource_id or _rev.  respose = ${JSON.stringify(req)}`);
+    if (!req['resource_id'] || !req['_rev']) {
+        throw new Error(`Invalid http_response: keys resource_id or _rev are missing.  response = ${JSON.stringify(req)}`);
     }
     if (typeof req['user_id'] === 'undefined') {
         warn('Received message does not have user_id');
@@ -67,6 +66,7 @@ responder.on('request', function handleReq(req) {
         'body': null,
         'url': '',
         'user_id': req['user_id'],
+        'from_change_id': req.change_id,
         'authorizationid': req.authorizationid
     };
 
@@ -75,6 +75,7 @@ responder.on('request', function handleReq(req) {
     // find resource's parent
     return oadaLib.resources.getParents(req['resource_id'])
         .then(p => {
+	console.log('PEE PEEE', p)
             if (!p || p.length === 0) {
                 warn(`${req['resource_id']} does not have a parent.`);
                 return undefined;
@@ -90,7 +91,9 @@ responder.on('request', function handleReq(req) {
 
             return Promise.map(p, item => {
                 trace('parent resource_id = ', item['resource_id']);
+                trace('parent path = ', item['path']);
                 let msg = Object.assign({}, res);
+                msg['change_path'] = item['path']
                 msg['resource_id'] = item['resource_id'];
                 msg['path_leftover'] = item.path + '/_rev';
                 msg.contentType = item.contentType;

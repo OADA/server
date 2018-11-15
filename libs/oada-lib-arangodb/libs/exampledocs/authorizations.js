@@ -1,11 +1,20 @@
 module.exports = [
   {
     '_id': 'authorizations/default:authorization-123',
-    'token': 'xyz',
-    'scope': ['oada.rocks:all'],
+    'token': 'abc',
+    'scope': ['oada.yield:all', 'oada.rocks:all'],
     'createTime': 1413831649937,
     'expiresIn': 60,
     'user': {'_id': 'users/default:users_frank_123'},
+    'clientId': 'jf93caauf3uzud7f308faesf3@provider.oada-dev.com'
+  },
+  {
+    '_id': 'authorizations/default:authorization-012',
+    'token': 'servio',
+    'scope': ['oada.fields:all', 'oada.operations:all'],
+    'createTime': 1413831649937,
+    'expiresIn': 60,
+    'user': {'_id': 'users/default:users_servio_012'},
     'clientId': 'jf93caauf3uzud7f308faesf3@provider.oada-dev.com'
   },
   {
@@ -20,8 +29,8 @@ module.exports = [
 
   {
     '_id': 'authorizations/default:authorization-321',
-    'token': 'abc',
-    'scope': ['trellisfw:all'],
+    'token': 'def',
+    'scope': ['oada.yield:all', 'trellis:all'],
     'createTime': 1413831649937,
     'expiresIn': 60,
     'user': {'_id': 'users/default:users_sam_321'},
@@ -29,7 +38,7 @@ module.exports = [
   },
   {
     '_id': 'authorizations/default:authorization-654',
-    'token': 'def',
+    'token': 'yyy',
     'scope': ['oada.rocks:all'],
     'createTime': 1413831649937,
     'expiresIn': 60,
@@ -39,7 +48,7 @@ module.exports = [
   {
     '_id': 'authorizations/default:authorization-999',
     'token': 'aaa',
-    'scope': ['trellisfw:all'],
+    'scope': ['trellis:all'],
     'createTime': 1413831649937,
     'expiresIn': 60,
     'user': {'_id': 'users/default:users_audrey_999'},
@@ -48,7 +57,7 @@ module.exports = [
   {
     '_id': 'authorizations/default:authorization-777',
     'token': 'ggg',
-    'scope': ['trellisfw:all'],
+    'scope': ['trellis:all'],
     'createTime': 1413831649937,
     'expiresIn': 60,
     'user': {'_id': 'users/default:users_gary_growersync'},
@@ -57,7 +66,7 @@ module.exports = [
   {
     '_id': 'authorizations/default:authorization-444',
     'token': 'ppp',
-    'scope': ['trellisfw:all'],
+    'scope': ['trellis:all'],
     'createTime': 1413831649937,
     'expiresIn': 60,
     'user': {'_id': 'users/default:users_pete_pspperfection'},
@@ -66,7 +75,7 @@ module.exports = [
   {
     '_id': 'authorizations/default:authorization-555',
     'token': 'rrr',
-    'scope': ['trellisfw:all'],
+    'scope': ['trellis:all'],
     'createTime': 1413831649937,
     'expiresIn': 60,
     'user': {'_id': 'users/default:users_rick_retailfresh'},
@@ -75,7 +84,7 @@ module.exports = [
   {
     '_id': 'authorizations/default:authorization-666',
     'token': 'ddd',
-    'scope': ['trellisfw:all'],
+    'scope': ['trellis:all'],
     'createTime': 1413831649937,
     'expiresIn': 60,
     'user': {'_id': 'users/default:users_diane_distributingexcellence'},

@@ -53,6 +53,14 @@ module.exports = {
         ],
         defaults: './libs/exampledocs/authorizations'
       },
+			changes: {
+				name: 'changes',
+				indexes: [
+					{ name: 'number', unique: false},
+					{ name: 'resource_id', unique: false},
+				],
+        defaults: './libs/exampledocs/changes'
+			},
       codes: {
         name: 'codes',
         indexes: [ 'code' ],
@@ -71,7 +79,13 @@ module.exports = {
         name: 'graphNodes',
         indexes: [ { name: 'resource_id', unique: false } ],
         defaults: './libs/exampledocs/graphNodes'
-      },
+			},
+			changeEdges: {
+				name: 'changeEdges',
+				indexes: [ ],
+				edgeCollection: true,
+        defaults: './libs/exampledocs/changeEdges'
+			},
       edges: {
         name: 'edges',
         indexes: [
@@ -86,7 +100,7 @@ module.exports = {
         name: 'putBodies',
         indexes: [],
         defaults: './libs/exampledocs/putBodies',
-        createOptions: { isVolatile: true }
+        createOptions: { isVolatile: false }
       },
     },
     init: {
