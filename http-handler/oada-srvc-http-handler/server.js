@@ -120,7 +120,6 @@ app.use(function tokenHandler(req, res, next) {
         'token': req.get('authorization'),
     })
     .tap(function checkTok(tok) {
-      console.log('TOK', tok)
         if (!tok['token_exists']) {
             throw new OADAError('Unauthorized', 401);
         }
@@ -134,7 +133,6 @@ app.use(function tokenHandler(req, res, next) {
 // Rewrite the URL if it starts with /bookmarks
 app.use(function handleBookmarks(req, res, next) {
     info('********************** ' + req.url);
-console.log(req)
     req.url = req.url.replace(/^\/bookmarks/,
         `/${req.user.doc['bookmarks_id']}`);
 

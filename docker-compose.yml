@@ -39,7 +39,7 @@ services:
       - http_net
     ports:
         - "${BIND:-0.0.0.0}:${PORT_HTTPS:-443}:443"
-          #     - "${BIND:-0.0.0.0}:${PORT_HTTP:-80}:80"
+#        - "${BIND:-0.0.0.0}:${PORT_HTTP:-80}:80"
     volumes:
       - ./proxy/nginx.conf:/etc/nginx/nginx.conf
       - ./proxy/dev-sites-enabled/:/etc/nginx/sites-templates/
@@ -319,69 +319,69 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
       - kafka_data:/var/lib/kafka
 
-  exporter:
-    image: prom/node-exporter:latest
-    ports: 
-      - "9100:9100"
-    networks:
-      - prometheus
+#  exporter:
+#    image: prom/node-exporter:latest
+#    ports: 
+#      - "9100:9100"
+#    networks:
+#      - prometheus
 
-  grafana:
-    image: grafana/grafana
-    ports: 
-      - "3000:3000"
-    depends_on:
-      - prometheus
+#  grafana:
+#    image: grafana/grafana
+#    ports: 
+#      - "3000:3000"
+#    depends_on:
+#      - prometheus
 
-  cadvisor:
-    image: google/cadvisor
-    volumes:
-      - /:/rootfs:ro
-      - /var/run:/var/run:rw
-      - /sys:/sys:ro
-      - /var/lib/docker/:/var/lib/docker:ro
-    ports: 
-      - "8090:8080"
-    networks:
-      - arango_net
-      - kafka_net
-      - http_net
-    restart: always
+#  cadvisor:
+#    image: google/cadvisor
+#    volumes:
+#      - /:/rootfs:ro
+#      - /var/run:/var/run:rw
+#      - /sys:/sys:ro
+#      - /var/lib/docker/:/var/lib/docker:ro
+#    ports: 
+#      - "8090:8080"
+#    networks:
+#      - arango_net
+#      - kafka_net
+#      - http_net
+#    restart: always
 
-  jmx-exporter:
-    build: ./jmx-exporter
-    ports:
-      - "8080:8080"
-    networks:
-      - prometheus
-      - kafka_net
-    links:
-      - kafka
-    environment:
-      - JMX_PORT=9999
-      - JMX_HOST=kafka
-      - HTTP_PORT=8080
-      - JMX_EXPORTER_CONFIG_FILE=kafka.yml
+#  jmx-exporter:
+#    build: ./jmx-exporter
+#    ports:
+#      - "8080:8080"
+#    networks:
+#      - prometheus
+#      - kafka_net
+#    links:
+#      - kafka
+#    environment:
+#      - JMX_PORT=9999
+#      - JMX_HOST=kafka
+#      - HTTP_PORT=8080
+#      - JMX_EXPORTER_CONFIG_FILE=kafka.yml
 
-  prometheus:
-    image: prom/prometheus
-    container_name: prometheus
-    restart: always
-    volumes:
-      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
-      - kafka_data:/var/lib/kafka
-      - arangodb_data:/var/lib/arangodb3
-      - arangodb_data:/var/lib/arangodb3-apps
-    command: "--config.file=/etc/prometheus/prometheus.yml --storage.tsdb.path=/prometheus"
-    networks:
-      - kafka_net
-      - prometheus
-    ports: 
-      - "9090:9090"
-    depends_on:
-      - exporter
-    links:
-      - jmx-exporter
+#  prometheus:
+#    image: prom/prometheus
+#    container_name: prometheus
+#    restart: always
+#    volumes:
+#      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+#      - kafka_data:/var/lib/kafka
+#      - arangodb_data:/var/lib/arangodb3
+#      - arangodb_data:/var/lib/arangodb3-apps
+#    command: "--config.file=/etc/prometheus/prometheus.yml --storage.tsdb.path=/prometheus"
+#    networks:
+#      - kafka_net
+#      - prometheus
+#    ports: 
+#      - "9090:9090"
+#    depends_on:
+#      - exporter
+#    links:
+#      - jmx-exporter
 
   # Needed for installing native Node dependencies
   yarn:
@@ -456,25 +456,25 @@ services:
   #      - /var/run/docker.sock:/var/run/docker.sock
   #    command: pumba --random --interval 1h kill --signal SIGKILL
 
-  indexer:
-    depends_on:
-      - startup
-    build:
-      context: ./indexer
-      args:
-        NODE_VERSION: 8.7.0
-    restart: always
-    container_name: indexer
-    networks:
-      - startup_net
-      - kafka_net
-      - arango_net
-    volumes:
-      - .:/code
-      - ./oada-srvc-docker-config.js:/oada-srvc-docker-config.js
-    environment:
-      - NODE_ENV=${NODE_ENV:-development}
-      - DEBUG=${DEBUG:-""}
+#  indexer:
+#    depends_on:
+#      - startup
+#    build:
+#      context: ./indexer
+#      args:
+#        NODE_VERSION: 8.7.0
+#    restart: always
+#    container_name: indexer
+#    networks:
+#      - startup_net
+#      - kafka_net
+#      - arango_net
+#    volumes:
+#      - .:/code
+#      - ./oada-srvc-docker-config.js:/oada-srvc-docker-config.js
+#    environment:
+#      - NODE_ENV=${NODE_ENV:-development}
+#      - DEBUG=${DEBUG:-""}
 
   webhooks:
     depends_on:
@@ -539,46 +539,46 @@ services:
       - NODE_ENV=${NODE_ENV:-development}
       - DEBUG=${DEBUG:-""}
 
-  yield-tiler:
-    depends_on:
-      - startup
-    build:
-      context: ./yield-tiler
-      args:
-        NODE_VERSION: 8.7.0
-    restart: always
-    container_name: yield-tiler
-    networks:
-      - startup_net
-      - kafka_net
-      - arango_net
-    volumes:
-      - .:/code
-      - ./oada-srvc-docker-config.js:/oada-srvc-docker-config.js
-    environment:
-      - NODE_ENV=${NODE_ENV:-development}
-      - NODE_TLS_REJECT_UNAUTHORIZED=${NODE_TLS_REJECT_UNAUTHORIZED:-""}
-      - DEBUG=${DEBUG:-""}
+#  yield-tiler:
+#    depends_on:
+#      - startup
+#    build:
+#      context: ./yield-tiler
+#      args:
+#        NODE_VERSION: 8.7.0
+#    restart: always
+#    container_name: yield-tiler
+#    networks:
+#      - startup_net
+#      - kafka_net
+#      - arango_net
+#    volumes:
+#      - .:/code
+#      - ./oada-srvc-docker-config.js:/oada-srvc-docker-config.js
+#    environment:
+#      - NODE_ENV=${NODE_ENV:-development}
+#      - NODE_TLS_REJECT_UNAUTHORIZED=${NODE_TLS_REJECT_UNAUTHORIZED:-""}
+#      - DEBUG=${DEBUG:-""}
 
-  winfield-fields-sync:
-    depends_on:
-      - startup
-    build:
-      context: ./winfield-fields-sync
-      args:
-        NODE_VERSION: 8.7.0
-    restart: always
-    container_name: winfield-fields-sync 
-    networks:
-      - startup_net
-      - kafka_net
-      - arango_net
-    volumes:
-      - .:/code
-      - ./oada-srvc-docker-config.js:/oada-srvc-docker-config.js
-    environment:
-      - NODE_ENV=${NODE_ENV:-development}
-      - DEBUG=${DEBUG:-""}
+#  winfield-fields-sync:
+#    depends_on:
+#      - startup
+#    build:
+#      context: ./winfield-fields-sync
+#      args:
+#        NODE_VERSION: 8.7.0
+#    restart: always
+#    container_name: winfield-fields-sync 
+#    networks:
+#      - startup_net
+#      - kafka_net
+#      - arango_net
+#    volumes:
+#      - .:/code
+#      - ./oada-srvc-docker-config.js:/oada-srvc-docker-config.js
+#    environment:
+#      - NODE_ENV=${NODE_ENV:-development}
+#      - DEBUG=${DEBUG:-""}
 
 
 
@@ -594,4 +594,4 @@ networks:
   kafka_net:
   http_net:
   startup_net:
-  prometheus:
+  #prometheus:

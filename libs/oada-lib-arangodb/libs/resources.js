@@ -439,7 +439,6 @@ function forLinks(res, cb, path) {
 
 // TODO: Remove links as well
 function addLinks(res) {
-console.log('addlinks res', res)
   // TODO: Use fewer queries or something?
   var links = [];
   return forLinks(res, function processLinks(link, path) {
@@ -548,7 +547,7 @@ function deletePartialResource(id, path, doc) {
     RETURN OLD._oada_rev
   `; // TODO: Why the heck does arango error if I update resource before graph?
 
-  trace('Sending partial delete query:', query);
+  //trace('Sending partial delete query:', query);
 
   return db.query(query).call('next');
 }

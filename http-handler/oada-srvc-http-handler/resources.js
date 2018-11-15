@@ -107,7 +107,6 @@ router.put('/*', function checkScope(req, res, next) {
 });
 
 router.get('/*', function checkScope(req, res, next) {
-  console.log('CHECK SCOPE', req)
     requester.send({
         'connection_id': req.id,
         'domain': req.get('host'),
@@ -117,7 +116,6 @@ router.get('/*', function checkScope(req, res, next) {
 	'requestType': 'get'
     }, config.get('kafka:topics:permissionsRequest'))
     .then(function handlePermissionsRequest(response) {
-    console.log('CHECK SCOPE THEN', response)
         trace('permissions response:' + response);
         if (!response.permissions.owner && !response.permissions.read) {
             warn(req.user.doc['user_id'] +
@@ -384,7 +382,6 @@ router.put('/*', function putResource(req, res, next) {
                     return Promise.reject(new OADAError('Forbidden', 403,
                             'User does not own this resource'));
 		case 'if-match failed':
-			console.log('if-match failed')
 			return Promise.reject(new OADAError('Precondition Failed', 412,
 				'If-Match header does not match current resource _rev'));
                 default:
@@ -453,6 +450,9 @@ router.delete('/*', function deleteResource(req, res, next) {
             case 'permission':
                 return Promise.reject(new OADAError('Forbidden', 403,
                         'User does not own this resource'));
+	    case 'if-match failed':
+		return Promise.reject(new OADAError('Precondition Failed', 412,
+			'If-Match header does not match current resource _rev'));
             default:
                 let err = new OADAError('delete failed with code ' + resp.code);
                 return Promise.reject(err);

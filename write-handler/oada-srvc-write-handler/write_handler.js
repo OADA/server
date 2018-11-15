@@ -32,7 +32,12 @@ responder.on('request', (...args) => {
 		counter = 0;
 		global.gc();
 	}
-	p = p.catch(() => {}).then(() => handleReq(...args));
+	var pTime = Date.now();
+	p = p.catch(() => {}).then(() => handleReq(...args)).tap(()=>{
+	info('handleReq', Date.now() - pTime); 
+	info('~~~~~~~~~~~~~~~~~~~~~~~~')
+	info('~~~~~~~~~~~~~~~~~~~~~~~~')
+});
 	return p;
 });
 
@@ -43,24 +48,31 @@ function handleReq(req, msg) {
 	var id = req['resource_id'];
 
 	// Get body and check permission in parallel
+	var getB = Date.now();
 	var body = Promise.try(function getBody() {
+		var pb = Date.now();
 		return req.body || req.bodyid && putBodies.getPutBody(req.bodyid).tap(() => {
+			console.log('getPutBody', Date.now() - pb);
 		});
 	});
 	let existingResourceInfo = {};
-
+	info('getBody', Date.now() - getB)
 
 	info(`PUTing to "${req['path_leftover']}" in "${id}"`);
 
 	var changeType;
+	var beforeUpsert = Date.now();
 	var upsert = body.then(async function doUpsert(body) {
+		info('doUpsert', Date.now() - beforeUpsert);
 		if (req['if-match']) {
+			var getRev = Date.now()
 			var rev = await resources.getResource(req.resource_id, '_rev')
-			console.log('WRITE HANDLER', rev, req['if-match'])
+			info('getRev', Date.now() - getRev);
 			if (req['if-match'] !== rev) {
 				throw new Error('if-match failed');
 			}
 		}
+		var beforeCacheRev = Date.now();
 		if (req.rev) {
 			let cacheRev = cache.get(req.resource_id)
 			if (!cacheRev) {
@@ -70,8 +82,10 @@ function handleReq(req, msg) {
 				throw new Error(`rev mismatch`)
 			}
 		}
+		info('cacheRev', Date.now() - beforeCacheRev);
 
 
+		var beforeDeletePartial = Date.now()
 		var path = pointer.parse(req['path_leftover'].replace(/\/*$/, ''));
 		let method = resources.putResource;
 		changeType = 'merge';
@@ -85,9 +99,10 @@ function handleReq(req, msg) {
 					body = null;
 					changeType = 'delete';
 			} else {
-				return resources.deleteResource(id);
+				return resources.deleteResource(id).tap(() => info('deleteResource', Date.now() - beforeDeletePartial));
 			}
 		}
+
 
 		var obj = {};
 		var ts = Date.now();
@@ -131,6 +146,9 @@ function handleReq(req, msg) {
 				obj = Object.assign(obj, body);
 		}
 
+		info('recursive merge', Date.now() -ts)
+
+		var beforeHash = Date.now();
 		// Precompute new rev ignoring _meta and such
 		//let newRevHash = hash(JSON.stringify(obj), {algorithm: 'md5'});
 		let newRevHash = nhash.hash(obj);
@@ -154,9 +172,10 @@ function handleReq(req, msg) {
 
 		obj['_rev'] = rev;
 		pointer.set(obj, '/_meta/_rev', rev);
-
+		info('hash', Date.now() - beforeHash);
 
 		// Compute new change
+		var beforeChange = Date.now();
 		let change_id = await changes.putChange({
 			change: obj,
 			resId: id,
@@ -167,7 +186,8 @@ function handleReq(req, msg) {
 			userId: req['user_id'],
 			authorizationId: req['authorizationid'],
 		})
-
+		info('change_id', Date.now() - beforeChange);
+		var beforeMethod = Date.now();
 		pointer.set(obj, '/_meta/_changes', {
 			_id: id+'/_meta/_changes',
 			_rev: rev
@@ -179,13 +199,13 @@ function handleReq(req, msg) {
 		
 		//return {rev, orev: 'c', change_id};
 
-		return method(id, obj).then(orev => ({rev, orev, change_id}));
+		return method(id, obj).then(orev => ({rev, orev, change_id})).tap(() => info('method', Date.now() - beforeMethod));
 	}).then(function respond({rev, orev, change_id}) {
-		//info(`Finished PUTing to "${req['path_leftover']}". +${end - start}ms`);
-
-
+    info('upsert then', Date.now() - beforeUpsert)
+		var beforeCachePut = Date.now()
 	  // Put the new rev into the cache
 		cache.put(id, rev);
+    info('cache.put', Date.now() - beforeCachePut)
 
 		return {
 			'msgtype': 'write-response',
@@ -218,11 +238,14 @@ function handleReq(req, msg) {
 		};
 	});
 
+	var beforeCleanUp = Date.now()
 	var cleanup = body.then(() => {
+		info('cleanup', Date.now() - beforeCleanUp)
+	var beforeRPB = Date.now()
 		// Remove putBody, if there was one
 		//		const result = req.bodyid && putBodies.removePutBody(req.bodyid);
-		return req.bodyid && putBodies.removePutBody(req.bodyid);
+		return req.bodyid && putBodies.removePutBody(req.bodyid).tap(() => info('remove Put Body', Date.now() - beforeRPB));
 	});
-
-	return Promise.join(upsert, cleanup, resp => resp)
+	var beforeJoin = Date.now();
+	return Promise.join(upsert, cleanup, resp => resp).tap(() => info('join', Date.now() - beforeJoin))
 }

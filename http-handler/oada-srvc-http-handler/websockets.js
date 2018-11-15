@@ -1,6 +1,6 @@
 'use strict';
-const error = require('debug')('http-handler:websockets:error');
-const trace = require('debug')('http-handler:websockets:trace');
+const error = require('debug')('websockets:websockets:error');
+const trace = require('debug')('websockets:websockets:trace');
 
 const jsonpointer = require('jsonpointer');
 
@@ -191,11 +191,12 @@ module.exports = function wsHandler(server) {
                         }
 
                         var listeners = emitter.listeners(resourceId)
-                        trace('listeners', listeners)
                         if (listeners.length === 0) {
                           let handleChange = function(change) {
                             //let c = change.change.merge || change.change.delete;
-                            trace('responding watch', resourceId, change.change.body)
+                            trace('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
+                            trace('responding watch', resourceId)
+                            trace('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
                               if (jsonpointer.get(change.change.body, path_leftover) !== undefined) {
                                   let message = {
                                       requestId: msg.requestId,
@@ -293,7 +294,7 @@ writeResponder.on('request', function handleReq(req) {
     oadaLib.changes
         .getChange(req.resource_id, req._rev)
         .then((change) => {
-            trace('00000000000000000 Emitted change for:', req.resource_id, req, change);
+            trace('00000000000000000 Emitted change for:', req.resource_id, change);
             emitter.emit(req.resource_id, {
                 path_leftover: req.path_leftover,
                 change
