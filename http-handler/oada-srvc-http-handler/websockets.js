@@ -159,7 +159,7 @@ module.exports = function wsHandler(server) {
 
                  let parts = res.headers['content-location'].split('/');
 		 let resourceId;
-		 let path_leftover;
+		 let path_leftover = '/';
                  if (parts.length >= 3) resourceId = `${parts[1]}/${parts[2]}`;
                  if (parts.length > 3) path_leftover = parts.slice(3).join('/');
                  if(path_leftover) {
