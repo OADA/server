@@ -1,4 +1,4 @@
-FROM mhart/alpine-node:8.7
+FROM mhart/alpine-node:latest
 
 RUN apk add --no-cache bash
 COPY ./entrypoint.sh /entrypoint.sh
