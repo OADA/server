@@ -156,21 +156,43 @@ module.exports = function wsHandler(server) {
             }
             axios(request)
             .then(function(res) {
-                    if (msg.method === 'delete') {
-                        let parts = res.headers['content-location'].split('/');
+                 let parts = res.headers['content-location'].split('/');
+ 	 let resourceId;
+ 	 let path_leftover = '';
+   if (parts.length >= 3) resourceId = `${parts[1]}/${parts[2]}`;
+	 if (parts.length > 3) path_leftover = parts.slice(3).join('/');
+	 if(path_leftover) {
+	   path_leftover = `/${path_leftover}`;
+	 }
+
+
+
+ 	 function handleChange(change) {
+ 	    //let c = change.change.merge || change.change.delete;
+ 	    trace('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
+ 	    trace('responding watch', resourceId)
+ 	    trace('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
+ 		 console.log('IF JSONPOINTER', jsonpointer.get(change.change.body, path_leftover), path_leftover)
+ 		 if (jsonpointer.get(change.change.body, path_leftover) !== undefined) {
+ 		    let message = {
+ 			  requestId: msg.requestId,
+ 			  resourceId,
+ 			  change: change.change,
+ 		    };
+ 		      socket.send(JSON.stringify(message));
+ 	          }
+ 	        };
+             if (msg.method === 'delete') {
                         if (parts.length === 3) { // it is a resource
-                          let resourceId = `${parts[1]}/${parts[2]}`;
                           trace('deleting a watched resource. closing watch', resourceId)
                           emitter.removeAllListeners(resourceId);
                         }
                     }
                     if (msg.method === 'unwatch') {
-                        let parts = res.headers['content-location'].split('/');
-                        let resourceId = `${parts[1]}/${parts[2]}`;
                         trace('closing watch', resourceId)
                       //trace('************, closing watch', resourceId);
                         //TODO: ensure this doesn't remove others
-                        emitter.removeAllListeners(resourceId);
+                        emitter.removeListener(resourceId, handleChange);
 
                         socket.send(JSON.stringify({
                             requestId: msg.requestId,
@@ -178,35 +200,6 @@ module.exports = function wsHandler(server) {
                         }));
 
                     } else if (msg.method === 'watch') {
-                        let parts = res.headers['content-location'].split('/');
-                        let resourceId = `${parts[1]}/${parts[2]}`;
-                        let path_leftover = parts.slice(3).join('/');
-                        if(path_leftover) {
-                          path_leftover = `/${path_leftover}`;
-                          /*
-                          socket.send(JSON.stringify({
-                              requestId: msg.requestId,
-                              status: 'success'
-                          }));*/
-                        }
-
-                        var listeners = emitter.listeners(resourceId)
-                        if (listeners.length === 0) {
-                          let handleChange = function(change) {
-                            //let c = change.change.merge || change.change.delete;
-                            trace('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
-                            trace('responding watch', resourceId)
-                            trace('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
-                              if (jsonpointer.get(change.change.body, path_leftover) !== undefined) {
-                                  let message = {
-                                      requestId: msg.requestId,
-                                      resourceId,
-                                      change: change.change,
-                                  };
-
-                                  socket.send(JSON.stringify(message));
-                              }
-                          };
 
                           trace('opening watch', resourceId)
                           emitter.on(resourceId, handleChange);
@@ -223,10 +216,9 @@ module.exports = function wsHandler(server) {
                               })
                             })
                           }
-                        }
 
                         socket.on('close', function handleClose() {
-                            emitter.removeAllListeners(resourceId);
+                            emitter.removeListener(resourceId, handleChange);
                         });
 
                         socket.send(JSON.stringify({
@@ -279,9 +271,9 @@ module.exports = function wsHandler(server) {
 }
 
 const writeResponder = new Responder(
-	config.get('kafka:topics:httpResponse'),
-	null,
-	'websockets');
+ config.get('kafka:topics:httpResponse'),
+ null,
+ 'websockets');
 
 // Listen for successful write requests to resources of interest, then emit an event
 writeResponder.on('request', function handleReq(req) {
@@ -289,7 +281,7 @@ writeResponder.on('request', function handleReq(req) {
         return;
     }
 
-	trace('@@@@@@@@@@@@@@@', req.resource_id);
+ trace('@@@@@@@@@@@@@@@', req.resource_id);
 
     oadaLib.changes
         .getChange(req.resource_id, req._rev)
