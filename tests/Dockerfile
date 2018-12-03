@@ -1,7 +1,4 @@
-# ----------------
-# Alpine node only
-# ----------------
-FROM andthensome/alpine-node-bash:latest
+FROM node-rdkafka
 
 COPY ./entrypoint.sh /entrypoint.sh
 RUN chmod u+x /entrypoint.sh

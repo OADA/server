@@ -301,14 +301,14 @@ services:
 
 #  exporter:
 #    image: prom/node-exporter:latest
-#    ports: 
+#    ports:
 #      - "9100:9100"
 #    networks:
 #      - prometheus
 
 #  grafana:
 #    image: grafana/grafana
-#    ports: 
+#    ports:
 #      - "3000:3000"
 #    depends_on:
 #      - prometheus
@@ -320,7 +320,7 @@ services:
 #      - /var/run:/var/run:rw
 #      - /sys:/sys:ro
 #      - /var/lib/docker/:/var/lib/docker:ro
-#    ports: 
+#    ports:
 #      - "8090:8080"
 #    networks:
 #      - arango_net
@@ -356,7 +356,7 @@ services:
 #    networks:
 #      - kafka_net
 #      - prometheus
-#    ports: 
+#    ports:
 #      - "9090:9090"
 #    depends_on:
 #      - exporter
@@ -409,7 +409,7 @@ services:
       # - ARANGO_RANDOM_ROOT_PASSWORD=1
       - ARANGO_NO_AUTH=1
       - ARANGO_STORAGE_ENGINE=rocksdb
-      - ARANGO_STATISTICS=0 
+      - ARANGO_STATISTICS=0
     command: ["arangod", "--server.statistics", "true"]
 
 
@@ -534,7 +534,7 @@ services:
 #    build:
 #      context: ./winfield-fields-sync
 #    restart: always
-#    container_name: winfield-fields-sync 
+#    container_name: winfield-fields-sync
 #    networks:
 #      - startup_net
 #      - kafka_net
