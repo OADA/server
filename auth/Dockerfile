@@ -1,4 +1,4 @@
-FROM andthensome/alpine-node-bash:latest
+FROM oada/node-rdkafka
 
 COPY ./entrypoint.sh /entrypoint.sh
 RUN chmod u+x /entrypoint.sh

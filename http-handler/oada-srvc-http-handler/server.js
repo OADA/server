@@ -31,7 +31,6 @@ const url = require('url')
 
 app.get('*', (req, res, next) => { console.log(req.originalUrl); next(); })
 app.get('/favicon.ico', (req, res) => res.end());
-app.use('/test', express.static('ws_test'));
 
 function start() {
     return Promise.fromCallback(function(done) {
