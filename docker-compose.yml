@@ -297,8 +297,6 @@ services:
   yarn:
     build:
       context: ./yarn
-      args:
-        NODE_VERSION: 8.7.0
     volumes:
       - .:/code
 
