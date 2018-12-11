@@ -1,4 +1,5 @@
 node_modules
+yarn/yarn-cache
 
 *.log
 .DS_Store
