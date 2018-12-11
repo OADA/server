@@ -60,8 +60,6 @@ services:
       - startup
     build:
       context: ./auth
-      args:
-        NODE_VERSION: 8.7.0
     container_name: auth
     restart: always
     networks:
