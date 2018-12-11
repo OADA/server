@@ -1,4 +1,4 @@
-FROM node-rdkafka
+FROM oada/node-rdkafka
 
 ENV BUILD_LIBRDKAFKA=0
 
