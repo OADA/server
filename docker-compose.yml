@@ -68,6 +68,12 @@ services:
       - startup_net
     ports:
       - "80"
+    extra_hosts:
+      - "api.abcaudits.trellisfw.io:128.46.213.153"
+      - "api.growersync.trellisfw.io:128.46.213.153"
+      - "api.retailfresh.trellisfw.io:128.46.213.153"
+      - "api.distributingexcellence.trellisfw.io:128.46.213.153"
+      - "api.pspperfection.trellisfw.io:128.46.213.153"
     volumes:
       - .:/code
       - ./oada-srvc-docker-config.js:/oada-srvc-docker-config.js

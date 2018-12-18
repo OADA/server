@@ -86,7 +86,7 @@ module.exports = {
         name: 'putBodies',
         indexes: [],
         defaults: './libs/exampledocs/putBodies',
-        createOptions: { isVolatile: true }
+        createOptions: { isVolatile: false }
       },
     },
     init: {
