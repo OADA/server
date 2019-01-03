@@ -17,6 +17,7 @@ Vagrant.configure("2") do |config|
   # OADA-specific additions:
     # By default, oada-srvc-docker runs on host port 80.  Change as you like:
     config.vm.network "forwarded_port", guest: 80, host: 80
+    config.vm.network "forwarded_port", guest: 443, host: 443
     # Set the name to something identifiable:
     config.vm.provider "virtualbox" do |v|
       v.name = "oada-srvc-docker"
