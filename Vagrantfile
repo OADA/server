@@ -31,8 +31,18 @@ Vagrant.configure("2") do |config|
       add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu bionic stable"
       apt-get update
       apt-get install -y docker-ce docker-compose
+
       # Link the code in /vagrant to home directory in the box for convenience
       ln -s /vagrant /home/vagrant/oada-srvc-docker 
+      cd /home/vagrant/oada-srvc-docker
+
+      # Now make sure we have no windows-installed node_modules around from previous attempts:
+      docker-compose run --rm admin bash -c "rm -rvf /code/yarn/yarn-cache/*"
+      docker-compose run --rm admin bash -c "find /code -name node_modules -exec rm -rvf {} +" 
+      docker-compose run --rm admin bash -c "find /code -name package-lock.json -exec rm -rvf {} +" 
+
+      # And now run the yarn container to make sure everything is installed in prep for first startup:
+      docker-compose run --rm yarn
     SHELL
 
   # End of OADA-specific additions
