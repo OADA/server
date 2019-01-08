@@ -1,1 +1,35 @@
 * text=auto
+
+#
+# The above will handle all files NOT found below
+# https://help.github.com/articles/dealing-with-line-endings/
+# https://github.com/Danimoth/gitattributes/blob/master/Web.gitattributes
+# Also taken from: https://gist.github.com/ajdruff/16427061a41ca8c08c05992a6c74f59e
+
+# These files are text and should be normalized (Convert crlf => lf)
+*.css text eol=lf
+*.js text eol=lf
+*.json text eol=lf
+*.htm text eol=lf
+*.html text eol=lf
+*.txt text eol=lf
+*.sh text eol=lf
+
+# These files are binary and should be left untouched
+# (binary is a macro for -text -diff)
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.mov binary
+*.mp4 binary
+*.mp3 binary
+*.flv binary
+*.fla binary
+*.swf binary
+*.gz binary
+*.zip binary
+*.7z binary
+*.ttf binary
+*.pyc binary
