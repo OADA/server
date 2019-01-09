@@ -45,6 +45,14 @@ Vagrant.configure("2") do |config|
       docker-compose run --rm yarn
     SHELL
 
+    # This one runs on every "vagrant up" or "reload", so you don't have to 
+    # ssh into the VM in order to start oada:
+    config.vm.provision "shell", run: 'always', inline: <<-SHELL
+      echo "Starting oada-srvc-docker with sudo docker-compose up -d"
+      cd /home/vagrant/oada-srvc-docker && sudo docker-compose up -d
+    SHELL
+
+
   # End of OADA-specific additions
 
   # Disable automatic box update checking. If you disable this, then
