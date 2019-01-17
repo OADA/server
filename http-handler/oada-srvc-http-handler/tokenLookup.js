@@ -23,7 +23,7 @@ module.exports = function tokenLookup(req) {
 
   if (typeof req.token === "undefined") {
     trace('No token supplied with the request.');
-    return res;
+    return Promise.resolve(res);
   }
   // Get token from db.  Later on, we should speed this up
   // by getting everything in one query.
