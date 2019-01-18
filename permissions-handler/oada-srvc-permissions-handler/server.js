@@ -46,6 +46,23 @@ const scopeTypes = {
         'application/vnd.oada.rock.1+json',
         'application/vnd.trellisfw.audit.globalgap.1+json',
     ],
+    'trellisfw': [
+        'application/vnd.oada.bookmarks.1+json',
+        'application/vnd.oada.shares.1+json',
+        'application/vnd.oada.rocks.1+json',
+        'application/vnd.oada.rock.1+json',
+        'application/vnd.trellisfw.audit.primusgfs.1+json',
+        'application/vnd.trellisfw.audit.globalgap.1+json',
+        'application/vnd.trellisfw.certification.primusgfs.1+json',
+        'application/vnd.trellisfw.certification.globalgap.1+json',
+        'application/vnd.trellisfw.certifications.globalgap.1+json',
+        'application/vnd.trellisfw.certifications.1+json',
+        'application/vnd.trellisfw.client.1+json',
+        'application/vnd.trellisfw.clients.1+json',
+        'application/vnd.trellisfw.connection.1+json',
+        'application/vnd.trellisfw.1+json',
+        'application/json',
+    ],
     'trellis': [
         'application/vnd.oada.bookmarks.1+json',
         'application/vnd.oada.shares.1+json',
@@ -63,6 +80,7 @@ const scopeTypes = {
         'application/vnd.trellisfw.1+json',
         'application/json',
     ]
+
 };
 function scopePerm(perm, has) {
   return perm === has || perm === 'all';
