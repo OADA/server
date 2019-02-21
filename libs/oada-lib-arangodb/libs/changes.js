@@ -89,7 +89,7 @@ function getChange(resourceId, changeRev) {
       RETURN p
     )
     RETURN path
-  
+
 `).call('next').then((result) => {
     if (!result.vertices[0]) return
     let change = {
