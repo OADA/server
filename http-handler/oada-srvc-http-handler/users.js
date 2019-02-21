@@ -57,6 +57,7 @@ router.get('/:id', function(req, res) {
         // Copy and get rid of password field
         // eslint-disable-next-line no-unused-vars
         let {password, ...user} = response;
+        res.set('Content-Location', '/users/'+req.params.id);
         return res.json(user);
     });
 });

@@ -509,24 +509,24 @@ services:
       - NODE_ENV=${NODE_ENV:-development}
       - DEBUG=${DEBUG:-""}
 
-#  yield-tiler:
-#    depends_on:
-#      - startup
-#    build:
-#      context: ./yield-tiler
-#    restart: always
-#    container_name: yield-tiler
-#    networks:
-#      - startup_net
-#      - kafka_net
-#      - arango_net
-#    volumes:
-#      - .:/code
-#      - ./oada-srvc-docker-config.js:/oada-srvc-docker-config.js
-#    environment:
-#      - NODE_ENV=${NODE_ENV:-development}
-#      - NODE_TLS_REJECT_UNAUTHORIZED=${NODE_TLS_REJECT_UNAUTHORIZED:-""}
-#      - DEBUG=${DEBUG:-""}
+  yield-tiler:
+    depends_on:
+      - startup
+    build:
+      context: ./yield-tiler
+    restart: always
+    container_name: yield-tiler
+    networks:
+      - startup_net
+      - kafka_net
+      - arango_net
+    volumes:
+      - .:/code
+      - ./oada-srvc-docker-config.js:/oada-srvc-docker-config.js
+    environment:
+      - NODE_ENV=${NODE_ENV:-development}
+      - NODE_TLS_REJECT_UNAUTHORIZED=${NODE_TLS_REJECT_UNAUTHORIZED:-""}
+      - DEBUG=${DEBUG:-""}
 
 #  winfield-fields-sync:
 #    depends_on:

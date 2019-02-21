@@ -1,6 +1,5 @@
 'use strict';
 
-const { performance } = require('perf_hooks');
 const OADAError = require('oada-error').OADAError;
 const Promise = require('bluebird');
 const {resources, putBodies, changes} = require('../../libs/oada-lib-arangodb');
@@ -33,9 +32,9 @@ responder.on('request', (...args) => {
 		counter = 0;
 		global.gc();
 	}
-	var pTime = performance.now();
+	var pTime = Date.now()/1000;
 	p = p.catch(() => {}).then(() => handleReq(...args)).tap(()=>{
-	info('handleReq', performance.now() - pTime); 
+	info('handleReq', Date.now()/1000 - pTime); 
 	info('~~~~~~~~~~~~~~~~~~~~~~~~')
 	info('~~~~~~~~~~~~~~~~~~~~~~~~')
 });
@@ -49,31 +48,31 @@ function handleReq(req, msg) {
 	var id = req['resource_id'];
 
 	// Get body and check permission in parallel
-	var getB = performance.now();
+	var getB = Date.now()/1000;
 	var body = Promise.try(function getBody() {
-		var pb = performance.now();
+		var pb = Date.now()/1000;
 		return req.body || req.bodyid && putBodies.getPutBody(req.bodyid).tap(() => {
-			console.log('getPutBody', performance.now() - pb);
+			console.log('getPutBody', Date.now()/1000 - pb);
 		});
 	});
 	let existingResourceInfo = {};
-	info('getBody', performance.now() - getB)
+	info('getBody', Date.now()/1000 - getB)
 
 	info(`PUTing to "${req['path_leftover']}" in "${id}"`);
 
 	var changeType;
-	var beforeUpsert = performance.now();
+	var beforeUpsert = Date.now()/1000;
 	var upsert = body.then(async function doUpsert(body) {
-		info('doUpsert', performance.now() - beforeUpsert);
+		info('doUpsert', Date.now()/1000 - beforeUpsert);
 		if (req['if-match']) {
-			var getRev = performance.now()
+			var getRev = Date.now()/1000
 			var rev = await resources.getResource(req.resource_id, '_rev')
-			info('getRev', performance.now() - getRev);
+			info('getRev', Date.now()/1000 - getRev);
 			if (req['if-match'] !== rev) {
 				throw new Error('if-match failed');
 			}
 		}
-		var beforeCacheRev = performance.now();
+		var beforeCacheRev = Date.now()/1000;
 		if (req.rev) {
 			let cacheRev = cache.get(req.resource_id)
 			if (!cacheRev) {
@@ -83,10 +82,10 @@ function handleReq(req, msg) {
 				throw new Error(`rev mismatch`)
 			}
 		}
-		info('cacheRev', performance.now() - beforeCacheRev);
+		info('cacheRev', Date.now()/1000 - beforeCacheRev);
 
 
-		var beforeDeletePartial = performance.now()
+		var beforeDeletePartial = Date.now()/1000
 		var path = pointer.parse(req['path_leftover'].replace(/\/*$/, ''));
 		let method = resources.putResource;
 		changeType = 'merge';
@@ -100,13 +99,13 @@ function handleReq(req, msg) {
 					body = null;
 					changeType = 'delete';
 			} else {
-				return resources.deleteResource(id).tap(() => info('deleteResource', performance.now() - beforeDeletePartial));
+				return resources.deleteResource(id).tap(() => info('deleteResource', Date.now()/1000 - beforeDeletePartial));
 			}
 		}
 
 
 		var obj = {};
-		var ts = performance.now();
+    var ts = Date.now()/1000;
 		// TODO: Sanitize keys?
 
 		// Create new resource
@@ -147,9 +146,9 @@ function handleReq(req, msg) {
 				obj = Object.assign(obj, body);
 		}
 
-		info('recursive merge', performance.now() -ts)
+		info('recursive merge', Date.now()/1000 -ts)
 
-		var beforeHash = performance.now();
+    var beforeHash = Date.now()/1000;
 		// Precompute new rev ignoring _meta and such
 		//let newRevHash = hash(JSON.stringify(obj), {algorithm: 'md5'});
 		let newRevHash = nhash.hash(obj);
@@ -173,10 +172,10 @@ function handleReq(req, msg) {
 
 		obj['_rev'] = rev;
 		pointer.set(obj, '/_meta/_rev', rev);
-		info('hash', performance.now() - beforeHash);
+    info('hash', (Date.now()/1000) - beforeHash);
 
 		// Compute new change
-		var beforeChange = performance.now();
+		var beforeChange = Date.now()/1000;
 		let change_id = await changes.putChange({
 			change: obj,
 			resId: id,
@@ -187,8 +186,8 @@ function handleReq(req, msg) {
 			userId: req['user_id'],
 			authorizationId: req['authorizationid'],
 		})
-		info('change_id', performance.now() - beforeChange);
-		var beforeMethod = performance.now();
+		info('change_id', Date.now()/1000 - beforeChange);
+		var beforeMethod = Date.now()/1000;
 		pointer.set(obj, '/_meta/_changes', {
 			_id: id+'/_meta/_changes',
 			_rev: rev
@@ -200,13 +199,13 @@ function handleReq(req, msg) {
 		
 		//return {rev, orev: 'c', change_id};
 
-		return method(id, obj).then(orev => ({rev, orev, change_id})).tap(() => info('method', performance.now() - beforeMethod));
+		return method(id, obj).then(orev => ({rev, orev, change_id})).tap(() => info('method', Date.now()/1000 - beforeMethod));
 	}).then(function respond({rev, orev, change_id}) {
-    info('upsert then', performance.now() - beforeUpsert)
-		var beforeCachePut = performance.now()
+    info('upsert then', Date.now()/1000 - beforeUpsert)
+		var beforeCachePut = Date.now()/1000
 	  // Put the new rev into the cache
 		cache.put(id, rev);
-    info('cache.put', performance.now() - beforeCachePut)
+    info('cache.put', Date.now()/1000 - beforeCachePut)
 
 		return {
 			'msgtype': 'write-response',
@@ -239,14 +238,14 @@ function handleReq(req, msg) {
 		};
 	});
 
-	var beforeCleanUp = performance.now()
+	var beforeCleanUp = Date.now()/1000
 	var cleanup = body.then(() => {
-		info('cleanup', performance.now() - beforeCleanUp)
-	var beforeRPB = performance.now()
+		info('cleanup', Date.now()/1000 - beforeCleanUp)
+	var beforeRPB = Date.now()/1000
 		// Remove putBody, if there was one
 		//		const result = req.bodyid && putBodies.removePutBody(req.bodyid);
-		return req.bodyid && putBodies.removePutBody(req.bodyid).tap(() => info('remove Put Body', performance.now() - beforeRPB));
+		return req.bodyid && putBodies.removePutBody(req.bodyid).tap(() => info('remove Put Body', Date.now()/1000 - beforeRPB));
 	});
-	var beforeJoin = performance.now();
-	return Promise.join(upsert, cleanup, resp => resp).tap(() => info('join', performance.now() - beforeJoin))
+	var beforeJoin = Date.now()/1000;
+	return Promise.join(upsert, cleanup, resp => resp).tap(() => info('join', Date.now()/1000 - beforeJoin))
 }
