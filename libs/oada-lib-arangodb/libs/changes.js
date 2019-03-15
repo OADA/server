@@ -27,7 +27,7 @@ function getChanges(resourceId, changeRev) {
   return db.query(aql`
     FOR change in ${changes}
       FILTER change.resource_id == ${resourceId}
-      RETURN CONCAT(change.number, '-', change.hash)
+      RETURN CONCAT_SEPARATOR('-', change.number, change.hash)
   `).call('all').then((result) => {
     if (!result) {
       return undefined;
@@ -68,13 +68,14 @@ function getChangesSinceRev(resourceId, rev) {
   });
 }
 
-// Produces a bare tree has a top level key at resourceId and traces down to the actual
-// change that induced this rev update
+// Produces a bare tree has a top level key at resourceId and traces down to the
+// actual change that induced this rev update
 // TODO: using .body allows the changes to be nested, but doesn't allow us to
 // specify all of the other change details along the way down.
 function getChange(resourceId, changeRev) {
-//TODO: This is meant to handle when resources are deleted directly. Edge cases
-  //remain to be tested. Does this suffice regarding the need send down a bare tree?
+  //TODO: This is meant to handle when resources are deleted directly. Edge
+  // cases remain to be tested. Does this suffice regarding the need send down a
+  // bare tree?
   if (!changeRev) {
     return Promise.resolve({
       body: null,
