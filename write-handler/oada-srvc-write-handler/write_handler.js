@@ -21,21 +21,32 @@ var responder = new Responder({
 });
 
 // Only run one write at a time?
-// TODO: Maybe block separately for each resource
-let p = Promise.resolve();
+let locks = {}; // Per-resource write locks/queues
 let cache = new Cache({defaultTtl: 60 * 1000});
-responder.on('request', (...args) => {
-    // Run once last write finishes (whether it worked or not)
+responder.on('request', (req, ...rest) => {
     if (counter++ > 500) {
         counter = 0;
         global.gc();
     }
+
+    let id = req['resource_id'];
+    let p = locks[id] || Promise.resolve();
     var pTime = Date.now() / 1000;
-    p = p.catch(() => {}).then(() => handleReq(...args)).tap(() => {
-        info('handleReq', Date.now() / 1000 - pTime);
-        info('~~~~~~~~~~~~~~~~~~~~~~~~');
-        info('~~~~~~~~~~~~~~~~~~~~~~~~');
-    });
+    // Run once last write finishes (whether it worked or not)
+    p = p.catch(() => {})
+        .then(() => handleReq(req, ...rest))
+        .finally(() => { // Clean up if queue empty
+            if (locks[id] === p) {
+                // Our write has finished AND no others queued for this id
+                delete locks[id];
+            }
+        })
+        .tap(() => {
+            info('handleReq', Date.now() / 1000 - pTime);
+            info('~~~~~~~~~~~~~~~~~~~~~~~~');
+            info('~~~~~~~~~~~~~~~~~~~~~~~~');
+        });
+    locks[id] = p;
     return p;
 });
 
