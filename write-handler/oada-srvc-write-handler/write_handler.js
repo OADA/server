@@ -168,15 +168,17 @@ function handleReq(req, msg) {
         obj['_meta'] = Object.assign(obj['_meta'] || {}, meta);
 
         // Increment rev number
-        let rev = Number(cacheRev && String(cacheRev).split('-')[0] || 0) + 1;
+        let rev = parseInt(cacheRev || 0, 10) + 1;
 
         // If the hash part of the rev is identical to last time,
         // don't re-execute a PUT to keep it idempotent
+        /*
         existingResourceInfo['_rev'] = existingResourceInfo['_rev'] || '0-0';
         const oldRevHash = existingResourceInfo['_rev'].split('-')[1];
         if (oldRevHash === newRevHash) {
             return rev;
         }
+        */
 
         obj['_rev'] = rev;
         pointer.set(obj, '/_meta/_rev', rev);

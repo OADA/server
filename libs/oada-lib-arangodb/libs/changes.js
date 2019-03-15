@@ -29,14 +29,16 @@ function getChanges(resourceId, changeRev) {
       FILTER change.resource_id == ${resourceId}
       RETURN CONCAT(change.number, '-', change.hash)
   `).call('all').then((result) => {
-    if (!result) return
-    return result
-  })
+    if (!result) {
+      return undefined;
+    }
+    return result;
+  });
 
 }
 
 function getChangesSinceRev(resourceId, rev) {
-  let num = parseInt(rev.split('-')[0]);
+  let num = parseInt(rev, 10);
   return db.query(aql`
     FOR change in ${changes}
       FILTER change.resource_id == ${resourceId}
@@ -49,19 +51,21 @@ function getChangesSinceRev(resourceId, rev) {
       RETURN path
   `).call('all').then((results) => {
     return Promise.map(results, (result) => {
-      if (!result.vertices[0]) return
+      if (!result.vertices[0]) {
+        return undefined;
+      }
       let change = {
         body: result.vertices[0].body,
-        type: result.vertices[result.vertices.length-1].type
-      }
+        type: result.vertices[result.vertices.length - 1].type
+      };
       let path = '';
-      for (let i = 0; i < result.vertices.length-1; i++) {
+      for (let i = 0; i < result.vertices.length - 1; i++) {
         path += result.edges[i].path;
-        pointer.set(change.body, path, result.vertices[i+1].body)
+        pointer.set(change.body, path, result.vertices[i + 1].body);
       }
-      return change
-    })
-  })
+      return change;
+    });
+  });
 }
 
 // Produces a bare tree has a top level key at resourceId and traces down to the actual
@@ -75,13 +79,13 @@ function getChange(resourceId, changeRev) {
     return Promise.resolve({
       body: null,
       type: 'delete'
-    })
+    });
   }
   return db.query(aql`
     LET change = FIRST(
       FOR change in ${changes}
       FILTER change.resource_id == ${resourceId}
-      FILTER change.number == ${+changeRev.split('-')[0]}
+      FILTER change.number == ${parseInt(changeRev, 10)}
       RETURN change
     )
     LET path = LAST(
@@ -90,19 +94,21 @@ function getChange(resourceId, changeRev) {
     )
     RETURN path
 
-`).call('next').then((result) => {
-    if (!result.vertices[0]) return
+  `).call('next').then((result) => {
+    if (!result.vertices[0]) {
+      return undefined;
+    }
     let change = {
       body: result.vertices[0].body,
-      type: result.vertices[result.vertices.length-1].type
-    }
+      type: result.vertices[result.vertices.length - 1].type
+    };
     let path = '';
-    for (let i = 0; i < result.vertices.length-1; i++) {
+    for (let i = 0; i < result.vertices.length - 1; i++) {
       path += result.edges[i].path;
-      pointer.set(change.body, path, result.vertices[i+1].body)
+      pointer.set(change.body, path, result.vertices[i + 1].body);
     }
-    return change
-  })
+    return change;
+  });
 }
 
 function getRootChange(resourceId, changeRev) {
@@ -110,7 +116,7 @@ function getRootChange(resourceId, changeRev) {
     LET change = FIRST(
       FOR change in ${changes}
       FILTER change.resource_id == ${resourceId}
-      FILTER change.number == ${+changeRev.split('-')[0]}
+      FILTER change.number == ${parseInt(changeRev, 10)}
       RETURN change
     )
     LET path = LAST(
@@ -118,13 +124,11 @@ function getRootChange(resourceId, changeRev) {
       RETURN v
     )
     RETURN path
-  `).call('next')
+  `).call('next');
 }
 
 function putChange({change, resId, rev, type, child, path, userId, authorizationId}) {
-  let parts = rev.split('-');
-  let number = +parts[0];
-  let hash = parts.slice(1).join('-');
+  let number = parseInt(rev, 10);
   // The FOR loop below is an if statement handling the case where no child
   // exists
   return db.query(aql`
@@ -133,7 +137,6 @@ function putChange({change, resId, rev, type, child, path, userId, authorization
         body: ${change},
         type: ${type},
         resource_id: ${resId},
-        hash: ${hash},
         number: ${number},
         authorization_id: ${authorizationId || null},
         user_id: ${userId || null}
@@ -150,8 +153,8 @@ function putChange({change, resId, rev, type, child, path, userId, authorization
         } in ${changeEdges}
     )
     RETURN doc._id
-  `).tap((cursor) => {
-  }).call('next');
+  `)
+  .call('next');
 }
 
 module.exports = {

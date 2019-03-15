@@ -257,10 +257,10 @@ function getNewDescendants(id, rev) {
       FILTER p.edges[*].versioned ALL == true
       FILTER v.is_resource
       LET ver = SPLIT(DOCUMENT(LAST(p.vertices).resource_id)._oada_rev, '-', 1)
-      // FILTER TO_NUMBER(ver) >= ${+rev.split('-', 1)}
+      // FILTER TO_NUMBER(ver) >= ${parseInt(rev, 10)}
       RETURN DISTINCT {
         id: v.resource_id,
-        changed: TO_NUMBER(ver) >= ${+rev.split('-', 1)}
+        changed: TO_NUMBER(ver) >= ${parseInt(rev, 10)}
       }
   `).call('all');
 }
@@ -278,7 +278,7 @@ function getStuff(id, rev) {
     LET objs = (FOR v, e, p IN 7..7 OUTBOUND node ${edges}
       FILTER v.is_resource
       LET ver = SPLIT(DOCUMENT(v.resource_id)._oada_rev, '-', 1)
-      FILTER TO_NUMBER(ver) >= ${+rev.split('-', 1)}
+      FILTER TO_NUMBER(ver) >= ${parseInt(rev, 10)}
       RETURN DISTINCT {
         id: v.resource_id,
         rev: DOCUMENT(v.resource_id)._oada_rev
@@ -303,7 +303,7 @@ function getChanges(id, rev) {
     LET objs = (FOR v, e, p IN 7..7 OUTBOUND node ${edges}
       FILTER v.is_resource
       LET ver = SPLIT(DOCUMENT(v.resource_id)._oada_rev, '-', 1)
-      FILTER TO_NUMBER(ver) >= ${+rev.split('-', 1)}
+      FILTER TO_NUMBER(ver) >= ${parseInt(rev, 10)}
       RETURN DISTINCT {
         id: v.resource_id,
         rev: DOCUMENT(v.resource_id)._oada_rev
