@@ -53,9 +53,6 @@ module.exports = {
     },
     dynamicRegistration: {
       trustedListLookupTimeout: 5000,
-      // devIgnoreTrustCheck skips the call that checks the trusted signer's certificate.
-      // Useful when the signer's host is down during development work.
-      devIgnoreTrustCheck: false,
     },
     code: {
       length: 25,

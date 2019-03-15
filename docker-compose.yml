@@ -371,29 +371,6 @@ services:
     volumes:
       - .:/code
 
-  # letsencrypt will go get HTTPS certificates for you if DOMAIN is not localhost
-  # NOTE: letsencrypt has a limit of 5 certificates per top domain per week,
-  # so you don't want this thing running often.  Once it runs, SAVE THE CERTIFICATES
-  # TO A SAFE PLACE.  Otherwise if you go over the request limit and lost the private
-  # key, you're just out of luck for 7 days.
-  letsencrypt:
-    build: ./letsencrypt
-    container_name: letsencrypt
-    restart: "no"
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-      - letsencrypt_www_data:/var/www/letsencrypt
-      - ./proxy/dev-certs:/certs
-    networks:
-      - http_net
-    environment:
-      - SERVER_CONTAINER=proxy
-      - DOMAINS=${DOMAIN:-localhost}
-      - EMAIL=${LETSENCRYPTEMAIL:-info@openag.io}
-      - WEBROOT_PATH=/var/www/letsencrypt
-      - CERTS_PATH=/certs/${DOMAIN:-nodomain}
-      - CHECK_FREQ=7
-
   # Arango is the main backend where core data and graph is stored
   arangodb:
     image: arangodb
