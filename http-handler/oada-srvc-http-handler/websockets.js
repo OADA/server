@@ -203,16 +203,20 @@ module.exports = function wsHandler(server) {
 
         // Emit all new changes from the given rev in the request
         if (request.headers['x-oada-rev']) {
+          trace('Setting up watch on:', resourceId)
+          trace('RECEIVED THIS REV:', resourceId, request.headers['x-oada-rev'])
           oadaLib.resources.getResource(resourceId).then((res) => {
             // If the requested rev is behind by revLimit, simply
               // re-GET the entire resource
             if (parseInt(res._rev) - parseInt(request.headers['x-oada-rev']) >= revLimit) {
+              trace('REV WAY OUT OF DATE', resourceId, res._rev, request.headers['x-oada-rev'])
               socket.send(JSON.stringify({
                 requestId: msg.requestId,
                 resourceId,
                 resource: res
               }))
             } else {
+              trace('REV NOT TOO OLD...', resourceId, res._rev, request.headers['x-oada-rev'])
               // otherwise, feed changes to client
               oadaLib.changes.getChangesSinceRev(resourceId, request.headers['x-oada-rev']).then((changes) => {
                 var rev = request.headers['x-oada-rev'];
@@ -301,7 +305,7 @@ writeResponder.on('request', function handleReq(req) {
       path_leftover: req.path_leftover,
       change
     });
-    if (change.body.type === 'delete') {
+    if (change.type === 'delete') {
       trace('Delete change received for:', req.resource_id, req.path_leftover, change);
       trace('Removing all listeners to:', req.resource_id);
       emitter.removeAllListeners(req.resource_id);
