@@ -94,7 +94,8 @@ function getChange(resourceId, changeRev) {
     if (!result.vertices[0]) return
     let change = {
       body: result.vertices[0].body,
-      type: result.vertices[result.vertices.length-1].type
+      type: result.vertices[0].type,
+      wasDelete: result.vertices[result.vertices.length-1].type === 'delete',
     }
     let path = '';
     for (let i = 0; i < result.vertices.length-1; i++) {
