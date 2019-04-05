@@ -20,7 +20,7 @@ const emitter = new EventEmitter();
 
 module.exports = function wsHandler(server) {
   const ws = new WebSocket.Server({
-     server,
+    server,
   })
 
   // Add socket to storage
@@ -64,48 +64,48 @@ module.exports = function wsHandler(server) {
         return;
       }
 
-    if (!msg.path) {
-      let err = {
-        status: 400,
-        headers: [],
-        data: new OADAError('Bad Request', 400, 'Missing `path`')
-      };
-      err.requestId = msg.requestId;
-      socket.send(JSON.stringify(err));
-      return;
-    }
+      if (!msg.path) {
+        let err = {
+          status: 400,
+          headers: [],
+          data: new OADAError('Bad Request', 400, 'Missing `path`')
+        };
+        err.requestId = msg.requestId;
+        socket.send(JSON.stringify(err));
+        return;
+      }
 
-    if (!msg.headers || !msg.headers.authorization) {
-      let err = {
-        status: 400,
-        headers: [],
-        data: new OADAError('Bad Request', 400,
-          'Missing `authorization`')
-      };
-      err.requestId = msg.requestId;
+      if (!msg.headers || !msg.headers.authorization) {
+        let err = {
+          status: 400,
+          headers: [],
+          data: new OADAError('Bad Request', 400,
+            'Missing `authorization`')
+        };
+        err.requestId = msg.requestId;
 
-      socket.send(JSON.stringify(err));
-      return;
-    }
+        socket.send(JSON.stringify(err));
+        return;
+      }
 
-    if (!msg.method) {
-      let err = {
-        status: 400,
-        headers: [],
-        data: new OADAError('Bad Request', 400, 'Missing `method`')
-      };
-      err.requestId = msg.requestId;
-      socket.send(JSON.stringify(err));
-      return;
-    }
+      if (!msg.method) {
+        let err = {
+          status: 400,
+          headers: [],
+          data: new OADAError('Bad Request', 400, 'Missing `method`')
+        };
+        err.requestId = msg.requestId;
+        socket.send(JSON.stringify(err));
+        return;
+      }
 
-    if (['unwatch', 'watch', 'head', 'get', 'put', 'post', 'delete'].includes(msg.method.toLowerCase()) == false) {
-      let err = {
-        status: 400,
-        headers: [],
-        data: new OADAError('Bad Request', 400, 'Method `'+msg.method+'` is not supported.')
-      };
-      err.requestId = msg.requestId;
+      if (['unwatch', 'watch', 'head', 'get', 'put', 'post', 'delete'].includes(msg.method.toLowerCase()) == false) {
+        let err = {
+          status: 400,
+          headers: [],
+          data: new OADAError('Bad Request', 400, 'Method `'+msg.method+'` is not supported.')
+        };
+        err.requestId = msg.requestId;
         socket.send(JSON.stringify(err));
         return;
       }
@@ -118,6 +118,8 @@ module.exports = function wsHandler(server) {
         case 'unwatch':
           request.method = 'head';
           request.url = msg.path;
+              console.log('UNWATCH');
+              console.log(msg.headers);
         break;
 
         case 'watch':
@@ -152,123 +154,120 @@ module.exports = function wsHandler(server) {
           request.url = msg.path;
         break;
       }
-      axios(request)
-      .then(function(res) {
-         let parts = res.headers['content-location'].split('/');
-     let resourceId;
-     let path_leftover = '';
-     if (parts.length >= 3) resourceId = `${parts[1]}/${parts[2]}`;
-     if (parts.length > 3) path_leftover = parts.slice(3).join('/');
-     if (path_leftover) {
-       path_leftover = `/${path_leftover}`;
-     }
-
-     function handleChange(change) {
-       //let c = change.change.merge || change.change.delete;
-       trace('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
-       trace('responding watch', resourceId)
-       trace('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
-       console.log('IF JSONPOINTER', jsonpointer.get(change.change.body, path_leftover), path_leftover)
-       if (jsonpointer.get(change.change.body, path_leftover) !== undefined) {
-         let message = {
-           requestId: msg.requestId,
-           resourceId,
-           change: change.change,
-         };
-         socket.send(JSON.stringify(message));
-       }
-     };
-
-
-     if (msg.method === 'delete') {
-        if (parts.length === 3) { // it is a resource
-          trace('deleting a watched resource. closing watch', resourceId)
-          emitter.removeAllListeners(resourceId);
-        }
-      }
-      if (msg.method === 'unwatch') {
-        trace('closing watch', resourceId)
-        //trace('************, closing watch', resourceId);
-        //TODO: ensure this doesn't remove others
-        emitter.removeListener(resourceId, handleChange);
-
-        socket.send(JSON.stringify({
-          requestId: msg.requestId,
-          status: 'success'
-        }));
-
-      } else if (msg.method === 'watch') {
-        trace('opening watch', resourceId)
-        emitter.on(resourceId, handleChange);
-
-        // Emit all new changes from the given rev in the request
-        if (request.headers['x-oada-rev']) {
-          trace('Setting up watch on:', resourceId)
-          trace('RECEIVED THIS REV:', resourceId, request.headers['x-oada-rev'])
-          oadaLib.resources.getResource(resourceId).then((res) => {
-            // If the requested rev is behind by revLimit, simply
-              // re-GET the entire resource
-            if (parseInt(res._rev) - parseInt(request.headers['x-oada-rev']) >= revLimit) {
-              trace('REV WAY OUT OF DATE', resourceId, res._rev, request.headers['x-oada-rev'])
-              socket.send(JSON.stringify({
-                requestId: msg.requestId,
-                resourceId,
-                resource: res
-              }))
-            } else {
-              trace('REV NOT TOO OLD...', resourceId, res._rev, request.headers['x-oada-rev'])
-              // otherwise, feed changes to client
-              oadaLib.changes.getChangesSinceRev(resourceId, request.headers['x-oada-rev']).then((changes) => {
-                var rev = request.headers['x-oada-rev'];
-                changes.forEach((change) => {
-                  socket.send(JSON.stringify({
-                    requestId: msg.requestId,
-                    resourceId,
-                    path_leftover,
-                    change,
-                  }))
-                })
-              })
-            }
-          })
+      axios(request).then(function(res) {
+        let parts = res.headers['content-location'].split('/');
+        let resourceId;
+        let path_leftover = '';
+        if (parts.length >= 3) resourceId = `${parts[1]}/${parts[2]}`;
+        if (parts.length > 3) path_leftover = parts.slice(3).join('/');
+        if (path_leftover) {
+          path_leftover = `/${path_leftover}`;
         }
 
-        socket.on('close', function handleClose() {
+        function handleChange(change) {
+          //let c = change.change.merge || change.change.delete;
+          trace('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
+          trace('responding watch', resourceId)
+          trace('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
+          console.log('IF JSONPOINTER', jsonpointer.get(change.change.body, path_leftover), path_leftover)
+          if (jsonpointer.get(change.change.body, path_leftover) !== undefined) {
+            let message = {
+              requestId: msg.requestId,
+              resourceId,
+              change: change.change,
+            };
+            socket.send(JSON.stringify(message));
+          }
+        };
+
+        if (msg.method === 'delete') {
+          if (parts.length === 3) { // it is a resource
+            trace('deleting a watched resource. closing watch', resourceId)
+            emitter.removeAllListeners(resourceId);
+          }
+        }
+
+        if (msg.method === 'unwatch') {
+          trace('closing watch', resourceId)
           emitter.removeListener(resourceId, handleChange);
-        });
 
-        socket.send(JSON.stringify({
-          requestId: msg.requestId,
-          status: 'success',
-        }));
+          socket.send(JSON.stringify({
+            requestId: msg.requestId,
+            status: 'success'
+          }));
 
-      } else {
-        socket.send(JSON.stringify({
-          requestId: msg.requestId,
-          status: res.status,
-          headers: res.headers,
-          data: res.data,
-        }));
-      }
-    }).catch(function(err) {
-      let e;
-      if (err.response) {
-        e = {
-          status: err.response.status,
-          statusText: err.response.statusText,
-          headers: err.response.headers,
-          data: err.response.data
-        };
-      } else {
-        error(err);
-        e = {
-          status: 500,
-          headers: [],
-          data: new OADAError('Internal Error', 500)
-        };
-      }
-      e.requestId = msg.requestId;
-      socket.send(JSON.stringify(e));
+        } else if (msg.method === 'watch') {
+          trace('opening watch', resourceId)
+          emitter.on(resourceId, handleChange);
+
+          socket.on('close', function handleClose() {
+            emitter.removeListener(resourceId, handleChange);
+          });
+
+          // Emit all new changes from the given rev in the request
+          if (request.headers['x-oada-rev']) {
+            trace('Setting up watch on:', resourceId)
+            trace('RECEIVED THIS REV:', resourceId, request.headers['x-oada-rev'])
+            oadaLib.resources.getResource(resourceId).then((res) => {
+              // If the requested rev is behind by revLimit, simply
+              // re-GET the entire resource
+              if (parseInt(res._rev) - parseInt(request.headers['x-oada-rev']) >= revLimit) {
+                trace('REV WAY OUT OF DATE', resourceId, res._rev, request.headers['x-oada-rev'])
+                socket.send(JSON.stringify({
+                  requestId: msg.requestId,
+                  resourceId,
+                  resource: res,
+                  status: 'success',
+                }))
+              } else {
+                trace('REV NOT TOO OLD...', resourceId, res._rev, request.headers['x-oada-rev'])
+                // otherwise, feed changes to client
+                oadaLib.changes.getChangesSinceRev(resourceId, request.headers['x-oada-rev']).then((changes) => {
+                  var rev = request.headers['x-oada-rev'];
+                  changes.forEach((change) => {
+                    socket.send(JSON.stringify({
+                      requestId: msg.requestId,
+                      resourceId,
+                      path_leftover,
+                      change,
+                    }))
+                  })
+                })
+              }
+            })
+          } else {
+            socket.send(JSON.stringify({
+              requestId: msg.requestId,
+              status: 'success',
+            }));
+          }
+        } else {
+          socket.send(JSON.stringify({
+            requestId: msg.requestId,
+            status: res.status,
+            headers: res.headers,
+            data: res.data,
+          }));
+        }
+      }).catch(function(err) {
+        let e;
+        if (err.response) {
+          e = {
+            status: err.response.status,
+            statusText: err.response.statusText,
+            headers: err.response.headers,
+            data: err.response.data
+          };
+        } else {
+          error(err);
+          e = {
+            status: 500,
+            headers: [],
+            data: new OADAError('Internal Error', 500)
+          };
+        }
+        e.requestId = msg.requestId;
+        socket.send(JSON.stringify(e));
       });
     });
   });

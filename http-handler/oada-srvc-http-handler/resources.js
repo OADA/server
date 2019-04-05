@@ -131,6 +131,7 @@ router.get('/*', function checkScope(req, res, next) {
     }).asCallback(next);
 });
 
+// Handle request for /_meta/_changes
 router.get('/*', async function getChanges(req, res, next) {
     try {
         if (req.oadaGraph.path_leftover === '/_meta/_changes') {
@@ -435,7 +436,7 @@ router.delete('/*', function deleteResource(req, res, next) {
         'user_id': req.user.doc['user_id'],
         'authorizationid': req.user.doc['authorizationid'],
         'client_id': req.user.doc['client_id'],
-	'if-match': req.get('if-match')
+    	'if-match': req.get('if-match')
         //'bodyid': bodyid, // No body means delete?
         //body: req.body
     }, config.get('kafka:topics:writeRequest'))
@@ -450,7 +451,7 @@ router.delete('/*', function deleteResource(req, res, next) {
             case 'permission':
                 return Promise.reject(new OADAError('Forbidden', 403,
                         'User does not own this resource'));
-	    case 'if-match failed':
+    	    case 'if-match failed':
 		return Promise.reject(new OADAError('Precondition Failed', 412,
 			'If-Match header does not match current resource _rev'));
             default:
