@@ -421,7 +421,7 @@ function putResource(id, obj) {
       `);
     }
 
-    return q
+    return q.call('next');
   });
 }
 
