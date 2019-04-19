@@ -41,6 +41,7 @@ router.post('/*?', function postResource(req, res, next) {
 router.use(function graphHandler(req, res, next) {
   Promise.resolve(resources.lookupFromUrl('/resources'+req.url, req.user.doc.user_id))
     .then(function handleGraphRes(resp) {
+        console.log('GRAPH LOOKUP RESULT', resp);
         if (resp['resource_id']) {
             // Rewire URL to resource found by graph
             let url = `${resp['resource_id']}${resp['path_leftover']}`;

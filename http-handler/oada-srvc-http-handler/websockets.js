@@ -170,7 +170,7 @@ module.exports = function wsHandler(server) {
           trace('responding watch', resourceId)
           trace('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
           console.log('IF JSONPOINTER', jsonpointer.get(change.change.body, path_leftover), path_leftover)
-          if (jsonpointer.get(change.change.body, path_leftover) !== undefined) {
+          if (change && jsonpointer.get(change.change.body, path_leftover) !== undefined) {
             let message = {
               requestId: msg.requestId,
               resourceId,
@@ -182,7 +182,6 @@ module.exports = function wsHandler(server) {
 
         if (msg.method === 'delete') {
           if (parts.length === 3) { // it is a resource
-            trace('deleting a watched resource. closing watch', resourceId)
             emitter.removeAllListeners(resourceId);
           }
         }
@@ -208,11 +207,12 @@ module.exports = function wsHandler(server) {
           if (request.headers['x-oada-rev']) {
             trace('Setting up watch on:', resourceId)
             trace('RECEIVED THIS REV:', resourceId, request.headers['x-oada-rev'])
-            oadaLib.resources.getResource(resourceId).then((res) => {
+            oadaLib.resources.getResource(resourceId, '_rev').then((rev) => {
               // If the requested rev is behind by revLimit, simply
               // re-GET the entire resource
-              if (parseInt(res._rev) - parseInt(request.headers['x-oada-rev']) >= revLimit) {
-                trace('REV WAY OUT OF DATE', resourceId, res._rev, request.headers['x-oada-rev'])
+              trace('REVS:', resourceId, rev, request.headers['x-oada-rev'])
+              if (parseInt(rev) - parseInt(request.headers['x-oada-rev']) >= revLimit) {
+                trace('REV WAY OUT OF DATE', resourceId, rev, request.headers['x-oada-rev'])
                 socket.send(JSON.stringify({
                   requestId: msg.requestId,
                   resourceId,
@@ -220,10 +220,9 @@ module.exports = function wsHandler(server) {
                   status: 'success',
                 }))
               } else {
-                trace('REV NOT TOO OLD...', resourceId, res._rev, request.headers['x-oada-rev'])
+                trace('REV NOT TOO OLD...', resourceId, rev, request.headers['x-oada-rev'])
                 // otherwise, feed changes to client
                 oadaLib.changes.getChangesSinceRev(resourceId, request.headers['x-oada-rev']).then((changes) => {
-                  var rev = request.headers['x-oada-rev'];
                   changes.forEach((change) => {
                     socket.send(JSON.stringify({
                       requestId: msg.requestId,
@@ -304,10 +303,12 @@ writeResponder.on('request', function handleReq(req) {
       path_leftover: req.path_leftover,
       change
     });
-    if (change.type === 'delete') {
+    if (change && change.type === 'delete') {
       trace('Delete change received for:', req.resource_id, req.path_leftover, change);
-      trace('Removing all listeners to:', req.resource_id);
-      emitter.removeAllListeners(req.resource_id);
+      if (req.resource_id && req.path_leftover === '') {
+        trace('Removing all listeners to:', req.resource_id);
+        emitter.removeAllListeners(req.resource_id);
+      }
     }
   }).catch((e) => {
     error(e);

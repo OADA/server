@@ -82,6 +82,18 @@ function getChange(resourceId, changeRev) {
       type: 'delete'
     });
   }
+  console.log(`
+    LET change = FIRST(
+      FOR change in ${changes}
+      FILTER change.resource_id == ${resourceId}
+      FILTER change.number == ${parseInt(changeRev, 10)}
+      RETURN change
+    )
+    LET path = LAST(
+      FOR v, e, p IN 0..${MAX_DEPTH} OUTBOUND change ${changeEdges}
+      RETURN p
+    )
+    RETURN path`)
   return db.query(aql`
     LET change = FIRST(
       FOR change in ${changes}
@@ -96,7 +108,8 @@ function getChange(resourceId, changeRev) {
     RETURN path
 
   `).call('next').then((result) => {
-    if (!result.vertices[0]) {
+    console.log(result)
+    if (!result || !result.vertices[0]) {
       return undefined;
     }
     let change = {

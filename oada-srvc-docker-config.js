@@ -56,8 +56,9 @@ module.exports = {
 			changes: {
 				name: 'changes',
 				indexes: [
-					{ name: 'number', unique: false},
-					{ name: 'resource_id', unique: false},
+					{ name: ['resource_id', 'number'], 
+            unique: false
+          },
 				],
         defaults: './libs/exampledocs/changes'
 			},

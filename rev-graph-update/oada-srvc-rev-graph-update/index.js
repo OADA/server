@@ -75,7 +75,6 @@ responder.on('request', function handleReq(req) {
     // find resource's parent
     return oadaLib.resources.getParents(req['resource_id'])
         .then(p => {
-	console.log('PEE PEEE', p)
             if (!p || p.length === 0) {
                 warn(`${req['resource_id']} does not have a parent.`);
                 return undefined;

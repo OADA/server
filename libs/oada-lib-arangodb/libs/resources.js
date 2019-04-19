@@ -498,9 +498,106 @@ function deleteResource(id) {
   `).call('next');
 }
 
+function recursiveMakeMergeQuery(path, i) {
+  if (path.length > i+2) {
+    let pathA = i+1 > 0 ? "['"+path.slice(0, i+1).join("'],['")+"']" : "";
+    let curStr = `'${path[i]}': MERGE(res${pathA}, {`
+    let nextStr = recursiveMakeMergeQuery(path, i+1);
+    return curStr+nextStr+'})';
+  } else { // at the bottom, put the unset object here
+    if (path[i]) {
+      return `'${path[i]}': unsetResult})`;
+    } else {
+      return `})`
+    }
+  }
+}
+
+async function deletePartialResource(id, path, doc) {
+  let pathA = path.slice(0, path.length-1).join("']['")
+  pathA = pathA ? "['"+pathA+"']" : pathA;
+  let pathB = path[path.length-1];
+  let stringA = `(res${pathA}, '${pathB}')`;
+  let hasStr = `HAS${stringA}`;
+  let oldPath = _.clone(path);
+
+  let key = id.replace(/^resources\//, '');
+  doc = doc || {};
+  path = Array.isArray(path) ? path : pointer.parse(path);
+
+  // Fix rev
+  doc['_oada_rev'] = doc['_rev'];
+  doc['_rev'] = undefined;
+
+  pointer.set(doc, path, null);
+
+  let name = path.pop();
+  path = pointer.compile(path);
+  path = path ? "'" + path + "'" : null;
+  console.log('HAS QUERY', `
+    LET res = DOCUMENT(${resources.name}, '${key}')
+    LET has = ${hasStr}
+
+    RETURN {has, rev: res._oada_rev}
+  `);
+  let hasObj = await db.query({query: `
+    LET res = DOCUMENT(${resources.name}, '${key}')
+    LET has = ${hasStr}
+
+    RETURN {has, rev: res._oada_rev}
+  `}).call('next');
+  console.log('HASOBJ', hasObj);
+  if (hasObj.has) {
+    let unsetStr = `UNSET${stringA}`
+    let mergeStr = 'MERGE(res, {';
+    mergeStr += recursiveMakeMergeQuery(oldPath, 0, mergeStr);
+    console.log('OLD PATH', oldPath);
+    mergeStr = oldPath.length > 1 ? mergeStr : 'newUnsetResult';
+    let query = `
+      LET res = DOCUMENT(${resources.name}, '${key}')
+
+      LET start = FIRST(
+        FOR node IN ${graphNodes.name}
+          LET path = node.path || null
+          FILTER node['resource_id'] == res._id AND path == ${path || null}
+          RETURN node
+      )
+
+      LET v = (
+        FOR v, e, p IN 1..${MAX_DEPTH} OUTBOUND start._id ${edges.name}
+          OPTIONS { bfs: true, uniqueVertices: 'global' }
+          FILTER p.edges[0].name == '${name}'
+          FILTER p.vertices[*].resource_id ALL == res._id
+          REMOVE v IN ${graphNodes.name}
+          RETURN OLD
+      )
+
+      LET e = (
+        FOR edge IN ${edges.name}
+          FILTER (v[*]._id ANY == edge._to) || (v[*]._id ANY == edge._from) || (edge._from == start._id && edge.name == '${name}')
+          REMOVE edge IN ${edges.name}
+          RETURN OLD
+      )
+
+      LET unsetResult = ${unsetStr}
+      LET newUnsetResult = unsetResult ? unsetResult : {}
+      LET newres = ${mergeStr}
+
+      REPLACE res WITH newres IN ${resources.name} OPTIONS {keepNull: false}
+      RETURN OLD._oada_rev
+    `; // TODO: Why the heck does arango error if I update resource before graph?
+    console.log('QUERY', query);
+    return db.query({query}).call('next')
+  } else {
+    console.log('NOPE NOPE', hasObj.rev);
+    return hasObj.rev
+  }
+}
+
+
 // "Delete" a part of a resource
 // TODO: Not too sure I like how this function works or its name...
-function deletePartialResource(id, path, doc) {
+function deletePartialResource2(id, path, doc) {
   let key = id.replace(/^resources\//, '');
   doc = doc || {};
   path = Array.isArray(path) ? path : pointer.parse(path);

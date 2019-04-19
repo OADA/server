@@ -175,7 +175,8 @@ responder.on('request', function handleReq(req) {
             });
         }
         //Check permissions. 1. Check if owner.
-        if (resource && resource._meta._owner === req.user_id) {
+        // First check if we're putting to resources 
+        if (resource && resource._meta && resource._meta._owner === req.user_id) {
             trace('Resource requested by owner.');
             response.permissions = {
                 read: true,
@@ -183,6 +184,12 @@ responder.on('request', function handleReq(req) {
                 owner: true
             };
         //Check permissions. 2. Check if otherwise permissioned.
+        } else if (/^\/resources\//.test(req.oadaGraph.path_leftover) || /^\/resources\//.test(req.oadaGraph.resource_id)) {
+          response.permissions = {
+            read: true,
+            write: true,
+            owner: true
+          }
 				} else {
             response.permissions = req.oadaGraph.permissions;
         }

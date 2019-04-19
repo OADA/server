@@ -73,7 +73,6 @@ function handleReq(req, msg) {
         info('doUpsert', Date.now() / 1000 - beforeUpsert);
         if (req['if-match']) {
             let rev = await resources.getResource(req['resource_id'], '_rev');
-            console.log('IF-MATCH REV', req['if-match'], rev);
             if (parseInt(req['if-match']) !== rev) {
                 throw new Error('if-match failed');
             }
@@ -208,7 +207,7 @@ function handleReq(req, msg) {
 
         //return {rev, orev: 'c', change_id};
 
-        return method(id, obj).then(orev => ({rev, orev, changeId}))
+        return Promise.resolve(method(id, obj)).then(orev => ({rev, orev, changeId}))
             .tap(() => info('method', Date.now() / 1000 - beforeMethod));
     }).then(function respond({rev, orev, changeId}) {
         info('upsert then', Date.now() / 1000 - beforeUpsert);
