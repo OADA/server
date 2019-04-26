@@ -169,7 +169,6 @@ module.exports = function wsHandler(server) {
           trace('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
           trace('responding watch', resourceId)
           trace('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
-          console.log('IF JSONPOINTER', jsonpointer.get(change.change.body, path_leftover), path_leftover)
           if (change && jsonpointer.get(change.change.body, path_leftover) !== undefined) {
             let message = {
               requestId: msg.requestId,
@@ -207,21 +206,27 @@ module.exports = function wsHandler(server) {
           if (request.headers['x-oada-rev']) {
             trace('Setting up watch on:', resourceId)
             trace('RECEIVED THIS REV:', resourceId, request.headers['x-oada-rev'])
-            oadaLib.resources.getResource(resourceId, '_rev').then((rev) => {
+            oadaLib.resources.getResource(resourceId, '_rev').then(async function(rev) {
               // If the requested rev is behind by revLimit, simply
               // re-GET the entire resource
               trace('REVS:', resourceId, rev, request.headers['x-oada-rev'])
               if (parseInt(rev) - parseInt(request.headers['x-oada-rev']) >= revLimit) {
                 trace('REV WAY OUT OF DATE', resourceId, rev, request.headers['x-oada-rev'])
+                var resource = await oadaLib.resources.getResource(resourceId)
                 socket.send(JSON.stringify({
                   requestId: msg.requestId,
                   resourceId,
-                  resource: res,
+                  resource,
                   status: 'success',
                 }))
               } else {
+                // First, declare success.
+                socket.send(JSON.stringify({
+                  requestId: msg.requestId,
+                  status: 'success',
+                }));
                 trace('REV NOT TOO OLD...', resourceId, rev, request.headers['x-oada-rev'])
-                // otherwise, feed changes to client
+                //Next, feed changes to client
                 oadaLib.changes.getChangesSinceRev(resourceId, request.headers['x-oada-rev']).then((changes) => {
                   changes.forEach((change) => {
                     socket.send(JSON.stringify({
