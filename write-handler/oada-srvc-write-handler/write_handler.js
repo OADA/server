@@ -171,7 +171,7 @@ function handleReq(req, msg) {
         // If the hash part of the rev is identical to last time,
         // don't re-execute a PUT to keep it idempotent
         /*
-        existingResourceInfo['_rev'] = existingResourceInfo['_rev'] || '0-0';
+        existingResourceInfo['_rev'] = (typeof existingResourceInfo === 'number' ? existingResourceInfo['_rev'] : 0);
         const oldRevHash = existingResourceInfo['_rev'].split('-')[1];
         if (oldRevHash === newRevHash) {
             return rev;
@@ -220,7 +220,7 @@ function handleReq(req, msg) {
             'msgtype': 'write-response',
             'code': 'success',
             'resource_id': id,
-            '_rev': rev || '0-0',
+            '_rev': (typeof rev === 'number' ? rev : 0),
             '_orev': orev,
             'user_id': req['user_id'],
             'authorizationid': req['authorizationid'],

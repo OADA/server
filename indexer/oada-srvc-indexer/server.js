@@ -118,7 +118,7 @@ function findNewCertifications(certsResource, id) {
     certifications.body = {
       _type: 'application/vnd.trellisfw.certifications.1+json',
       _id: certifications.path_leftover.replace(/^\//, ''),
-      _rev: '0-0',
+      _rev: 0,
     }
     Object.keys(newCerts).forEach((key) => {
       if (key.charAt(0) !== '_') {
@@ -138,7 +138,7 @@ function findNewCertifications(certsResource, id) {
     trellisfw.body = {
       _type: 'application/vnd.trellisfw.1+json',
       _id: trellisfw.path_leftover.replace(/^\//, ''),
-      _rev: '0-0',
+      _rev: 0,
       certifications: {
         _id: certifications.body._id,
         _rev: certifications.body._rev 

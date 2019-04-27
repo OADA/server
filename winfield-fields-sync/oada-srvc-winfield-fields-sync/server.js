@@ -36,18 +36,18 @@ const cache = require('@oada/oada-cache');
 const tree = {
   'bookmarks': {
     '_type': "application/vnd.oada.bookmarks.1+json",
-    '_rev': '0-0',
+    '_rev': 0,
     'fields': {
       '_type': "application/vnd.oada.fields.1+json",
-      '_rev': '0-0',
+      '_rev': 0,
       'fields-index': {
         '*': {
           '_type': "application/vnd.oada.field.1+json",
-          '_rev': '0-0',
+          '_rev': 0,
           'fields-index': {
             '*': {
               '_type': "application/vnd.oada.field.1+json",
-              '_rev': '0-0',
+              '_rev': 0,
             }
           }
         }
@@ -59,13 +59,13 @@ const tree = {
 var services = {
   'bookmarks': {
     '_type': "application/vnd.oada.bookmarks.1+json",
-    '_rev': '0-0',
+    '_rev': 0,
     'services': {
       '_type': 'application/vnd.oada.services.1+json',
-      '_rev': '0-0',
+      '_rev': 0,
       'datasilo': {
         '_type': 'application/vnd.oada.services.1+json',
-        '_rev': '0-0',
+        '_rev': 0,
       }
     }
   }
@@ -93,7 +93,7 @@ responder.on('request', async function handleReq(req) {
 var intervalTime = 2;
 var beginning = moment().subtract(4, 'years').format('ddd, DD MMM YYYY HH:mm:ss +0000');
 var since = moment().subtract(4, 'years').format('ddd, DD MMM YYYY HH:mm:ss +0000');
-var _rev = '0-0';
+var _rev = 0;
 var CONNECTION;
 
 cache.default.connect({

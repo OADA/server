@@ -9,11 +9,11 @@ module.exports = [
     'hash': 'a',
     'type': 'merge',
     'body': {
-      '_rev': '1-abc',
+      '_rev': 1,
       '_type': 'application/vnd.oada.bookmarks.1+json',
       '_meta': {
         '_id': 'resources/default:resources_bookmarks_123/_meta',
-        '_rev': '1-abc',
+        '_rev': 1,
         '_type': 'application/vnd.oada.bookmarks.1+json',
         '_owner': 'users/default:users_frank_123',
         'stats': {
@@ -28,7 +28,7 @@ module.exports = [
       },
       'rocks': {
         '_id': 'resources/default:resources_rocks_123',
-        '_rev': '9-i'
+        '_rev': 9
       }
     },
     'userid': 'users/default:users_frank_123',
@@ -42,11 +42,11 @@ module.exports = [
     'number': 2,
     'type': 'merge',
     'body': {
-      '_rev': '2-b',
+      '_rev': 2,
       '_type': 'application/vnd.oada.bookmarks.1+json',
       '_meta': {
         '_id': 'resources/default:resources_bookmarks_124/_meta',
-        '_rev': '2-b',
+        '_rev': 2,
         '_type': 'application/vnd.oada.bookmarks.1+json',
         '_owner': 'users/default:users_frank2_124',
         'stats': {
@@ -70,11 +70,11 @@ module.exports = [
     'hash': 'c',
     'type': 'merge',
     'body': {
-      '_rev': '3-c',
+      '_rev': 3,
       '_type': 'application/vnd.oada.bookmarks.1+json',
       '_meta': {
         '_id': 'resources/default:resources_bookmarks_321/_meta',
-        '_rev': '3-c',
+        '_rev': 3,
         '_type': 'application/vnd.oada.bookmarks.1+json',
         '_owner': 'users/default:users_sam_321',
         'stats': {
@@ -99,11 +99,11 @@ module.exports = [
     'number': 4,
     'type': 'merge',
     'body': {
-    '_rev': '1-abc',
+    '_rev': 1,
       '_type': 'application/vnd.oada.bookmarks.1+json',
       '_meta': {
         '_id': 'resources/default:resources_bookmarks_999/_meta',
-        '_rev': '4-d',
+        '_rev': 4,
         '_type': 'application/vnd.oada.bookmarks.1+json',
         '_owner': 'users/default:users_audrey_999',
         'stats': {
@@ -118,7 +118,7 @@ module.exports = [
       },
       'trellisfw': {
         '_id': 'resources/default:resources_trellisfw_999',
-        '_rev': '10-j'
+        '_rev': 10
       }
     },
     'userid': 'users/default:users_audrey_999',
@@ -132,11 +132,11 @@ module.exports = [
     'hash': 'e',
     'type': 'merge',
     'body': {
-      '_rev': '5-e',
+      '_rev': 5,
       '_type': 'application/vnd.oada.bookmarks.1+json',
       '_meta': {
         '_id': 'resources/default:resources_bookmarks_777/_meta',
-        '_rev': '5-e',
+        '_rev': 5,
         '_type': 'application/vnd.oada.bookmarks.1+json',
         '_owner': 'users/default:users_gary_growersync',
         'stats': {
@@ -161,11 +161,11 @@ module.exports = [
     'hash': 'f',
     'type': 'merge',
     'body': {
-      '_rev': '6-f',
+      '_rev': 6,
       '_type': 'application/vnd.oada.bookmarks.1+json',
       '_meta': {
         '_id': 'resources/default:resources_bookmarks_444/_meta',
-        '_rev': '6-f',
+        '_rev': 6,
         '_type': 'application/vnd.oada.bookmarks.1+json',
         '_owner': 'users/default:users_pete_pspperfection',
         'stats': {
@@ -190,11 +190,11 @@ module.exports = [
     'hash': 'g',
     'type': 'merge',
     'body': {
-      '_rev': '7-g',
+      '_rev': 7,
       '_type': 'application/vnd.oada.bookmarks.1+json',
       '_meta': {
         '_id': 'resources/default:resources_bookmarks_555/_meta',
-        '_rev': '7-g',
+        '_rev': 7,
         '_type': 'application/vnd.oada.bookmarks.1+json',
         '_owner': 'users/default:users_rick_retailfresh',
         'stats': {
@@ -219,11 +219,11 @@ module.exports = [
     'hash': 'h',
     'type': 'merge',
     'body': {
-      '_rev': '8-h',
+      '_rev': 8,
       '_type': 'application/vnd.oada.bookmarks.1+json',
       '_meta': {
         '_id': 'resources/default:resources_bookmarks_666/_meta',
-        '_rev': '8-h',
+        '_rev': 8,
         '_type': 'application/vnd.oada.bookmarks.1+json',
         '_owner': 'users/default:users_diane_distributingexcellence',
         'stats': {
@@ -250,11 +250,11 @@ module.exports = [
     'hash': 'i',
     'type': 'merge',
     'body': {
-      '_rev': '9-i',
+      '_rev': 9,
       '_type': 'application/vnd.oada.rocks.1+json',
       '_meta': {
         '_id': 'resources/default:resources_rocks_123/_meta',
-        '_rev': '9-i',
+        '_rev': 9,
         '_type': 'application/vnd.oada.rocks.1+json',
         '_owner': 'users/default:users_frank_123',
         'stats': {
@@ -267,7 +267,7 @@ module.exports = [
       'rocks-index': {
         '90j2klfdjss': {
           '_id': 'resources/default:resources_rock_123',
-          '_rev': '12-l'
+          '_rev': 12
         }
       }
     },
@@ -282,11 +282,11 @@ module.exports = [
     'hash': 'j',
     'type': 'merge',
     'body': {
-      '_rev': '1-abc',
+      '_rev': 1,
       '_type': 'application/vnd.trellisfw.1+json',
       '_meta': {
         '_id': 'resources/default:resources_trellisfw_999/_meta',
-        '_rev': '1-abc',
+        '_rev': 1,
         '_type': 'application/vnd.trellisfw.1+json',
         '_owner': 'users/default:users_audrey_999',
         'stats': {
@@ -298,7 +298,7 @@ module.exports = [
       },
       'clients': {
         '_id': 'resources/default:resources_clients_999',
-        '_rev': '1-abc'
+        '_rev': 1
       }
     },
     'userid': 'users/default:users_audrey_999',
@@ -312,11 +312,11 @@ module.exports = [
     'hash': 'k',
     'type': 'merge',
     'body': {
-      '_rev': '11-k',
+      '_rev': 11,
       '_type': 'application/vnd.trellisfw.clients.1+json',
       '_meta': {
         '_id': 'resources/default:resources_clients_999/_meta',
-        '_rev': '11-k',
+        '_rev': 11,
         '_type': 'application/vnd.trellisfw.clients.1+json',
         '_owner': 'users/default:users_audrey_999',
         'stats': {
@@ -338,11 +338,11 @@ module.exports = [
     'hash': 'l',
     'type': 'merge',
     'body': {
-      '_rev': '12-l',
+      '_rev': 12,
       '_type': 'application/vnd.oada.rock.1+json',
       '_meta': {
         '_id': 'resources/default:resources_rock_123/_meta',
-        '_rev': '12-l',
+        '_rev': 12,
         '_type': 'application/vnd.oada.rock.1+json',
         '_owner': 'users/default:users_frank_123',
         'stats': {

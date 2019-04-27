@@ -85,7 +85,7 @@ describe('Trellis demo testing...', () => {
           name: text,                                                              
           certifications: {                                                        
             _id: response.headers.location.replace(/^\//, ''),                     
-            _rev: '0-0',                                                           
+            _rev: 0,                                                           
           }                                                                        
         }                                                                          
 			}).then((res) => {
@@ -101,7 +101,7 @@ describe('Trellis demo testing...', () => {
           },                                                                       
           data: {                                                                  
             _id: 'resources/'+id,                                                  
-            _rev: '0-0'                                                            
+            _rev: 0                                                            
           }                                                                        
         })                                                                         
       })                                                                           
