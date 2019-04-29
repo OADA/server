@@ -398,6 +398,27 @@ function putResource(id, obj) {
       q = db.query(thingy);
 
     } else {
+      console.log(obj, '!!!!!!!!',`
+        LET resup = FIRST(
+          LET res = ${obj}
+          UPSERT { '_key': res._key }
+          INSERT res
+          UPDATE res
+          IN ${resources}
+          return { res: NEW, orev: OLD._oada_rev }
+        )
+        LET res = resup.res
+        LET nodekey = CONCAT('resources:', res._key)
+        UPSERT { '_key': nodekey }
+        INSERT {
+          '_key': nodekey,
+          'is_resource': true,
+          'resource_id': res._id
+        }
+        UPDATE {}
+        IN ${graphNodes}
+        RETURN resup.orev
+      `);
       q = db.query(aql`
         LET resup = FIRST(
           LET res = ${obj}
@@ -534,24 +555,16 @@ async function deletePartialResource(id, path, doc) {
   let name = path.pop();
   path = pointer.compile(path);
   path = path ? "'" + path + "'" : null;
-  console.log('HAS QUERY', `
-    LET res = DOCUMENT(${resources.name}, '${key}')
-    LET has = ${hasStr}
-
-    RETURN {has, rev: res._oada_rev}
-  `);
   let hasObj = await db.query({query: `
     LET res = DOCUMENT(${resources.name}, '${key}')
     LET has = ${hasStr}
 
     RETURN {has, rev: res._oada_rev}
   `}).call('next');
-  console.log('HASOBJ', hasObj);
   if (hasObj.has) {
     let unsetStr = `UNSET${stringA}`
     let mergeStr = 'MERGE(res, {';
     mergeStr += recursiveMakeMergeQuery(oldPath, 0, mergeStr);
-    console.log('OLD PATH', oldPath);
     mergeStr = oldPath.length > 1 ? mergeStr : 'newUnsetResult';
     let query = `
       LET res = DOCUMENT(${resources.name}, '${key}')
@@ -586,10 +599,8 @@ async function deletePartialResource(id, path, doc) {
       REPLACE res WITH newres IN ${resources.name} OPTIONS {keepNull: false}
       RETURN OLD._oada_rev
     `; // TODO: Why the heck does arango error if I update resource before graph?
-    console.log('QUERY', query);
     return db.query({query}).call('next')
   } else {
-    console.log('NOPE NOPE', hasObj.rev);
     return hasObj.rev
   }
 }

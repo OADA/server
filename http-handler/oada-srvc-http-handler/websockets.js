@@ -119,7 +119,6 @@ module.exports = function wsHandler(server) {
           request.method = 'head';
           request.url = msg.path;
               console.log('UNWATCH');
-              console.log(msg.headers);
         break;
 
         case 'watch':
