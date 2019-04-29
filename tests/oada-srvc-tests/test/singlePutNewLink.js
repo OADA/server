@@ -100,7 +100,7 @@ describe('Create a Link for an Existing Rock Res Using PUT', () => {
       return axiosInst.put(url, {
           'rock': {
             '_id': VALID_ROCK_ID,
-            '_rev': '0-0'
+            '_rev': 0
           }
         }, {
           'headers': {

@@ -48,7 +48,7 @@ const tradeMoisture = {
   corn: 15,
   wheat: 13,
 };
-var yieldMoistureDatasetRev = '0-0';
+var yieldMoistureDatasetRev = 0;
 
 //---------------------------------------------------------
 // Kafka intializations:

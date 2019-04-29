@@ -93,7 +93,7 @@ describe('Trellis demo testing...', () => {
           name: text,                                                              
           certifications: {                                                        
             _id: response.headers.location.replace(/^\//, ''),                     
-            _rev: '0-0',                                                           
+            _rev: 0,                                                           
           }                                                                        
         }                                                                          
 			}).then((res) => {
@@ -109,7 +109,7 @@ describe('Trellis demo testing...', () => {
           },                                                                       
           data: {                                                                  
             _id: 'resources/'+id,                                                  
-            _rev: '0-0'                                                            
+            _rev: 0                                                            
           }                                                                        
         })                                                                         
       })                                                                           
@@ -318,7 +318,7 @@ describe('If the AUDITOR adds an audit to the shared client\'s certifications, i
 					'Content-Type': 'application/vnd.trellisfw.audit.globalgap.1+json',
 					'Authorization': 'Bearer '+AUDITOR_TOKEN,            
 				},
-				data: {audit: {_id: auditid, _rev: '0-0'}}
+				data: {audit: {_id: auditid, _rev: 0}}
 			}).then((result) => {                                                        
 				certId = result.headers.location.replace(/^\//, '');
 				return socket.http({
@@ -328,7 +328,7 @@ describe('If the AUDITOR adds an audit to the shared client\'s certifications, i
 						'Content-Type': 'application/vnd.trellisfw.certification.globalgap.1+json',
 						'Authorization': 'Bearer '+AUDITOR_TOKEN,            
 					},
-					data: {_id: certId, _rev: '0-0'}
+					data: {_id: certId, _rev: 0}
 				})
 			})                                                                           
 		})
@@ -373,7 +373,7 @@ describe('now add a second client, share with a second user, and check that the 
           name: text,
           certifications: {
             _id: certsResourceIdTwo,
-            _rev: '0-0',
+            _rev: 0,
           }
         }
 			}).then((res) => {
@@ -389,7 +389,7 @@ describe('now add a second client, share with a second user, and check that the 
           },
           data: {
             _id: 'resources/'+id,                                                  
-            _rev: '0-0'
+            _rev: 0
           }                                                                        
         })
       }) 
@@ -442,7 +442,7 @@ describe('now add a second client, share with a second user, and check that the 
 						'Content-Type': 'application/vnd.trellisfw.audit.globalgap.1+json',
 						'Authorization': 'Bearer '+AUDITOR_TOKEN,            
 					},
-					data: {audit: {_id: auditid, _rev: '0-0'}}
+					data: {audit: {_id: auditid, _rev: 0}}
 				}).then((response) => {                                                        
 					certIdTwo = response.headers.location.replace(/^\/resources\//, '');
 					return socket.http({
@@ -452,7 +452,7 @@ describe('now add a second client, share with a second user, and check that the 
 							'Content-Type': 'application/vnd.trellisfw.certification.globalgap.1+json',
 							'Authorization': 'Bearer '+AUDITOR_TOKEN,            
 						},
-						data: {_id: 'resources/'+certIdTwo, _rev: '0-0'}
+						data: {_id: 'resources/'+certIdTwo, _rev: 0}
 					})
 				})                                                                           
 			})

@@ -301,7 +301,7 @@ router.put('/*', async function ensureTypeTreeExists(req, res, next) {
                     // Write link from parent. These writes reference the
                     // path from the known resource returned by graph lookup
                         let linkBody = {_id: id};
-                        if (body._rev) linkBody._rev = body._rev;
+                        if (typeof body._rev === 'number') linkBody._rev = body._rev;
                         return requester.send({
                             rev: parentRev,
                             resource_id: parentId,
@@ -472,15 +472,15 @@ let trees = {
   'fields': {
     'fields': {
       '_type': "application/vnd.oada.fields.1+json",
-      '_rev': '0-0',
+      '_rev': 0,
       'fields-index': {
         '*': {
           '_type': "application/vnd.oada.field.1+json",
-          '_rev': '0-0',
+          '_rev': 0,
           'fields-index': {
             '*': {
               '_type': "application/vnd.oada.field.1+json",
-              '_rev': '0-0',
+              '_rev': 0,
             }
           }
         }
@@ -490,21 +490,21 @@ let trees = {
   'as-harvested': {
       'harvest': {
           '_type': "application/vnd.oada.harvest.1+json",
-          '_rev': '0-0',
+          '_rev': 0,
           'as-harvested': {
               '_type': "application/vnd.oada.as-harvested.1+json",
-              '_rev': '0-0',
+              '_rev': 0,
               'yield-moisture-dataset': {
                   '_type': "application/vnd.oada.as-harvested.yield-moisture-dataset.1+json",
-                  '_rev': '0-0',
+                  '_rev': 0,
                   'crop-index': {
                       '*': {
                           '_type': "application/vnd.oada.as-harvested.yield-moisture-dataset.1+json",
-                          '_rev': '0-0',
+                          '_rev': 0,
                           'geohash-length-index': {
                               '*': {
                                   '_type': "application/vnd.oada.as-harvested.yield-moisture-dataset.1+json",
-                                  '_rev': '0-0',
+                                  '_rev': 0,
                                   'geohash-index': {
                                       '*': {
                                           '_type': "application/vnd.oada.as-harvested.yield-moisture-dataset.1+json",
@@ -521,21 +521,21 @@ let trees = {
   'tiled-maps': {
       'harvest': {
           '_type': "application/vnd.oada.harvest.1+json",
-          '_rev': '0-0',
+          '_rev': 0,
           'tiled-maps': {
               '_type': "application/vnd.oada.tiled-maps.1+json",
-              '_rev': '0-0',
+              '_rev': 0,
               'dry-yield-map': {
                   '_type': "application/vnd.oada.tiled-maps.dry-yield-map.1+json",
-                  '_rev': '0-0',
+                  '_rev': 0,
                   'crop-index': {
                       '*': {
                           "_type": "application/vnd.oada.tiled-maps.dry-yield-map.1+json",
-                          '_rev': '0-0',
+                          '_rev': 0,
                           'geohash-length-index': {
                               '*': {
                                   "_type": "application/vnd.oada.tiled-maps.dry-yield-map.1+json",
-                                  '_rev': '0-0',
+                                  '_rev': 0,
                                   'geohash-index': {
                                       '*': {
                                           "_type": "application/vnd.oada.tiled-maps.dry-yield-map.1+json",
@@ -552,10 +552,10 @@ let trees = {
   'services': {
     'services': {
       '_type': 'application/vnd.oada.services.1+json',
-      '_rev': '0-0',
+      '_rev': 0,
       'datasilo': {
         '_type': 'application/vnd.oada.services.1+json',
-        '_rev': '0-0',
+        '_rev': 0,
       }
     }
   }
@@ -579,7 +579,7 @@ function replaceLinks(obj) {
     }
     if (val._id) { // If it's an object, and has an '_id', make it a link from descriptor
       ret[key] = { _id: obj[key]._id};
-      if (val._rev) ret[key]._rev = '0-0'
+      if (typeof val._rev === 'number') ret[key]._rev = 0
       return;
     }
     // otherwise, recurse into the object looking for more links

@@ -159,7 +159,7 @@ describe('Check Rev Update for a Link Res (Parent Graph)', () => {
       return axiosInst.put(url, {
           'rock': {
             '_id': VALID_ROCK_ID,
-            '_rev': '0-0'
+            '_rev': 0
           }
         }, {
           'headers': {

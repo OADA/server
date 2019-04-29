@@ -1596,7 +1596,7 @@ module.exports = {
 			value: 'yes',
 			units: 'yes-no-n_a',
 		},
-		justification: "Waterlab Corp. NELAP Recognized. Cert. # OR10000-008. Exp. 4/10/17",
+		justification: "Waterlab Corp. NELAP Recognized. Cert. # OR10001-108. Exp. 4/10/17",
 	},
 	'CB 5.3.5': {
 		question_name: "Are corrective actions taken based on adverse results from the risk assessment before the next harvest cycle?",
@@ -2410,7 +2410,7 @@ module.exports = {
 			value: 'yes',
 			units: 'yes-no-n_a',
 		},
-		justification: "Waterlab Corp. NELAP Recognized. Cert. # OR10000-008. Exp. 4/10/17",
+		justification: "Waterlab Corp. NELAP Recognized. Cert. # OR10001-108. Exp. 4/10/17",
 	},
 	'FV 4.2.1': {
 		question_name: "Does the interval between the application of organic fertilizer and the product harvest not compromise food safety?",

@@ -24,7 +24,7 @@ let db = new Database(server_addr);
   department: 'ECE'
   keys: ['134t55'],
   status: 'F', //F for Faculty
-  puid: '00000-00000',
+  puid: '00003-40000',
   _type: 'person',
 }
 */

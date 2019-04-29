@@ -9,10 +9,10 @@ let {resources, graphNodes, edges} = createDb.collections;
   Resources:
   {
     _id: 6,
-    _oada_rev: "0-0",
+    _oada_rev: 0,
     _meta: {
       _id: "meta:6",
-      _rev: "0-0"
+      _rev: 0
     },
     picked_up: false
   }
@@ -30,11 +30,11 @@ let {resources, graphNodes, edges} = createDb.collections;
 console.log(resources, graphNodes, edges)
 var rockRandNumber=1;
 var createResource = function createResource(data) {
-  data = _.merge({}, {_oada_rev: "0-0"}, data);
+  data = _.merge({}, {_oada_rev: 0}, data);
   return resources.save(data).then((resource)=> {
     var meta = {
       _meta: {
-        _oada_rev: "0-0",
+        _oada_rev: 0,
         _id: "meta:" + resource._key
       }
     }

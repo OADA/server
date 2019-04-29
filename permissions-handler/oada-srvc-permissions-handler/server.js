@@ -46,6 +46,15 @@ const scopeTypes = {
 		'application/vnd.oada.field.1+json',
 		'application/json',
   ],
+  'oada.isoblue': [
+		'application/vnd.oada.bookmarks.1+json',
+		'application/vnd.oada.isoblue.1+json',
+		'application/vnd.oada.isoblue.device.1+json',
+		'application/vnd.oada.isoblue.dataset.1+json',
+		'application/vnd.oada.isoblue.day.1+json',
+		'application/vnd.oada.isoblue.hour.1+json',
+		'application/json',
+  ],
   'oada.operations': [
 		'application/vnd.oada.bookmarks.1+json',
 		'application/vnd.oada.shares.1+json',

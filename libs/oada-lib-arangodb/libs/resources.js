@@ -442,7 +442,7 @@ function putResource(id, obj) {
       `);
     }
 
-    return q
+    return q.call('next');
   });
 }
 
@@ -473,7 +473,7 @@ function addLinks(res) {
     if (link.hasOwnProperty('_rev')) {
       rev = getResource(link['_id'], '_oada_rev')
         .then(function updateRev(rev) {
-          link['_rev'] = rev || '0-0';
+          link['_rev'] = (typeof rev === 'number' ? rev : 0);
         });
     }
 
