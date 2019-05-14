@@ -14,7 +14,7 @@ services:
       - kafka_net
       - arango_net
       - startup_net
-    ports:
+    expose: # expose only internally, not on host
       - "80"
     volumes:
       - .:/code
@@ -67,7 +67,7 @@ services:
       - http_net
       - arango_net
       - startup_net
-    ports:
+    expose: # expose only internally, not on host
       - "80"
     volumes:
       - .:/code
@@ -93,8 +93,8 @@ services:
       - http_net
       - kafka_net
       - arango_net
-    ports:
-      - "34135:80"
+    expose: # expose only internally, not on host
+      - "80" # at one time this mapped 34135 from host to local 80 for some reason
     volumes:
       - .:/code
       - ./oada-srvc-docker-config.js:/oada-srvc-docker-config.js
@@ -229,7 +229,7 @@ services:
     volumes:
       - .:/code
       - ./oada-srvc-docker-config.js:/oada-srvc-docker-config.js
-    ports:
+    expose: # expose only internally, not on host
       - "80"
     environment:
       - NODE_ENV=${NODE_ENV:-development}
@@ -269,6 +269,8 @@ services:
       # Need to map proxy's dev-certs for letsencrypt to save all its stuff where proxy can get it
       - ./proxy/dev-certs:/etc/letsencrypt
     command: bash
+    ports:          # when you run an admin container, it will hold the host's 8529 port.
+      - "8529:8529" # So if you want to debug arangodb, run an admin container and then ssh port forward
     networks:
       - startup_net
       - kafka_net
@@ -282,8 +284,8 @@ services:
     image: wurstmeister/kafka
     depends_on:
       - zookeeper
-    ports:
-      - "9092:9092"
+    expose: # expose only internally, not on host
+      - "9092"
     restart: always
     hostname: kafka
     networks:
@@ -302,15 +304,15 @@ services:
 
 #  exporter:
 #    image: prom/node-exporter:latest
-#    ports:
-#      - "9100:9100"
+#    expose: # expose only internally, not on host
+#      - "9100"
 #    networks:
 #      - prometheus
 
 #  grafana:
 #    image: grafana/grafana
-#    ports:
-#      - "3000:3000"
+#    expose: # exponse only internally, not on host
+#      - "3000"
 #    depends_on:
 #      - prometheus
 
@@ -321,8 +323,8 @@ services:
 #      - /var/run:/var/run:rw
 #      - /sys:/sys:ro
 #      - /var/lib/docker/:/var/lib/docker:ro
-#    ports:
-#      - "8090:8080"
+#    expose: # expose only internally, not on host
+#      - "8080"
 #    networks:
 #      - arango_net
 #      - kafka_net
@@ -331,8 +333,8 @@ services:
 
 #  jmx-exporter:
 #    build: ./jmx-exporter
-#    ports:
-#      - "8080:8080"
+#    epose: # expose only internally, not on host
+#      - "8080"
 #    networks:
 #      - prometheus
 #      - kafka_net
@@ -357,8 +359,8 @@ services:
 #    networks:
 #      - kafka_net
 #      - prometheus
-#    ports:
-#      - "9090:9090"
+#    expose: # expose only internally, not on host
+#      - "9090"
 #    depends_on:
 #      - exporter
 #    links:
@@ -381,8 +383,8 @@ services:
     volumes:
       - arangodb_data:/var/lib/arangodb3
       - arangodb_data:/var/lib/arangodb3-apps
-    ports:
-      - "8529:8529"
+    expose: # expose only internally, not on host
+      - "8529"
     environment:
       # - ARANGO_RANDOM_ROOT_PASSWORD=1
       - ARANGO_NO_AUTH=1
@@ -398,7 +400,7 @@ services:
     restart: always
     networks:
       - kafka_net
-    ports:
+    expose: # expose only internally, not on host
       - "2181"
     volumes:
       - zookeeper_data:/var/lib/zookeeper
