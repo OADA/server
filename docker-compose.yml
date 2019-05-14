@@ -11,7 +11,7 @@ services:
     restart: always
     container_name: startup
     networks:
-      - kafka_net
+     - kafka_net
       - arango_net
       - startup_net
     expose: # expose only internally, not on host
@@ -269,8 +269,6 @@ services:
       # Need to map proxy's dev-certs for letsencrypt to save all its stuff where proxy can get it
       - ./proxy/dev-certs:/etc/letsencrypt
     command: bash
-    ports:          # when you run an admin container, it will hold the host's 8529 port.
-      - "8529:8529" # So if you want to debug arangodb, run an admin container and then ssh port forward
     networks:
       - startup_net
       - kafka_net
