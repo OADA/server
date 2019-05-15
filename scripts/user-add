@@ -1,0 +1,87 @@
+#!/usr/bin/env node
+
+const argv = require('minimist')(process.argv.slice(2));
+const prompt = require('inquirer').prompt;
+const chalk = require('chalk');
+const fs = require('mz/fs');
+const userlib = require('../libs/oada-lib-arangodb').users;
+
+// Build out this object, then save to database:
+let userobj = {
+  username: argv.u || argv.username,
+  password: argv.p || argv.password,
+    domain: argv.d || argv.domain,
+      name: argv.n || argv.name,
+     email: argv.e || argv.email,
+};
+
+// Check command-line args, prompt for things we still need
+return Promise.try(() => {
+  // Username:
+  if (userobj.username) return;
+  return prompt({ type: 'text', name: 'username', message: 'Username: '})
+    .then(({username}) => userobj.username = username)
+    .then(() => userlib.findByUsername(userobj.username))
+    .then(result => {
+      if (!result) return;
+      console.log(chalk.red('ERROR: username'), chalk.yellow(userobj.username), chalk.red('already exists.'));
+      process.exit(1);
+    });
+
+}).then(() => {
+  // Password:
+  if (userobj.password) return;
+  return prompt({ type: 'password', name: 'password', message: 'Password: '})
+    .then(({password}) => userobj.password = password);
+
+}).then(() => {
+  // Domain:
+  if (userobj.domain) return;
+  return fs.readdir('/code/domains')
+    .then(domains => domains.filter(d => !d.match(/^\./)))
+    .then(domains => prompt({ type: 'list', choices: domains, name: 'domain', message: 'Domain '+chalk.grey('(from /code/domains)')+': '}))
+    .then(({domain}) => userobj.domain = domain);
+
+}).then(() => {
+  // Name:
+  if (userobj.name) return;
+  return prompt({ type: 'text', name: 'name', message: 'Name: '})
+    .then(({name}) => userobj.name = name);
+
+}).then(() => {
+  // Email:
+  if (userobj.email) return;
+  return prompt({ type: 'text', name: 'email', message: 'Email: '})
+    .then(({email}) => userobj.email = email);
+
+}).then(() => {
+  // Create the user:
+  console.log(chalk.yellow('Creating User:'));
+  const pw = userobj.password;
+  userobj.password = '<hidden>';
+  console.log(userobj);
+  userobj.password = pw;
+  return prompt({ type: 'confirm', name: 'proceed', default: true});
+
+}).then(({proceed}) => {
+  if (!proceed) {
+    console.log('Ok then, doing nothing');
+    process.exit(0);
+  }
+  return userlib.create(userobj);
+
+}).then(() => {
+  // Tell them we created the user:
+  console.log(
+     chalk.green('User ')
+    +chalk.yellow(userobj.username)
+    +chalk.green(' created successfully: ')
+  );
+  return userlib.findByUsername(userobj.username);
+
+}).then(u => {
+  delete u.password;
+  console.log(u)
+});
+
+

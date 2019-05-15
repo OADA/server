@@ -1,0 +1,29 @@
+{
+  "name": "oada-scripts",
+  "version": "0.0.1",
+  "description": "Scripts for interacting with OADA backend services",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/oada/oada-srvc-docker.git"
+  },
+  "keywords": [
+    "oada",
+    "oada-srvc-docker"
+  ],
+  "author": "Aaron Ault",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/oada/oada-srvc-docker/issues"
+  },
+  "homepage": "https://github.com/oada/oada-srvc-docker#readme",
+  "dependencies": {
+    "chalk": "^2.4.2",
+    "inquirer": "^6.3.1",
+    "minimist": "^1.2.0",
+    "mz": "^2.7.0"
+  }
+}
