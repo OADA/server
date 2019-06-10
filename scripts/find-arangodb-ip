@@ -1,0 +1,4 @@
+#! /bin/bash
+
+# Note: on most Linux systems you need to run this as root or someone that has permission to docker
+docker inspect -f '{{.Name}} - {{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' arangodb
