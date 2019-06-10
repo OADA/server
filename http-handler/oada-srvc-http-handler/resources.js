@@ -51,6 +51,7 @@ router.use(function graphHandler(req, res, next) {
         res.set('Content-Location', req.baseUrl + req.url);
         // TODO: Just use express parameters rather than graph thing?
       req.oadaGraph = resp;
+      req.resourceExists = _.clone(resp.resourceExists);
   })
   .asCallback(next);
 });
@@ -89,7 +90,7 @@ router.put('/*', function checkScope(req, res, next) {
         'user_id': req.user.doc['user_id'],
         'scope': req.user.doc.scope,
         'contentType': req.get('content-type'),
-	'requestType': 'put'
+    	'requestType': 'put'
     }, config.get('kafka:topics:permissionsRequest'))
     .then(function handlePermissionsRequest(response) {
         if (!req.oadaGraph['resource_id']) { // PUTing non-existant resource
@@ -117,7 +118,7 @@ router.get('/*', function checkScope(req, res, next) {
 	'requestType': 'get'
     }, config.get('kafka:topics:permissionsRequest'))
     .then(function handlePermissionsRequest(response) {
-        trace('permissions response:' + response);
+        trace('permissions response: %o', response);
         if (!response.permissions.owner && !response.permissions.read) {
             warn(req.user.doc['user_id'] +
                     ' tried to GET resource without proper permissions');
@@ -172,6 +173,12 @@ router.get('/*', function getResource(req, res, next) {
 
     return Promise
         .join(doc, function returnDoc(doc) {
+            console.log('--------------------------')
+            console.log('--------------------------')
+            console.log('--------------------------')
+            console.log('--------------------------')
+            console.log('--------------------------')
+            console.log('DOC IS', doc);
             // TODO: Allow null values in OADA?
             if (doc === undefined || doc === null) {
                 throw new OADAError('Not Found', 404);
@@ -360,8 +367,11 @@ router.put('/*', function putResource(req, res, next) {
         .get('_id')
 
         .then(bodyid => {
+            console.log('rrrRESOURCE EXISTS', req.oadaGraph)
+            console.log('rrrRESOURCE EXISTS', req.resourceExists)
             return requester.send({
                 'connection_id': req.id,
+                'resourceExists': req.resourceExists,
                 'domain': req.get('host'),
                 'url': req.url,
                 'resource_id': req.oadaGraph['resource_id'],
@@ -420,6 +430,8 @@ router.delete('/*', function deleteLink(req, res, next) {
         let path = req.oadaGraph.from['path_leftover'];
         req.url = '/' + id.replace(/^\/?resources\//, '') + path;
         req.oadaGraph = req.oadaGraph.from;
+        console.log('oadagraph', req.resourceExists);
+
     }
 
     next();
@@ -428,6 +440,7 @@ router.delete('/*', function deleteLink(req, res, next) {
 router.delete('/*', function deleteResource(req, res, next) {
     info(`Sending DELETE request for request ${req.id}`);
     return requester.send({
+        'resourceExists': req.resourceExists,
         'connection_id': req.id,
         'domain': req.get('host'),
         'url': req.url,

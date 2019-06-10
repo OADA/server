@@ -29,7 +29,7 @@ responder.on('request', (req, ...rest) => {
         global.gc();
     }
 
-    let id = req['resource_id'];
+    let id = req['resource_id'].replace(/^\//, '');
     let p = locks[id] || Promise.resolve();
     var pTime = Date.now() / 1000;
     // Run once last write finishes (whether it worked or not)
@@ -53,10 +53,12 @@ responder.on('request', (req, ...rest) => {
 function handleReq(req, msg) {
 
     req.source = req.source || '';
-    var id = req['resource_id'];
+    var id = req['resource_id'].replace(/^\//, '');
 
     // Get body and check permission in parallel
     var getB = Date.now() / 1000;
+    console.log('id is: ', id)
+    console.log('0th body', req.body, req.bodyid)
     var body = Promise.try(function getBody() {
         var pb = Date.now() / 1000;
         return req.body || req.bodyid && putBodies.getPutBody(req.bodyid)
@@ -70,10 +72,17 @@ function handleReq(req, msg) {
     var changeType;
     var beforeUpsert = Date.now() / 1000;
     var upsert = body.then(async function doUpsert(body) {
+    console.log('FIRST BODY', body)
         info('doUpsert', Date.now() / 1000 - beforeUpsert);
         if (req['if-match']) {
             let rev = await resources.getResource(req['resource_id'], '_rev');
             if (parseInt(req['if-match']) !== rev) {
+              console.log('------------THROWING------------')
+              console.log('------------THROWING------------')
+              console.log('------------THROWING------------')
+              console.log(rev)
+              console.log(req['if-match'])
+              console.log(req);
                 throw new Error('if-match failed');
             }
         }
@@ -91,10 +100,13 @@ function handleReq(req, msg) {
 
         var beforeDeletePartial = Date.now() / 1000;
         var path = pointer.parse(req['path_leftover'].replace(/\/*$/, ''));
+        console.log('path', path, path.length);
         let method = resources.putResource;
         changeType = 'merge';
         // Perform delete
+        console.log('BODY IS', body);
         if (body === undefined) {
+            console.log('path', path, path.length);
             if (path.length > 0) {
                 // TODO: This is gross
                 let ppath = Array.from(path);
@@ -103,6 +115,9 @@ function handleReq(req, msg) {
                 body = null;
                 changeType = 'delete';
             } else {
+              console.log('3333 resourceExists YET', req.resourceExists)
+              if (!req.resourceExists) return {rev: undefined, orev: undefined, changeId: undefined}
+              console.log('deleting resource altogether');
                 return resources.deleteResource(id).tap(() =>
                     info('deleteResource',
                             Date.now() / 1000 - beforeDeletePartial));
@@ -113,9 +128,19 @@ function handleReq(req, msg) {
         var ts = Date.now() / 1000;
         // TODO: Sanitize keys?
 
-        // Create new resource
-        if (!id) {
-            id = 'resources/' + path[1];
+        console.log('000000000000000', req)
+        console.log('1111 resourceExists YET', req.resourceExists)
+        if (req.resourceExists === false) {
+          console.log('resourceExists YET', req.resourceExists)
+          console.log('initializing resource')
+          console.log('initializing resource')
+          console.log('initializing resource')
+          console.log('initializing resource')
+          console.log('initializing resource')
+          console.log('initializing resource', req)
+          console.log('1:', req.resource_id, '2:', req.path_leftover)
+          console.log('path:', path)
+            id = req.resource_id.replace(/^\//, '');
             path = path.slice(2);
 
             // Initialize resource stuff
@@ -206,6 +231,7 @@ function handleReq(req, msg) {
         obj['_meta']['_rev'] = rev;
 
         //return {rev, orev: 'c', change_id};
+        console.log('....id is', id)
 
         return Promise.resolve(method(id, obj)).then(orev => ({rev, orev, changeId}))
             .tap(() => info('method', Date.now() / 1000 - beforeMethod));

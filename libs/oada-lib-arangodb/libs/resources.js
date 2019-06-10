@@ -60,20 +60,23 @@ async function lookupFromUrl(url, userId) {
       LET rev = DOCUMENT(LAST(path.vertices).resource_id)._oada_rev
       RETURN MERGE(path, {permissions, rev})
     `;
+    console.log('query is', query);
     return db.query({query}).call('next').then((result) => {
+      console.log('RESULT IS', result);
 
-      let resource_id = '';
+      let resource_id = pointer.compile(id.concat(pieces));
+
       let path_leftover_not_exists = '';
       let path_leftover_exists = '';
       let rev = result.rev;
+      let resourceExists = true;
 
-      let path_leftover = pointer.compile(id.concat(pieces));
+      let path_leftover =  '';
       let from = {'resource_id': '', 'path_leftover': ''};
 
       if (!result) {
         return {resource_id, path_leftover, from, permissions: {}, rev};
       }
-
 
       let permissions = { owner: null, read: null, write: null};
       result.permissions.reverse().some(p => {
@@ -95,62 +98,58 @@ async function lookupFromUrl(url, userId) {
         }
       });
 
-
       // Check for a traversal that did not finish (aka not found)
       if (result.vertices[0] === null) {
-        return {resource_id, path_leftover, from, permissions, rev};
-      }
-
-      //TODO: Strange edge case where the last node in vertices is undefined
-      if (!result.vertices[result.vertices.length - 1]) {
-        resource_id = result.vertices[result.vertices.length -2]['resource_id']
-        let lastResource = (result.vertices.length - 1) -
-            (_.findIndex(_.reverse(result.vertices), 'is_resource'));
-        // Slice a negative value to take the last n pieces of the array
-        path_leftover =
-            pointer.compile(pieces.slice(lastResource - pieces.length));
-        path_leftover_exists =
-            pointer.compile(pieces.slice(lastResource, result.vertices.length));
-        path_leftover_not_exists =
-            pointer.compile(pieces.slice(-(result.vertices.length - pieces.length)))
-
-        return {
-          resource_id,
-          path_leftover,
-          from,
-          permissions,
-          rev
+        console.log('A');
+        return {resource_id, path_leftover, from, permissions, rev, resourceExists:false};
+      // A dangling edge indicates uncreated resource; return graph lookup
+        // starting at this uncreated resource
+      } else if (!result.vertices[result.vertices.length - 1]) {
+        console.log('B');
+        let lastEdge = result.edges[result.edges.length - 1]._to;
+        path_leftover = '';
+        resource_id = 'resources/' + lastEdge.split('graphNodes/resources:')[1];
+        rev = 0;
+        let revVertices = _.reverse(_.cloneDeep(result.vertices));
+        console.log('PATH LEFT', path_leftover)
+        from = result.vertices[result.vertices.length - 2];
+        let edge = result.edges[result.edges.length - 1];
+        from = {
+          'resource_id': from ? from['resource_id'] : '',
+          'path_leftover': (from && from['path'] || '') + (edge ? '/' + edge.name : '')
+        }
+        resourceExists = false;
+      } else {
+        resource_id = result.vertices[result.vertices.length - 1]['resource_id'];
+        from = result.vertices[result.vertices.length - 2];
+        let edge = result.edges[result.edges.length - 1];
+        // If the desired url has more pieces than the longest path, the
+        // pathLeftover is the extra pieces
+        if (result.vertices.length - 1 < pieces.length) {
+          let revVertices = _.reverse(_.cloneDeep(result.vertices));
+          let lastResource = (result.vertices.length - 1) -
+              (_.findIndex(revVertices, 'is_resource'));
+          // Slice a negative value to take the last n pieces of the array
+          path_leftover =
+              pointer.compile(pieces.slice(lastResource - pieces.length));
+        } else {
+          path_leftover = result.vertices[result.vertices.length - 1].path || '';
+        }
+        from = {
+          'resource_id': from ? from['resource_id'] : '',
+          'path_leftover': (from && from['path'] || '') + (edge ? '/' + edge.name : '')
         }
       }
 
-      resource_id = result.vertices[result.vertices.length - 1]['resource_id'];
-      from = result.vertices[result.vertices.length - 2];
-      let edge = result.edges[result.edges.length - 1];
-      // If the desired url has more pieces than the longest path, the
-      // pathLeftover is the extra pieces
-      if (result.vertices.length - 1 < pieces.length) {
-        let lastResource = (result.vertices.length - 1) -
-            (_.findIndex(_.reverse(result.vertices), 'is_resource'));
-        // Slice a negative value to take the last n pieces of the array
-        path_leftover =
-            pointer.compile(pieces.slice(lastResource - pieces.length));
-        path_leftover_exists =
-            pointer.compile(pieces.slice(lastResource, result.vertices.length));
-        path_leftover_not_exists =
-            pointer.compile(pieces.slice(-(result.vertices.length - pieces.length)))
-      } else {
-        path_leftover = result.vertices[result.vertices.length - 1].path || '';
-      }
+      console.log(rev, resource_id, path_leftover, permissions, from);
 
       return {
         rev,
         resource_id,
         path_leftover,
         permissions,
-        'from': {
-          'resource_id': from ? from['resource_id'] : '',
-          'path_leftover': (from && from['path'] || '') + (edge ? '/' + edge.name : '')
-        }
+        from,
+        resourceExists,
       };
     });
   });
@@ -321,12 +320,12 @@ function putResource(id, obj) {
   obj['_rev'] = undefined;
 
   // TODO: Sanitize OADA keys?
-
-  obj['_key'] = id.replace(/^resources\//, '');
+  // _key is now an illegal document key
+  obj['_key'] = id.replace(/^\/?resources\//, '');
   trace(`Adding links for resource ${id}...`);
 
   return addLinks(obj).then(function docUpsert(links) {
-    info(`Upserting resource ${obj['_key']}`);
+    info(`Upserting resource ${obj._key}`);
     trace(`Upserting links: ${JSON.stringify(links, null, 2)}`);
 
     // TODO: Should it check that graphNodes exist but are wrong?
@@ -371,6 +370,7 @@ function putResource(id, obj) {
               }
               UPDATE {}
               IN ${graphNodes}
+              OPTIONS { ignoreErrors: true }
               RETURN NEW
           ), { _id: CONCAT('graphNodes/', LAST(nodeids)), is_resource: true })
           LET edges = (
@@ -398,27 +398,6 @@ function putResource(id, obj) {
       q = db.query(thingy);
 
     } else {
-      console.log(obj, '!!!!!!!!',`
-        LET resup = FIRST(
-          LET res = ${obj}
-          UPSERT { '_key': res._key }
-          INSERT res
-          UPDATE res
-          IN ${resources}
-          return { res: NEW, orev: OLD._oada_rev }
-        )
-        LET res = resup.res
-        LET nodekey = CONCAT('resources:', res._key)
-        UPSERT { '_key': nodekey }
-        INSERT {
-          '_key': nodekey,
-          'is_resource': true,
-          'resource_id': res._id
-        }
-        UPDATE {}
-        IN ${graphNodes}
-        RETURN resup.orev
-      `);
       q = db.query(aql`
         LET resup = FIRST(
           LET res = ${obj}
@@ -438,6 +417,7 @@ function putResource(id, obj) {
         }
         UPDATE {}
         IN ${graphNodes}
+        OPTIONS {exclusive: true, ignoreErrors: true }
         RETURN resup.orev
       `);
     }
@@ -495,9 +475,12 @@ function makeRemote(res, domain) {
 }
 
 function deleteResource(id) {
-  let key = id.replace(/^resources\//, '');
+  //TODO: fix this: for some reason, the id that came in started with
+  ///resources, unlike everywhere else in this file
+  let key = id.replace(/^\/?resources\//, '');
 
   // Query deletes resouce, its nodes, and outgoing edges (but not incoming)
+  console.log('KEY IS:', key, id)
   return db.query(aql`
     LET res = FIRST(
       REMOVE { '_key': ${key} } IN ${resources}

@@ -143,6 +143,12 @@ responder.on('request', function handleReq(req) {
             owner: false
         }
     };
+    trace('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~') 
+    trace('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~') 
+    trace('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~') 
+    trace('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~') 
+    trace('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~') 
+    trace('inside permissions handler', req.oadaGraph.resource_id);
     return oadaLib.resources.getResource(req.oadaGraph.resource_id, '').then((resource) => {
         //Check scopes
         if (process.env.IGNORE_SCOPE === 'yes') {
@@ -161,6 +167,7 @@ responder.on('request', function handleReq(req) {
                 }
                 trace('User scope:', type)
                 let contentType = req.requestType === 'put' ? req.contentType : (resource ? resource._type : undefined);
+                trace('contentType = ', req.requestType === 'put', req.contentType, resource);
                 trace('Does user have scope?', contentType, typeis.is(contentType, scopeTypes[type]))
                 trace('Does user have read scope?', scopePerm(perm, 'read'))
                 return typeis.is(contentType, scopeTypes[type]) &&
