@@ -60,9 +60,7 @@ async function lookupFromUrl(url, userId) {
       LET rev = DOCUMENT(LAST(path.vertices).resource_id)._oada_rev
       RETURN MERGE(path, {permissions, rev})
     `;
-    console.log('query is', query);
     return db.query({query}).call('next').then((result) => {
-      console.log('RESULT IS', result);
 
       let resource_id = pointer.compile(id.concat(pieces));
 
@@ -100,18 +98,15 @@ async function lookupFromUrl(url, userId) {
 
       // Check for a traversal that did not finish (aka not found)
       if (result.vertices[0] === null) {
-        console.log('A');
         return {resource_id, path_leftover, from, permissions, rev, resourceExists:false};
       // A dangling edge indicates uncreated resource; return graph lookup
         // starting at this uncreated resource
       } else if (!result.vertices[result.vertices.length - 1]) {
-        console.log('B');
         let lastEdge = result.edges[result.edges.length - 1]._to;
         path_leftover = '';
         resource_id = 'resources/' + lastEdge.split('graphNodes/resources:')[1];
         rev = 0;
         let revVertices = _.reverse(_.cloneDeep(result.vertices));
-        console.log('PATH LEFT', path_leftover)
         from = result.vertices[result.vertices.length - 2];
         let edge = result.edges[result.edges.length - 1];
         from = {
@@ -141,7 +136,6 @@ async function lookupFromUrl(url, userId) {
         }
       }
 
-      console.log(rev, resource_id, path_leftover, permissions, from);
 
       return {
         rev,
@@ -480,7 +474,6 @@ function deleteResource(id) {
   let key = id.replace(/^\/?resources\//, '');
 
   // Query deletes resouce, its nodes, and outgoing edges (but not incoming)
-  console.log('KEY IS:', key, id)
   return db.query(aql`
     LET res = FIRST(
       REMOVE { '_key': ${key} } IN ${resources}

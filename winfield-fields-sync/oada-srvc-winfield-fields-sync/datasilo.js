@@ -16,10 +16,10 @@ function get(path, query, since) {
 			'Content-Type': 'application/vnd.datasilo.v1.json',
 			'Accept': 'application/json',
 			'x-api-key': conf.apiKey,
-			'if-modified-since': since,
 		},
 		query
 	};
+  if (since) opts.headers['if-modified-since'] = since;
 
 	const req = aws.sign(opts, {
 		accessKeyId: conf.secretKeyId,
@@ -85,8 +85,11 @@ function put(path, data, since) {
 		url: `https://${conf.host}${opts.path}`,
 		headers: req.headers
   }).catch((err) => {
-    console.log('error')
-    console.log(err)
+    console.log('1 - error')
+    console.log('1 - error')
+    console.log('1 - error')
+    console.log('1 - error')
+    console.log('1 - ', err.status, error.response.status);
   })
 }
 
@@ -117,9 +120,9 @@ function post(path, data, since) {
   }).catch((err) => {
     console.log('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
     console.log('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
-    console.log(err)
     console.log('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
     console.log('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
+    console.log('!!!!!!!!!!!!! ', err.status, error.response.status);
 	})
 }
 
