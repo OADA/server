@@ -14,65 +14,86 @@
  */
 'use strict';
 
+const _ = require('lodash');
 var keys = require('./keys');
-var trustedJws = require('oada-trusted-jws');
-var clients = require('./db/models/client');
+var oadaTrustedJWS = require('oada-trusted-jws');
+var Promise = require('bluebird');
+var clients = Promise.promisifyAll(require('./db/models/client'));
 var config = require('./config');
-var debug = require('debug')('error');
+var debug = require('debug');
 
-function dynReg(req, res, done) {
+const error = debug('oada-ref-auth#dynReg:error');
+const info = debug('oada-ref-auth#dynReg:info');
+const trace = debug('oada-ref-auth#dynReg:trace');
 
-  if(!req.body || !req.body.software_statement) {
-    res.status(400).json({
-      error: 'invalid_client_metadata',
-      error_description: 'Client metadata must include a valid trusted OADA'
-    });
-
-    return done();
-  }
-
-  trustedJws(req.body.software_statement, {
-    timeout: config.get('auth:dynamicRegistration:trustedListLookupTimeout')
-  }).spread(function(trusted, metadata) {
-      metadata.trusted = trusted;
-
-      if(!metadata.contacts || !metadata.client_name ||
-         !metadata.redirect_uris) {
+function dynReg(req, res) {
+  return Promise.try(function() {
+    if(!req.body || !req.body.software_statement) {
+      info('request body does not have software_statement key');
+      res.status(400).json({
+        error: 'invalid_client_registration_body',
+        error_description: 'POST to Client registration must include a software_statement in the body'
+      });
+      return;
+    }
+  
+    return oadaTrustedJWS(req.body.software_statement, {
+      timeout: config.get('auth:dynamicRegistration:trustedListLookupTimeout')
+    }).spread(function(trusted, clientreg) {
+      // Set the "trusted" status based on JWS library return value
+      clientreg.trusted = trusted;
+  
+      // Must have contacts, client_name, and redirect_uris or we won't save it
+      if(!clientreg.contacts || !clientreg.client_name || !clientreg.redirect_uris) {
         res.status(400).json({
           error: 'invalid_software_statement',
-          error_description: 'Software statement must include at least ' +
-                             'client_name, redirect_uris, and contacts'
+          error_description: 'Software statement must include at least client_name, redirect_uris, and contacts'
         });
-
-        return done();
+        return;
       }
 
-      clients.save(metadata, function(err, client) {
-        if(err) {
-          debug('Failed to save new dynReg client.  err = ', err);
-          res.status(400).json({
-            error: 'invalid_client_metadata',
-            error_description: 'Unexpected error - Metadata could not be stored.  Err = '+err.toString()
-          });
-
-          return done();
-        }
-
-        metadata.client_id = client.clientId;
-        delete metadata.clientId;
-
-        res.status(201).json(metadata);
-      });
-    })
-    .catch(function(e) {
-      console.log(e.stack);
+      // If scopes is listed in the body, check them to make sure they are in the software_statement, then
+      // replace the signed ones with the subset given in the body
+      if (req.body.scopes && typeof scopes === 'string') {
+        const possiblescopes = _.split(clientreg.scopes || '', ' ');
+        const subsetscopes = _.split(req.body.scopes);
+        const finalscopes = _.filter(subsetscopes, s => _.find(possiblescopes, s));
+        clientreg.scopes = _.join(finalscopes, ' ');
+      }
+  
+      //------------------------------------------
+      // Save client to database, return client_id for their future OAuth2 requests
+      trace('Saving client '+clientreg.client_name+' registration, trusted = ', trusted);
+      return clients.saveAsync(clientreg)
+      .then(function(client) {
+  
+          clientreg.client_id = client.clientId;
+          delete clientreg.clientId;
+          info('Saved new client ID '+clientreg.client_id+' to DB, client_name = ', clientreg.client_name);  
+          res.status(201).json(clientreg);
+      }).catch(function (err) {
+        error('Failed to save new dynReg client.  err = ', err);
+        res.status(400).json({
+          error: 'invalid_client_registration',
+          error_description: 'Unexpected error - Client registration could not be stored.  Err = '+err.toString()
+        });
+      })
+  
+    // If trustedJWS fails
+    }).catch(function(e) {
+      error('Failed to validate client registration, oada-trusted-jws threw error: ', e);
       res.status(400).json({
-        error: 'invalid_software_statement',
-        error_description: 'Software statement is malformed'
+        error: 'invalid_client_registration',
+        error_description: 'Client registration failed decoding or had invalid signature.'
       });
-
-      return done();
     });
+  });
+};
+
+// Add a test fixture to mock the database:
+dynReg.test = {
+  mockClientsDatabase: function(mockdb) { clients = mockdb; },
+  oadaTrustedJWS,
 };
 
 module.exports = dynReg;

@@ -1,0 +1,4 @@
+--reporter spec
+--ui bdd
+--timeout 200
+./test/**/*.test.js
