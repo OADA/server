@@ -34,7 +34,7 @@ module.exports = function(_server,config) {
   //-----------------------------------------------------------------------
   // Load all the domain configs at startup
   const ddir = config.get('domainsDir');
-  const domainConfigs = _.indexBy(_.map(fs.readdirSync(ddir), (dirname) => {
+  const domainConfigs = _.keyBy(_.map(fs.readdirSync(ddir), (dirname) => {
     if (dirname.startsWith('.') == false) return require(ddir+'/'+dirname+'/config')
   }), 'domain');
 
