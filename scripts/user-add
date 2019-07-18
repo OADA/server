@@ -37,9 +37,9 @@ return Promise.try(() => {
 }).then(() => {
   // Domain:
   if (userobj.domain) return;
-  return fs.readdir('/code/domains')
+  return fs.readdir('/domains')
     .then(domains => domains.filter(d => !d.match(/^\./)))
-    .then(domains => prompt({ type: 'list', choices: domains, name: 'domain', message: 'Domain '+chalk.grey('(from /code/domains)')+': '}))
+    .then(domains => prompt({ type: 'list', choices: domains, name: 'domain', message: 'Domain '+chalk.grey('(from /domains)')+': '}))
     .then(({domain}) => userobj.domain = domain);
 
 }).then(() => {

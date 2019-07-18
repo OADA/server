@@ -1,0 +1,21 @@
+#! /bin/bash
+
+OLDPWD=`pwd`
+OADABASEDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+
+if [[ $@ == *"--help"* ]]; then
+  echo "USAGE: $0 <anything you would have typed after \"docker-compose\">"
+  exit 0;
+fi;
+
+COMPOSEFILES=" -f docker-compose.yml -f oada-core/docker-compose.yml"
+for i in `ls services-enabled`; do
+  COMPOSEFILES="$COMPOSEFILES -f $i"
+done
+
+COMMAND="docker-compose $COMPOSEFILES $@"
+echo $COMMAND
+
+cd $OADABASEDIR
+$COMMAND
+cd $OLDPWD

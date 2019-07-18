@@ -1,5 +1,6 @@
 node_modules
-winfield-fields-sync/oada-srvc-winfield-fields-sync/secret-config.js
+services-available/**
+services-enabled/**
 package.lock
 *.log
 .DS_Store
