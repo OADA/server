@@ -7,4 +7,4 @@ COPY "./do-yarn-install.sh" "/bin/do-yarn-install.sh"
 COPY "./do-yarn-upgrade.sh" "/bin/do-yarn-upgrade.sh"
 
 WORKDIR "/code/yarn"
-CMD /bin/bash #/code/yarn/do-yarn-install.sh
+CMD /code/yarn/do-yarn-install.sh

@@ -36,10 +36,10 @@ RUN wget https://github.com/outbrain/zookeepercli/releases/download/v1.0.10/zook
 ENV NVM_DIR=/root/.nvm
 RUN wget -qO- https://raw.githubusercontent.com/creationix/nvm/v0.30.2/install.sh | bash \
     && . /root/.nvm/nvm.sh \
-    && nvm install v8.1.4 \
-    && nvm alias default v8.1.4
+    && nvm install v11.15 \
+    && nvm alias default v11.15
 RUN . /root/.nvm/nvm.sh \
-    && nvm use v8.1.4  \
+    && nvm use v11.15  \
     && npm install -g yarn \
     && yarn global add mocha
     # You can put any global NPM installs here
@@ -49,15 +49,20 @@ COPY "./.vimrc" "/root/.vimrc"
 #############################################################################################
 # Install Docker
 RUN apt-get update
-RUN apt-get -qq install -y docker.io --fix-missing
+# ubuntu version:
+# RUN apt-get -qq install -y docker.io --fix-missing
 
 ##########################################
 # Install letsencrypt to get certs
-RUN apt-get update \
- && apt-get install -y software-properties-common \
- && add-apt-repository ppa:certbot/certbot \
- && apt-get update \
- && apt-get install -y python-certbot-nginx
+RUN echo 'deb http://deb.debian.org/debian stretch-backports main ' | tee /etc/apt/sources.list.d/stretch-backports.list \
+  && apt-get update -y \
+  && apt-get install -y certbot python-certbot-apache -t stretch-backports
+# Ubuntu version:
+# RUN apt-get update \
+#  && apt-get install -y software-properties-common \
+#  && add-apt-repository ppa:certbot/certbot \
+#  && apt-get update \
+#  && apt-get install -y python-certbot-nginx
 
 WORKDIR "/code"
 CMD bash
