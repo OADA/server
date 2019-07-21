@@ -1,4 +1,4 @@
-FROM ubuntu:latest
+FROM oada/docker-base-node
 
 ENV DEBIAN_FRONTEND=noninteractive
 

@@ -1,4 +1,4 @@
-FROM oada/node-rdkafka
+FROM oada/docker-base-node
 
 COPY ./entrypoint.sh /entrypoint.sh
 RUN chmod u+x /entrypoint.sh
