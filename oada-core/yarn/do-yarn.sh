@@ -8,6 +8,6 @@ echo "----------"
 # fi
 echo "cd $2 && yarn $1"
 echo "----------"
-cd $2 && unset BUILD_LIBRDKAFKA && yarn --cache-folder /code/yarn/yarn-cache $1
+cd $2 && yarn --cache-folder /code/yarn/yarn-cache $1
 
 cd $CDIR
