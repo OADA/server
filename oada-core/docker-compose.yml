@@ -18,7 +18,7 @@ services:
       - "80"
     volumes:
       - ./oada-core:/code
-      - ./domains:/code/domains
+      - ./domains:/domains
       - ./oada-srvc-docker-config.js:/oada-srvc-docker-config.js
     environment:
       - NODE_ENV=${NODE_ENV:-development}
@@ -42,7 +42,7 @@ services:
         - "${BIND:-0.0.0.0}:${PORT_HTTPS:-443}:443"
         - "${BIND:-0.0.0.0}:${PORT_HTTP:-80}:80"
     volumes:
-      - ./domains:/code/domains
+      - ./domains:/domains
       - ./oada-core/proxy/nginx.conf:/etc/nginx/nginx.conf
       - ./oada-core/proxy/dev-sites-enabled/:/etc/nginx/sites-templates/
       - ./oada-core/proxy/dev-certs/:/certs/
@@ -72,7 +72,7 @@ services:
     expose: # expose only internally, not on host
       - "80"
     volumes:
-      - ./domains:/code/domains
+      - ./domains:/domains
       - ./oada-core:/code
       - ./oada-srvc-docker-config.js:/oada-srvc-docker-config.js
     environment:
@@ -99,7 +99,7 @@ services:
     expose: # expose only internally, not on host
       - "80" # at one time this mapped 34135 from host to local 80 for some reason
     volumes:
-      - ./domains:/code/domains
+      - ./domains:/domains
       - ./oada-core:/code
       - ./oada-srvc-docker-config.js:/oada-srvc-docker-config.js
     environment:
@@ -122,7 +122,7 @@ services:
       - arango_net
       - http_net
     volumes:
-      - ./domains:/code/domains
+      - ./domains:/domains
       - ./oada-core:/code
       - ./oada-srvc-docker-config.js:/oada-srvc-docker-config.js
     environment:
@@ -143,7 +143,7 @@ services:
       - kafka_net
       - arango_net
     volumes:
-      - ./domains:/code/domains
+      - ./domains:/domains
       - ./oada-core:/code
       - ./oada-srvc-docker-config.js:/oada-srvc-docker-config.js
     environment:
@@ -162,7 +162,7 @@ services:
       - kafka_net
       - arango_net
     volumes:
-      - ./domains:/code/domains
+      - ./domains:/domains
       - ./oada-core:/code
       - ./oada-srvc-docker-config.js:/oada-srvc-docker-config.js
     environment:
@@ -181,7 +181,7 @@ services:
       - kafka_net
       - arango_net
     volumes:
-      - ./domains:/code/domains
+      - ./domains:/domains
       - ./oada-core:/code
       - ./oada-srvc-docker-config.js:/oada-srvc-docker-config.js
     environment:
@@ -200,7 +200,7 @@ services:
       - kafka_net
       - arango_net
     volumes:
-      - ./domains:/code/domains
+      - ./domains:/domains
       - ./oada-core:/code
       - ./oada-srvc-docker-config.js:/oada-srvc-docker-config.js
     environment:
@@ -219,7 +219,7 @@ services:
       - kafka_net
       - arango_net
     volumes:
-      - ./domains:/code/domains
+      - ./domains:/domains
       - ./oada-core:/code
       - ./oada-srvc-docker-config.js:/oada-srvc-docker-config.js
     environment:
@@ -237,7 +237,7 @@ services:
       - startup_net
       - http_net
     volumes:
-      - ./domains:/code/domains
+      - ./domains:/domains
       - ./oada-core:/code
       - ./oada-srvc-docker-config.js:/oada-srvc-docker-config.js
     expose: # expose only internally, not on host
@@ -251,7 +251,7 @@ services:
   admin:
     build: ./oada-core/admin
     volumes:
-      - ./domains:/code/domains
+      - ./domains:/domains
       - ./oada-srvc-docker-config.js:/oada-srvc-docker-config.js
       - arangodb_data:/volumes/arangodb
       - arangodb_apps_data:/volumes/arangodb_apps
@@ -346,7 +346,7 @@ services:
       - kafka_net
       - arango_net
     volumes:
-      - ./domains:/code/domains
+      - ./domains:/domains
       - ./oada-core:/code
       - ./oada-srvc-docker-config.js:/oada-srvc-docker-config.js
     environment:
@@ -367,7 +367,7 @@ services:
       - arango_net
       - http_net
     volumes:
-      - ./domains:/code/domains
+      - ./domains:/domains
       - ./oada-core:/code
       - ./oada-srvc-docker-config.js:/oada-srvc-docker-config.js
     environment:
@@ -387,7 +387,7 @@ services:
       - kafka_net
       - arango_net
     volumes:
-      - ./domains:/code/domains
+      - ./domains:/domains
       - ./oada-core:/code
       - ./oada-srvc-docker-config.js:/oada-srvc-docker-config.js
     environment:
@@ -406,7 +406,7 @@ services:
       - kafka_net
       - arango_net
     volumes:
-      - ./domains:/code/domains
+      - ./domains:/domains
       - ./oada-core:/code
       - ./oada-srvc-docker-config.js:/oada-srvc-docker-config.js
     environment:

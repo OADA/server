@@ -10,7 +10,7 @@ else
 fi
 
 # Additional domains from auth service:
-AUTHDOMAINS=`ls /code/domains`
+AUTHDOMAINS=`ls /domains`
 
 # Look through each additional domain from auth service and copy localhost cert
 # if it doesn't already have a cert:
