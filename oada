@@ -10,7 +10,7 @@ fi;
 
 COMPOSEFILES=" -f docker-compose.yml -f oada-core/docker-compose.yml"
 for i in `ls services-enabled`; do
-  COMPOSEFILES="$COMPOSEFILES -f $i"
+  COMPOSEFILES="$COMPOSEFILES -f services-enabled/$i/docker-compose.yml"
 done
 
 COMMAND="docker-compose $COMPOSEFILES $@"
