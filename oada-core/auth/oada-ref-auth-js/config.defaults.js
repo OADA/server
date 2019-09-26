@@ -45,6 +45,13 @@ module.exports = {
       certs: '/certs',
       userinfo: '/userinfo',
     },
+    // Views controls what name is used for the EJS template in the views/ folder for 
+    // various pages.  For now, there's just login.  In the future can also add the allow
+    // page.  This allows other services to override the login page itself with their
+    // own custom one via docker-compose.
+    views: {
+      loginPage: 'login',
+    },
     oauth2: {
       enable: true,
     },

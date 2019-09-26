@@ -57,6 +57,12 @@ server {
     resolver 127.0.0.11;
     proxy_pass "http://http-handler:80";
   }
+
+  # In order for a microservice to add it's own location,
+  # we can just include all of them here in this server
+  # block and they will override any locations above as 
+  # well as add any locations defined in those files.
+  include /etc/nginx/additional-locations/*;
 }
 
 server {

@@ -174,7 +174,7 @@ module.exports = function(conf) {
 
       // Load the login info for this domain from the public directory:
       const domain_config = domainConfigs[req.hostname] || domainConfigs.localhost;
-      res.render('login', {
+      res.render(config.get('auth:views:loginPage'), {
         // Where should the local login form post:
         login_url: config.get('auth:endpoints:login'),
         // Where should the openidconnect form post:
