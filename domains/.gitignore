@@ -1,1 +1,5 @@
+*
+!*/
+!.gitignore
 !localhost
+!localhost/**
