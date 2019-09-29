@@ -1,7 +1,13 @@
 #! /bin/bash
 
 OLDPWD=`pwd`
-OADABASEDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+SCRIPT=${BASH_SOURCE[0]}
+# Note: since we symlink script, need to follow symlink to get path.
+# This should use readlink -f, but -f doesn't work on Mac:
+if [ -L ${SCRIPT} ]; then
+  SCRIPT=$(readlink ${SCRIPT})
+fi;
+OADABASEDIR="$( cd "$( dirname "${SCRIPT}" )" >/dev/null 2>&1 && pwd )"
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 CYAN='\033[0;36m'
@@ -74,11 +80,11 @@ fi;
 #############################################
 
 COMPOSEFILES=" -f docker-compose.yml -f oada-core/docker-compose.yml"
+cd $OADABASEDIR
 for i in `ls services-enabled`; do
   COMPOSEFILES="$COMPOSEFILES -f services-enabled/$i/docker-compose.yml"
 done
 
 echo -e "${GREEN}docker-compose ${YELLOW}${COMPOSEFILES} ${CYAN}$@${NC}"
-cd $OADABASEDIR
 docker-compose $COMPOSEFILES $@
 cd $OLDPWD
