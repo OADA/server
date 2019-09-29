@@ -1,0 +1,16 @@
+# You have to define OADABASEDIR above this.  The oada --install-self will do that.
+# Add bash_completion for all services names (oada-core and services-available)
+_oada_completions() 
+{
+  # list the core service names (folder names in oada-core)
+  CORE=$(cd ${OADABASEDIR}/oada-core; /bin/ls -d *)
+  # list the installed service names (folder names in services-available)
+  SERVICES=$(cd ${OADABASEDIR}/services-available; /bin/ls -d *)
+  # Use compgen to filter the list of service names based on last thing typed on command line
+  LAST=$(expr ${#COMP_WORDS[@]} - 1)
+  COMPREPLY=($(compgen -W "${CORE} ${SERVICES}" ${COMP_WORDS[$LAST]}))
+}
+
+# Now register that function for the oada command's completions:
+complete -F _oada_completions oada
+

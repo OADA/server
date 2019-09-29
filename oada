@@ -2,20 +2,83 @@
 
 OLDPWD=`pwd`
 OADABASEDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+CYAN='\033[0;36m'
+NC='\033[0m' # No Color
+
+
+#############################################
+# Usage/Help:
+#############################################
 
 if [[ $@ == *"--help"* ]]; then
-  echo "USAGE: $0 <anything you would have typed after \"docker-compose\">"
+  echo -e "${GREEN}USAGE: $0 <anything you would have typed after \"docker-compose\">${NC}"
+  echo -e "    will just put together all the compose files and call docker-compose"
+  echo -e "OR..."
+  echo -e "${GREEN}oada --install${NC}"
+  echo -e "    will symlink oada to /usr/local/bin, run the yarn container once, and add bash-completion"
   exit 0;
 fi;
+
+
+#############################################
+# Installation/Setup:
+#############################################
+
+if [[ $@ == *"--install-self"* ]]; then
+  # Add to path:
+  INSTALLPATH="/usr/local/bin"
+  echo -e "${GREEN}Install: 1 of 3:${NC} Symlinking oada script to /usr/local/bin"
+  if [ ! -e "${INSTALLPATH}" ]; then
+    mkdir -p "${INSTALLPATH}"
+  fi
+  if [ ! -e "${INSTALLPATH}/oada" ]; then
+    ln -s ${OADABASEDIR}/oada ${INSTALLPATH}/oada
+  fi
+
+  # Run yarn container to ensure node_modules are created
+  echo -e "${GREEN}Install: 2 of 3:${NC} running yarn container to ensure all node_modules"
+  if [ ! -e "${OADABASEDIR}/oada-core/http-handler/oada-srvc-http-handler/node_modules" ]; then
+    ${OADABASEDIR}/oada run --rm yarn
+  else
+    echo -e "${YELLOW}Looks like yarn already ran, no need to repeat...${NC}"
+  fi
+
+  # bash-completion setup
+  echo -e "${GREEN}Install: 3 of 3:${NC} adding bash completion for core and service names"
+
+  if [ ! -e "~/.oada" ]; then 
+    mkdir -p ~/.oada 
+  fi
+  echo "OADABASEDIR=\"${OADABASEDIR}\"" > ~/.oada/bash-completion
+  cat "${OADABASEDIR}/scripts/bash-completion" >> ~/.oada/bash-completion
+  if [ ! -e ~/.bashrc ]; then
+    touch ~/.bashrc
+  fi
+  if grep -q ".oada/bash-completion" ~/.bashrc; then
+    echo -e "${YELLOW}Not changing ~/.bashrc because it already has oada bash-completion${NC}"
+  else
+    LINETOADD="[[ -r ~/.oada/bash-completion ]] && . ~/.oada/bash-completion"
+    echo -e "${YELLOW}Appending to ~/.bashrc: ${LINETOADD}${NC}"
+    echo "${LINETOADD}" >> ~/.bashrc
+  fi
+  echo -e "${YELLOW}Now you need to source ~/.bashrc in order to get bash-completion${NC}"
+
+  exit 0;
+fi;
+
+
+#############################################
+# The Main Event:
+#############################################
 
 COMPOSEFILES=" -f docker-compose.yml -f oada-core/docker-compose.yml"
 for i in `ls services-enabled`; do
   COMPOSEFILES="$COMPOSEFILES -f services-enabled/$i/docker-compose.yml"
 done
 
-COMMAND="docker-compose $COMPOSEFILES $@"
-echo $COMMAND
-
+echo -e "${GREEN}docker-compose ${YELLOW}${COMPOSEFILES} ${CYAN}$@${NC}"
 cd $OADABASEDIR
-$COMMAND
+docker-compose $COMPOSEFILES $@
 cd $OLDPWD
