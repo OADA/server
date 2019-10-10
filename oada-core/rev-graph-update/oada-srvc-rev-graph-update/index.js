@@ -46,7 +46,7 @@ responder.on('request', function handleReq(req) {
     if (req.code !== 'success') {
         return [];
     }
-    if (!req['resource_id'] || !req['_rev']) {
+    if (!req['resource_id'] || !Number.isInteger(req['_rev'])) {
         throw new Error(`Invalid http_response: keys resource_id or _rev are missing.  response = ${JSON.stringify(req)}`);
     }
     if (typeof req['user_id'] === 'undefined') {
