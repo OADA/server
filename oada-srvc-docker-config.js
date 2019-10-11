@@ -103,6 +103,11 @@ module.exports = {
         defaults: './libs/exampledocs/putBodies',
         createOptions: { isVolatile: false }
       },
+      sessions: {
+        name: 'sessions',
+        indexes: [],
+        createOptions: { isVolatile: false }
+      },
     },
     init: {
       // NOTE: passwordSalt HAS to match the one in auth

@@ -85,6 +85,6 @@ for i in `ls services-enabled`; do
   COMPOSEFILES="$COMPOSEFILES -f services-enabled/$i/docker-compose.yml"
 done
 
-echo -e "${GREEN}docker-compose ${YELLOW}${COMPOSEFILES} ${CYAN}$@${NC}"
+echo -e "${GREEN}docker-compose ${CYAN}${COMPOSEFILES} ${YELLOW}$@${NC}"
 docker-compose $COMPOSEFILES $@
 cd $OLDPWD

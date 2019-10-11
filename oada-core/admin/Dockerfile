@@ -64,5 +64,9 @@ RUN echo 'deb http://deb.debian.org/debian stretch-backports main ' | tee /etc/a
 #  && apt-get update \
 #  && apt-get install -y python-certbot-nginx
 
-WORKDIR "/code"
+############################################
+# Installing socat to help with port-forwarding arangodb
+RUN apt-get -y install socat
+
+WORKDIR "/code/admin"
 CMD bash

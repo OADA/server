@@ -46,7 +46,8 @@ var path = require('path');
 var https = require('https');
 var express = require('express');
 var session = require('express-session');
-var cookieParser = require('cookie-parser');
+var ArangoSessionStore = require('connect-arango')(session);
+//var cookieParser = require('cookie-parser'); // removed because express-session does not need cookieParser anymore
 var bodyParser = require('body-parser');
 var passport = require('passport');
 var morgan = require('morgan');
@@ -118,12 +119,22 @@ module.exports = function(conf) {
   app.set('trust proxy', config.get('auth:server:proxy'));
 
   app.use(morgan('combined'));
-  app.use(cookieParser());
+  //app.use(cookieParser()); // Removed because express-session does not need cookieParser anymore....
   app.use(bodyParser.urlencoded({extended: true}));
+  const arangourl = new URL(config.get('arangodb:connectionString'));
   app.use(session({
     secret: config.get('auth:server:sessionSecret'),
     resave: false,
-    saveUninitialized: false
+    saveUninitialized: false,
+    store: new ArangoSessionStore({
+      db: {
+        host: arangourl.hostname,
+        schema: arangourl.protocol.replace(':',''),
+        port: arangourl.port,
+        collection: config.get('arangodb:collections:sessions:name'),
+        database: config.get('arangodb:database'),
+      },
+    }),
   }));
   app.use(passport.initialize());
   app.use(passport.session());
@@ -169,6 +180,7 @@ module.exports = function(conf) {
       trace('GET '+config.get('auth:endpoints:login')+': setting X-Frame-Options=SAMEORIGIN before rendering login');
       res.header('X-Frame-Options', 'SAMEORIGIN');
       const iserror = !!req.query.error || req.session.errormsg;
+req.session.ITWORKED = true;
       let errormsg = req.session.errormsg || "Login failed.";
       if (req.session.errormsg) req.session.errormsg = false; // reset for next time
 
