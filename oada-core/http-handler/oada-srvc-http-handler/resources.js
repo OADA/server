@@ -39,21 +39,25 @@ router.post('/*?', function postResource(req, res, next) {
 });
 
 router.use(function graphHandler(req, res, next) {
-  Promise.resolve(resources.lookupFromUrl('/resources'+req.url, req.user.doc.user_id))
-    .then(function handleGraphRes(resp) {
-        console.log('GRAPH LOOKUP RESULT', resp);
-        if (resp['resource_id']) {
-            // Rewire URL to resource found by graph
-            let url = `${resp['resource_id']}${resp['path_leftover']}`;
-            // Remove "/resources" from id
-            req.url = url.replace(/^\/?resources\//, '/');
-        }
-        res.set('Content-Location', req.baseUrl + req.url);
-        // TODO: Just use express parameters rather than graph thing?
-      req.oadaGraph = resp;
-      req.resourceExists = _.clone(resp.resourceExists);
-  })
-  .asCallback(next);
+    Promise.resolve(
+        resources.lookupFromUrl("/resources" + req.url, req.user.doc.user_id),
+    )
+        .then(function handleGraphRes(resp) {
+            info("GRAPH LOOKUP RESULT", resp);
+            if (resp["resource_id"]) {
+                // Rewire URL to resource found by graph
+                let url = `${resp["resource_id"]}${resp["path_leftover"]}`;
+                // log
+                console.log(`Graph lookup: ${req.url} => ${url}`);
+                // Remove "/resources" from id
+                req.url = url.replace(/^\/?resources\//, "/");
+            }
+            res.set("Content-Location", req.baseUrl + req.url);
+            // TODO: Just use express parameters rather than graph thing?
+            req.oadaGraph = resp;
+            req.resourceExists = _.clone(resp.resourceExists);
+        })
+        .asCallback(next);
 });
 
 router.delete('/*', function checkScope(req, res, next) {
@@ -171,27 +175,21 @@ router.get('/*', function getResource(req, res, next) {
             req.oadaGraph['path_leftover']
     );
 
-    return Promise
-        .join(doc, function returnDoc(doc) {
-            console.log('--------------------------')
-            console.log('--------------------------')
-            console.log('--------------------------')
-            console.log('--------------------------')
-            console.log('--------------------------')
-            console.log('DOC IS', doc);
-            // TODO: Allow null values in OADA?
-            if (doc === undefined || doc === null) {
-                throw new OADAError('Not Found', 404);
-            }
-
-            doc = unflattenMeta(doc);
-            info('doc unflattened now');
-            return res
-                .set('X-OADA-Rev', req.oadaGraph.rev)
-                .json(doc);
-
-        })
-        .catch(next);
+    return Promise.join(doc, function returnDoc(doc) {
+        info("DOC IS", doc);
+        // TODO: Allow null values in OADA?
+        if (doc === undefined || doc === null) {
+            console.log("Resource not found");
+            throw new OADAError("Not Found", 404);
+        } else {
+            console.log(
+                `Resource: ${req.oadaGraph.resource_id}, Rev: ${req.oadaGraph.rev}`,
+            );
+        }
+        doc = unflattenMeta(doc);
+        info("doc unflattened now");
+        return res.set("X-OADA-Rev", req.oadaGraph.rev).json(doc);
+    }).catch(next);
 });
 
 // TODO: This was a quick make it work. Do what you want with it.
@@ -367,23 +365,26 @@ router.put('/*', function putResource(req, res, next) {
         .get('_id')
 
         .then(bodyid => {
-            console.log('rrrRESOURCE EXISTS', req.oadaGraph)
-            console.log('rrrRESOURCE EXISTS', req.resourceExists)
-            return requester.send({
-                'connection_id': req.id,
-                'resourceExists': req.resourceExists,
-                'domain': req.get('host'),
-                'url': req.url,
-                'resource_id': req.oadaGraph['resource_id'],
-                'path_leftover': req.oadaGraph['path_leftover'],
-                'meta_id': req.oadaGraph['meta_id'],
-                'user_id': req.user.doc['user_id'],
-                'authorizationid': req.user.doc['authorizationid'],
-                'client_id': req.user.doc['client_id'],
-                'contentType': req.get('content-type'),
-                'bodyid': bodyid,
-                'if-match': req.get('if-match')
-            }, config.get('kafka:topics:writeRequest'));
+            info("rrrRESOURCE EXISTS", req.oadaGraph);
+            info("rrrRESOURCE EXISTS", req.resourceExists);
+            return requester.send(
+                {
+                    connection_id: req.id,
+                    resourceExists: req.resourceExists,
+                    domain: req.get("host"),
+                    url: req.url,
+                    resource_id: req.oadaGraph["resource_id"],
+                    path_leftover: req.oadaGraph["path_leftover"],
+                    meta_id: req.oadaGraph["meta_id"],
+                    user_id: req.user.doc["user_id"],
+                    authorizationid: req.user.doc["authorizationid"],
+                    client_id: req.user.doc["client_id"],
+                    contentType: req.get("content-type"),
+                    bodyid: bodyid,
+                    "if-match": req.get("if-match"),
+                },
+                config.get("kafka:topics:writeRequest"),
+            );
         })
         .tap(function checkWrite(resp) {
             info(`Recieved write response for request ${req.id}`);
@@ -430,7 +431,6 @@ router.delete('/*', function deleteLink(req, res, next) {
         let path = req.oadaGraph.from['path_leftover'];
         req.url = '/' + id.replace(/^\/?resources\//, '') + path;
         req.oadaGraph = req.oadaGraph.from;
-        console.log('oadagraph', req.resourceExists);
 
     }
 
