@@ -10,3 +10,4 @@ package.lock
 *.log
 .DS_Store
 *yarn.lock
+dist/
