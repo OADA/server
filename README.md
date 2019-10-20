@@ -48,3 +48,14 @@ domains, create the appropriate folder (same name as hostname) in /domains.
 The proxy will see it and create domain configs for each name there, and the
 auth service will use that info to serve the proper logo, name, etc. for each
 service.
+
+
+
+
+1 issues
+the browser gets disconnected. at the same time the disconnect event is sent to mobile, but because of latency, internet connectivity speed, etc, etc, it get's it very late. so it keeps sending packages to the browser, which is already disconnected.
+The second parameter for the send method is an error handler. Do something like this where you're sending messages:
+
+ws.send(message, function(error) {
+    // Do something in here here to clean things up (or don't do anything at all)
+});
