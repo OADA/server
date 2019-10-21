@@ -1,0 +1,6 @@
+Navigate to the Member Center on the Apple Developer website and log in with your Apple developer account. If you do not have an Apple developer account, you will need to create one.
+In the Member Center, click to select the Certificates, Identifiers & Profiles section, then select Certificates under iOS Apps.
+To create a certificate, click the Add button (+) in the upper-right corner.
+Select iOS App Development as the type, then click Continue.
+Follow the on-screen instructions to create a certificate signing request (CSR) file through Keychain Access on your Mac and upload it to the website, then click Generate.
+Download the certificate, then double-click the downloaded certificate to install it in your keychain.
