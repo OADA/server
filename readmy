@@ -1,0 +1,4 @@
+issue7
+A branded short link can be deleted from your collection and it will suddenly stop redirecting.
+
+In order to delete it, you are supposed to send a DELETE request to its API URL: https://api.rebrandly.com/v1/links/{id}, where {id} is the unique identifier of the branded short link.
