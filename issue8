@@ -1,0 +1,11 @@
+If you’re using Nginx as your web server and would like to implement rate limiting at the server-level then you can take advantage of the module ngx_http_limit_req_module. This can be implemented directly within your Nginx configuration file. Using this method, Nginx rate limits based on the user’s IP address.
+http {
+    limit_req_zone $binary_remote_addr zone=one:10m rate=2r/s;
+    ...
+
+server {
+    ...
+    location /promotion/ {
+        limit_req zone=one burst=5;
+    }
+}
