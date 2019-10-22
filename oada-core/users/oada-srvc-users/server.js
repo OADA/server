@@ -61,8 +61,8 @@ responder.on('request', function handleReq(req) {
                     user[res] =
                         responder.send({
                             'url': '/' + resid,
-                            'resource_id': '',
-                            'path_leftover': '/' + resid,
+                            'resource_id': '/' + resid,
+                            'path_leftover': '',
                             'meta_id': resid + '/_meta',
                             'user_id': user['_id'],
                             // TODO: What to put for these?
