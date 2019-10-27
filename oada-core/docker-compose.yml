@@ -46,7 +46,7 @@ services:
       - ./domains-enabled:/domains-enabled
       - ./oada-core/proxy/nginx.conf:/etc/nginx/nginx.conf
       - ./oada-core/proxy/dev-sites-enabled/:/etc/nginx/sites-templates/
-      - proxy-certs:/certs
+      - proxy_certs:/certs
       - ./oada-core/proxy/dev-certs/localhost:/certs/localhost
       - ./oada-core/proxy:/code/proxy
       - ./oada-srvc-docker-config.js:/oada-srvc-docker-config.js
