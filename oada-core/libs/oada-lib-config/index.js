@@ -30,7 +30,8 @@ module.exports = defaults => {
   // Order of precedence: argv, env, config file, defaults
   
   nconf.argv();
-  nconf.env('__');
+  // parseValues: true will parse "true" and "false" as booleans, numbers as numbers, etc.
+  nconf.env({ separator: '__', parseValues: true });
   
   // Load an external (optional) config file
   var config = nconf.get('config');
