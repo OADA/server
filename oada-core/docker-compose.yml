@@ -445,6 +445,7 @@ services:
       - kafka_net
       - arango_net
     volumes:
+      - ./oada-core/shares:/code/shares
       - ./oada-core/libs:/code/libs
       - ./oada-srvc-docker-config.js:/oada-srvc-docker-config.js
     environment:
