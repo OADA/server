@@ -96,7 +96,7 @@ module.exports = function(_server,config) {
         oadaLookup.trustedCDP(function(err, pl) {
           // Load the login info for this domain from the public directory:
           const domain_config = domainConfigs[req.hostname] || domainConfigs.localhost;
-          res.render('approve', {
+          res.render(config.get('auth:views:approvePage'), {
             transactionID: req.oauth2.transactionID,
             client: req.oauth2.client,
             scope: req.oauth2.req.scope,

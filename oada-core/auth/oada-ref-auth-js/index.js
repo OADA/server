@@ -115,7 +115,7 @@ module.exports = function(conf) {
 
   app.set('view engine', 'ejs');
   app.set('json spaces', config.get('auth:server:jsonSpaces'));
-  app.set('views', path.join(__dirname, 'views'));
+  app.set('views', config.get('auth:views:basedir'));
   app.set('trust proxy', config.get('auth:server:proxy'));
 
   app.use(morgan('combined'));
@@ -180,7 +180,6 @@ module.exports = function(conf) {
       trace('GET '+config.get('auth:endpoints:login')+': setting X-Frame-Options=SAMEORIGIN before rendering login');
       res.header('X-Frame-Options', 'SAMEORIGIN');
       const iserror = !!req.query.error || req.session.errormsg;
-req.session.ITWORKED = true;
       let errormsg = req.session.errormsg || "Login failed.";
       if (req.session.errormsg) req.session.errormsg = false; // reset for next time
 
@@ -211,7 +210,7 @@ req.session.ITWORKED = true;
     //---------------------------------------------------
     // Handle post of local form from login page:
     const pfx = config.get('auth:endpointsPrefix') || '';
-    app.post(config.get('auth:endpoints:login'), passport.authenticate('local', {
+    app.post(config.get('auth:endpoints:login'), (req,res,passport.authenticate('local', {
       successReturnToOrRedirect: '/' + pfx,
       failureRedirect: config.get('auth:endpoints:login')+'?error=1',
     }));
