@@ -31,6 +31,10 @@ module.exports = {
   arangodb: {
     connectionString: 'http://arangodb:8529',
     database: 'oada',
+    // Important: ensureDefaults has the potential to delete particular documents from the database
+    // if it is set to false.  This ensures dummy users/tokens don't end up in production.
+    // For dev, you want this to be true to populate database with dummy data, users, tokens, etc.
+    ensureDefaults: false,
     collections: {
       users: {
         name: 'users',
@@ -38,7 +42,7 @@ module.exports = {
           'username',
           { name: 'oadaid', sparse: true }
         ],
-          defaults: './libs/exampledocs/users'
+        defaults: './libs/exampledocs/users'
       },
       clients: {
         name: 'clients',

@@ -26,6 +26,10 @@ const colsarr = _.values(cols);
 
 module.exports = {
   run: () => {
+    const ensureDefaults = config.get('arangodb:ensureDefaults');
+    trace('ensureDefaults = ', ensureDefaults, '==> false means it will delete default doc._id\'s from all collections if they exist, '
+         +'and true means it will add them if they do not exist');
+
     trace('Checking if database exists');
     //---------------------------------------------------------------------
     // Start the show: Figure out if the database exists
@@ -111,6 +115,8 @@ module.exports = {
         return; // nothing to import for this colname
       }
       const data = require(colinfo.defaults);
+      // override global ensureDefaults if this column explicitly specifies a value for it:
+      const colSpecificEnsureDefaults = (typeof colinfo.ensureDefaults !== 'undefined' ? colinfo.ensureDefaults : ensureDefaults);
 
       return Promise.map(data, doc => {
         if (!doc || !doc._id) {
@@ -125,14 +131,27 @@ module.exports = {
           if (doc.password) doc.password = users.hashPw(doc.password);
         }
         return db.collection(colname).document(doc._id)
-          .then(() => trace('Default data document ' + doc._id +
-              ' already exists on collection ' + colname))
-          .catch(() => {
-            trace('Document ' + doc._id +
-                ' does not exist in collection ' + colname + '.  Creating...');
-            return db.collection(colname).save(doc)
-              .then(() => { trace('Document ' + doc._id +
-                    ' successfully created in collection ' + colname); });
+          .then((dbdoc) => {
+            if (colSpecificEnsureDefaults) {
+              trace('Default data document ' + doc._id + ' already exists on collection ' + colname + ', leaving it alone because ensureDefaults is truthy');
+              return;
+            }
+            info('Default data document ' + doc._id + ' exists on collection ' + colname + ', and ensureDefaults is falsy, '
+                +'so we are DELETING THIS DOCUMENT FROM THE DATABASE!  Before deleting, its value in the database was: ', JSON.stringify(dbdoc, false, '  '));
+            return db.collection(colname).remove(doc._key)
+            .catch((e) => {
+              warn('WARNING: Failed to remove default doc '+doc._key+' from collection '+colname+'.  Error was: ', e);
+            });
+          }).catch(() => {
+            if (colSpecificEnsureDefaults) {
+              info('Document ' + doc._key + ' does not exist in collection ' + colname + '.  Creating...');
+              return db.collection(colname).save(doc)
+                .then(() => { trace('Document ' + doc._id +
+                      ' successfully created in collection ' + colname); });
+            }
+            trace('Default document '+doc._key+' does not exist in collection '+colname+', and ensureDefaults is falsey, '
+                 +'so there is nothing else to do for this one.');
+            return;
           });
       })
 
