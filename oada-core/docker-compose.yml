@@ -17,8 +17,8 @@ services:
     expose: # expose only internally, not on host
       - "80"
     volumes:
-      - ./oada-core:/code
-      - ./domains:/domains
+      - ./oada-core/startup:/code/startup
+      - ./oada-core/libs:/code/libs
       - ./oada-srvc-docker-config.js:/oada-srvc-docker-config.js
     environment:
       - NODE_ENV=${NODE_ENV:-development}
@@ -42,11 +42,13 @@ services:
         - "${BIND:-0.0.0.0}:${PORT_HTTPS:-443}:443"
         - "${BIND:-0.0.0.0}:${PORT_HTTP:-80}:80"
     volumes:
-      - ./domains:/domains
+      - ./domains-available:/domains-available
+      - ./domains-enabled:/domains-enabled
       - ./oada-core/proxy/nginx.conf:/etc/nginx/nginx.conf
       - ./oada-core/proxy/dev-sites-enabled/:/etc/nginx/sites-templates/
-      - ./oada-core/proxy/dev-certs/:/certs/
-      - ./oada-core:/code
+      - proxy-certs:/certs
+      - ./oada-core/proxy/dev-certs/localhost:/certs/localhost
+      - ./oada-core/proxy:/code/proxy
       - ./oada-srvc-docker-config.js:/oada-srvc-docker-config.js
       # Need the letsencrypt_www_data volume so admin's certbot command can put web-accessible files there
       - letsencrypt_www_data:/var/www/letsencrypt
@@ -72,8 +74,10 @@ services:
     expose: # expose only internally, not on host
       - "80"
     volumes:
-      - ./domains:/domains
-      - ./oada-core:/code
+      - ./domains-available:/domains-available
+      - ./domains-enabled:/domains-enabled
+      - ./oada-core/auth:/code/auth
+      - ./oada-core/libs:/code/libs
       - ./oada-srvc-docker-config.js:/oada-srvc-docker-config.js
     environment:
       - NODE_TLS_REJECT_UNAUTHORIZED=${NODE_TLS_REJECT_UNAUTHORIZED:-""}
@@ -99,8 +103,8 @@ services:
     expose: # expose only internally, not on host
       - "80" # at one time this mapped 34135 from host to local 80 for some reason
     volumes:
-      - ./domains:/domains
-      - ./oada-core:/code
+      - ./oada-core/http-handler:/code/http-handler
+      - ./oada-core/libs:/code/libs
       - ./oada-srvc-docker-config.js:/oada-srvc-docker-config.js
     environment:
       - NODE_ENV=${NODE_ENV:-development}
@@ -122,8 +126,8 @@ services:
       - arango_net
       - http_net
     volumes:
-      - ./domains:/domains
-      - ./oada-core:/code
+      - ./oada-core/sync-handler:/code/sync-handler
+      - ./oada-core/libs:/code/libs
       - ./oada-srvc-docker-config.js:/oada-srvc-docker-config.js
     environment:
       - NODE_ENV=${NODE_ENV:-development}
@@ -143,8 +147,8 @@ services:
       - kafka_net
       - arango_net
     volumes:
-      - ./domains:/domains
-      - ./oada-core:/code
+      - ./oada-core/write-handler:/code/write-handler
+      - ./oada-core/libs:/code/libs
       - ./oada-srvc-docker-config.js:/oada-srvc-docker-config.js
     environment:
       - NODE_ENV=${NODE_ENV:-development}
@@ -162,8 +166,8 @@ services:
       - kafka_net
       - arango_net
     volumes:
-      - ./domains:/domains
-      - ./oada-core:/code
+      - ./oada-core/users:/code/users
+      - ./oada-core/libs:/code/libs
       - ./oada-srvc-docker-config.js:/oada-srvc-docker-config.js
     environment:
       - NODE_ENV=${NODE_ENV:-development}
@@ -181,8 +185,8 @@ services:
       - kafka_net
       - arango_net
     volumes:
-      - ./domains:/domains
-      - ./oada-core:/code
+      - ./oada-core/token-lookup:/code/token-lookup
+      - ./oada-core/libs:/code/libs
       - ./oada-srvc-docker-config.js:/oada-srvc-docker-config.js
     environment:
       - NODE_ENV=${NODE_ENV:-development}
@@ -200,8 +204,8 @@ services:
       - kafka_net
       - arango_net
     volumes:
-      - ./domains:/domains
-      - ./oada-core:/code
+      - ./oada-core/rev-graph-update:/code/rev-graph-update
+      - ./oada-core/libs:/code/libs
       - ./oada-srvc-docker-config.js:/oada-srvc-docker-config.js
     environment:
       - NODE_ENV=${NODE_ENV:-development}
@@ -219,8 +223,8 @@ services:
       - kafka_net
       - arango_net
     volumes:
-      - ./domains:/domains
-      - ./oada-core:/code
+      - ./oada-core/graph-lookup:/code/graph-lookup
+      - ./oada-core/libs:/code/libs
       - ./oada-srvc-docker-config.js:/oada-srvc-docker-config.js
     environment:
       - NODE_ENV=${NODE_ENV:-development}
@@ -237,8 +241,8 @@ services:
       - startup_net
       - http_net
     volumes:
-      - ./domains:/domains
-      - ./oada-core:/code
+      - ./oada-core/well-known:/code/well-known
+      - ./oada-core/libs:/code/libs
       - ./oada-srvc-docker-config.js:/oada-srvc-docker-config.js
     expose: # expose only internally, not on host
       - "80"
@@ -251,17 +255,34 @@ services:
   admin:
     build: ./oada-core/admin
     volumes:
-      - ./domains:/domains
       - ./oada-srvc-docker-config.js:/oada-srvc-docker-config.js
       - arangodb_data:/volumes/arangodb
       - arangodb_apps_data:/volumes/arangodb_apps
       - zookeeper_data:/volumes/zookeeper
       - kafka_data:/volumes/kafka
-      - ./oada-core:/code
+      - ./oada-core/admin:/code/admin
+      - ./oada-core/auth:/code/auth
+      - ./oada-core/graph-lookup:/code/graph-lookup
+      - ./oada-core/http-handler:/code/http-handler
+      - ./oada-core/indexer:/code/indexer
+      - ./oada-core/libs:/code/libs
+      - ./oada-core/permissions-handler:/code/permissions-handler
+      - ./oada-core/proxy:/code/proxy
+      - ./oada-core/rev-graph-update:/code/rev-graph-update
+      - ./oada-core/shares:/code/shares
+      - ./oada-core/startup:/code/startup
+      - ./oada-core/sync-handler:/code/sync-handler
+      - ./oada-core/tests:/code/tests
+      - ./oada-core/token-lookup:/code/token-lookup
+      - ./oada-core/users:/code/users
+      - ./oada-core/webhooks:/code/webhooks
+      - ./oada-core/well-known:/code/well-known
+      - ./oada-core/write-handler:/code/write-handler
+      - ./oada-core/yarn:/code/yarn
       - /var/run/docker.sock:/var/run/docker.sock
       - letsencrypt_www_data:/var/www/letsencrypt
-      # Need to map proxy's dev-certs for letsencrypt to save all its stuff where proxy can get it
-      - ./oada-core/proxy/dev-certs:/etc/letsencrypt
+      # Need to map proxy's /certs for letsencrypt to save all its stuff where proxy can get it
+      - proxy-certs:/etc/letsencrypt
     command: bash
     networks:
       - startup_net
@@ -300,7 +321,25 @@ services:
     build:
       context: ./oada-core/yarn
     volumes:
-      - ./oada-core:/code
+      - ./oada-core/admin:/code/admin
+      - ./oada-core/auth:/code/auth
+      - ./oada-core/graph-lookup:/code/graph-lookup
+      - ./oada-core/http-handler:/code/http-handler
+      - ./oada-core/indexer:/code/indexer
+      - ./oada-core/libs:/code/libs
+      - ./oada-core/permissions-handler:/code/permissions-handler
+      - ./oada-core/proxy:/code/proxy
+      - ./oada-core/rev-graph-update:/code/rev-graph-update
+      - ./oada-core/shares:/code/shares
+      - ./oada-core/startup:/code/startup
+      - ./oada-core/sync-handler:/code/sync-handler
+      - ./oada-core/tests:/code/tests
+      - ./oada-core/token-lookup:/code/token-lookup
+      - ./oada-core/users:/code/users
+      - ./oada-core/webhooks:/code/webhooks
+      - ./oada-core/well-known:/code/well-known
+      - ./oada-core/write-handler:/code/write-handler
+      - ./oada-core/yarn:/code/yarn
 
   # Arango is the main backend where core data and graph is stored
   arangodb:
@@ -346,8 +385,8 @@ services:
       - kafka_net
       - arango_net
     volumes:
-      - ./domains:/domains
-      - ./oada-core:/code
+      - ./oada-core/indexer:/code/indexer
+      - ./oada-core/libs:/code/libs
       - ./oada-srvc-docker-config.js:/oada-srvc-docker-config.js
     environment:
       - NODE_ENV=${NODE_ENV:-development}
@@ -367,8 +406,8 @@ services:
       - arango_net
       - http_net
     volumes:
-      - ./domains:/domains
-      - ./oada-core:/code
+      - ./oada-core/webhooks:/code/webhooks
+      - ./oada-core/libs:/code/libs
       - ./oada-srvc-docker-config.js:/oada-srvc-docker-config.js
     environment:
       - NODE_ENV=${NODE_ENV:-development}
@@ -387,8 +426,8 @@ services:
       - kafka_net
       - arango_net
     volumes:
-      - ./domains:/domains
-      - ./oada-core:/code
+      - ./oada-core/permissions-handler:/code/permissions-handler
+      - ./oada-core/libs:/code/libs
       - ./oada-srvc-docker-config.js:/oada-srvc-docker-config.js
     environment:
       - NODE_ENV=${NODE_ENV:-development}
@@ -406,8 +445,7 @@ services:
       - kafka_net
       - arango_net
     volumes:
-      - ./domains:/domains
-      - ./oada-core:/code
+      - ./oada-core/libs:/code/libs
       - ./oada-srvc-docker-config.js:/oada-srvc-docker-config.js
     environment:
       - NODE_ENV=${NODE_ENV:-development}
@@ -420,10 +458,10 @@ volumes:
   kafka_data:
   zookeeper_data:
   letsencrypt_www_data:
+  proxy_certs:
 
 networks:
   arango_net:
   kafka_net:
   http_net:
   startup_net:
-  #prometheus:

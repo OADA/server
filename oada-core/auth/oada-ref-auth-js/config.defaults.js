@@ -18,7 +18,7 @@ var path = require('path');
 var fs = require('fs');
 
 module.exports = {
-  domainsDir: './domains',
+  domainsDir: '/domains-enabled',
   auth: {
     init: function() { }, // this will run if you call npm run init.  Replace in your own config with your own init.
     server: {
@@ -50,7 +50,9 @@ module.exports = {
     // page.  This allows other services to override the login page itself with their
     // own custom one via docker-compose.
     views: {
+      basedir: '/code/auth/oada-ref-auth-js/views',
       loginPage: 'login',
+      approvePage: 'approve',
     },
     oauth2: {
       enable: true,
