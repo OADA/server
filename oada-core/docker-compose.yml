@@ -25,8 +25,6 @@ services:
       - DEBUG=${DEBUG:-""}
       # set RESETDATABASE to "yes" if you want to drop database on startup and recreate
       - RESETDATABASE=${RESETDATABASE:-no}
-      # for dev, set this to true to pre-populate database.  For production, set it false to remove all default data
-      - arangodb__ensureDefaults=${arangodb__ensureDefaults:-false}
 
   # proxy routes OAuth2 requests (/auth, /code) to auth service,
   # and the rest to main http-handlers.  TODO: add load balancing with multiple handlers.

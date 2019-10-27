@@ -1,0 +1,9 @@
+version: '3'
+
+services:
+
+  # In development, put the dummy users/tokens into database
+  startup:
+    environment:
+      - DEBUG=*
+      - arangodb__ensureDefaults="true"
