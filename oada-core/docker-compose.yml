@@ -282,7 +282,7 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
       - letsencrypt_www_data:/var/www/letsencrypt
       # Need to map proxy's /certs for letsencrypt to save all its stuff where proxy can get it
-      - proxy-certs:/etc/letsencrypt
+      - proxy_certs:/etc/letsencrypt
     command: bash
     networks:
       - startup_net

@@ -66,17 +66,16 @@ var oadaidclient = require('oada-id-client').middleware;
 // Load all the domain configs at startup
 const ddir = config.get('domainsDir');
 trace('using domainsDir = ', ddir);
-const domainConfigs = _.keyBy(_.map(fs.readdirSync(ddir), (dirname) => {
-  if (dirname.startsWith('.') == false) return require(ddir+'/'+dirname+'/config')
-}), 'domain');
-// symlink all the domain auth-www folders to domain folder in ./public:
-_.each(domainConfigs, (cfg, domain) => {
-  const source = ddir+'/'+domain+'/auth-www';
-  const linkname = './public/domains/'+domain;
-  trace('symlinking '+source+' to link name '+linkname);
-  fssymlink(source, linkname, 'junction'); // note: returns promise, but we're not waiting
-});
-
+const domainConfigs = _.keyBy(_.reduce(fs.readdirSync(ddir), (acc,dirname) => {
+  if (dirname.startsWith('.') == false) {
+    try {
+      acc[dirname] = require(ddir+'/'+dirname+'/config');
+    } catch (e) {
+      error('ERROR: could not read config for domain ', dirname, ', skipping');
+    }
+  }
+  return acc;
+}, {}), 'domain');
 
 module.exports = function(conf) {
   // TODO: This require config is very hacky. Reconsider.
@@ -210,7 +209,7 @@ module.exports = function(conf) {
     //---------------------------------------------------
     // Handle post of local form from login page:
     const pfx = config.get('auth:endpointsPrefix') || '';
-    app.post(config.get('auth:endpoints:login'), (req,res,passport.authenticate('local', {
+    app.post(config.get('auth:endpoints:login'), passport.authenticate('local', {
       successReturnToOrRedirect: '/' + pfx,
       failureRedirect: config.get('auth:endpoints:login')+'?error=1',
     }));
@@ -310,6 +309,16 @@ module.exports = function(conf) {
       app.use(config.get('auth:endpointsPrefix'), express.static(path.join(__dirname, 'public')));
     else
       app.use(express.static(path.join(__dirname, 'public')));
+
+    // Statically serve all the domains-enabled/*/auth-www folders:
+    _.each(domainConfigs, (cfg, domain) => {
+      const ondisk = config.get('domainsDir')+'/'+domain+'/auth-www';
+      const webpath = config.get('auth:endpointsPrefix') + '/domains/' + domain;
+      trace('Serving domain '+domain+'/auth-www statically, on disk = '+ondisk+', webpath = '+webpath);
+      app.use(webpath, express.static(ondisk));
+    });
+
+
   }
 
   //////
