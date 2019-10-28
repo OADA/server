@@ -1,0 +1,51 @@
+{
+  "name": "binary-upload",
+  "version": "0.1.0",
+  "private": true,
+  "author": "Nathan Givens <Nathan@qlever.io>",
+  "main": "src/index.js",
+  "dependencies": {
+    "@cerebral/react": "^4.2.0",
+    "@emotion/core": "^10.0.21",
+    "axios": "^0.19.0",
+    "babel-preset-react": "^6.24.1",
+    "cerebral": "^5.2.0",
+    "react": "^16.10.2",
+    "react-dom": "^16.10.2",
+    "react-scripts": "3.2.0",
+    "semantic-ui-react": "^0.88.1",
+    "uuid": "^3.3.3"
+  },
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject"
+  },
+  "eslintConfig": {
+    "extends": "react-app"
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
+  "devDependencies": {
+    "eslint": "^6.5.1",
+    "http-server": "^0.11.1"
+  },
+  "babel": {
+    "presets": [
+      "react-app"
+    ],
+    "plugins": [
+    ]
+  }
+}
