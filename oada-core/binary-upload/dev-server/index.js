@@ -40,7 +40,7 @@ app.post('/', (req, res) => {
   });
 });
 
-fs.mkdir(__dirname + '/uploads', 744, err => {
+fs.mkdir(__dirname + '/uploads', 766, err => {
   if (err) {
     if (err.code !== 'EEXIST') {
       console.error(err);
