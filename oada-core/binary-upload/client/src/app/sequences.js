@@ -5,4 +5,3 @@ export const setFile = [
   actions.uploadFile
 ];
 
-export const getFiles = actions.getAvailableFiles;
