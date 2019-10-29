@@ -1,4 +1,4 @@
-import axios from 'axios';
+// import axios from 'axios';
 import uuid from 'uuid';
 
 // TODO set axios to be provider for cerebral
@@ -23,21 +23,19 @@ export function setFile({ store, get }) {
   console.log(get(state`fileUpload`));
 }
 
-export async function uploadFile() {
+export async function uploadFile({ get, http }) {
   try {
-    const req = await axios.get('http://localhost:8000');
+    var formData = new FormData();
+    // var file = document.querySelector('#file');
+    formData.append('file', document.getElementById('file').files[0]);
+    const req = await http.post('http://localhost:8000', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+    });
     console.log(req.data);
   } catch(e) {
     console.error(e);
   }
 }
 
-export async function getAvailableFiles() {
-  try {
-    const req = await axios.get('http://localhost:8000');
-    console.log("received files");
-    return req;
-  } catch(e) {
-    console.error(e);
-  }
-}
