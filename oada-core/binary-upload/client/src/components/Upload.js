@@ -11,12 +11,12 @@ const Upload = connect(
   {
     file_name: state`file.file_name`,
     is_loaded: state`file.is_loaded`,
-    setFile: sequences`setFile`
+    setFile: sequences`setFile`,
   },
   ({
     file_name,
     is_loaded,
-    setFile
+    setFile,
   }) => {
     return (
       <div className="Upload">
@@ -29,10 +29,11 @@ const Upload = connect(
         </h1>
         <p>Upload Binary Files Here</p>
         <input
+          id='file'
           type="file"
           name="file"
           onChange={(event) => {
-            setFile({ file_name: event.currentTarget.value })
+            setFile({ file_name: event.currentTarget.value });
           }}
         />
         <OadaDropdown />
