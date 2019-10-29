@@ -42,7 +42,9 @@ app.post('/', (req, res) => {
 
 fs.mkdir(__dirname + '/uploads', 744, err => {
   if (err) {
-    console.error(err);
+    if (err.code !== 'EEXIST') {
+      console.error(err);
+    }
   }
 });
 
