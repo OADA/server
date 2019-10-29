@@ -3,7 +3,7 @@ const cors = require('cors');
 const path = require('path');
 const bodyParser = require('body-parser');
 const fileUpload = require('express-fileupload');
-// const formidable = require('formidable');
+const fs = require('fs');
 
 const app = express();
 const port = 8000;
@@ -38,12 +38,12 @@ app.post('/', (req, res) => {
       res: 'POST',
     });
   });
-  /*
-  res.json({
-    status: 'Ack',
-    res: 'POST',
-  });
-  */
+});
+
+fs.mkdir(__dirname + '/uploads', 744, err => {
+  if (err) {
+    console.error(err);
+  }
 });
 
 app.listen(port, () => console.log(`Example app listening on port ${port}`));
