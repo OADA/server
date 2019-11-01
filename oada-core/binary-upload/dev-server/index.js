@@ -43,14 +43,18 @@ app.post('/', async (req, res) => {
   // check if buffer contents are equivalent
   if (recvFile.equals(localFile)) {
     // ACK => file uploaded successfully
-    res.json({
-      status: 'ACK',
-      res: 'POST',
+    res
+      .status(200)
+      .json({
+        status: 'ACK',
+        res: 'POST',
     });
   } else {
-    res.json({
-      status: 'NACK',
-      res: 'POST',
+    res
+      .status(400)
+      .json({
+        status: 'NACK',
+        res: 'POST',
     });
   }
 });
