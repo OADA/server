@@ -1,18 +1,19 @@
-/** @jsx jsx */
+// /** @jsx jsx */
 
-// import React from 'react';
+import React from 'react';
 import ReactDOM from 'react-dom';
 import './index.css';
 
 import { Container } from '@cerebral/react';
-import { jsx, css, Global } from '@emotion/core';
+// import { jsx, css } from '@emotion/core';
 
-import app from './app';
+import cerebral from './cerebral';
 import Upload from './components/Upload';
-import Download from './components/Download';
+// import Download from './components/Download';
 
 ReactDOM.render(
-  <Container app={app}>
+  <Container app={cerebral}>
+    {/*
     <Global
       styles={css`
         * {
@@ -32,6 +33,7 @@ ReactDOM.render(
         }
       `}
     />
+    */}
     <Upload />
   </Container>,
   document.getElementById('root')
