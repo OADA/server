@@ -29,6 +29,7 @@ var fs = require('fs');
 var fssymlink = require('fs-symlink');
 var trace = require('debug-logger')('auth#index').trace;
 var info = require('debug-logger')('auth#index').info;
+var error = require('debug-logger')('auth#index').error;
 var config = require('./config');
 // If there is an endpointsPrefix, update all the endpoints to include the
 // prefix before doing anything else
