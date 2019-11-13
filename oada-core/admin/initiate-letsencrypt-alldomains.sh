@@ -22,7 +22,8 @@ if [ ! -e '/certs/live' ]; then
   exit
 fi
 
-LETSENCRYPT_CERTNAME=`ls -t /certs/live | head -1`
+# Uses the "latest" file in the certs folder, but not README
+LETSENCRYPT_CERTNAME=`ls -t /certs/live | sed '/^\s*README\s*$/d' | head -1`
 cd /certs
 # the "-t" in ls sorts with most recent on top, and we take that one
 for d in $(ls -1 /domains-enabled | sed 's/localhost//'); do
