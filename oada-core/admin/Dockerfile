@@ -41,8 +41,10 @@ RUN wget -qO- https://raw.githubusercontent.com/creationix/nvm/v0.30.2/install.s
 RUN . /root/.nvm/nvm.sh \
     && nvm use v11.15  \
     && npm install -g yarn \
-    && yarn global add mocha
+    && yarn global add mocha \
     # You can put any global NPM installs here
+    && yarn global add @oada/oada-certs
+    
 
 COPY "./.vimrc" "/root/.vimrc"
 
