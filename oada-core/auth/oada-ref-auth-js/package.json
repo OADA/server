@@ -27,6 +27,7 @@
   },
   "homepage": "https://github.com/oada/oada-ref-auth-js",
   "dependencies": {
+    "@oada/oada-certs": "^1.0.1",
     "arangojs": "^5.6.0",
     "axios": "^0.16.2",
     "bcrypt": "^3.0.2",
@@ -58,7 +59,6 @@
     "oada-error": "^1.1.1",
     "oada-id-client": "github:oada/oada-id-client-js#1ce91b76bf94eaf25057eaf4ecac87d18c01ea87",
     "oada-lookup": "^0.4.1",
-    "oada-trusted-jws": "^1.0.4",
     "oauth2orize": "^1.0.1",
     "oauth2orize-openid": "OADA/oauth2orize-openid",
     "object-assign": "^3.0.0",
