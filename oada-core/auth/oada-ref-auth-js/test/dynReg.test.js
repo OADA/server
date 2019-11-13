@@ -30,7 +30,7 @@ const mockdb = {
   },
 };
 
-// Note: the jwt stuff was mostly taken from the oada-trusted-jws tests:
+// Note: the jwt stuff was mostly taken from the oada-certs tests:
 // We will mock a server for the tests that use this URL:
 const TEST_ROOT = 'https://test.example.org/';
 const CUSTOM_TRUSTED_LIST = 'https://custom.trusted.list.com/';
@@ -92,13 +92,13 @@ describe('dynReg middleware', () => {
     this.timeout(2000); // for some reason, requiring the dynReg module takes a long time the first time...
     dynReg = require('../dynReg');
     dynReg.test.mockClientsDatabase(mockdb);
-    dynReg.test.oadaTrustedJWS.clearCache(); // since we keep generating uuid kid's, we need to clear the caches, especially the jwks sets
+    dynReg.test.oadacerts.clearCache(); // since we keep generating uuid kid's, we need to clear the caches, especially the jwks sets
   });
 
   // Setup the mock server to serve a trusted list with a URL for it's own jwk set 
   // When the main function tries to get the Trusted List, this will respond instead of github:
   beforeEach(function mockList() {
-    const uri = url.parse(dynReg.test.oadaTrustedJWS.TRUSTED_LIST_URI);
+    const uri = url.parse(dynReg.test.oadacerts.TRUSTED_LIST_URI);
     nock(url.format({protocol: uri.protocol, host:uri.host}))
     .log(nocklog)
     .get(uri.path)
