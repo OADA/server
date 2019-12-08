@@ -4,7 +4,6 @@
   "description": "Simple server to test file uploading",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node index.js"
   },
   "author": "Nathan Givens <nathan@qlever.io>",
