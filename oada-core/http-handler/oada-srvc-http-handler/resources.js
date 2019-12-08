@@ -239,6 +239,7 @@ function noModifyShares(req, res, next) {
 router.delete('/*', noModifyShares);
 router.put('/*', noModifyShares);
 
+// TODO check if not json/+json -> handle as binary resource
 // Parse JSON content types as text (but do not parse JSON yet)
 router.put('/*', bodyParser.text({
     strict: false,
