@@ -18,6 +18,7 @@
 const debug = require('debug');
 const trace = debug('webhooks:trace');
 const info = debug('webhooks:info');
+const warn = debug('webhooks:warn');
 const error = debug('webhooks:error');
 var Promise = require('bluebird');
 const uuid = require('uuid');
@@ -50,6 +51,18 @@ module.exports = function stopResp() {
 responder.on('request', function handleReq(req) {
     // TODO: Sanitize?
     let user = req.user;
+    // While this could fit in permissions_handler, since users are not really resources (i.e. no graph),
+    // we'll add a check here that the user has oada.admin.user:write or oada.admin.user:all scope
+    const token = req.token;
+    if (!token || !token.scope || !token.scope.match(/oada.admin.user:write/) || !token.match(/oada.admin.user:all/)) {
+      warn('WARNING: attempt to create a user, but request does not have token with oada.admin.user:write or oada.admin.user:all scope');
+      return { code: 'ERROR: token does not have required scope to create users.' };
+    }
+    if (!token.user || !token.user.scopes.match(/oada.admin.user:write/) || !token.match(/oada.admin.user:all/)) {
+      warn('WARNING: attempt to create a user, but user who owns token does not have scope to write users.');
+      return { code: 'ERROR: user does not have required permission to create users.' };
+    }
+
     return users.create(user, true)
         .then(function ensureUserResources(user) {
 					// Create empty resources for user
