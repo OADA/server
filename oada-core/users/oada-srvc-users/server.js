@@ -57,7 +57,7 @@ responder.on('request', function handleReq(req) {
                 if (!(user[res] && user[res]['_id'])) {
                     let resid = 'resources/' + uuid();
 
-                    console.log(`Creating ${resid} for ${res} of ${user._id}`);
+                    console.log(`Creating ${resid} for ${res} of ${user._id} as _type = ${contentTypes[res]}`);
                     user[res] =
                         responder.send({
                             'url': '/' + resid,
