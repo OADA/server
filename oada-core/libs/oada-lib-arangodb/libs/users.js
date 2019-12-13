@@ -115,6 +115,11 @@ function create(u, returnNew = false) {
   });
 }
 
+// Use this with care because it will completely remove that user document.
+function remove(u) {
+  return users.remove(u);
+}
+
 function update(u) {
   return users.update(u._id, u);
 }
@@ -135,6 +140,7 @@ module.exports = {
   findByOIDCToken,
   create: create,
   update,
+  remove,
   like,
   hashPw: hashPw,
   // TODO: Better way to handler errors?

@@ -65,10 +65,16 @@ function revoke(token) {
   `);
 }
 
+// Use with case: completely removes the authorization document from database:
+function remove(a) {
+  return authorizations.remove(a);
+}
+
 module.exports = {
   findById,
   findByToken,
   findByUser,
   save,
-  revoke
+  revoke,
+  remove, // use with care!
 };
