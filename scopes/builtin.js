@@ -1,6 +1,9 @@
 module.exports = {
+  'oada.admin.user': [ // can interact with /users
+    'application/vnd.oada.user.1+json',
+  ],
   'oada.mirrors': [
-    'application/vnd.oada.mirrors.1:json',
+    'application/vnd.oada.mirrors.1+json',
   ],
   'oada.fields': [
     'application/vnd.oada.bookmarks.1+json',
