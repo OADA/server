@@ -18,6 +18,9 @@ const changes = require('../../libs/oada-lib-arangodb').changes;
 const putBodies = require('../../libs/oada-lib-arangodb').putBodies;
 const OADAError = require('oada-error').OADAError;
 
+const multer = require('multer');
+const fileUpload = multer({ limits: '20mb' });
+
 const config = require('./config');
 
 var requester = require('./requester');
@@ -246,10 +249,22 @@ router.put('/*', bodyParser.text({
     type: ['json', '+json'],
     limit: '20mb',
 }));
+
+router.put('/*', fileUpload.single('file'), async (req, res, next) => {
+    const content_type = req.headers['content-type'];
+    if (content_type && content_type !== 'application/json') {
+        req.file.buffer = Array.from(req.file.buffer);
+        req.body.file = req.file;
+    }
+    next();
+});
+
 router.put('/*', function checkBodyParsed(req, res, next) {
     let err = null;
 
     // TODO: Better way to decide if body was parsed?
+    // TODO how does this check need to change to allow binary resources?
+    //      multer puts file contents in req.file, so body may still be a string
     if (typeof req.body !== 'string') {
         // Body hasn't been parsed, assume it was bad
         err = new OADAError('Unsupported Media Type', 415);

@@ -6,18 +6,19 @@ const express = require('express');
 const cors = require('cors');
 const path = require('path');
 const bodyParser = require('body-parser');
-const fileUpload = require('express-fileupload');
+const multer = require('multer');
+const fileUpload = multer({ limits: '20mb' });
 const fs = require('fs');
-const bluebird = require('bluebird');
+// const bluebird = require('bluebird');
 
-const readfile = bluebird.promisify(fs.readFile);
+// const readfile = bluebird.promisify(fs.readFile);
 
 const app = express();
 const port = 8000;
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
-app.use(fileUpload());
+// app.use(fileUpload());
 app.use(cors());
 
 app.get('/', (_req, res) => res.json({
@@ -25,38 +26,19 @@ app.get('/', (_req, res) => res.json({
   res: 'GET',
 }));
 
-app.post('/', async (req, res) => {
-  if (!req.files || Object.keys(req.files).length === 0) {
-    res.status(400).json({
-      status: 'NACK',
-      res: 'POST'
-    });
-  }
+app.post('/*', bodyParser.text({
+  strict: false,
+  type: ['json', '+json'],
+  limit: '20mb',
+}));
 
-  // console.log(req);
-  // 'Begin': octet stream beginning location in file
-  // console.log(req.files.file);
-  // const buf = Array.from(new Uint8Array(req.files.file.data));
-  // console.log(buf);
-
-  let f = req.files.file;
-  delete f.mv;
-  delete f.md5;
-  delete f.tempFilePath;
-
-  // const buf = Buffer.from(f.data, 'base64');
-  // console.log(buf);
-  const arr = Array.from(f.data);
-  // console.log(arr);
-
-  f.data = arr;
-
+app.post('/', fileUpload.single('file'), async (req, res) => {
+  let f = req.file;
+  const arr = Array.from(f.buffer);
+  f.buffer = arr;
   console.log(f);
-
   const buf2 = new Buffer.from(arr);
-  // console.log(buf2);
-
-  const file_writer = fs.createWriteStream(`${__dirname}/uploads/${req.files.file.name}`);
+  const file_writer = fs.createWriteStream(`${__dirname}/uploads/${f.originalname}`);
   file_writer.write(buf2);
 
   res.status(200).json({
