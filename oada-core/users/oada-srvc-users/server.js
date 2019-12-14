@@ -22,6 +22,7 @@ const warn = debug('webhooks:warn');
 const error = debug('webhooks:error');
 var Promise = require('bluebird');
 const uuid = require('uuid');
+const _ = require('lodash');
 
 const {ResponderRequester} = require('../../libs/oada-lib-kafka');
 const {users} = require('../../libs/oada-lib-arangodb');
