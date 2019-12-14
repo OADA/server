@@ -32,7 +32,7 @@ function addClientToAuth(auth) {
 // Authorizations routes
 // TODO: How the heck should this work??
 router.get('/', function(req, res, next) {
-    return authorizations.findByUser(req.user.doc['user_id'])
+    return authorizations.findByUser(req.user['user_id'])
         .reduce((o, i) => {
             let k = i['_id'].replace(/^authorizations\//, '');
             i = addClientToAuth(i); // returns either a promise or the same auth object
@@ -48,7 +48,7 @@ router.get('/:authId', function(req, res, next) {
         .tap(function chkAuthUser(auth) {
             // Only let users see their own authorizations
             try {
-                if (auth.user['_id'] === req.user.doc['user_id']) {
+                if (auth.user['_id'] === req.user['user_id']) {
                     return Promise.resolve();
                 }
             } catch (e) {} // eslint-disable-line no-empty
@@ -74,9 +74,9 @@ router.post('/', function(req, res, next) {
         let auth = Object.assign({
             // TODO: Which fields should be selectable by the client?
             user: {
-                _id: req.user.doc['user_id']
+                _id: req.user['user_id']
             },
-            clientId: req.user.doc['client_id'],
+            clientId: req.user['client_id'],
             createTime: Date.now(),
             expiresIn: 3600,
             // TODO: How to generate token?
@@ -84,7 +84,7 @@ router.post('/', function(req, res, next) {
         }, req.body);
 
         // Don't allow making tokens for other users
-        if (auth.user['_id'] !== req.user.doc['user_id']) {
+        if (auth.user['_id'] !== req.user['user_id']) {
             return Promise.reject(new OADAError('Forbidden', 403));
         }
 
@@ -98,7 +98,7 @@ router.delete('/:authId', function(req, res, next) {
         .tap(function chkAuthUser(auth) {
             // Only let users see their own authorizations
             try {
-                if (auth.user['_id'] === req.user.doc['user_id']) {
+                if (auth.user['_id'] === req.user['user_id']) {
                     return Promise.resolve();
                 }
             } catch (e) {} // eslint-disable-line no-empty

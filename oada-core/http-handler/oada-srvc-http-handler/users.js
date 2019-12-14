@@ -26,6 +26,7 @@ router.post('/', function(req, res, next) {
         'connection_id': req.id,
         'domain': req.get('host'),
         'token': req.get('authorization'),
+        'authorization': req.authorization,
         'user': req.body
     }, config.get('kafka:topics:userRequest'))
     .tap(function chkSuccess(resp) {
@@ -47,7 +48,7 @@ router.post('/', function(req, res, next) {
 
 router.get('/me', function(req, res, next) {
     req.url = req.url.replace(/^\/me/,
-            `/${req.user.doc['user_id'].replace(/^users\//, '')}`);
+            `/${req.user['user_id'].replace(/^users\//, '')}`);
     next();
 });
 
