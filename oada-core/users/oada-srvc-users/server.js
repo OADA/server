@@ -49,81 +49,106 @@ module.exports = function stopResp() {
     return responder.disconnect();
 };
 
-responder.on('request', function handleReq(req) {
-  // TODO: Sanitize?
-  trace('REQUEST: req = ', req);
-  // While this could fit in permissions_handler, since users are not really resources (i.e. no graph),
-  // we'll add a check here that the user has oada.admin.user:write or oada.admin.user:all scope
-  const authorization = _.cloneDeep(req.authorization) || {};
-  const tokenscope = _.isArray(authorization.scope) ? _.join(authorization.scope, ' ') : (authorization.scope || ''); // force to space-separated string
-  if (!tokenscope.match(/oada.admin.user:write/) && !tokenscope.match(/oada.admin.user:all/)) {
-    warn('WARNING: attempt to create a user, but request does not have token with oada.admin.user:write or oada.admin.user:all scope');
-    return { code: 'ERROR: token does not have required scope to create users.' };
-  }
 
-  // Get the user for this token to see if they also have the scope as an additional test:
-  return users.findById(authorization.user_id)
+function createNewUser(req) {
+  const u = _.cloneDeep(req.user);
+  u._id = 'users/'+req.id;
+  u._key = req.id;
+  return users.create(u)
   .then(user => {
-    const userscope = _.isArray(user.scope) ? _.join(user.scope, ' ') : (tokenuser.scope || ''); // force to space-separated string
-    if (!userscope.match(/oada.admin.user:write/) && !userscope.match(/oada.admin.user:all/)) {
-      warn('WARNING: attempt to create a user, but user who owns token does not have scope to write users.');
-      return { code: 'ERROR: user does not have required permission to create users.' };
+    // Create empty resources for user
+    ['bookmarks', 'shares'].forEach(res => {
+      if (!(user[res] && user[res]['_id'])) {
+        let resid = 'resources/' + uuid();
+
+        console.log(`Creating ${resid} for ${res} of ${user._id} as _type = ${contentTypes[res]}`);
+        user[res] = responder.send({
+          'url': '/' + resid,
+          'resource_id': '/' + resid,
+          'path_leftover': '',
+          'meta_id': resid + '/_meta',
+          'user_id': user['_id'],
+          // TODO: What to put for these?
+          //'authorizationid': ,
+          //'client_id': ,
+          'contentType': contentTypes[res],
+          'body': {}
+        }).tap(resp => {
+          if (resp.code === 'success') {
+            return Promise.resolve();
+          } else {
+            // TODO: Clean up on failure?
+            console.log(resp.code);
+            let err = new Error(`Failed to create ${res}`);
+            return Promise.reject(err);
+          }
+        }).return({_id: resid});
+      }
+    });
+    return user;
+  }).props()
+  .then(users.update) // update the new user with the new bookmarks
+  .tap(user => console.log(`Created user ${user['_id']}`))
+}
+
+responder.on('request', async function handleReq(req) {
+  try {
+    // TODO: Sanitize?
+    trace('REQUEST: req.user = ', req.user);
+    trace('REQUEST: req.authorization.scope = ', req.authorization ? req.authorization.scope : null);
+    // While this could fit in permissions_handler, since users are not really resources (i.e. no graph),
+    // we'll add a check here that the user has oada.admin.user:write or oada.admin.user:all scope
+    const authorization = _.cloneDeep(req.authorization) || {};
+    const tokenscope = _.isArray(authorization.scope) ? _.join(authorization.scope, ' ') : (authorization.scope || ''); // force to space-separated string
+    if (!tokenscope.match(/oada.admin.user:write/) && !tokenscope.match(/oada.admin.user:all/)) {
+      warn('WARNING: attempt to create a user, but request does not have token with oada.admin.user:write or oada.admin.user:all scope');
+      return { code: 'ERROR: token does not have required scope to create users.' };
+    }
+  
+    // First, check if the ID exists already:
+    let cur_user = null;
+    if (req.id) {
+      trace('Checking if user id ',req.id,' exists.');
+      cur_user = await users.findById(req.id, { graceful: true })
+    }
+    trace('Result of search for user with id ',req.id,': ', cur_user);
+  
+    // Make one if it doesn't exist already:
+    let created_a_new_user = false;
+    if (!cur_user) {
+      try { 
+        created_a_new_user = true;
+        cur_user = await createNewUser(req);
+      } catch (err) {
+        if (err && _.isEqual(err, users.UniqueConstraintError)) {
+          created_a_new_user = false;
+          trace('Tried to create user, but it already existed (same username).  Returning as if we had created it.  User object was: ', req.user);
+          cur_user = (await users.like(user))[0];
+        }
+      }
+    }
+    
+    // Now we know the user exists and has bookmarks/shares.  Now update/merge it with the requested data
+    if (!created_a_new_user) {
+      trace('We did not create a new user, so we are now updating user id ', cur_user._id);
+      const u = _.cloneDeep(req.user); // Get the "update" merge body
+      u._id = cur_user._id;     // Add the correct _id (overwrite any incorrect one)
+      cur_user = await users.update(u);
     }
 
-    return users.create(user, true)
-      .then(function ensureUserResources(user) {
-        // Create empty resources for user
-        ['bookmarks', 'shares'].forEach(function ensureResource(res) {
-          if (!(user[res] && user[res]['_id'])) {
-            let resid = 'resources/' + uuid();
-
-            console.log(`Creating ${resid} for ${res} of ${user._id} as _type = ${contentTypes[res]}`);
-            user[res] = responder.send({
-              'url': '/' + resid,
-              'resource_id': '/' + resid,
-              'path_leftover': '',
-              'meta_id': resid + '/_meta',
-              'user_id': user['_id'],
-              // TODO: What to put for these?
-              //'authorizationid': ,
-              //'client_id': ,
-              'contentType': contentTypes[res],
-              'body': {}
-            }).tap(resp => {
-              if (resp.code === 'success') {
-                return Promise.resolve();
-              } else {
-                // TODO: Clean up on failure?
-                console.log(resp.code);
-                let err = new Error(`Failed to create ${res}`);
-                return Promise.reject(err);
-              }
-            }).return({_id: resid});
-          }
-        });
-
-        return user;
-    }).props()
-    .then(users.update)
-    .tap(user => console.log(`Created user ${user['_id']}`))
-    .then(user => ({
-        code: 'success',
-        new: true,
-        user,
-    }))
-
-  }).catch(users.UniqueConstraintError, () => {
-    console.log(`User ${JSON.stringify(user)} already exists`);
-    // TODO: Implement updating users?
-    return users.like(user).call('next').then(user => ({
+    // All done!
+    // Respond to the request with success:
+    trace('Finished with update, responding with success, user = ', cur_user);
+    return {
       code: 'success',
-      new: false,
-      user
-    }));
-  })
-  .catch(err => {
+      new: created_a_new_user,
+      user: cur_user,
+    };
+
+  // If anything else went wrong, respond with error
+  } catch (err) {
     console.log(err);
     return {code: err.message || 'error'};
-  });
-
+  }
 });
+
