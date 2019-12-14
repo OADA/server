@@ -53,12 +53,15 @@ responder.on('request', function handleReq(req) {
     let user = req.user;
     // While this could fit in permissions_handler, since users are not really resources (i.e. no graph),
     // we'll add a check here that the user has oada.admin.user:write or oada.admin.user:all scope
-    const token = req.token;
-    if (!token || !token.scope || !token.scope.match(/oada.admin.user:write/) || !token.match(/oada.admin.user:all/)) {
+    const token = _.cloneDeep(req.token) || {};
+    const tokenscope = _.isArray(token.scope) ? _.join(token.scope, ' ') : (token.scope || ''); // force to space-separated string
+    if (!tokenscope.match(/oada.admin.user:write/) && !tokenscope.match(/oada.admin.user:all/)) {
       warn('WARNING: attempt to create a user, but request does not have token with oada.admin.user:write or oada.admin.user:all scope');
       return { code: 'ERROR: token does not have required scope to create users.' };
     }
-    if (!token.user || !token.user.scopes.match(/oada.admin.user:write/) || !token.match(/oada.admin.user:all/)) {
+    const tokenuser = token.user || {};
+    const userscope = _.isArray(tokenuser.scope) ? _.join(tokenuser.scope, ' ') : (tokenuser.scope || ''); // force to space-separated string
+    if (!userscope.match(/oada.admin.user:write/) && !userscope.match(/oada.admin.user:all/)) {
       warn('WARNING: attempt to create a user, but user who owns token does not have scope to write users.');
       return { code: 'ERROR: user does not have required permission to create users.' };
     }
