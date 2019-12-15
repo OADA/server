@@ -25,7 +25,8 @@ function findByToken(token, cb) {
     .then(t => t && Object.assign(t, {id: t._id, _id: undefined}))
     .then(t => {
       if (t && t.user) {
-        Object.assign(t.user, {id: t.user._id, _id: undefined});
+        // Why eliminate the _id?
+        // Object.assign(t.user, {id: t.user._id, _id: undefined});
       }
 
       return t;
@@ -37,8 +38,8 @@ function save(token, cb) {
   token = _.cloneDeep(token);
   Object.assign(token, {_id: token.id, id: undefined});
   // Link user
-  token.user = {_id: token.user.id};
-  trace('save: saving token ', token.token);
+  token.user = {_id: token.user._id};
+  trace('save: saving token ', token);
   oadaLib.authorizations.save(token).asCallback(cb);
 }
 

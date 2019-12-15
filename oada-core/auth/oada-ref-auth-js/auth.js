@@ -14,8 +14,8 @@
  */
 'use strict';
 
-var trace = require('debug')('trace:auth.js');
-var info = require('debug')('info:auth.js');
+var trace = require('debug')('auth#auth:trace');
+var info = require('debug')('auth#auth:info');
 var passport = require('passport');
 var LocalStrategy = require('passport-local');
 var ClientPassword = require('passport-oauth2-client-password');
@@ -36,7 +36,8 @@ var tokens = require('./db/models/token');
 
 // LocalStrategy is used for the /login screen
 passport.use(new LocalStrategy.Strategy(function(username, password, done) {
-  users.findByUsernamePassword(username, password, function(err, user) {
+  trace('Looking up username '+username+' in local strategy');
+  return users.findByUsernamePassword(username, password, function(err, user) {
     if (err) { return done(err); }
     if (!user) { return done(null, false); }
 
@@ -45,11 +46,15 @@ passport.use(new LocalStrategy.Strategy(function(username, password, done) {
 }));
 
 passport.serializeUser(function(user, done) {
-  done(null, user.username);
+  trace('serializing user by _id as ', user._id);
+//  done(null, user.username);
+  done(null, user._id);
 });
 
-passport.deserializeUser(function(username, done) {
-  users.findByUsername(username, function(err, user) {
+passport.deserializeUser(function(userid, done) {
+//  users.findByUsername(username, function(err, user) {
+  trace('deserializing user by userid: ', userid);
+  users.findById(userid, function(err, user) {
     done(err, user);
   });
 });
