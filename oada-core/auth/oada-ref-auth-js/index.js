@@ -175,9 +175,10 @@ module.exports = function(conf) {
 
     //----------------------------------------------------------------------------------
     // Login page: someone has navigated or been redirected to the login page.  Populate
-    // based on the domain
+    // based on the domain.  If session already has a userid, then just use that.
     app.get(config.get('auth:endpoints:login'), function(req, res) {
       trace('GET '+config.get('auth:endpoints:login')+': setting X-Frame-Options=SAMEORIGIN before rendering login');
+      trace('login endpoint: Session = ', req.session);
       res.header('X-Frame-Options', 'SAMEORIGIN');
       const iserror = !!req.query.error || req.session.errormsg;
       let errormsg = req.session.errormsg || "Login failed.";

@@ -136,6 +136,18 @@ module.exports = {
   auth: {
     // Prefix should match nginx proxy's prefix for the auth service
     endpointsPrefix: '/oadaauth',
+    endpoints: {
+      register: '/register',
+      authorize: '/auth',
+      token: '/token',
+      decision: '/decision',
+      login: '/login',
+      loginConnect: '/id-login', // POST URL for OpenIDConnect domain web form
+      redirectConnect: '/id-redirect', // redirect URL for OpenIDConnect
+      logout: '/logout',
+      certs: '/certs',
+      userinfo: '/userinfo',
+    },
     serviceName: 'Trellis',
     serviceLongName: 'Trellis - A Framework for Produce Audit Data',
     server: {
