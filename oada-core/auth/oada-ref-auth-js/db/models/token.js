@@ -79,6 +79,7 @@ function save(t, cb) {
 
     token.createTime = new Date().getTime();
 
+    debug('save: saving token ', token);
     db.save(token, function(err) {
       if (err) { debug(err); return cb(err); }
 

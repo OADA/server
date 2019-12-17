@@ -27,6 +27,13 @@ function makeUser(user) {
   return user;
 }
 
+function findById(id, cb) {
+  return Promise.fromCallback(done => db.findById(id, done))
+    .then(u => makeUser(u))
+    .tapCatch(debug)
+    .asCallback(cb);
+}
+
 function findByUsername(id, cb) {
   return Promise.fromCallback(done => db.findByUsername(id, done))
     .then(u => makeUser(u))
@@ -65,6 +72,7 @@ function update(user, cb) {
 }
 
 module.exports = {
+  findById: findById,
   findByUsername: findByUsername,
   findByUsernamePassword: findByUsernamePassword,
   findByOIDCToken: findByOIDCToken,

@@ -10,8 +10,10 @@ const {
 const { Responder } = require("../../libs/oada-lib-kafka");
 const pointer = require("json-pointer");
 const nhash = require("node-object-hash")();
-const error = require("debug")("write-handler:error");
-const info = require("debug")("write-handler:info");
+const debug = require('debug');
+const error = debug("write-handler:error");
+const  info = debug("write-handler:info");
+const trace = debug("write-handler:trace");
 const Cache = require("timed-cache");
 
 let counter = 0;
@@ -58,6 +60,7 @@ responder.on("request", (req, ...rest) => {
 
 function handleReq(req, msg) {
   req.source = req.source || "";
+  req.resourceExists = req.resourceExists ? req.resourceExists :  false; // Fixed bug if this is undefined
   var id = req["resource_id"].replace(/^\//, "");
 
   // Get body and check permission in parallel
@@ -135,6 +138,7 @@ function handleReq(req, msg) {
       var ts = Date.now() / 1000;
       // TODO: Sanitize keys?
 
+      trace(req.resource_id+': Checking if resource exists (req.resourceExists = ',req.resourceExists,')');
       if (req.resourceExists === false) {
         console.log(
           "initializing resource",
@@ -157,6 +161,7 @@ function handleReq(req, msg) {
             },
           },
         };
+        trace('Intializing resource with ', obj);
       }
 
       // Create object to recursively merge into the resource

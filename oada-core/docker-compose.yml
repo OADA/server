@@ -281,6 +281,7 @@ services:
       - ./oada-core/well-known:/code/well-known
       - ./oada-core/write-handler:/code/write-handler
       - ./oada-core/yarn:/code/yarn
+      - ./scopes:/code/scopes
       - /var/run/docker.sock:/var/run/docker.sock
       - letsencrypt_www_data:/var/www/letsencrypt
       # Need to map proxy's /certs for letsencrypt to save all its stuff where proxy can get it
@@ -433,6 +434,7 @@ services:
       - ./oada-core/permissions-handler:/code/permissions-handler
       - ./oada-core/libs:/code/libs
       - ./oada-srvc-docker-config.js:/oada-srvc-docker-config.js
+      - ./scopes:/code/scopes
     environment:
       - NODE_ENV=${NODE_ENV:-development}
       - DEBUG=${DEBUG:-""}

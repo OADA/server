@@ -98,7 +98,8 @@ app.use(function tokenHandler(req, res, next) {
         }
     })
     .then(function handleTokRes(resp) {
-        req.user = resp;
+        req.user = resp.doc;
+        req.authorization = resp.doc; // for users handler
     })
     .asCallback(next);
 });
@@ -107,7 +108,7 @@ app.use(function tokenHandler(req, res, next) {
 app.use(function handleBookmarks(req, res, next) {
     info('********************** ' + req.url);
     req.url = req.url.replace(/^\/bookmarks/,
-        `/${req.user.doc['bookmarks_id']}`);
+        `/${req.user['bookmarks_id']}`);
 
     info('********************** ' + req.url);
 
@@ -117,21 +118,21 @@ app.use(function handleBookmarks(req, res, next) {
 // Rewrite the URL if it starts with /shares
 app.use(function handleShares(req, res, next) {
     req.url = req.url.replace(/^\/shares/,
-        `/${req.user.doc['shares_id']}`);
+        `/${req.user['shares_id']}`);
     next();
 });
 /*
 // Rewrite the URL if it starts with /services
 app.use(function handleServices(req, res, next) {
     req.url = req.url.replace(/^\/services/,
-        `/${req.user.doc['services_id']}`);
+        `/${req.user['services_id']}`);
     next();
 });
 
 // Rewrite the URL if it starts with /trash
 app.use(function handleTrash(req, res, next) {
     req.url = req.url.replace(/^\/trash/,
-        `/${req.user.doc['trash_id']}`);
+        `/${req.user['trash_id']}`);
     next();
 });
 */

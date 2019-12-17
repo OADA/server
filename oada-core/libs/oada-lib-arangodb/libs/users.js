@@ -38,6 +38,10 @@ function findById(id) {
     .catch({code: 404}, () => null);
 }
 
+function exists(id) {
+  return users.documentExists(id);
+}
+
 function findByUsername(username) {
   return db.query(aql`
       FOR u IN ${users}
@@ -99,24 +103,22 @@ function findByUsernamePassword(username, password) {
     });
 }
 
-function create(u, returnNew = false) {
-  let opts = {returnNew};
+function create(u) {
   return Promise.try(() => {
     info('create user was called');
-
-    if (u.password) {
-      u.password = hashPw(u.password);
-    }
-
-    // TODO: Good way to name bookmarks?
-    //u.bookmarks = Object.assign({'_id': 'resources/' + uuid()}, u.bookmarks);
-
-    return users.save(u, opts).then(r => r.new || r);
+    if (u.password) u.password = hashPw(u.password);
+    return users.save(u, {returnNew: true}).then(r => r.new || r);
   });
 }
 
+// Use this with care because it will completely remove that user document.
+function remove(u) {
+  return users.remove(u);
+}
+
 function update(u) {
-  return users.update(u._id, u);
+  if (u.password) u.password = hashPw(u.password);
+  return users.update(u._id, u, { returnNew: true });
 }
 
 function like(u) {
@@ -135,6 +137,7 @@ module.exports = {
   findByOIDCToken,
   create: create,
   update,
+  remove,
   like,
   hashPw: hashPw,
   // TODO: Better way to handler errors?

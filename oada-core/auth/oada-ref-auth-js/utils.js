@@ -82,7 +82,7 @@ function createToken(scope, user, clientId, done) {
     user: user,
     clientId: clientId,
   };
-
+  debug('createToken: about to save token ', tok);
   tokens.save(tok, done);
 }
 

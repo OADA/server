@@ -4,6 +4,8 @@ const config = require('../config');
 const db = require('../db');
 const aql = require('arangojs').aql;
 const util = require('../util');
+const debug = require('debug');
+const trace = debug('oada-lib-arangodb#authorizations:trace');
 
 const users = require('./users.js');
 
@@ -33,7 +35,8 @@ function findByToken(token) {
 
       // no longer needed with new _id scheme
       //t._id = t._key;
-
+      
+      trace('Found authorization by token ('+t+'), filling out user from users collection by user._id');
       return users.findById(t.user._id)
         .then((user) => {
           t.user = user;
@@ -56,6 +59,7 @@ function findByUser(user) {
 }
 
 function save(token) {
+  trace('save: Saving token ', token);
   return authorizations.save(token).then(() => findByToken(token.token));
 }
 
@@ -65,10 +69,16 @@ function revoke(token) {
   `);
 }
 
+// Use with case: completely removes the authorization document from database:
+function remove(a) {
+  return authorizations.remove(a);
+}
+
 module.exports = {
   findById,
   findByToken,
   findByUser,
   save,
-  revoke
+  revoke,
+  remove, // use with care!
 };

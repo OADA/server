@@ -3,9 +3,11 @@
 _oada_completions() 
 {
   # list the core service names (folder names in oada-core)
-  CORE=$(cd ${OADABASEDIR}/oada-core; /bin/ls -d *)
+  # CORE=$(cd ${OADABASEDIR}/oada-core; /bin/ls -d *)
+  CORE=$(grep container_name ${OADABASEDIR}/oada-core/docker-compose.yml | sed 's/^.*container_name: *//')
   # list the installed service names (folder names in services-available)
-  SERVICES=$(cd ${OADABASEDIR}/services-available; /bin/ls -d *)
+  # SERVICES=$(cd ${OADABASEDIR}/services-available; /bin/ls -d *)
+  SERVICES=$(grep container_name ${OADABASEDIR}/services-available/*/docker-compose.yml | sed 's/^.*container_name: *//')
   # Use compgen to filter the list of service names based on last thing typed on command line
   LAST=$(expr ${#COMP_WORDS[@]} - 1)
   COMPREPLY=($(compgen -W "${CORE} ${SERVICES}" ${COMP_WORDS[$LAST]}))
