@@ -71,6 +71,10 @@ module.exports = {
   ],
   'oada.yield': [
     'application/vnd.oada.services.1+json',
+    'application/vnd.oada.operations.1+json',
+    'application/vnd.oada.operation.1+json',
+    'application/vnd.oada.seasons.1+json',
+    'application/vnd.oada.season.1+json',
     'application/vnd.oada.service.1+json',
     'application/vnd.oada.bookmarks.1+json',
     'application/vnd.oada.shares.1+json',
