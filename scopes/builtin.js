@@ -92,6 +92,7 @@ module.exports = {
     'application/vnd.oada.fields.1+json',
     'application/vnd.oada.grower.1+json',
     'application/vnd.oada.farm.1+json',
+    'application/vnd.oada.farms.1+json',
     'application/vnd.oada.yield.1+json',
     'application/vnd.oada.as-harvested.geohash.1+json',
     'application/json',
