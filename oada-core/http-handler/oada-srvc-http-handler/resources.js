@@ -18,6 +18,7 @@ const changes = require('../../libs/oada-lib-arangodb').changes;
 const putBodies = require('../../libs/oada-lib-arangodb').putBodies;
 const OADAError = require('oada-error').OADAError;
 
+const fs = require('fs');
 const multer = require('multer');
 const fileUpload = multer({ limits: '20mb' });
 
@@ -109,8 +110,9 @@ router.put('/*', function checkScope(req, res, next) {
                     'User does not have write permission for this resource');
         }
         if (!response.scopes.write) {
+            info("%o", response.scopes);
             throw new OADAError('Forbidden', 403,
-                    'Token does not have required scope');
+                'Token does not have required scope');
         }
     }).asCallback(next);
 });
@@ -189,9 +191,28 @@ router.get('/*', function getResource(req, res, next) {
                 `Resource: ${req.oadaGraph.resource_id}, Rev: ${req.oadaGraph.rev}`,
             );
         }
-        doc = unflattenMeta(doc);
-        info("doc unflattened now");
-        return res.set("X-OADA-Rev", req.oadaGraph.rev).json(doc);
+
+        // XXX for now assumes only the file itself is retrieved; not a parent document
+        // TODO better check for json content-type
+        if (doc.mimetype && doc.mimetype === 'image/jpeg') {
+            // jdoc.file.buffer = new Buffer.from(doc.file.buffer);
+            doc = unflattenMeta(doc);
+            // res.setHeader('Content-Type', doc.mimetype);
+            // res.setHeader('Content-Length', doc.size);
+            res.writeHead(200, {
+                'Content-Type': doc.mimetype,
+                'Content-Length': doc.size,
+                'X-OADA-Rev': req.oadaGraph.rev
+            });
+            // const res_file = JSON.parse(doc);
+            fs.createReadStream(Buffer.from(doc.buffer.data)).pipe(res);
+            // TODO send file instead of json
+            // return res.set("X-OADA-Rev", req.oadaGraph.rev).json(doc);
+        } else {
+            doc = unflattenMeta(doc);
+            return res.set("X-OADA-Rev", req.oadaGraph.rev).json(doc);
+        }
+
     }).catch(next);
 });
 
@@ -242,6 +263,27 @@ function noModifyShares(req, res, next) {
 router.delete('/*', noModifyShares);
 router.put('/*', noModifyShares);
 
+router.put('/*', fileUpload.single('file'), async function convertFile(req, res, next) {
+    const content_type = req.headers['content-type'];
+    if (content_type && content_type !== 'application/json') {
+        info('Non-JSON resource detected');
+        // req.file.buffer = Array.from(req.file.buffer);
+        // req.body.file = {
+        //     array_buf: Array.from(req.file.buffer),
+        //     ...req.file,
+        // };
+        // delete req.body.buffer
+        // TODO is this where the file object should be placed to store properly
+        // req.body.file = req.file;
+        // TODO not sure this is the best way to let body parser handle request
+        // res.set('Content-Type', 'application/json');
+        // const arr = Array.from(req.file.buffer);
+        // req.body.arr = arr;
+        req.body = JSON.stringify(req.file);
+    }
+    next();
+});
+
 // TODO check if not json/+json -> handle as binary resource
 // Parse JSON content types as text (but do not parse JSON yet)
 router.put('/*', bodyParser.text({
@@ -250,21 +292,13 @@ router.put('/*', bodyParser.text({
     limit: '20mb',
 }));
 
-router.put('/*', fileUpload.single('file'), async (req, res, next) => {
-    const content_type = req.headers['content-type'];
-    if (content_type && content_type !== 'application/json') {
-        req.file.buffer = Array.from(req.file.buffer);
-        req.body.file = req.file;
-    }
-    next();
-});
-
 router.put('/*', function checkBodyParsed(req, res, next) {
     let err = null;
 
     // TODO: Better way to decide if body was parsed?
     // TODO how does this check need to change to allow binary resources?
     //      multer puts file contents in req.file, so body may still be a string
+    //      should this just be removed when binary is implemented?
     if (typeof req.body !== 'string') {
         // Body hasn't been parsed, assume it was bad
         err = new OADAError('Unsupported Media Type', 415);
@@ -272,7 +306,6 @@ router.put('/*', function checkBodyParsed(req, res, next) {
 
     return next(err);
 });
-
 
 router.put('/*', async function ensureTypeTreeExists(req, res, next) {
     if (req.headers['x-oada-bookmarks-type']) {
