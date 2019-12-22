@@ -18,6 +18,7 @@ const changes = require('../../libs/oada-lib-arangodb').changes;
 const putBodies = require('../../libs/oada-lib-arangodb').putBodies;
 const OADAError = require('oada-error').OADAError;
 
+const Readable = require('stream').Readable;
 const fs = require('fs');
 const multer = require('multer');
 const fileUpload = multer({ limits: '20mb' });
@@ -194,25 +195,29 @@ router.get('/*', function getResource(req, res, next) {
 
         // XXX for now assumes only the file itself is retrieved; not a parent document
         // TODO better check for json content-type
-        if (doc.mimetype && doc.mimetype === 'image/jpeg') {
-            // jdoc.file.buffer = new Buffer.from(doc.file.buffer);
-            doc = unflattenMeta(doc);
-            // res.setHeader('Content-Type', doc.mimetype);
-            // res.setHeader('Content-Length', doc.size);
+        doc = unflattenMeta(doc);
+        if (doc.mimetype) {
             res.writeHead(200, {
                 'Content-Type': doc.mimetype,
                 'Content-Length': doc.size,
                 'X-OADA-Rev': req.oadaGraph.rev
             });
-            // const res_file = JSON.parse(doc);
-            fs.createReadStream(Buffer.from(doc.buffer.data)).pipe(res);
-            // TODO send file instead of json
-            // return res.set("X-OADA-Rev", req.oadaGraph.rev).json(doc);
+
+            // Not sure the read function is quite what we want...
+            // May need to be more sophisticated when enabling writing partial
+            // file for changes. Right now it makes it so no more items can be
+            // pushed into the Readable stream (the stream can't ever be
+            // paused).
+            let stream = new Readable({
+                read() {
+                    this._paused = false;
+                }
+            });
+            stream.push(Buffer.from(doc.buffer.data));
+            return stream.pipe(res);
         } else {
-            doc = unflattenMeta(doc);
             return res.set("X-OADA-Rev", req.oadaGraph.rev).json(doc);
         }
-
     }).catch(next);
 });
 
