@@ -18,6 +18,12 @@ const changes = require('../../libs/oada-lib-arangodb').changes;
 const putBodies = require('../../libs/oada-lib-arangodb').putBodies;
 const OADAError = require('oada-error').OADAError;
 
+const { pipeline } = require('stream');
+const pipelineAsync = require('bluebird').promisify(pipeline);
+const cacache = require('cacache');
+
+const CACHE_PATH = "tmp/oada-cache";
+
 const config = require('./config');
 
 var requester = require('./requester');
@@ -165,7 +171,7 @@ router.get('/*', async function getChanges(req, res, next) {
     }
 });
 
-router.get('/*', function getResource(req, res, next) {
+router.get('/*', async function getResource(req, res, next) {
     // TODO: Should it not get the whole meta document?
     // TODO: Make getResource accept an array of paths and return an array of
     //       results. I think we can do that in one arango query
@@ -175,21 +181,37 @@ router.get('/*', function getResource(req, res, next) {
             req.oadaGraph['path_leftover']
     );
 
-    return Promise.join(doc, function returnDoc(doc) {
-        info("DOC IS", doc);
-        // TODO: Allow null values in OADA?
-        if (doc === undefined || doc === null) {
-            console.log("Resource not found");
-            throw new OADAError("Not Found", 404);
-        } else {
-            console.log(
-                `Resource: ${req.oadaGraph.resource_id}, Rev: ${req.oadaGraph.rev}`,
-            );
+    // TODO check json content-type or if _id end in '/_meta'
+    if ((req.oadaGraph['type'] && req.oadaGraph['type'].match(/[\/|+]json$/))
+        || req.oadaGraph['path_leftover'].match(/\/_meta$/)) {
+        return Promise.join(doc, function returnDoc(doc) {
+            info("DOC IS", doc);
+            // TODO: Allow null values in OADA?
+            if (doc === undefined || doc === null) {
+                console.log("Resource not found");
+                throw new OADAError("Not Found", 404);
+            } else {
+                console.log(
+                    `Resource: ${req.oadaGraph.resource_id}, Rev: ${req.oadaGraph.rev}`,
+                );
+            }
+
+            doc = unflattenMeta(doc);
+            info("doc unflattened now");
+            return res.set("X-OADA-Rev", req.oadaGraph.rev).json(doc);
+        }).catch(next);
+    } else {
+        // get binary
+        if (req.oadaGraph['path_leftover']) {
+            info(req.oadaGraph['path_leftover']);
+            throw new OADAError("Not final document");
         }
-        doc = unflattenMeta(doc);
-        info("doc unflattened now");
-        return res.set("X-OADA-Rev", req.oadaGraph.rev).json(doc);
-    }).catch(next);
+
+        await pipelineAsync(
+            cacache.get.stream(CACHE_PATH, req.oadaGraph["resource_id"]),
+            res,
+        );
+    }
 });
 
 // TODO: This was a quick make it work. Do what you want with it.
@@ -245,6 +267,8 @@ router.put('/*', bodyParser.text({
     type: ['json', '+json'],
     limit: '20mb',
 }));
+
+/*
 router.put('/*', function checkBodyParsed(req, res, next) {
     let err = null;
 
@@ -256,6 +280,7 @@ router.put('/*', function checkBodyParsed(req, res, next) {
 
     return next(err);
 });
+*/
 
 
 router.put('/*', async function ensureTypeTreeExists(req, res, next) {
@@ -358,8 +383,18 @@ router.put('/*', async function ensureTypeTreeExists(req, res, next) {
     }
 })
 
-router.put('/*', function putResource(req, res, next) {
+router.put('/*', async function putResource(req, res, next) {
     info(`Saving PUT body for request ${req.id}`);
+    if (req.header('content-type') && !req.header('content-type').match(/[\/|+]json$/)) {
+        // put binary
+        await pipelineAsync(
+            req,
+            cacache.put.stream(CACHE_PATH, req.oadaGraph.resource_id),
+        );
+
+        req.body = '{}';
+    }
+
     return putBodies.savePutBody(req.body)
         .tap(() => info(`PUT body saved for request ${req.id}`))
         .get('_id')
@@ -394,9 +429,9 @@ router.put('/*', function putResource(req, res, next) {
                 case 'permission':
                     return Promise.reject(new OADAError('Forbidden', 403,
                             'User does not own this resource'));
-		case 'if-match failed':
-			return Promise.reject(new OADAError('Precondition Failed', 412,
-				'If-Match header does not match current resource _rev'));
+        case 'if-match failed':
+            return Promise.reject(new OADAError('Precondition Failed', 412,
+                'If-Match header does not match current resource _rev'));
                 default:
                     let msg = 'write failed with code ' + resp.code;
                     return Promise.reject(new OADAError(msg));
@@ -408,6 +443,18 @@ router.put('/*', function putResource(req, res, next) {
                 .redirect(204, req.baseUrl + req.url);
         })
         .catch(next);
+
+    // } else {
+    //     // put binary
+    //     await pipelineAsync(
+    //         req,
+    //         cacache.put.stream(CACHE_PATH, req.oadaGraph.resource_id),
+    //     );
+
+    //     // TODO: what does savePutBody expect in the object?
+    //     // TODO: potentially write resource_id to
+    //     putBodies.savePutBody({});
+    // }
 });
 
 // Don't let users DELETE their bookmarks?
