@@ -7,6 +7,7 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const pointer = require('json-pointer');
 const _ = require('lodash');
+const typeis = require('type-is');
 
 const info = require('debug')('http-handler:info');
 const warn = require('debug')('http-handler:warn');
@@ -180,7 +181,7 @@ router.get('/*', async function getResource(req, res, next) {
     res.set('X-OADA-Rev', req.oadaGraph.rev);
 
     // TODO check json content-type or if _id end in '/_meta'
-    if ((req.oadaGraph['type'] && req.oadaGraph['type'].match(/[\/|+]json$/))
+    if (typeis.is(req.oadaGraph['type'], ['json', '+json'])
         || req.oadaGraph['path_leftover'].match(/\/_meta$/)) {
 
         let doc = resources.getResource(
