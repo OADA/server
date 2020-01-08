@@ -38,6 +38,7 @@
     "oada-error": "^1.1.1",
     "stream": "0.0.2",
     "timed-cache": "^1.1.0",
+    "type-is": "^1.6.18",
     "uuid": "^3.0.1",
     "well-known-json": "^0.2.0"
   },
