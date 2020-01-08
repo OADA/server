@@ -183,14 +183,17 @@ router.get('/*', async function getResource(req, res, next) {
     // TODO: Make getResource accept an array of paths and return an array of
     //       results. I think we can do that in one arango query
 
-    var doc = resources.getResource(
-            req.oadaGraph['resource_id'],
-            req.oadaGraph['path_leftover']
-    );
+    res.set('Content-Type', req.oadaGraph.type);
+    res.set('X-OADA-Rev', req.oadaGraph.rev);
 
     // TODO check json content-type or if _id end in '/_meta'
     if ((req.oadaGraph['type'] && req.oadaGraph['type'].match(/[\/|+]json$/))
         || req.oadaGraph['path_leftover'].match(/\/_meta$/)) {
+
+        let doc = resources.getResource(
+                req.oadaGraph['resource_id'],
+                req.oadaGraph['path_leftover']
+        );
         return Promise.join(doc, function returnDoc(doc) {
             info("DOC IS", doc);
             // TODO: Allow null values in OADA?
@@ -205,7 +208,7 @@ router.get('/*', async function getResource(req, res, next) {
 
             doc = unflattenMeta(doc);
             info("doc unflattened now");
-            return res.set("X-OADA-Rev", req.oadaGraph.rev).json(doc);
+            return res.json(doc);
             /*
             if (doc.mimetype) {
                 res.writeHead(200, {
@@ -238,9 +241,15 @@ router.get('/*', async function getResource(req, res, next) {
             throw new OADAError("Not final document");
         }
 
+        // Look up file size before starting stream
+        let {integrity, size} = await cacache.get.info(
+            CACHE_PATH,
+            req.oadaGraph['resource_id']
+        );
+        res.set('Content-Length', size);
         await pipelineAsync(
-            cacache.get.stream(CACHE_PATH, req.oadaGraph["resource_id"]),
-            res,
+            cacache.get.stream.byDigest(CACHE_PATH, integrity),
+            res
         );
     }
 });
