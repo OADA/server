@@ -1,6 +1,8 @@
 Install directions
 ==================
 
+Note: these are out of date.  Please refer to oada-docs repo for operations instructions on how to install
+
 1. `git clone ssh://git@github.com/oada/oada-srvc-docker`
 2. `cd oada-srvc-docker`
 3. `docker-compose build`
