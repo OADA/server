@@ -21,5 +21,10 @@ module.exports = {
             writeRequest: 'write_request',
             httpResponse: 'http_response'
         }
+    },
+    storage: {
+        binary: {
+            cacache: 'tmp/oada-cache'
+        }
     }
 };

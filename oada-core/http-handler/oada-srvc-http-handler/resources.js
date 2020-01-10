@@ -23,9 +23,9 @@ const { pipeline } = require('stream');
 const pipelineAsync = require('bluebird').promisify(pipeline);
 const cacache = require('cacache');
 
-const CACHE_PATH = "tmp/oada-cache";
-
 const config = require('./config');
+
+const CACHE_PATH = config.get("storage:binary:cacache");
 
 var requester = require('./requester');
 
