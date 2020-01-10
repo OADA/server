@@ -63,7 +63,8 @@ async function lookupFromUrl(url, userId) {
     `;
     return db.query({query}).call('next').then((result) => {
 
-      let resource_id = pointer.compile(id.concat(pieces));
+      let resource_id = pointer.compile(id.concat(pieces))
+          .replace(/^\//,''); // Get rid of leading slash from json pointer
 
       let path_leftover_not_exists = '';
       let path_leftover_exists = '';
