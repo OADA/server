@@ -300,14 +300,14 @@ writeResponder.on('request', function handleReq(req) {
   }
 
   trace('@@@@@@@@@@@@@@@', req.resource_id);
-  oadaLib.changes.getChange(req.resource_id, req._rev)
+  oadaLib.changes.getChangeArray(req.resource_id, req._rev)
   .then((change) => {
     trace('Emitted change for:', req.resource_id, change);
     emitter.emit(req.resource_id, {
       path_leftover: req.path_leftover,
       change
     });
-    if (change && change.type === 'delete') {
+    if (change && change[change.length - 1].type === 'delete') {
       trace('Delete change received for:', req.resource_id, req.path_leftover, change);
       if (req.resource_id && req.path_leftover === '') {
         trace('Removing all listeners to:', req.resource_id);

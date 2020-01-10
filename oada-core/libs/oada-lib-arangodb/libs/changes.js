@@ -114,6 +114,58 @@ function getChange(resourceId, changeRev) {
   });
 }
 
+// Produces a list of changes as an array
+function getChangeArray(resourceId, changeRev) {
+  //TODO: This is meant to handle when resources are deleted directly. Edge
+  // cases remain to be tested. Does this suffice regarding the need send down a
+  // bare tree?
+  if (!changeRev) {
+    return Promise.resolve([
+      {
+        body: null,
+        type: "delete",
+      },
+    ]);
+  }
+
+  return db
+    .query(
+      aql`
+    LET change = FIRST(
+      FOR change in ${changes}
+      FILTER change.resource_id == ${resourceId}
+      FILTER change.number == ${parseInt(changeRev, 10)}
+      RETURN change
+    )
+    LET path = LAST(
+      FOR v, e, p IN 0..${MAX_DEPTH} OUTBOUND change ${changeEdges}
+      RETURN p
+    )
+    RETURN path
+
+  `,
+    )
+    .call("next")
+    .then(result => {
+      if (!result || !result.vertices[0]) {
+        return undefined;
+      }
+      let change = [];
+      let path = "";
+      for (let i = 0; i < result.vertices.length; i++) {
+        change.push({
+          path,
+          body: result.vertices[i].body,
+          type: result.vertices[i].type,
+        });
+        if (i < result.vertices.length - 1) {
+          path += result.edges[i].path;
+        }
+      }
+      return change.reverse();
+    });
+}
+
 function getRootChange(resourceId, changeRev) {
   return db.query(aql`
     LET change = FIRST(
@@ -163,6 +215,7 @@ function putChange({change, resId, rev, type, child, path, userId, authorization
 module.exports = {
   getChangesSinceRev,
   getChange,
+  getChangeArray,
   getRootChange,
   getChanges,
   putChange,
