@@ -523,9 +523,7 @@ async function deletePartialResource(id, path, doc) {
   doc = doc || {};
   path = Array.isArray(path) ? path : pointer.parse(path);
 
-  // Fix rev
-  doc['_oada_rev'] = doc['_rev'];
-  doc['_rev'] = undefined;
+  let rev = doc['_rev'];
 
   pointer.set(doc, path, null);
 
@@ -571,7 +569,8 @@ async function deletePartialResource(id, path, doc) {
 
       LET unsetResult = ${unsetStr}
       LET newUnsetResult = unsetResult ? unsetResult : {}
-      LET newres = ${mergeStr}
+      LET newres = MERGE(MERGE(${mergeStr}, {_oada_rev: ${rev}}), {_meta: MERGE
+      (res._meta, {_rev: ${rev}})})}}))
 
       REPLACE res WITH newres IN ${resources.name} OPTIONS {keepNull: false}
       RETURN OLD._oada_rev
