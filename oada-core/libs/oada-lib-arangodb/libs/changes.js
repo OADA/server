@@ -27,7 +27,7 @@ function getChanges(resourceId, changeRev) {
   return db.query(aql`
     FOR change in ${changes}
       FILTER change.resource_id == ${resourceId}
-      RETURN CONCAT_SEPARATOR('-', change.number, change.hash)
+      RETURN change.number
   `).call('all').then((result) => {
     if (!result) {
       return undefined;
