@@ -113,8 +113,9 @@ router.put('/*', function checkScope(req, res, next) {
                     'User does not have write permission for this resource');
         }
         if (!response.scopes.write) {
+            info("%o", response.scopes);
             throw new OADAError('Forbidden', 403,
-                    'Token does not have required scope');
+                'Token does not have required scope');
         }
     }).asCallback(next);
 });
@@ -295,6 +296,18 @@ function noModifyShares(req, res, next) {
 router.delete('/*', noModifyShares);
 router.put('/*', noModifyShares);
 
+/*
+router.put('/*', fileUpload.single('file'), async function convertFile(req, res, next) {
+    if (req.header('content-type') && req.header('content-type').match(/[\/|+]json$/)) {
+    } else {
+        info('Non-JSON resource detected');
+        req.body = {};
+    }
+    next();
+});
+*/
+
+// TODO check if not json/+json -> handle as binary resource
 // Parse JSON content types as text (but do not parse JSON yet)
 router.put('/*', bodyParser.text({
     strict: false,
@@ -307,6 +320,9 @@ router.put('/*', function checkBodyParsed(req, res, next) {
     let err = null;
 
     // TODO: Better way to decide if body was parsed?
+    // TODO how does this check need to change to allow binary resources?
+    //      multer puts file contents in req.file, so body may still be a string
+    //      should this just be removed when binary is implemented?
     if (typeof req.body !== 'string') {
         // Body hasn't been parsed, assume it was bad
         err = new OADAError('Unsupported Media Type', 415);
@@ -315,7 +331,6 @@ router.put('/*', function checkBodyParsed(req, res, next) {
     return next(err);
 });
 */
-
 
 router.put('/*', async function ensureTypeTreeExists(req, res, next) {
     if (req.headers['x-oada-bookmarks-type']) {
