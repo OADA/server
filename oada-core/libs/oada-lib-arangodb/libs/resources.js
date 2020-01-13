@@ -58,7 +58,8 @@ async function lookupFromUrl(url, userId) {
         }
       )
       LET rev = DOCUMENT(LAST(path.vertices).resource_id)._oada_rev
-      RETURN MERGE(path, {permissions, rev})
+      LET type = DOCUMENT(LAST(path.vertices).resource_id)._type
+      RETURN MERGE(path, {permissions, rev, type})
     `;
     return db.query({query}).call('next').then((result) => {
 
@@ -68,13 +69,14 @@ async function lookupFromUrl(url, userId) {
       let path_leftover_not_exists = '';
       let path_leftover_exists = '';
       let rev = result.rev;
+      let type = result.type;
       let resourceExists = true;
 
       let path_leftover =  '';
       let from = {'resource_id': '', 'path_leftover': ''};
 
       if (!result) {
-        return {resource_id, path_leftover, from, permissions: {}, rev};
+        return {resource_id, path_leftover, from, permissions: {}, rev, type};
       }
 
       let permissions = { owner: null, read: null, write: null};
@@ -99,7 +101,7 @@ async function lookupFromUrl(url, userId) {
 
       // Check for a traversal that did not finish (aka not found)
       if (result.vertices[0] === null) {
-        return {resource_id, path_leftover, from, permissions, rev, resourceExists:false};
+        return {resource_id, path_leftover, from, permissions, rev, type, resourceExists:false};
       // A dangling edge indicates uncreated resource; return graph lookup
         // starting at this uncreated resource
       } else if (!result.vertices[result.vertices.length - 1]) {
@@ -139,6 +141,7 @@ async function lookupFromUrl(url, userId) {
 
 
       return {
+        type,
         rev,
         resource_id,
         path_leftover,

@@ -22,6 +22,7 @@
     "axios": "^0.17.1",
     "bluebird": "^3.5.0",
     "body-parser": "^1.17.1",
+    "cacache": "^13.0.1",
     "cors": "^2.8.3",
     "debug": "^2.6.6",
     "debug-logger": "^0.4.1",
@@ -34,7 +35,9 @@
     "lodash": "^4.17.4",
     "nconf": "^0.8.4",
     "oada-error": "^1.1.1",
+    "stream": "^0.0.2",
     "timed-cache": "^1.1.0",
+    "type-is": "^1.6.18",
     "uuid": "^3.0.1",
     "well-known-json": "^0.2.0"
   },
