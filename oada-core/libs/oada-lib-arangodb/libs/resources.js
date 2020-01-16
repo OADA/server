@@ -570,7 +570,7 @@ async function deletePartialResource(id, path, doc) {
       LET unsetResult = ${unsetStr}
       LET newUnsetResult = unsetResult ? unsetResult : {}
       LET newres = MERGE(MERGE(${mergeStr}, {_oada_rev: ${rev}}), {_meta: MERGE
-      (res._meta, {_rev: ${rev}})})}}))
+      (res._meta, {_rev: ${rev}})})
 
       REPLACE res WITH newres IN ${resources.name} OPTIONS {keepNull: false}
       RETURN OLD._oada_rev
