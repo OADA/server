@@ -1,16 +1,16 @@
 module.exports = {
-  'oada.admin.user': [ // can interact with /users
-    'application/vnd.oada.user.1+json',
+  all: ['*/*'],
+  'oada.admin.user': [
+    // can interact with /users
+    'application/vnd.oada.user.1+json'
   ],
-  'oada.mirrors': [
-    'application/vnd.oada.mirrors.1+json',
-  ],
+  'oada.mirrors': ['application/vnd.oada.mirrors.1+json'],
   'oada.fields': [
     'application/vnd.oada.bookmarks.1+json',
     'application/vnd.oada.shares.1+json',
     'application/vnd.oada.fields.1+json',
     'application/vnd.oada.field.1+json',
-    'application/json',
+    'application/json'
   ],
   'oada.isoblue': [
     'application/vnd.oada.bookmarks.1+json',
@@ -19,23 +19,23 @@ module.exports = {
     'application/vnd.oada.isoblue.dataset.1+json',
     'application/vnd.oada.isoblue.day.1+json',
     'application/vnd.oada.isoblue.hour.1+json',
-    'application/json',
+    'application/json'
   ],
   'oada.operations': [
     'application/vnd.oada.bookmarks.1+json',
     'application/vnd.oada.shares.1+json',
     'application/vnd.oada.operation.1+json',
     'application/vnd.oada.operations.1+json',
-    'application/json',
+    'application/json'
   ],
   'oada.rocks': [
     'application/vnd.oada.bookmarks.1+json',
     'application/vnd.oada.shares.1+json',
     'application/vnd.oada.rocks.1+json',
     'application/vnd.oada.rock.1+json',
-    'application/json',
+    'application/json'
   ],
-  'trellisfw': [
+  trellisfw: [
     'application/vnd.oada.bookmarks.1+json',
     'application/vnd.oada.shares.1+json',
     'application/vnd.oada.rocks.1+json',
@@ -54,7 +54,7 @@ module.exports = {
     'application/json',
     'application/pdf',
   ],
-  'trellis': [
+  trellis: [
     'application/vnd.oada.bookmarks.1+json',
     'application/vnd.oada.shares.1+json',
     'application/vnd.oada.rocks.1+json',
@@ -102,6 +102,6 @@ module.exports = {
     'application/vnd.oada.farms.1+json',
     'application/vnd.oada.yield.1+json',
     'application/vnd.oada.as-harvested.geohash.1+json',
-    'application/json',
-  ],
-};
+    'application/json'
+  ]
+}
