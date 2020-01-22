@@ -89,7 +89,7 @@ fi
 
 cd $OADABASEDIR
 for i in `ls services-enabled`; do
-  COMPOSEFILES="$COMPOSEFILES -f services-enabled/$i/docker-compose.yml"
+  COMPOSEFILES="$COMPOSEFILES -f services-available/$i/docker-compose.yml"
 done
 
 echo -e "${GREEN}docker-compose ${CYAN}${COMPOSEFILES} ${YELLOW}$ARGS${NC}"
