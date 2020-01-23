@@ -40,6 +40,7 @@ module.exports = {
     'application/vnd.oada.shares.1+json',
     'application/vnd.oada.rocks.1+json',
     'application/vnd.oada.rock.1+json',
+    'application/vnd.oada.service.jobs.1+json'
     'application/vnd.trellisfw.audit.primusgfs.1+json',
     'application/vnd.trellisfw.audit.globalgap.1+json',
     'application/vnd.trellisfw.certification.primusgfs.1+json',
@@ -57,6 +58,7 @@ module.exports = {
     'application/vnd.oada.shares.1+json',
     'application/vnd.oada.rocks.1+json',
     'application/vnd.oada.rock.1+json',
+    'application/vnd.oada.service.jobs.1+json'
     'application/vnd.trellis.audit.primusgfs.1+json',
     'application/vnd.trellis.audit.globalgap.1+json',
     'application/vnd.trellis.certification.primusgfs.1+json',
