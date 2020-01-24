@@ -323,17 +323,6 @@ router.put(
     limit: '20mb'
   })
 )
-router.put('/*', function checkBodyParsed (req, res, next) {
-  let err = null
-
-  // TODO: Better way to decide if body was parsed?
-  if (typeof req.body !== 'string') {
-    // Body hasn't been parsed, assume it was bad
-    err = new OADAError('Unsupported Media Type', 415)
-  }
-
-  return next(err)
-})
 
 router.put('/*', async function ensureTypeTreeExists (req, res, next) {
   if (req.headers['x-oada-bookmarks-type']) {
