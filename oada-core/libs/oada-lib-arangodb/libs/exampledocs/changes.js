@@ -67,7 +67,6 @@ module.exports = [
     '_id': 'changes/default:resources_bookmarks_321',
     'resource_id': 'resources/default:resources_bookmarks_321',
     'number': 3,
-    'hash': 'c',
     'type': 'merge',
     'body': {
       '_rev': 3,

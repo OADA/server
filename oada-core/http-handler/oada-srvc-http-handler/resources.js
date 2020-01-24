@@ -7,6 +7,10 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const pointer = require('json-pointer');
 const _ = require('lodash');
+const typeis = require('type-is');
+const { pipeline } = require('stream');
+const pipelineAsync = require('bluebird').promisify(pipeline);
+const cacache = require('cacache');
 
 const info = require('debug')('http-handler:info');
 const warn = require('debug')('http-handler:warn');
@@ -19,6 +23,7 @@ const putBodies = require('../../libs/oada-lib-arangodb').putBodies;
 const OADAError = require('oada-error').OADAError;
 
 const config = require('./config');
+const CACHE_PATH = config.get('storage:binary:cacache');
 
 var requester = require('./requester');
 
@@ -165,31 +170,55 @@ router.get('/*', async function getChanges(req, res, next) {
     }
 });
 
-router.get('/*', function getResource(req, res, next) {
+router.get('/*', async function getResource(req, res, next) {
     // TODO: Should it not get the whole meta document?
     // TODO: Make getResource accept an array of paths and return an array of
     //       results. I think we can do that in one arango query
 
-    var doc = resources.getResource(
-            req.oadaGraph['resource_id'],
-            req.oadaGraph['path_leftover']
-    );
+    res.set('Content-Type', req.oadaGraph.type);
+    res.set('X-OADA-Rev', req.oadaGraph.rev);
 
-    return Promise.join(doc, function returnDoc(doc) {
-        info("DOC IS", doc);
-        // TODO: Allow null values in OADA?
-        if (doc === undefined || doc === null) {
-            console.log("Resource not found");
-            throw new OADAError("Not Found", 404);
-        } else {
-            console.log(
-                `Resource: ${req.oadaGraph.resource_id}, Rev: ${req.oadaGraph.rev}`,
-            );
+    if (typeis.is(req.oadaGraph['type'], ['json', '+json'])
+        || req.oadaGraph['path_leftover'].match(/\/_meta$/)) {
+
+        var doc = resources.getResource(
+                req.oadaGraph['resource_id'],
+                req.oadaGraph['path_leftover']
+        );
+
+        return Promise.join(doc, function returnDoc(doc) {
+            info("DOC IS", doc);
+            // TODO: Allow null values in OADA?
+            if (doc === undefined || doc === null) {
+                console.log("Resource not found");
+                throw new OADAError("Not Found", 404);
+            } else {
+                console.log(
+                    `Resource: ${req.oadaGraph.resource_id}, Rev: ${req.oadaGraph.rev}`,
+                );
+            }
+            doc = unflattenMeta(doc);
+            info("doc unflattened now");
+            return res.json(doc);
+        }).catch(next);
+    } else {
+        // get binary
+        if (req.oadaGraph['path_leftover']) {
+            info(req.oadaGraph['path_leftover']);
+            throw new OADAError('Path Leftover on Binary GEt');
         }
-        doc = unflattenMeta(doc);
-        info("doc unflattened now");
-        return res.set("X-OADA-Rev", req.oadaGraph.rev).json(doc);
-    }).catch(next);
+
+        // Look up file size before streaming
+        let {integrity, size} = await cacache.get.info(
+            CACHE_PATH,
+            req.oadaGraph['resource_id']
+        );
+        res.set('Content-Length', size);
+        await pipelineAsync(
+            cacache.get.stream.byDigest(CACHE_PATH, integrity),
+            res
+        );
+    }
 });
 
 // TODO: This was a quick make it work. Do what you want with it.
@@ -358,8 +387,17 @@ router.put('/*', async function ensureTypeTreeExists(req, res, next) {
     }
 })
 
-router.put('/*', function putResource(req, res, next) {
+router.put('/*', async function putResource(req, res, next) {
     info(`Saving PUT body for request ${req.id}`);
+
+    if (req.header('content-type') && !req.header('content-type').match(/[\/|+]json$/)) {
+        await pipelineAsync(
+            req,
+            cacache.put.stream(CACHE_PATH, req.oadaGraph.resource_id),
+        );
+        req.body = '{}';
+    }
+
     return putBodies.savePutBody(req.body)
         .tap(() => info(`PUT body saved for request ${req.id}`))
         .get('_id')

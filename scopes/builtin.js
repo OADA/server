@@ -74,6 +74,9 @@ module.exports = {
     'application/pdf',
   ],
   'oada.yield': [
+    'multipart/form-data',
+    'image/jpeg',
+    'application/pdf',
     'application/vnd.oada.services.1+json',
     'application/vnd.oada.operations.1+json',
     'application/vnd.oada.operation.1+json',

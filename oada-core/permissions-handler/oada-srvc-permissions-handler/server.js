@@ -130,8 +130,8 @@ responder.on('request', function handleReq(req) {
                 write: true,
                 owner: true
             };
-        //Check permissions. 2. Check if otherwise permissioned.
-        } else if (/^\/resources\//.test(req.oadaGraph.path_leftover) || /^\/resources\//.test(req.oadaGraph.resource_id)) {
+        //Check permissions. 2. Check if resouce does not exist
+        } else if (!req.oadaGraph.resourceExists) {
           response.permissions = {
             read: true,
             write: true,
