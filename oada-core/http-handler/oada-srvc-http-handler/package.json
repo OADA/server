@@ -35,6 +35,7 @@
     "lodash": "^4.17.4",
     "nconf": "^0.8.4",
     "oada-error": "^1.1.1",
+    "object-assign-deep": "^0.4.0",
     "stream": "^0.0.2",
     "timed-cache": "^1.1.0",
     "type-is": "^1.6.18",
