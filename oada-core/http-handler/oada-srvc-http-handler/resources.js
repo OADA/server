@@ -510,7 +510,8 @@ router.put('/*', async function putResource (req, res, next) {
     .then(function (resp) {
       return res
         .set('X-OADA-Rev', resp['_rev'])
-        .redirect(204, req.baseUrl + req.url)
+        //.redirect(204, req.baseUrl + req.url) // TODO: What is the right thing to return here?
+        .end()
     })
     .catch(next)
 })
