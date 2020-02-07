@@ -425,7 +425,7 @@ module.exports = [
       '_id': 'resources/default:resources_shares_999/_meta',
       '_rev': 1,
       '_type': 'application/vnd.oada.shares.1+json',
-      '_owner': 'users/default:users_sam_999', // TODO: Who "owns" /shares?
+      '_owner': 'users/default:users_audrey_999', // TODO: Who "owns" /shares?
       'stats': {
         // stats on meta is exempt from _changes
         // because that would generate loop of rev updates with resource
