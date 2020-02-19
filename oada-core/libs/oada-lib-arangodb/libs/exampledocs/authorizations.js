@@ -2,7 +2,7 @@ module.exports = [
   {
     _id: 'authorizations/default:authorization-123',
     token: 'abc',
-    scope: ['oada.yield:all', 'oada.rocks:all', 'oada.isoblue:all'],
+    scope: ['oada.yield:all', 'trellisfw:all'],
     createTime: 1413831649937,
     expiresIn: 60,
     user: { _id: 'users/default:users_frank_123' },
@@ -10,7 +10,7 @@ module.exports = [
   },
   {
     _id: 'authorizations/default:authorization-012',
-    token: 'servio',
+    token: 'mike',
     scope: ['oada.fields:all', 'oada.operations:all'],
     createTime: 1413831649937,
     expiresIn: 60,
