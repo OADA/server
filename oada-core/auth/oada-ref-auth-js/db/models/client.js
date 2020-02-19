@@ -12,52 +12,67 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-'use strict';
+'use strict'
 
-var uuid = require('uuid');
+var uuid = require('uuid/v4')
 
-var config = require('../../config');
-var debug = require('debug')('info');
-var path = require('path');
-var db = require(path.join(__dirname,'/../../db',config.get('auth:datastoresDriver'),'clients.js'));
+var config = require('../../config')
+var debug = require('debug')('info')
+var path = require('path')
+var db = require(path.join(
+  __dirname,
+  '/../../db',
+  config.get('auth:datastoresDriver'),
+  'clients.js'
+))
 
-function makeClient(client) {
+function makeClient (client) {
   // No model needed (yet)
-  return client;
+  return client
 }
 
-function findById(id, cb) {
-  db.findById(id, function(err, c) {
-    var client;
+function findById (id, cb) {
+  db.findById(id, function (err, c) {
+    var client
     if (!err) {
-      client = makeClient(c);
+      client = makeClient(c)
     }
 
-    cb(err, client);
-  });
+    cb(err, client)
+  })
 }
 
-function save(client, cb) {
-  client.clientId = uuid.v4();
+function save (client, cb) {
+  client.clientId = uuid()
 
-  db.findById(client.clientId, function(err, c) {
-    if (err) { debug(err); return cb(err); }
+  db.findById(client.clientId, function (err, c) {
+    if (err) {
+      debug(err)
+      return cb(err)
+    }
 
     if (c) {
-      return cb(new OADAError('Client Id already exists',
-                              OADAError.codes.BAD_REQUEST,
-                              'There was a problem durring the login'));
+      return cb(
+        new OADAError(
+          'Client Id already exists',
+          OADAError.codes.BAD_REQUEST,
+          'There was a problem durring the login'
+        )
+      )
     }
 
-    db.save(client, function(err) {
-      if (err) { debug(err); return cb(err); }
+    db.save(client, function (err) {
+      if (err) {
+        debug(err)
+        return cb(err)
+      }
 
-      findById(client.clientId, cb);
-    });
-  });
+      findById(client.clientId, cb)
+    })
+  })
 }
 
 module.exports = {
   findById: findById,
   save: save
-};
+}
