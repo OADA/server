@@ -1,4 +1,6 @@
 # Install directions
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2FOADA%2Foada-srvc-docker.svg?type=shield)](https://app.fossa.io/projects/git%2Bgithub.com%2FOADA%2Foada-srvc-docker?ref=badge_shield)
+
 
 Note: these are out of date. Please refer to oada-docs repo for operations instructions on how to install
 
@@ -49,3 +51,7 @@ domains, create the appropriate folder (same name as hostname) in /domains.
 The proxy will see it and create domain configs for each name there, and the
 auth service will use that info to serve the proper logo, name, etc. for each
 service.
+
+
+## License
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2FOADA%2Foada-srvc-docker.svg?type=large)](https://app.fossa.io/projects/git%2Bgithub.com%2FOADA%2Foada-srvc-docker?ref=badge_large)
