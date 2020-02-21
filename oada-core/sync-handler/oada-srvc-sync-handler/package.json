@@ -17,9 +17,9 @@
   },
   "homepage": "https://github.com/OADA/oada-srvc-sync-handler#readme",
   "dependencies": {
-    "axios": "^0.16.2",
+    "axios": "^0.19.2",
     "bluebird": "^3.5.0",
-    "debug": "^2.6.9",
+    "debug": "^4.1.1",
     "nconf": "^0.8.4"
   },
   "devDependencies": {

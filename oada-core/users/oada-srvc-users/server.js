@@ -85,6 +85,8 @@ function createNewUser(req) {
         }).return({_id: resid});
       }
     });
+    // If we keep the password, we end up re-hashing it in the update
+    delete user.password;
     return user;
   }).props()
   .then(users.update) // update the new user with the new bookmarks

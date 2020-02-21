@@ -24,7 +24,7 @@
   "homepage": "https://github.com/oada/oada-srvc-startup#readme",
   "dependencies": {
     "bluebird": "^3.5.0",
-    "debug": "^2.6.6",
+    "debug": "^4.1.1",
     "express": "^4.15.2"
   }
 }

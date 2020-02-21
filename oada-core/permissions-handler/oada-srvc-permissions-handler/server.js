@@ -80,7 +80,9 @@ responder.on('request', function handleReq(req) {
     trace('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~') 
     trace('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~') 
     trace('inside permissions handler', req.oadaGraph.resource_id);
-    return oadaLib.resources.getResource(req.oadaGraph.resource_id, '').then((resource) => {
+//    return oadaLib.resources.getResource(req.oadaGraph.resource_id, '').then((resource) => {
+        trace('request is:', req);
+//        trace('Resource is', req.oadaGraph.resource_id, resource);
         //Check scopes
         if (process.env.IGNORE_SCOPE === 'yes') {
             trace('IGNORE_SCOPE environment variable is true');
@@ -96,11 +98,14 @@ responder.on('request', function handleReq(req) {
                     warn('Unsupported scope type "' + type + '"');
                     return false;
                 }
+                console.log('TEST TYPIS', typeis.is('application/json', ['application/json']));
                 trace('User scope:', type)
-                let contentType = req.requestType === 'put' ? req.contentType : (resource ? resource._type : undefined);
-                trace('contentType = ', req.requestType === 'put', req.contentType, resource);
-                trace('Does user have scope?', contentType, typeis.is(contentType, scopeTypes[type]))
+                let contentType = req.oadaGraph.permissions ? req.oadaGraph.permissions.type : undefined;
+                //let contentType = req.requestType === 'put' ? req.contentType : (resource ? resource._type : undefined);
+                //trace('contentType = ', 'is put:', req.requestType === 'put', 'req.contentType:', req.contentType, 'resource:', resource);
+                trace('Does user have scope?', 'resulting contentType:', contentType, 'typeis check:', typeis.is(contentType, scopeTypes[type]))
                 trace('Does user have read scope?', scopePerm(perm, 'read'))
+                trace('TYPEIS aaa', typeis.is(contentType, scopeTypes[type]))
                 return typeis.is(contentType, scopeTypes[type]) &&
                         scopePerm(perm, 'read');
             });
@@ -115,15 +120,23 @@ responder.on('request', function handleReq(req) {
                     warn('Unsupported scope type "' + type + '"');
                     return false;
                 }
-                let contentType = req.requestType === 'put' ? req.contentType : (resource ? resource._type : undefined);
-              trace('Does user have write scope?', scopePerm(perm, 'write'))
+                //let contentType = req.requestType === 'put' ? req.contentType : (resource ? resource._type : undefined);
+                console.log('contentType is', req.contentType)
+                let contentType = req.oadaGraph.permissions ? req.oadaGraph.permissions.type : undefined;
+                if (req.contentType) contentType = req.contentType;
+                trace('Does user have write scope?', scopePerm(perm, 'write'))
+                console.log('contentType is2', contentType)
+                console.log('write typeis', type, typeis.is(contentType, scopeTypes[type]));
+                console.log('scope types', scopeTypes[type]);
                 return typeis.is(contentType, scopeTypes[type]) &&
                         scopePerm(perm, 'write');
             });
         }
         //Check permissions. 1. Check if owner.
         // First check if we're putting to resources 
-        if (resource && resource._meta && resource._meta._owner === req.user_id) {
+        console.log('resource exists', req.oadaGraph.resourceExists);
+        if (req.oadaGraph.permissions && req.oadaGraph.permissions.owner && req.oadaGraph.permissions.owner === req.user_id) {
+        //if (resource && resource._meta && resource._meta._owner === req.user_id) {
             trace('Resource requested by owner.');
             response.permissions = {
                 read: true,
@@ -142,5 +155,5 @@ responder.on('request', function handleReq(req) {
         }
         trace('END RESULT', response);
         return response;
-    });
+    //});
 });

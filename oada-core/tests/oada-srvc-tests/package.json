@@ -4,10 +4,10 @@
   "description": "Generate dummy messages to test different oada-srvc micro services.",
   "main": "",
   "dependencies": {
-    "axios": "^0.16.1",
+    "axios": "^0.19.2",
     "bluebird": "^3.5.0",
     "chai": "^3.5.0",
-    "debug": "^2.6.6",
+    "debug": "^4.1.1",
     "kafka-node": "^1.6.1",
     "md5": "^2.2.1",
     "mocha": "^3.3.0",
