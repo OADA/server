@@ -12,46 +12,53 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-'use strict';
+'use strict'
 
-var bcrypt = require('bcryptjs');
+var bcrypt = require('bcryptjs')
 
-var config = require('../../config');
-var db = require('./mongo.js');
+var config = require('../../config')
+var db = require('./mongo.js')
 
-function findByUsername(username, cb) {
-  db.users.findOne({username: username}, function(err, user) {
-    if (err) { return cb(err); }
+function findByUsername (username, cb) {
+  db.users.findOne({ username: username }, function (err, user) {
+    if (err) {
+      return cb(err)
+    }
 
     if (user) {
       // Rename mongo's _id
-      user.id = user._id;
+      user.id = user._id
 
-      cb(null, user);
+      cb(null, user)
     } else {
-      cb(err, false);
+      cb(err, false)
     }
-  });
+  })
 }
 
-function findByUsernamePassword(username, password, cb) {
-  var passwd =  bcrypt.hashSync(password, config.get('server:passwordSalt'));
+function findByUsernamePassword (username, password, cb) {
+  var passwd = bcrypt.hashSync(password, config.get('server:passwordSalt'))
 
-  db.users.findOne({username: username, password: passwd}, function(err, user) {
-    if (err) { return cb(err); }
+  db.users.findOne({ username: username, password: passwd }, function (
+    err,
+    user
+  ) {
+    if (err) {
+      return cb(err)
+    }
 
     if (user) {
       // Rename mongo's _id
-      user.id = user._id;
+      user.id = user._id
 
-      cb(null, user);
+      cb(null, user)
     } else {
-      cb(err, false);
+      cb(err, false)
     }
-  });
+  })
 }
 
 module.exports = {
   findById: findByUsername,
   findByUsernamePassword: findByUsernamePassword
-};
+}

@@ -13,36 +13,34 @@
  * limitations under the License.
  */
 
-'use strict';
+'use strict'
 
-const info = require('debug')('oada-lib-kafka:info');
-const trace = require('debug')('oada-lib-kafka:trace');
-const warn = require('debug')('oada-lib-kafka:warn');
+const info = require('debug')('oada-lib-kafka:info')
+const trace = require('debug')('oada-lib-kafka:trace')
+const warn = require('debug')('oada-lib-kafka:warn')
 
-const {
-    Base,
-    CONNECT,
-    DATA,
-} = require('./base');
-const Responder = require('./Responder');
-const Requester = require('./Requester');
+const { Base, CONNECT, DATA } = require('./base')
+const Responder = require('./Responder')
+const Requester = require('./Requester')
 
 class DummyResponder extends Responder {
-    [CONNECT]() { // eslint-disable-line class-methods-use-this
+    [CONNECT] () {
+        // eslint-disable-line class-methods-use-this
         // Don't connect to Kafka
-        return undefined;
+        return undefined
     }
 }
 class DummyRequester extends Requester {
-    [CONNECT]() { // eslint-disable-line class-methods-use-this
+    [CONNECT] () {
+        // eslint-disable-line class-methods-use-this
         // Don't connect to Kafka
-        return undefined;
+        return undefined
     }
 }
 // Class for when responding to reuqests requires making other requests
 // TODO: Better class name?
 class ResponderRequester extends Base {
-    constructor({requestTopics, respondTopics, group, respondOwn, ...opts}) {
+    constructor ({ requestTopics, respondTopics, group, respondOwn, ...opts }) {
         super({
             consumeTopic: [
                 requestTopics.consumeTopic,
@@ -50,9 +48,9 @@ class ResponderRequester extends Base {
             ],
             group,
             ...opts
-        });
+        })
 
-        this.respondOwn = respondOwn;
+        this.respondOwn = respondOwn
 
         // Make a Responder and Requester using our consumer/producer
         this.responder = new DummyResponder({
@@ -60,58 +58,58 @@ class ResponderRequester extends Base {
             producer: this.producer,
             group,
             ...respondTopics,
-            ...opts,
-        });
+            ...opts
+        })
         this.requester = new DummyRequester({
             consumer: this.consumer,
             producer: this.producer,
             group,
             ...requestTopics,
-            ...opts,
-        });
+            ...opts
+        })
 
         // Mux the consumer between requester and responder
         this.on(DATA, (val, data, ...rest) => {
-            trace('Received data', val);
+            trace('Received data', val)
             if (data.topic === this.requester.consumeTopic) {
-                trace('Muxing data to requester');
-                this.requester.emit(DATA, val, data, ...rest);
+                trace('Muxing data to requester')
+                this.requester.emit(DATA, val, data, ...rest)
             }
             if (data.topic === this.responder.consumeTopic) {
                 if (!this.respondOwn && val.group === this.group) {
                     // Don't respond to own requests
-                    return;
+                    return
                 }
-                trace('Muxing data to responder');
-                this.responder.emit(DATA, val, data, ...rest);
+                trace('Muxing data to responder')
+                this.responder.emit(DATA, val, data, ...rest)
             }
-        });
+        })
 
-        this[CONNECT]();
+        this[CONNECT]()
     }
 
-    on(event, listener) {
+    on (event, listener) {
         switch (event) {
             case 'ready':
-                super.on('ready', listener);
-                break;
+                super.on('ready', listener)
+                break
             case DATA:
-                super.on(DATA, listener);
-                break;
+                super.on(DATA, listener)
+                break
             default:
-                this.requester.on(event, listener);
-                this.responder.on(event, listener);
-                break;
+                this.requester.on(event, listener)
+                this.responder.on(event, listener)
+                break
         }
     }
 
     // TODO: Is it better to just extend Requester?
-    send(...args) {
-        return this.requester.send(...args);
+    send (...args) {
+        return this.requester.send(...args)
     }
-    emitter(...args) {
-        return this.requester.emitter(...args);
+    emitter (...args) {
+        return this.requester.emitter(...args)
     }
 }
 
-module.exports = ResponderRequester;
+module.exports = ResponderRequester

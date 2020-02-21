@@ -12,14 +12,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-'use strict';
+'use strict'
 
 module.exports = {
   kafka: {
     topics: {
-      graphRequest: "graph_request",
-      httpResponse: "http_response",
+      graphRequest: 'graph_request',
+      httpResponse: 'http_response'
     },
-    groupId: 'graph-lookup',
+    groupId: 'graph-lookup'
   }
-};
+}

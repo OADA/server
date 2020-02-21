@@ -13,13 +13,12 @@
  * limitations under the License.
  */
 
-'use strict';
+'use strict'
 
-const domain = process.env.DOMAIN || 'localhost';
+const domain = process.env.DOMAIN || 'localhost'
 
 /* eslint indent: "off" */
 module.exports = {
-
   // By default, this checks for NODE_ENV===production
   // to determine if is production.
   // set to true to use the production database name
@@ -38,37 +37,27 @@ module.exports = {
     collections: {
       users: {
         name: 'users',
-        indexes: [
-          'username',
-          { name: 'oadaid', sparse: true }
-        ],
+        indexes: ['username', { name: 'oadaid', sparse: true }],
         defaults: './libs/exampledocs/users'
       },
       clients: {
         name: 'clients',
-        indexes: [ 'clientId' ],
+        indexes: ['clientId'],
         defaults: './libs/exampledocs/clients'
       },
       authorizations: {
         name: 'authorizations',
-        indexes: [
-          'token',
-          { name: 'user', unique: false }
-        ],
+        indexes: ['token', { name: 'user', unique: false }],
         defaults: './libs/exampledocs/authorizations'
       },
-			changes: {
-				name: 'changes',
-				indexes: [
-					{ name: ['resource_id', 'number'], 
-            unique: false
-          },
-				],
+      changes: {
+        name: 'changes',
+        indexes: [{ name: ['resource_id', 'number'], unique: false }],
         defaults: './libs/exampledocs/changes'
-			},
+      },
       codes: {
         name: 'codes',
-        indexes: [ 'code' ],
+        indexes: ['code'],
         defaults: './libs/exampledocs/codes'
       },
       resources: {
@@ -78,19 +67,19 @@ module.exports = {
       },
       remoteResources: {
         name: 'remoteResources',
-        indexes: [ { name: ['domain', 'resource_id'], unique: true } ]
+        indexes: [{ name: ['domain', 'resource_id'], unique: true }]
       },
       graphNodes: {
         name: 'graphNodes',
-        indexes: [ { name: 'resource_id', unique: false } ],
+        indexes: [{ name: 'resource_id', unique: false }],
         defaults: './libs/exampledocs/graphNodes'
-			},
-			changeEdges: {
-				name: 'changeEdges',
-				indexes: [ ],
-				edgeCollection: true,
+      },
+      changeEdges: {
+        name: 'changeEdges',
+        indexes: [],
+        edgeCollection: true,
         defaults: './libs/exampledocs/changeEdges'
-			},
+      },
       edges: {
         name: 'edges',
         indexes: [
@@ -111,11 +100,11 @@ module.exports = {
         name: 'sessions',
         indexes: [],
         createOptions: { isVolatile: false }
-      },
+      }
     },
     init: {
       // NOTE: passwordSalt HAS to match the one in auth
-      passwordSalt: '$2a$10$l64QftVz6.7KR5BXNc29IO',
+      passwordSalt: '$2a$10$l64QftVz6.7KR5BXNc29IO'
     }
   },
   kafka: {
@@ -126,12 +115,12 @@ module.exports = {
       websocketsRequest: 'websockets_request',
       userRequest: 'user_request',
       permissionsRequest: 'permissions_request', //show bobs
-			httpResponse: 'http_response',
-			websocketsRequest: 'websockets_request',
-    },
+      httpResponse: 'http_response',
+      websocketsRequest: 'websockets_request'
+    }
   },
   zookeeper: {
-    host: 'zookeeper:2181',
+    host: 'zookeeper:2181'
   },
   auth: {
     // Prefix should match nginx proxy's prefix for the auth service
@@ -146,7 +135,7 @@ module.exports = {
       redirectConnect: '/id-redirect', // redirect URL for OpenIDConnect
       logout: '/logout',
       certs: '/certs',
-      userinfo: '/userinfo',
+      userinfo: '/userinfo'
     },
     serviceName: 'Trellis',
     serviceLongName: 'Trellis - A Framework for Produce Audit Data',
@@ -162,41 +151,40 @@ module.exports = {
       publicUri: 'https://' + domain
     },
     keys: {
-      signPems: '/code/auth/sign/',
+      signPems: '/code/auth/sign/'
     },
     idToken: {
       expiresIn: 3600,
       // Note: signKid has to match the name of the .pem at the signPem path above
-      signKid: '02llkjf92jieiekk2',
+      signKid: '02llkjf92jieiekk2'
     },
     datastoresDriver: 'arango',
     hint: {
       username: 'frank',
       password: 'test'
-    },
+    }
   },
   wellKnown: {
     server: {
       port: 80,
       mode: 'http',
-      domain: domain,
+      domain: domain
     },
     mergeSubServices: [
-      { resource: 'oada-configuration', base: 'http://auth', },
-      { resource: 'openid-configuration', base: 'http://auth', },
+      { resource: 'oada-configuration', base: 'http://auth' },
+      { resource: 'openid-configuration', base: 'http://auth' }
     ],
     'oada-configuration': {
-      'well_known_version': '1.0.0',
-      'oada_base_uri': './',
-      'scopes_supported': [
+      well_known_version: '1.0.0',
+      oada_base_uri: './',
+      scopes_supported: [
         {
           name: 'oada.all.1', // can do anything the user can do
           /* pattern: /oada\..*\.1/  */
-          'read+write': true, // can read/write anything the user can read/write
+          'read+write': true // can read/write anything the user can read/write
         }
-      ],
+      ]
     },
-    'openid-configuration': {},
-  },
-
-};
+    'openid-configuration': {}
+  }
+}

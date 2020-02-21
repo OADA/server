@@ -12,26 +12,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-'use strict';
+'use strict'
 
-var _ = require('lodash');
-var clients = require('./clients.json');
+var _ = require('lodash')
+var clients = require('./clients.json')
 
-function findById(id, cb) {
+function findById (id, cb) {
   if (clients[id]) {
-    cb(null, _.cloneDeep(clients[id]));
+    cb(null, _.cloneDeep(clients[id]))
   } else {
-    cb(null);
+    cb(null)
   }
 }
 
-function save(client, cb) {
-  clients[client.clientId] = _.cloneDeep(client);
+function save (client, cb) {
+  clients[client.clientId] = _.cloneDeep(client)
 
-  findById(client.clientId, cb);
+  findById(client.clientId, cb)
 }
 
 module.exports = {
   findById: findById,
-  save: save,
+  save: save
 }

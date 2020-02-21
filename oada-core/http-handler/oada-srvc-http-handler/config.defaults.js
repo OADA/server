@@ -1,4 +1,4 @@
-'use strict';
+'use strict'
 
 module.exports = {
     server: {
@@ -10,9 +10,9 @@ module.exports = {
     // Prefix should match nginx proxy's prefix for the auth service
     //endpointsPrefix: '/oadaauth',
     arango: {
-        connectionString: 'http://arangodb:8529',
+        connectionString: 'http://arangodb:8529'
     },
-    'http-handler': {websockets: {maxWatches: 100000}},
+    'http-handler': { websockets: { maxWatches: 100000 } },
     kafka: {
         broker: 'zookeeper:2181',
         topics: {
@@ -27,4 +27,4 @@ module.exports = {
             cacache: 'tmp/oada-cache'
         }
     }
-};
+}

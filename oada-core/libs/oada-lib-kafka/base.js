@@ -13,141 +13,144 @@
  * limitations under the License.
  */
 
-'use strict';
+'use strict'
 
-const EventEmitter = require('events');
-var Promise = require('bluebird');
-var uuid = require('uuid');
-const kf = require('node-rdkafka');
-const config = require('./config');
-const info = require('debug')('oada-lib-kafka:info');
-const warn = require('debug')('oada-lib-kafka:warn');
+const EventEmitter = require('events')
+var Promise = require('bluebird')
+var uuid = require('uuid')
+const kf = require('node-rdkafka')
+const config = require('./config')
+const info = require('debug')('oada-lib-kafka:info')
+const warn = require('debug')('oada-lib-kafka:warn')
 
-const REQ_ID_KEY = 'connection_id';
-const CANCEL_KEY = 'cancel_request';
+const REQ_ID_KEY = 'connection_id'
+const CANCEL_KEY = 'cancel_request'
 // Not sure I like the way options are oragnised, but it works
 const rdkafkaOpts = Object.assign(config.get('kafka:librdkafka'), {
-    'metadata.broker.list': config.get('kafka:broker'),
-});
+    'metadata.broker.list': config.get('kafka:broker')
+})
 
-const CONNECT = Symbol('kafka-lib-connect');
-const DATA = Symbol('kafa-lib-data');
-const pollInterval = 500;
-const healthInterval = 5*60*1000;
+const CONNECT = Symbol('kafka-lib-connect')
+const DATA = Symbol('kafa-lib-data')
+const pollInterval = 500
+const healthInterval = 5 * 60 * 1000
 
-function topicTimeout(topic) {
-    let timeout = config.get('kafka:timeouts:default');
+function topicTimeout (topic) {
+    let timeout = config.get('kafka:timeouts:default')
 
-    let topics = config.get('kafka:topics');
+    let topics = config.get('kafka:topics')
     Object.keys(topics).forEach(topick => {
         if (topics[topick] === topic) {
-            timeout = config.get('kafka:timeouts:' + topick) || timeout;
+            timeout = config.get('kafka:timeouts:' + topick) || timeout
         }
-    });
+    })
 
-    return timeout;
+    return timeout
 }
 
 class Base extends EventEmitter {
-    constructor({consumeTopic, consumer, produceTopic, producer, group}) {
-        super();
+    constructor ({ consumeTopic, consumer, produceTopic, producer, group }) {
+        super()
 
-        this.consumeTopic = consumeTopic;
-        this.produceTopic = produceTopic;
-        this.group = group;
+        this.consumeTopic = consumeTopic
+        this.produceTopic = produceTopic
+        this.group = group
 
-        this.requests = {};
+        this.requests = {}
 
-        this.consumer = consumer || new kf.KafkaConsumer({
-            'group.id': this.group,
-            ...rdkafkaOpts
-        });
-        this.producer = producer || new kf.Producer({
-            'dr_cb': false, //delivery report callback
-            ...rdkafkaOpts
-        });
+        this.consumer =
+            consumer ||
+            new kf.KafkaConsumer({
+                'group.id': this.group,
+                ...rdkafkaOpts
+            })
+        this.producer =
+            producer ||
+            new kf.Producer({
+                dr_cb: false, //delivery report callback
+                ...rdkafkaOpts
+            })
 
-        this.consumer.on('error', (...args) =>
-            super.emit('error', ...args)
-        );
-        this.producer.on('error', (...args) =>
-            super.emit('error', ...args)
-        );
-        this.producer.on('delivery-report', function(err, report) {
+        this.consumer.on('error', (...args) => super.emit('error', ...args))
+        this.producer.on('error', (...args) => super.emit('error', ...args))
+        this.producer.on('delivery-report', function (err, report) {
             if (err) console.log('!!!!!!!!!!!!!!!!!!!!!!!', err)
-        });
+        })
 
         this.consumer.on('event.error', (...args) =>
             super.emit('error', ...args)
-        );
+        )
         this.producer.on('event.error', (...args) =>
             super.emit('error', ...args)
-        );
+        )
 
         let consumerReady = Promise.fromCallback(done => {
             this.consumer.on('ready', () => {
-                info(`${this.group}'s consumer ready`);
-                done();
-            });
-        });
+                info(`${this.group}'s consumer ready`)
+                done()
+            })
+        })
         let producerReady = Promise.fromCallback(done => {
             this.producer.on('ready', () => {
-                this.producer.setPollInterval(config.get('kafka:producer:pollInterval') || pollInterval);
-                info(`${this.group}'s producer ready`);
+                this.producer.setPollInterval(
+                    config.get('kafka:producer:pollInterval') || pollInterval
+                )
+                info(`${this.group}'s producer ready`)
                 // Health loop to keep the broker alive.
                 setInterval(() => {
-                    var value = new Buffer(produceTopic+ 'is alive.')
+                    var value = new Buffer(produceTopic + 'is alive.')
                     //TODO: other health messages here
                     this.producer.produce('health', 0, value, uuid())
                 }, config.get('kafka:producer:healthIterval') || healthInterval)
-                done();
-            });
-        });
-        this.ready = Promise.join(consumerReady, producerReady);
+                done()
+            })
+        })
+        this.ready = Promise.join(consumerReady, producerReady)
     }
 
-    async [CONNECT]() {
+    async [CONNECT] () {
         // Assume all messages are JSON
-        this.consumer.on('data', ({value, ...data}) => {
-            let resp = JSON.parse(value);
-            super.emit(DATA, resp, data);
-        });
+        this.consumer.on('data', ({ value, ...data }) => {
+            let resp = JSON.parse(value)
+            super.emit(DATA, resp, data)
+        })
 
-        this.consumer.connect();
-        this.producer.connect();
-        await this.ready;
+        this.consumer.connect()
+        this.producer.connect()
+        await this.ready
 
-        let topics = Array.isArray(this.consumeTopic) ?
-            this.consumeTopic : [this.consumeTopic];
-        this.consumer.subscribe(topics);
-        this.consumer.consume();
+        let topics = Array.isArray(this.consumeTopic)
+            ? this.consumeTopic
+            : [this.consumeTopic]
+        this.consumer.subscribe(topics)
+        this.consumer.consume()
 
-        super.emit('ready');
+        super.emit('ready')
     }
 
-    async produce({mesg, topic, part = null}) {
+    async produce ({ mesg, topic, part = null }) {
         // Assume all messages are JSON
         let payload = JSON.stringify({
             time: Date.now(),
             group: this.group,
             ...mesg
-        });
-        let value = Buffer.from(payload);
+        })
+        let value = Buffer.from(payload)
 
-        await this.ready;
+        await this.ready
 
-        return this.producer.produce(topic || this.produceTopic, part, value);
+        return this.producer.produce(topic || this.produceTopic, part, value)
     }
 
-    disconnect() {
+    disconnect () {
         let dcons = Promise.fromCallback(done => {
-            this.consumer.disconnect(() => done());
-        });
+            this.consumer.disconnect(() => done())
+        })
         let dprod = Promise.fromCallback(done => {
-            this.producer.disconnect(() => done());
-        });
+            this.producer.disconnect(() => done())
+        })
 
-        return Promise.join(dcons, dprod);
+        return Promise.join(dcons, dprod)
     }
 }
 
@@ -157,5 +160,5 @@ module.exports = {
     Base,
     topicTimeout,
     CONNECT,
-    DATA,
-};
+    DATA
+}

@@ -1,17 +1,16 @@
-Install directions
-==================
+# Install directions
 
-Note: these are out of date.  Please refer to oada-docs repo for operations instructions on how to install
+Note: these are out of date. Please refer to oada-docs repo for operations instructions on how to install
 
 1. `git clone ssh://git@github.com/oada/oada-srvc-docker`
 2. `cd oada-srvc-docker`
 3. `docker-compose build`
 4. `docker-compose run yarn`
-5. `docker-compose up -d` 
-    5a. For development, you may need to add the environment variable `NODE_TLS_REJECT_UNAUTHORIZED=0` to ignore self-signed certificates. WARNING: this is insecure)
+5. `docker-compose up -d`
+   5a. For development, you may need to add the environment variable `NODE_TLS_REJECT_UNAUTHORIZED=0` to ignore self-signed certificates. WARNING: this is insecure)
 
-Windows Installation
-====================
+# Windows Installation
+
 1. In windows, go to the "Add, edit, or remove other people" settings to create a local user.
    1a. In the lower section under "Other people", click "Add someone else to this PC"
    1b. Click "I don't have this person's sign-in information"
@@ -30,22 +29,22 @@ Windows Installation
    3c. `cd oada-srvc-docker`
    3d. `docker-compose run build` (this gets and installs all of the docker container images--it this takes a bit)
 4. Open file explorer, navigate to the "oada-srvc-docker" folder, right click it, and choose "Properties"
-    4a. At the bottom, uncheck "Read-only (Only applies to files in folder)". Click "Apply".
-    4b. If prompted, choose to apply to all subfolders and files.
-    4c. When back to the Properties window, DO NOT CLICK "OK". Leave the window open. Closing it will, for some reason, revert back to Read-only.
+   4a. At the bottom, uncheck "Read-only (Only applies to files in folder)". Click "Apply".
+   4b. If prompted, choose to apply to all subfolders and files.
+   4c. When back to the Properties window, DO NOT CLICK "OK". Leave the window open. Closing it will, for some reason, revert back to Read-only.
 5. Back in the git bash terminal, run the command `docker-compose run yarn` (does some additional package installations within the installed containers)
-    5a. Run `export COMPOSE_CONVERT_WINDOWS_PATHS=1`
-    5b. Run `docker-compose up -d`
-    5c. For development, you may need to disable TLS. Before 5b, run `export NODE_TLS_REJECT_UNAUTHORIZED=0`. WARNING: this is insecure
+   5a. Run `export COMPOSE_CONVERT_WINDOWS_PATHS=1`
+   5b. Run `docker-compose up -d`
+   5c. For development, you may need to disable TLS. Before 5b, run `export NODE_TLS_REJECT_UNAUTHORIZED=0`. WARNING: this is insecure
 
-Debugging
-=========
-Set your local DEBUG variable to "*" or some other wildcard and
+# Debugging
+
+Set your local DEBUG variable to "\*" or some other wildcard and
 that will be passed to any services that are restarted.
 
-Multi-domain:
-=============
-Everything can start up as localhost by default.  If you want to serve multiple
+# Multi-domain:
+
+Everything can start up as localhost by default. If you want to serve multiple
 domains, create the appropriate folder (same name as hostname) in /domains.  
 The proxy will see it and create domain configs for each name there, and the
 auth service will use that info to serve the proper logo, name, etc. for each

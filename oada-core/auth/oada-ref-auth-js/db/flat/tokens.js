@@ -12,22 +12,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-'use strict';
+'use strict'
 
-var _ = require('lodash');
-var tokens = require('./tokens.json');
+var _ = require('lodash')
+var tokens = require('./tokens.json')
 
-function findByToken(token, cb) {
-  cb(null, _.cloneDeep(tokens[token]));
+function findByToken (token, cb) {
+  cb(null, _.cloneDeep(tokens[token]))
 }
 
-function save(token, cb) {
-  tokens[token.token] = JSON.parse(JSON.stringify(token));
+function save (token, cb) {
+  tokens[token.token] = JSON.parse(JSON.stringify(token))
 
-  findByToken(token.token, cb);
+  findByToken(token.token, cb)
 }
 
 module.exports = {
   findByToken: findByToken,
-  save: save,
-};
+  save: save
+}

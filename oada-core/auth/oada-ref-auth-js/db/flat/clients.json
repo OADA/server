@@ -4,29 +4,27 @@
     "name": "OADA Reference Implementation",
     "contact": "info@openag.io",
     "puc": "https://identity.oada-dev.com/puc.html",
-    "redirectUrls": [
-      "https://client.oada-dev.com/redirect"
-    ],
+    "redirectUrls": ["https://client.oada-dev.com/redirect"],
     "licenses": [
       {
         "id": "oada-1.0",
         "name": "OADA Fictitious Agreement v1.0"
       }
     ],
-    "keys": [{
-      "kty": "RSA",
-      "use": "sig",
-      "alg": "RS256",
-      "kid": "nc63dhaSdd82w32udx6v",
-      "n": "AKj8uuRIHMaq-EJVf2d1QoB1DSvFvYQ3Xa1gvVxaXgxDiF9-Dh7bO5f0VotrYD05MqvY9X_zxF_ioceCh3_rwjNFVRxNnnIfGx8ooOO-1f4SZkHE-mbhFOe0WFXJqt5PPSL5ZRYbmZKGUrQWvRRy_KwBHZDzD51b0-rCjlqiFh6N",
-      "e": "AQAB"
-    }]
+    "keys": [
+      {
+        "kty": "RSA",
+        "use": "sig",
+        "alg": "RS256",
+        "kid": "nc63dhaSdd82w32udx6v",
+        "n": "AKj8uuRIHMaq-EJVf2d1QoB1DSvFvYQ3Xa1gvVxaXgxDiF9-Dh7bO5f0VotrYD05MqvY9X_zxF_ioceCh3_rwjNFVRxNnnIfGx8ooOO-1f4SZkHE-mbhFOe0WFXJqt5PPSL5ZRYbmZKGUrQWvRRy_KwBHZDzD51b0-rCjlqiFh6N",
+        "e": "AQAB"
+      }
+    ]
   },
   "389kxhcnjmashlsxd8@identity.oada-dev.com": {
     "clientId": "389kxhcnjmashlsxd8@identity.oada-dev.com",
-    "redirectUrls": [
-      "https://example.org/redirect"
-    ],
+    "redirectUrls": ["https://example.org/redirect"],
     "licenses": [],
     "keys": [
       {

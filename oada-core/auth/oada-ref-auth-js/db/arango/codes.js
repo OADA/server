@@ -13,37 +13,38 @@
  * limitations under the License.
  */
 
-'use strict';
+'use strict'
 
-var _ = require('lodash');
-var trace = require('debug')('arango:codes/trace');
-var oadaLib = require('../../../../libs/oada-lib-arangodb');
+var _ = require('lodash')
+var trace = require('debug')('arango:codes/trace')
+var oadaLib = require('../../../../libs/oada-lib-arangodb')
 
-function findByCode(code, cb) {
-  trace('findByCode: searching for code ', code);
-  oadaLib.codes.findByCode(code)
-    .then(c => c && Object.assign(c, {id: c._id, _id: undefined}))
+function findByCode (code, cb) {
+  trace('findByCode: searching for code ', code)
+  oadaLib.codes
+    .findByCode(code)
+    .then(c => c && Object.assign(c, { id: c._id, _id: undefined }))
     .then(c => {
       if (c && c.user) {
-        Object.assign(c.user, {id: c.user._id, _id: undefined});
+        Object.assign(c.user, { id: c.user._id, _id: undefined })
       }
 
-      return c;
+      return c
     })
-    .asCallback(cb);
+    .asCallback(cb)
 }
 
-function save(in_code, cb) {
-  var code = _.cloneDeep(in_code);
-  Object.assign(code, {_id: code.id, id: undefined});
+function save (in_code, cb) {
+  var code = _.cloneDeep(in_code)
+  Object.assign(code, { _id: code.id, id: undefined })
   // Link user
-  code.user = { _id: null };
-  if (in_code.user) code.user = { _id: in_code.user.id };
+  code.user = { _id: null }
+  if (in_code.user) code.user = { _id: in_code.user.id }
 
-  oadaLib.codes.save(code).asCallback(cb);
+  oadaLib.codes.save(code).asCallback(cb)
 }
 
 module.exports = {
   findByCode: findByCode,
-  save: save,
-};
+  save: save
+}

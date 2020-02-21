@@ -58,7 +58,7 @@ module.exports = {
     'application/vnd.trellisfw.1+json',
     'application/vnd.trellisfw.document.1+json',
     'application/json',
-    'application/pdf',
+    'application/pdf'
   ],
   trellis: [
     'application/vnd.oada.bookmarks.1+json',
@@ -77,7 +77,7 @@ module.exports = {
     'application/vnd.trellis.connection.1+json',
     'application/vnd.trellis.1+json',
     'application/json',
-    'application/pdf',
+    'application/pdf'
   ],
   'oada.yield': [
     'multipart/form-data',

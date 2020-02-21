@@ -13,15 +13,15 @@
  * limitations under the License.
  */
 
-'use strict';
+'use strict'
 
-const EventEmitter = require('events');
-const util = require('util');
-const uuid = require('uuid');
-const Bluebird = require('bluebird');
+const EventEmitter = require('events')
+const util = require('util')
+const uuid = require('uuid')
+const Bluebird = require('bluebird')
 
-const info = require('debug')('oada-lib-kafka:info');
-const warn = require('debug')('oada-lib-kafka:warn');
+const info = require('debug')('oada-lib-kafka:info')
+const warn = require('debug')('oada-lib-kafka:warn')
 
 const {
     Base,
@@ -30,87 +30,88 @@ const {
     DATA,
     REQ_ID_KEY,
     CANCEL_KEY
-} = require('./base');
+} = require('./base')
 
 module.exports = class Requester extends Base {
-    constructor({consumeTopic, produceTopic, group, ...opts}) {
+    constructor ({ consumeTopic, produceTopic, group, ...opts }) {
         // Gross thing to support old API
         if (arguments.length > 1) {
             // eslint-disable-next-line no-param-reassign, prefer-rest-params
-            [consumeTopic, produceTopic, group] = arguments;
+            ;[consumeTopic, produceTopic, group] = arguments
 
             // Print deprecation warning
             util.deprecate(() => {},
-                    'Giving multiple arguments to constructor is deprecated')();
+            'Giving multiple arguments to constructor is deprecated')()
         }
-        super({consumeTopic, produceTopic, group, ...opts});
+        super({ consumeTopic, produceTopic, group, ...opts })
 
         super.on(DATA, resp => {
-            let done = this.requests[resp[REQ_ID_KEY]];
+            let done = this.requests[resp[REQ_ID_KEY]]
 
-            return done && done(null, resp);
-        });
+            return done && done(null, resp)
+        })
 
-        this.timeouts = {};
+        this.timeouts = {}
         if (this.produceTopic) {
-            this.timeouts[this.produceTopic] = topicTimeout(this.produceTopic);
+            this.timeouts[this.produceTopic] = topicTimeout(this.produceTopic)
         }
 
-        this[CONNECT]();
+        this[CONNECT]()
 
         // Should this even be available?
-        super.on(DATA, (...args) =>
-            super.emit('response', ...args)
-        );
+        super.on(DATA, (...args) => super.emit('response', ...args))
     }
 
-    send(request, reqtopic) {
-        let id = request[REQ_ID_KEY] || uuid();
-        let topic = reqtopic || this.produceTopic;
-        let timeout = this.timeouts[topic];
+    send (request, reqtopic) {
+        let id = request[REQ_ID_KEY] || uuid()
+        let topic = reqtopic || this.produceTopic
+        let timeout = this.timeouts[topic]
         if (!timeout) {
-            timeout = topicTimeout(topic);
-            this.timeouts[topic] = timeout;
+            timeout = topicTimeout(topic)
+            this.timeouts[topic] = timeout
         }
 
-        request[REQ_ID_KEY] = id;
+        request[REQ_ID_KEY] = id
         // TODO: Handle partitions?
-        request['resp_partition'] = 0;
+        request['resp_partition'] = 0
 
         let reqDone = Bluebird.fromCallback(done => {
-            this.requests[id] = done;
-        });
-        let prod = this.produce({mesg: request, topic, part: null});
+            this.requests[id] = done
+        })
+        let prod = this.produce({ mesg: request, topic, part: null })
         return Bluebird.resolve(prod)
             .then(() => reqDone.timeout(timeout, topic + ' timeout'))
             .finally(() => {
-                delete this.requests[id];
-            });
+                delete this.requests[id]
+            })
     }
 
     // Like send but return an event emitter to allow multiple responses
-    emitter(request, reqtopic) {
-        let emitter = new EventEmitter();
+    emitter (request, reqtopic) {
+        let emitter = new EventEmitter()
 
-        let id = request[REQ_ID_KEY] || uuid();
-        let topic = reqtopic || this.produceTopic;
+        let id = request[REQ_ID_KEY] || uuid()
+        let topic = reqtopic || this.produceTopic
 
-        request[REQ_ID_KEY] = id;
+        request[REQ_ID_KEY] = id
         // TODO: Handle partitions?
-        request['resp_partition'] = 0;
+        request['resp_partition'] = 0
 
-        this.request[id] = (e, res) => emitter.emit('response', res);
-        emitter.close = () => Bluebird.try(() => {
-            // Send cancel message to other end
-            let mesg = {
-                [REQ_ID_KEY]: id,
-                [CANCEL_KEY]: true
-            };
+        this.request[id] = (e, res) => emitter.emit('response', res)
+        emitter.close = () =>
+            Bluebird.try(() => {
+                // Send cancel message to other end
+                let mesg = {
+                    [REQ_ID_KEY]: id,
+                    [CANCEL_KEY]: true
+                }
 
-            this.produce({mesg, topic, part: null});
-            delete this.request[id];
-        });
+                this.produce({ mesg, topic, part: null })
+                delete this.request[id]
+            })
 
-        return this.produce({mesg: request, topic, part: null}).return(emitter);
+        return this.produce({ mesg: request, topic, part: null }).return(
+            emitter
+        )
     }
-};
+}

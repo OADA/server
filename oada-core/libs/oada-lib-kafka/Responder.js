@@ -13,14 +13,14 @@
  * limitations under the License.
  */
 
-'use strict';
+'use strict'
 
-const util = require('util');
-const uuid = require('uuid');
-const Bluebird = require('bluebird');
+const util = require('util')
+const uuid = require('uuid')
+const Bluebird = require('bluebird')
 
-const info = require('debug')('oada-lib-kafka:info');
-const warn = require('debug')('oada-lib-kafka:warn');
+const info = require('debug')('oada-lib-kafka:info')
+const warn = require('debug')('oada-lib-kafka:warn')
 
 const {
     Base,
@@ -29,125 +29,126 @@ const {
     DATA,
     REQ_ID_KEY,
     CANCEL_KEY
-} = require('./base');
+} = require('./base')
 
 module.exports = class Responder extends Base {
-    constructor({consumeTopic, produceTopic, group, ...opts}) {
+    constructor ({ consumeTopic, produceTopic, group, ...opts }) {
         // Gross thing to support old API
         if (arguments.length > 1) {
             // eslint-disable-next-line no-param-reassign, prefer-rest-params
-            [consumeTopic, produceTopic, group, opts] = arguments;
+            ;[consumeTopic, produceTopic, group, opts] = arguments
 
             // Print deprecation warning
             util.deprecate(() => {},
-                    'Giving multiple arguments to constructor is deprecated')();
+            'Giving multiple arguments to constructor is deprecated')()
         }
-        super({consumeTopic, produceTopic, group, ...opts});
+        super({ consumeTopic, produceTopic, group, ...opts })
 
-        this.opts = opts || {};
-        this.requests = {};
+        this.opts = opts || {}
+        this.requests = {}
 
-        this.timeout = topicTimeout(this.consumeTopic);
+        this.timeout = topicTimeout(this.consumeTopic)
 
-        this[CONNECT]();
+        this[CONNECT]()
     }
 
-    on(event, listener) {
+    on (event, listener) {
         if (event === 'request') {
             // TODO: Probably a better way to hande this event...
             return super.on(DATA, (req, data) => {
-                let id = req[REQ_ID_KEY];
-                let part = req['resp_partition'];
+                let id = req[REQ_ID_KEY]
+                let part = req['resp_partition']
                 if (typeof part !== 'number') {
-                    part = null;
+                    part = null
                 }
-                let domain = req.domain;
-                let group = req.group;
-                info(`Received request ${id}`);
+                let domain = req.domain
+                let group = req.group
+                info(`Received request ${id}`)
 
                 // Check for old messages
                 if (!this.opts.old && Date.now() - req.time >= this.timeout) {
-                    warn('Ignoring timed-out request');
-                    return;
+                    warn('Ignoring timed-out request')
+                    return
                 }
 
                 // Check for cancelling request
                 if (req[CANCEL_KEY]) {
-                    let gen = this.requests[id];
-                    delete this.requests[id];
+                    let gen = this.requests[id]
+                    delete this.requests[id]
 
                     if (typeof (gen && gen.return) === 'function') {
                         // Stop generator
-                        gen.return();
+                        gen.return()
                     }
 
-                    return;
+                    return
                 }
 
-                this.requests[id] = true;
+                this.requests[id] = true
                 if (listener.length === 3) {
-                    this.ready.then(() => listener(req, data, respond));
+                    this.ready.then(() => listener(req, data, respond))
                 } else {
-                    let resp = listener(req, data);
+                    let resp = listener(req, data)
                     this.ready.return(resp).then(resp => {
                         // Check for generator
                         if (typeof (resp && resp.next) === 'function') {
                             // Keep track of generator to later close it
-                            this.requests[id] = resp;
+                            this.requests[id] = resp
 
                             // Asynchronously use generator
-                            let self = this;
-                            (function generate(gen) {
-                                let resp = gen.next();
+                            let self = this
+                            ;(function generate (gen) {
+                                let resp = gen.next()
 
                                 if (resp.done) {
-                                    delete self.requests[id];
+                                    delete self.requests[id]
                                 } else {
-                                    respond(resp.value).return(gen)
-                                        .then(generate);
+                                    respond(resp.value)
+                                        .return(gen)
+                                        .then(generate)
                                 }
-                            })(resp);
+                            })(resp)
                         } else {
-                            respond(resp).then(() => delete this.requests[id]);
+                            respond(resp).then(() => delete this.requests[id])
                         }
-                    });
+                    })
                 }
 
-                let self = this;
-                function respond(resp) {
+                let self = this
+                function respond (resp) {
                     return Bluebird.resolve(resp)
                         .then(resp => {
                             if (!Array.isArray(resp)) {
-                                return resp === undefined ? [] : [resp];
+                                return resp === undefined ? [] : [resp]
                             }
-                            return resp;
+                            return resp
                         })
                         .each(resp => {
                             if (resp[REQ_ID_KEY] === null) {
                                 // TODO: Remove once everything migrated
-                                resp[REQ_ID_KEY] = uuid();
+                                resp[REQ_ID_KEY] = uuid()
                                 util.deprecate(() => {},
-                                        'Please use ReResponder instead')();
+                                'Please use ReResponder instead')()
                             } else {
-                                resp[REQ_ID_KEY] = id;
+                                resp[REQ_ID_KEY] = id
                                 // Check for cancelled requests
                                 if (!self.requests[id]) {
-                                    throw new Error('Request cancelled');
+                                    throw new Error('Request cancelled')
                                 }
                             }
 
-                            resp.domain = domain;
-                            resp.group = group;
-                            return self.produce({mesg: resp, part});
+                            resp.domain = domain
+                            resp.group = group
+                            return self.produce({ mesg: resp, part })
                         })
                         .finally(() => {
                             // TODO: Handle committing better
                             //this.consumer.commit(data);
-                        });
+                        })
                 }
-            });
+            })
         } else {
-            return super.on(event, listener);
+            return super.on(event, listener)
         }
     }
-};
+}

@@ -12,28 +12,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-'use strict';
+'use strict'
 
-var _ = require('lodash');
-var users = require('./users.json');
+var _ = require('lodash')
+var users = require('./users.json')
 
-function findByUsername(username, cb) {
-  if(users[username]) {
-    return cb(null, _.cloneDeep(users[username]));
+function findByUsername (username, cb) {
+  if (users[username]) {
+    return cb(null, _.cloneDeep(users[username]))
   }
 
-  return cb(null, false);
+  return cb(null, false)
 }
 
-function findByUsernamePassword(username, password, cb) {
-  if(users[username] && users[username].password === password) {
-      return cb(null, _.cloneDeep(users[username]));
+function findByUsernamePassword (username, password, cb) {
+  if (users[username] && users[username].password === password) {
+    return cb(null, _.cloneDeep(users[username]))
   }
 
-  return cb(null, false);
+  return cb(null, false)
 }
 
 module.exports = {
   findByUsername: findByUsername,
-  findByUsernamePassword: findByUsernamePassword,
-};
+  findByUsernamePassword: findByUsernamePassword
+}

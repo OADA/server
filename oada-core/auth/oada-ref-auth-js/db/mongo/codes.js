@@ -12,45 +12,51 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-'use strict';
+'use strict'
 
-var db = require('./mongo.js');
-var users = require('../models/user');
+var db = require('./mongo.js')
+var users = require('../models/user')
 
-function findByCode(code, cb) {
-  db.codes.findOne({code: code}, function(err, code) {
-    if (err) { return cb(err); }
+function findByCode (code, cb) {
+  db.codes.findOne({ code: code }, function (err, code) {
+    if (err) {
+      return cb(err)
+    }
 
     if (code) {
       // Rename mongo's _id
-      code.id = code._id;
+      code.id = code._id
 
       // Populate user
-      users.findById(code.user._id, function(err, user) {
-        if (err) { return cb(err); }
+      users.findById(code.user._id, function (err, user) {
+        if (err) {
+          return cb(err)
+        }
 
-        code.user = user;
+        code.user = user
 
-        cb(null, code);
-      });
+        cb(null, code)
+      })
     } else {
-      cb(null);
+      cb(null)
     }
-  });
+  })
 }
 
-function save(code, cb) {
+function save (code, cb) {
   // Link user
-  code.user = {_id: code.user._id};
+  code.user = { _id: code.user._id }
 
-  db.codes.save(code, function(err) {
-    if (err) { return cb(err); }
+  db.codes.save(code, function (err) {
+    if (err) {
+      return cb(err)
+    }
 
-    findByCode(code.code, cb);
-  });
+    findByCode(code.code, cb)
+  })
 }
 
 module.exports = {
   findByCode: findByCode,
-  save: save,
-};
+  save: save
+}

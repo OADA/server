@@ -13,19 +13,18 @@
  * limitations under the License.
  */
 
-'use strict';
+'use strict'
 
 module.exports = {
+  // By default, this checks for NODE_ENV===production
+  // to determine if is production.
+  // set to true to use the production database name
+  // and prevent init.cleanup() from being called.
+  isProduction: process.env.NODE_ENV === 'production',
 
-    // By default, this checks for NODE_ENV===production 
-    // to determine if is production.  
-    // set to true to use the production database name
-    // and prevent init.cleanup() from being called.
-    isProduction: (process.env.NODE_ENV === 'production'),
-
-    kafka: {
-        topics: {
-            userRequest: 'user_request',
-        }
+  kafka: {
+    topics: {
+      userRequest: 'user_request'
     }
-};
+  }
+}

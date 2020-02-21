@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-'use strict';
+'use strict'
 
 module.exports = {
   //isProduction: false, // set to true and random database will be created for you
@@ -21,19 +21,59 @@ module.exports = {
     connectionString: 'http://arangodb:8529',
     database: 'oada',
     collections: {
-               users: { name: 'users',          indexes: [ 'username' ], defaults: './libs/exampledocs/users'      },
-             clients: { name: 'clients',        indexes: [ 'clientId' ], defaults: './libs/exampledocs/clients'    },
-      authorizations: { name: 'authorizations', indexes: [ 'token', { name: 'user', unique: false } ], defaults: './libs/exampledocs/authorizations' },
-               codes: { name: 'codes',          indexes: [ 'code'     ], defaults: './libs/exampledocs/codes'      },
-           resources: { name: 'resources',      indexes: [            ], defaults: './libs/exampledocs/resources'  },
-          graphNodes: { name: 'graphNodes',     indexes: [            ], defaults: './libs/exampledocs/graphNodes' },
-             changes: { name: 'changes',        indexes: [            ], defaults: './libs/exampledocs/changes'    },
-               changeEdges: { name: 'changeEdges',          indexes: [ { name: 'name', unique: false } ], defaults: './libs/exampledocs/changeEdges',
-                        edgeCollection: true },
-               edges: { name: 'edges',          indexes: [ { name: 'name', unique: false } ], defaults: './libs/exampledocs/edges',
-                        edgeCollection: true },
-           putBodies: { name: 'putBodies',      indexes: [ ], defaults: './libs/exampledocs/putBodies',
-                        createOptions: { isVolatile: false } },
+      users: {
+        name: 'users',
+        indexes: ['username'],
+        defaults: './libs/exampledocs/users'
+      },
+      clients: {
+        name: 'clients',
+        indexes: ['clientId'],
+        defaults: './libs/exampledocs/clients'
+      },
+      authorizations: {
+        name: 'authorizations',
+        indexes: ['token', { name: 'user', unique: false }],
+        defaults: './libs/exampledocs/authorizations'
+      },
+      codes: {
+        name: 'codes',
+        indexes: ['code'],
+        defaults: './libs/exampledocs/codes'
+      },
+      resources: {
+        name: 'resources',
+        indexes: [],
+        defaults: './libs/exampledocs/resources'
+      },
+      graphNodes: {
+        name: 'graphNodes',
+        indexes: [],
+        defaults: './libs/exampledocs/graphNodes'
+      },
+      changes: {
+        name: 'changes',
+        indexes: [],
+        defaults: './libs/exampledocs/changes'
+      },
+      changeEdges: {
+        name: 'changeEdges',
+        indexes: [{ name: 'name', unique: false }],
+        defaults: './libs/exampledocs/changeEdges',
+        edgeCollection: true
+      },
+      edges: {
+        name: 'edges',
+        indexes: [{ name: 'name', unique: false }],
+        defaults: './libs/exampledocs/edges',
+        edgeCollection: true
+      },
+      putBodies: {
+        name: 'putBodies',
+        indexes: [],
+        defaults: './libs/exampledocs/putBodies',
+        createOptions: { isVolatile: false }
+      }
     },
     retry: {
       deadlock: {
@@ -43,7 +83,7 @@ module.exports = {
     },
     init: {
       // NOTE: passwordSalt HAS to match the one in auth
-      passwordSalt: '$2a$10$l64QftVz6.7KR5BXNc29IO',
+      passwordSalt: '$2a$10$l64QftVz6.7KR5BXNc29IO'
     }
   }
-};
+}

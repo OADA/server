@@ -13,62 +13,74 @@
  * limitations under the License.
  */
 
-'use strict';
+'use strict'
 
-const Promise = require('bluebird');
-var debug = require('debug')('model-user');
+const Promise = require('bluebird')
+var debug = require('debug')('model-user')
 
-var config = require('../../config');
-var path = require('path');
-var db = require(path.join(__dirname,'/../../db',config.get('auth:datastoresDriver'),'users.js'));
+var config = require('../../config')
+var path = require('path')
+var db = require(path.join(
+  __dirname,
+  '/../../db',
+  config.get('auth:datastoresDriver'),
+  'users.js'
+))
 
-function makeUser(user) {
+function makeUser (user) {
   // No model needed (yet)
-  return user;
+  return user
 }
 
-function findById(id, cb) {
+function findById (id, cb) {
   return Promise.fromCallback(done => db.findById(id, done))
     .then(u => makeUser(u))
     .tapCatch(debug)
-    .asCallback(cb);
+    .asCallback(cb)
 }
 
-function findByUsername(id, cb) {
+function findByUsername (id, cb) {
   return Promise.fromCallback(done => db.findByUsername(id, done))
     .then(u => makeUser(u))
     .tapCatch(debug)
-    .asCallback(cb);
+    .asCallback(cb)
 }
 
-function findByUsernamePassword(username, password, cb) {
+function findByUsernamePassword (username, password, cb) {
   return Promise.fromCallback(done => {
-      return db.findByUsernamePassword(username, password, done);
-    })
+    return db.findByUsernamePassword(username, password, done)
+  })
     .tap(debug)
     .then(u => makeUser(u))
-    .asCallback(cb);
+    .asCallback(cb)
 }
 
-function findByOIDCToken(idtoken, cb) {
+function findByOIDCToken (idtoken, cb) {
   return Promise.fromCallback(done => db.findByOIDCToken(idtoken, done))
     .tap(u => {
-      debug('findByOIDCToken: searched for idtoken sub=', idtoken.sub,
-        ', iss=', idtoken.iss, ', found u = ', u);
+      debug(
+        'findByOIDCToken: searched for idtoken sub=',
+        idtoken.sub,
+        ', iss=',
+        idtoken.iss,
+        ', found u = ',
+        u
+      )
     })
     .then(u => makeUser(u))
-    .asCallback(cb);
+    .asCallback(cb)
 }
 
-function findByOIDCUsername(username, iss, cb) {
-  return Promise.fromCallback(done => db.findByOIDCUsername(username, iss, done))
+function findByOIDCUsername (username, iss, cb) {
+  return Promise.fromCallback(done =>
+    db.findByOIDCUsername(username, iss, done)
+  )
     .then(u => makeUser(u))
-    .asCallback(cb);
+    .asCallback(cb)
 }
 
-function update(user, cb) {
-  return Promise.fromCallback(done => db.update(user, done))
-    .asCallback(cb);
+function update (user, cb) {
+  return Promise.fromCallback(done => db.update(user, done)).asCallback(cb)
 }
 
 module.exports = {
@@ -78,4 +90,4 @@ module.exports = {
   findByOIDCToken: findByOIDCToken,
   findByOIDCUsername,
   update
-};
+}

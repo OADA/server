@@ -12,35 +12,44 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-'use strict';
+'use strict'
 
-var oauth2orizeOpenId = require('oauth2orize-openid');
+var oauth2orizeOpenId = require('oauth2orize-openid')
 
-var utils = require('./utils');
+var utils = require('./utils')
 
-module.exports = function(server) {
-  server.grant(oauth2orizeOpenId.extensions());
+module.exports = function (server) {
+  server.grant(oauth2orizeOpenId.extensions())
 
   // Implict flow (id_token)
-  server.grant(oauth2orizeOpenId.grant.idToken(
-        function(client, user, ares, done) {
-    ares.userinfo = true;
-    utils.issueIdToken(client, user, ares, done);
-  }));
+  server.grant(
+    oauth2orizeOpenId.grant.idToken(function (client, user, ares, done) {
+      ares.userinfo = true
+      utils.issueIdToken(client, user, ares, done)
+    })
+  )
 
   // Implict flow (id_token token)
-  server.grant(oauth2orizeOpenId.grant.idTokenToken(utils.issueToken,
-        utils.issueIdToken));
+  server.grant(
+    oauth2orizeOpenId.grant.idTokenToken(utils.issueToken, utils.issueIdToken)
+  )
 
   // Hybrid flow (code id_token)
-  server.grant(oauth2orizeOpenId.grant.codeIdToken(utils.issueCode,
-        utils.issueIdToken));
+  server.grant(
+    oauth2orizeOpenId.grant.codeIdToken(utils.issueCode, utils.issueIdToken)
+  )
 
   // Hybrid flow (code token)
-  server.grant(oauth2orizeOpenId.grant.codeToken(utils.issueToken,
-        utils.issueCode));
+  server.grant(
+    oauth2orizeOpenId.grant.codeToken(utils.issueToken, utils.issueCode)
+  )
 
   // Hybrid flow (code id_token token)
-  server.grant(oauth2orizeOpenId.grant.codeIdTokenToken(utils.issueToken,
-        utils.issueCode, utils.issueIdToken));
-};
+  server.grant(
+    oauth2orizeOpenId.grant.codeIdTokenToken(
+      utils.issueToken,
+      utils.issueCode,
+      utils.issueIdToken
+    )
+  )
+}

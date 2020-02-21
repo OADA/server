@@ -1,12 +1,12 @@
 language: node_js
 node_js:
-- '0.10'
-- '0.11'
-- '0.12'
+  - '0.10'
+  - '0.11'
+  - '0.12'
 before_install:
-- npm install -g istanbul
+  - npm install -g istanbul
 script:
-- npm test
+  - npm test
 after_success:
-- cat ./coverage/lcov.info | ./node_modules/.bin/coveralls --verbose
+  - cat ./coverage/lcov.info | ./node_modules/.bin/coveralls --verbose
 sudo: false

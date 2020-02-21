@@ -12,46 +12,52 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-'use strict';
+'use strict'
 
-var db = require('./mongo.js');
+var db = require('./mongo.js')
 
-var config = require('../../config');
-var users = config.get('datastores:users');
+var config = require('../../config')
+var users = config.get('datastores:users')
 
-function findByToken(token, cb) {
-  db.tokens.findOne({token: token}, function(err, token) {
-    if (err) { return cb(err); }
+function findByToken (token, cb) {
+  db.tokens.findOne({ token: token }, function (err, token) {
+    if (err) {
+      return cb(err)
+    }
 
     if (token) {
-      token.id = token._id;
+      token.id = token._id
 
       // Populate user
-      users.findById(token.user._id, function(err, user) {
-        if (err) { return cb(err); }
+      users.findById(token.user._id, function (err, user) {
+        if (err) {
+          return cb(err)
+        }
 
-        token.user = user;
+        token.user = user
 
-        cb(null, token);
-      });
+        cb(null, token)
+      })
     } else {
-      cb(null);
+      cb(null)
     }
-  });
+  })
 }
 
-function save(token, cb) {
+function save (token, cb) {
   // Link user
-  token.user = {_id: token.user._id};
+  token.user = { _id: token.user._id }
 
-  db.tokens.save(token, function(err) {
-    if (err) { return cb(err); }
+  db.tokens.save(token, function (err) {
+    if (err) {
+      return cb(err)
+    }
 
-    findByToken(token.token, cb);
-  });
+    findByToken(token.token, cb)
+  })
 }
 
 module.exports = {
   findByToken: findByToken,
-  save: save,
-};
+  save: save
+}

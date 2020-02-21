@@ -12,10 +12,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-'use strict';
-var mongojs = require('mongojs');
+'use strict'
+var mongojs = require('mongojs')
 
-var config = require('../../config');
+var config = require('../../config')
 
-module.exports = mongojs(config.get('mongo:connectionString'),
-    ['users', 'clients', 'codes', 'tokens']);
+module.exports = mongojs(config.get('mongo:connectionString'), [
+  'users',
+  'clients',
+  'codes',
+  'tokens'
+])

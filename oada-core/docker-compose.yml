@@ -1,7 +1,6 @@
 version: '3'
 
 services:
-
   startup:
     depends_on:
       - zookeeper
@@ -15,7 +14,7 @@ services:
       - arango_net
       - startup_net
     expose: # expose only internally, not on host
-      - "80"
+      - '80'
     volumes:
       - ./oada-core/startup:/code/startup
       - ./oada-core/libs:/code/libs
@@ -39,8 +38,8 @@ services:
     networks:
       - http_net
     ports:
-        - "${BIND:-0.0.0.0}:${PORT_HTTPS:-443}:443"
-        - "${BIND:-0.0.0.0}:${PORT_HTTP:-80}:80"
+      - '${BIND:-0.0.0.0}:${PORT_HTTPS:-443}:443'
+      - '${BIND:-0.0.0.0}:${PORT_HTTP:-80}:80'
     volumes:
       - ./domains-available:/domains-available
       - ./domains-enabled:/domains-enabled
@@ -72,7 +71,7 @@ services:
       - arango_net
       - startup_net
     expose: # expose only internally, not on host
-      - "80"
+      - '80'
     volumes:
       - ./domains-available:/domains-available
       - ./domains-enabled:/domains-enabled
@@ -101,7 +100,7 @@ services:
       - kafka_net
       - arango_net
     expose: # expose only internally, not on host
-      - "80" # at one time this mapped 34135 from host to local 80 for some reason
+      - '80' # at one time this mapped 34135 from host to local 80 for some reason
     volumes:
       - ./oada-core/http-handler:/code/http-handler
       - ./oada-core/libs:/code/libs
@@ -245,7 +244,7 @@ services:
       - ./oada-core/libs:/code/libs
       - ./oada-srvc-docker-config.js:/oada-srvc-docker-config.js
     expose: # expose only internally, not on host
-      - "80"
+      - '80'
     environment:
       - NODE_ENV=${NODE_ENV:-development}
       - DEBUG=${DEBUG:-""}
@@ -303,23 +302,22 @@ services:
     depends_on:
       - zookeeper
     expose: # expose only internally, not on host
-      - "9092"
+      - '9092'
     restart: always
     hostname: kafka
     networks:
       - kafka_net
     environment:
-      KAFKA_ADVERTISED_HOST_NAME: "kafka"  # NOTE: this only allows services inside this docker network
-      KAFKA_ADVERTISED_PORT: "9092"        # to connect to kafka.  Set to machine's IP if you want external.
-      KAFKA_ZOOKEEPER_CONNECT: "zookeeper:2181"
-      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
-      KAFKA_HEAP_OPTS: "-Xmx1g -Xms512M"
+      KAFKA_ADVERTISED_HOST_NAME: 'kafka' # NOTE: this only allows services inside this docker network
+      KAFKA_ADVERTISED_PORT: '9092' # to connect to kafka.  Set to machine's IP if you want external.
+      KAFKA_ZOOKEEPER_CONNECT: 'zookeeper:2181'
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: 'true'
+      KAFKA_HEAP_OPTS: '-Xmx1g -Xms512M'
       KAFKA_BROKER_ID: 1
       JMX_PORT: 9999
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - kafka_data:/var/lib/kafka
-
 
   # Needed for installing native Node dependencies
   yarn:
@@ -363,8 +361,7 @@ services:
       - ARANGO_NO_AUTH=1
       - ARANGO_STORAGE_ENGINE=rocksdb
       - ARANGO_STATISTICS=0
-    command: ["arangod", "--server.statistics", "true"]
-
+    command: ['arangod', '--server.statistics', 'true']
 
   # zookeeper and kafka entries are based on:
   # from https://github.com/wurstmeister/kafka-docker/blob/master/docker-compose.yml
@@ -374,7 +371,7 @@ services:
     networks:
       - kafka_net
     expose: # expose only internally, not on host
-      - "2181"
+      - '2181'
     volumes:
       - zookeeper_data:/var/lib/zookeeper
 
@@ -457,7 +454,6 @@ services:
     environment:
       - NODE_ENV=${NODE_ENV:-development}
       - DEBUG=${DEBUG:-""}
-
 
 volumes:
   arangodb_data:
