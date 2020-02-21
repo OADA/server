@@ -47,16 +47,16 @@ module.exports = [
     'shares': {'_id': 'resources/default:resources_shares_321'}
   },
   {
-    '_id': 'users/default:users_servio_012',
-    'username': 'spalacios',
+    '_id': 'users/default:users_wakefern_012',
+    'username': 'mgaspers',
     'password': '01010011',
     'domain': 'localhost',
-    'name': 'Servio Palacios',
-    'family_name': 'Palacios',
-    'given_name': 'Servio',
+    'name': 'Michael Gaspers',
+    'family_name': 'Gaspers',
+    'given_name': 'Michael',
     'middle_name': '',
-    'nickname': 'Servio',
-    'email': 'spalacios@purdue.edu',
+    'nickname': 'Mike',
+    'email': 'mgaspers@wakefern.com',
     'bookmarks': {'_id': 'resources/default:resources_bookmarks_012'},
     'shares': {'_id': 'resources/default:resources_shares_012'}
   },

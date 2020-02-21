@@ -85,6 +85,7 @@ function createNewUser(req) {
         }).return({_id: resid});
       }
     });
+    delete user.password;
     return user;
   }).props()
   .then(users.update) // update the new user with the new bookmarks

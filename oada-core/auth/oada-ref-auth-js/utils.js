@@ -42,14 +42,14 @@ function createIdToken(iss, aud, user, nonce, userinfoScope) {
   var idToken = config.get('auth:idToken');
   debug('createIdToken: creating token, kid = ', idToken.signKid, ', keys.sign = ', keys.sign);
   var options = {
-    headers: {
+    header: {
       kid: idToken.signKid
     },
     algorithm: keys.sign[idToken.signKid].alg,
     expiresIn: idToken.expiresIn,
     audience: aud,
     subject: user.id,
-    issuer: iss, 
+    issuer: iss,
   };
 
   var payload = {
