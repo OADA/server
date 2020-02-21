@@ -86,7 +86,7 @@ function createNewUser(req) {
       }
     });
     // If we keep the password, we end up re-hashing it in the update
-    if (user.password) delete user.password;
+    delete user.password;
     return user;
   }).props()
   .then(users.update) // update the new user with the new bookmarks

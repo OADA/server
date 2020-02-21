@@ -357,7 +357,7 @@ services:
       - arangodb_data:/var/lib/arangodb3
       - arangodb_data:/var/lib/arangodb3-apps
     expose: # expose only internally, not on host
-      - "8529"
+      - '8529'
     environment:
       # - ARANGO_RANDOM_ROOT_PASSWORD=1
       - ARANGO_NO_AUTH=1

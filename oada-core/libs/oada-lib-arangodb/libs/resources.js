@@ -49,18 +49,20 @@ async function lookupFromUrl(url, userId) {
           RETURN p
       )
       LET resources = DOCUMENT(path.vertices[*].resource_id)
+      LET type = null
       LET permissions = (
         FOR r IN resources
         RETURN {
+          type: r._type || type,
           owner: r._meta._owner == '${userId}' || r._meta._permissions['${userId}'].owner,
           read: r._meta._owner == '${userId}' || r._meta._permissions['${userId}'].read,
           write: r._meta._owner == '${userId}' || r._meta._permissions['${userId}'].write
         }
       )
       LET rev = DOCUMENT(LAST(path.vertices).resource_id)._oada_rev
-      LET type = DOCUMENT(LAST(path.vertices).resource_id)._type
       RETURN MERGE(path, {permissions, rev, type})
     `;
+    console.log(query);
     return db.query({query}).call('next').then((result) => {
 
       let resource_id = pointer.compile(id.concat(pieces))
@@ -76,10 +78,13 @@ async function lookupFromUrl(url, userId) {
       let from = {'resource_id': '', 'path_leftover': ''};
 
       if (!result) {
+        console.log('1 return resource id', resource_id);
         return {resource_id, path_leftover, from, permissions: {}, rev, type};
       }
 
-      let permissions = { owner: null, read: null, write: null};
+      // Walk up and find the graph and return furthest known permissions (and
+      // type)
+      let permissions = { owner: null, read: null, write: null, type: null};
       result.permissions.reverse().some(p => {
         if (p) {
           if (permissions.read === null) {
@@ -91,16 +96,24 @@ async function lookupFromUrl(url, userId) {
           if (permissions.owner === null) {
             permissions.owner = p.owner;
           }
+          if (permissions.type === null) {
+            permissions.type = p.type;
+          }
           if (permissions.read !== null &&
             permissions.write !== null &&
-            permissions.owner !== null) {
+            permissions.owner !== null &&
+            permissions.type !== null) {
             return true;
           }
         }
       });
+      type = permissions.type
 
       // Check for a traversal that did not finish (aka not found)
       if (result.vertices[0] === null) {
+        trace('graph-lookup traversal did not finish')
+        console.log('2 return resource id', resource_id);
+
         return {resource_id, path_leftover, from, permissions, rev, type, resourceExists:false};
       // A dangling edge indicates uncreated resource; return graph lookup
         // starting at this uncreated resource
@@ -108,6 +121,7 @@ async function lookupFromUrl(url, userId) {
         let lastEdge = result.edges[result.edges.length - 1]._to;
         path_leftover = '';
         resource_id = 'resources/' + lastEdge.split('graphNodes/resources:')[1];
+        trace('graph-lookup traversal uncreated resource', resource_id)
         rev = 0;
         let revVertices = _.reverse(_.cloneDeep(result.vertices));
         from = result.vertices[result.vertices.length - 2];
@@ -119,6 +133,7 @@ async function lookupFromUrl(url, userId) {
         resourceExists = false;
       } else {
         resource_id = result.vertices[result.vertices.length - 1]['resource_id'];
+        trace('graph-lookup traversal found resource', resource_id);
         from = result.vertices[result.vertices.length - 2];
         let edge = result.edges[result.edges.length - 1];
         // If the desired url has more pieces than the longest path, the
@@ -140,6 +155,7 @@ async function lookupFromUrl(url, userId) {
       }
 
 
+      console.log('return resource id', resource_id);
       return {
         type,
         rev,
