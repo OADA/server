@@ -97,6 +97,7 @@ responder.on('request', function handleReq(req) {
                 msg['path_leftover'] = item.path + '/_rev';
                 msg.contentType = item.contentType;
                 msg.body = req['_rev'];
+                msg.resourceExists = true;
 
                 trace('trying to produce: ', msg);
 

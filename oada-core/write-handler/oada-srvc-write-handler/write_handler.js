@@ -34,8 +34,8 @@ responder.on('request', (req, ...rest) => {
     counter = 0
     global.gc()
   }
-
-  let id = req['resource_id'].replace(/^\//, '')
+  let id;
+  id = req['resource_id'].replace(/^\//, '')
   let p = locks[id] || Promise.resolve()
   var pTime = Date.now() / 1000
   // Run once last write finishes (whether it worked or not)
