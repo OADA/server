@@ -8,7 +8,9 @@
     "start": "CONTAINER_NAME=\"HTTP Handler\" node server.js"
   },
   "mocha": {
-    "require": ["mocha-steps"],
+    "require": [
+      "mocha-steps"
+    ],
     "ui": "bdd",
     "exit": true
   },
@@ -34,7 +36,7 @@
     "express": "^4.16.2",
     "express-preconditions": "^1.0.5",
     "express-promise": "^0.4.0",
-    "express-ws": "^3.0.0",
+    "express-ws": "^4.0.0",
     "json-pointer": "^0.6.0",
     "jsonpointer": "^4.0.1",
     "lodash": "^4.17.4",
