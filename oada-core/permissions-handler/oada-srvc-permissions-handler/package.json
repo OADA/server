@@ -15,7 +15,7 @@
     "bluebird": "^3.5.0",
     "chai": "^3.5.0",
     "lodash": "^4.17.4",
-    "mocha": "^3.3.0",
+    "mocha": "^7.0.1",
     "moment": "^2.18.1",
     "nconf": "^0.8.4",
     "node-rdkafka": "2.7.0",

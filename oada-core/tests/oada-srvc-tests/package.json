@@ -10,7 +10,7 @@
     "debug": "^4.1.1",
     "kafka-node": "^1.6.1",
     "md5": "^2.2.1",
-    "mocha": "^3.3.0",
+    "mocha": "^7.0.1",
     "node-exec-promise": "^1.0.1",
     "uuid": "^3.0.1",
     "validator": "^7.0.0",
@@ -27,6 +27,10 @@
     "debuglow": "DEBUG='tests:*' isTest=true mocha 'test-lower-level/*.js'",
     "debug": "DEBUG='tests:*' isTest=true mocha 'test/*.js'",
     "start": "NODE_ENV=production isTest=true mocha 'test/*.js'"
+  },
+  "mocha": {
+    "ui": "bdd",
+    "exit": true
   },
   "author": "Yaguang Zhang",
   "license": "Apache-2.0"

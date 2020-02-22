@@ -6,6 +6,11 @@
   "scripts": {
     "test": "mocha"
   },
+  "mocha": {
+    "ui": "bdd",
+    "timeout": 4000,
+    "exit": true
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/OADA/oada-lib-kafka.git"
@@ -21,6 +26,6 @@
     "chai": "^4.0.2",
     "chai-as-promised": "^7.1.1",
     "kafka-please": "^1.0.1",
-    "mocha": "^3.4.2"
+    "mocha": "^7.0.1"
   }
 }
