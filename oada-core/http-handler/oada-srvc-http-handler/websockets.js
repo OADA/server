@@ -191,13 +191,7 @@ module.exports = function wsHandler (server) {
                         trace('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
                         trace('responding watch', resourceId)
                         trace('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
-                        if (
-                            change &&
-                            jsonpointer.get(
-                                change.change.body,
-                                path_leftover
-                            ) !== undefined
-                        ) {
+                        if (change) {
                             const message = {
                                 requestId: msg.requestId,
                                 resourceId,
@@ -243,6 +237,7 @@ module.exports = function wsHandler (server) {
                             oadaLib.resources
                                 .getResource(resourceId, '_rev')
                                 .then(async function (rev) {
+                                    let revInt = parseInt(rev)
                                     // If the requested rev is behind by revLimit, simply
                                     // re-GET the entire resource
                                     trace(
@@ -252,7 +247,7 @@ module.exports = function wsHandler (server) {
                                         request.headers['x-oada-rev']
                                     )
                                     if (
-                                        parseInt(rev) -
+                                        revInt -
                                             parseInt(
                                                 request.headers['x-oada-rev']
                                             ) >=
@@ -290,13 +285,20 @@ module.exports = function wsHandler (server) {
                                             request.headers['x-oada-rev']
                                         )
                                         // Next, feed changes to client
-                                        oadaLib.changes
-                                            .getChangesSinceRev(
-                                                resourceId,
-                                                request.headers['x-oada-rev']
-                                            )
-                                            .then(changes => {
-                                                changes.forEach(change => {
+                                        let reqRevInt = parseInt(
+                                            request.headers['x-oada-rev']
+                                        )
+                                        for (
+                                            let sendRev = reqRevInt + 1;
+                                            sendRev <= revInt;
+                                            sendRev++
+                                        ) {
+                                            await oadaLib.changes
+                                                .getChangeArray(
+                                                    resourceId,
+                                                    sendRev
+                                                )
+                                                .then(change => {
                                                     socket.send(
                                                         JSON.stringify({
                                                             requestId:
@@ -307,7 +309,7 @@ module.exports = function wsHandler (server) {
                                                         })
                                                     )
                                                 })
-                                            })
+                                        }
                                     }
                                 })
                         } else {
@@ -378,7 +380,7 @@ writeResponder.on('request', function handleReq (req) {
 
     trace('@@@@@@@@@@@@@@@', req.resource_id)
     oadaLib.changes
-        .getChange(req.resource_id, req._rev)
+        .getChangeArray(req.resource_id, req._rev)
         .then(change => {
             trace('Emitted change for:', req.resource_id, change)
             emitter.emit(req.resource_id, {

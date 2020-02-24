@@ -195,12 +195,13 @@ function handleReq (req, msg) {
 
       // Compute new change
       var beforeChange = Date.now() / 1000
+      let children = req['from_change_id'] || []
       let changeId = await changes.putChange({
         change: obj,
         resId: id,
         rev,
         type: changeType,
-        child: req['from_change_id'],
+        children,
         path: req['change_path'],
         userId: req['user_id'],
         authorizationId: req['authorizationid']
