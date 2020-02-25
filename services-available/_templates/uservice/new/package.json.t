@@ -36,7 +36,7 @@ sh: cd <%= cwd %>/<%= name %> && npm install
   },
   "lint-staged": {
     "**/*": "npm run fix"
-  }
+  },
   "dependencies": {
     "debug": "^4.1.1",
     "nconf": "^0.10.0"
