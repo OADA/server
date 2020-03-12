@@ -376,7 +376,7 @@ function getChanges (id, rev) {
     .call('all')
 }
 
-function putResource (id, obj) {
+function putResource (id, obj, checkLinks = true) {
   // Fix rev
   obj['_oada_rev'] = obj['_rev']
   obj['_rev'] = undefined
@@ -386,14 +386,15 @@ function putResource (id, obj) {
   obj['_key'] = id.replace(/^\/?resources\//, '')
   trace(`Adding links for resource ${id}...`)
 
-  return addLinks(obj).then(function docUpsert (links) {
-    info(`Upserting resource ${obj._key}`)
-    trace(`Upserting links: ${JSON.stringify(links, null, 2)}`)
+  return (checkLinks ? addLinks(obj) : Promise.resolve([])).then(
+    function docUpsert (links) {
+      info(`Upserting resource ${obj._key}`)
+      trace(`Upserting links: ${JSON.stringify(links, null, 2)}`)
 
-    // TODO: Should it check that graphNodes exist but are wrong?
-    var q
-    if (links.length > 0) {
-      let thingy = aql`
+      // TODO: Should it check that graphNodes exist but are wrong?
+      var q
+      if (links.length > 0) {
+        let thingy = aql`
         LET reskey = ${obj['_key']}
         LET resup = FIRST(
           LET res = ${obj}
@@ -457,9 +458,9 @@ function putResource (id, obj) {
           RETURN resup.orev
       `
 
-      q = db.query(thingy)
-    } else {
-      q = db.query(aql`
+        q = db.query(thingy)
+      } else {
+        q = db.query(aql`
         LET resup = FIRST(
           LET res = ${obj}
           UPSERT { '_key': res._key }
@@ -481,10 +482,11 @@ function putResource (id, obj) {
         OPTIONS {exclusive: true, ignoreErrors: true }
         RETURN resup.orev
       `)
-    }
+      }
 
-    return q.call('next')
-  })
+      return q.call('next')
+    }
+  )
 }
 
 function forLinks (res, cb, path) {
