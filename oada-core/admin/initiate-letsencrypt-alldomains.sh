@@ -46,6 +46,12 @@ fi
 # Uses the "latest" file in the certs folder, but not README
 LETSENCRYPT_CERTNAME=`ls -t /certs/live | sed '/^\s*README\s*$/d' | head -1`
 cd /certs
+# If there is already a folder for this domain, we need to move it so that
+# the symlinking process will work
+if [ -e "./$d" ]; then
+  echo "There is already an entry in admin's /certs folder for $d.  Moving it to ${d}-old"
+  mv -f ./$d ./${d}-old
+fi
 # the "-t" in ls sorts with most recent on top, and we take that one
 for d in $DOMAINS; do
   echo "Symlinking /certs/live/$LETSENCRYPT_CERTNAME to /certs/$d"
