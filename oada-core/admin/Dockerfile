@@ -44,7 +44,9 @@ RUN . /root/.nvm/nvm.sh \
     && yarn global add mocha \
     # You can put any global NPM installs here
     && yarn global add @oada/oada-certs
-    
+   
+# Add any forced upgrades here:
+RUN yarn global upgrade @oada/oada-certs
 
 COPY "./.vimrc" "/root/.vimrc"
 

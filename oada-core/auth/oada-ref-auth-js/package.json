@@ -34,7 +34,7 @@
   },
   "homepage": "https://github.com/oada/oada-ref-auth-js",
   "dependencies": {
-    "@oada/oada-certs": "^1.0.1",
+    "@oada/oada-certs": "^2.0.1",
     "@oada/oada-id-client": "^1.0.1",
     "@oada/oada-lookup": "^1.0.0",
     "@oada/well-known-json": "^1.0.0",

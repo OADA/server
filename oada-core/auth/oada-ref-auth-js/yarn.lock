@@ -2,10 +2,30 @@
 # yarn lockfile v1
 
 
-"@oada/oada-certs@^1.0.1", "@oada/oada-certs@^1.0.2":
+"@oada/oada-certs@^1.0.2":
   version "1.0.2"
   resolved "https://registry.yarnpkg.com/@oada/oada-certs/-/oada-certs-1.0.2.tgz#fceceec712dca45fda279068a841886063d78de0"
   integrity sha512-2HFwwx8UBfkDMDs1wAhTGg8t/0uDRHRUuNOT9DawsURsjFnUix6keGkxNnVXD1oToJ0wYiw8yhmbNPn6kYGIMA==
+  dependencies:
+    bluebird "^3.7.1"
+    debug "^4.1.1"
+    deep-equal "^1.1.1"
+    execa "^3.2.0"
+    inquirer "^7.0.0"
+    jsck "^0.3.2"
+    jsonwebtoken "^8.5.1"
+    jws "^3.2.2"
+    minimist "^1.2.0"
+    pem-jwk "^2.0.0"
+    skeemas "^1.2.5"
+    superagent "^5.1.0"
+    url "^0.11.0"
+    uuid "^3.3.3"
+
+"@oada/oada-certs@^2.0.1":
+  version "2.0.1"
+  resolved "https://registry.yarnpkg.com/@oada/oada-certs/-/oada-certs-2.0.1.tgz#f91330ccf3293f74e836515c6c3638773da0efe3"
+  integrity sha512-DUq1+qerjLOgw8Cd6ed/8KxEbTc4w52fnFvZceqXHKOZaXMzfw/XuKPs6pRl1Iyq8twfYDgInqFFl5+jjom8eA==
   dependencies:
     bluebird "^3.7.1"
     debug "^4.1.1"

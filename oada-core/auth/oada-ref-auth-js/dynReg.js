@@ -45,8 +45,9 @@ function dynReg (req, res) {
       .validate(req.body.software_statement, {
         timeout: config.get('auth:dynamicRegistration:trustedListLookupTimeout')
       })
-      .then(({ clientcert, trusted, valid, details }) => {
-        if (typeof clientcert === 'string') {
+      .then(({ payload, trusted, valid, details }) => {
+        let clientcert = payload;
+        if (typeof payload === 'string') {
           clientcert = JSON.parse(clientcert)
         }
         // Set the "trusted" status based on JWS library return value

@@ -1,4 +1,3 @@
-OADABASEDIR="/Users/aultac/repos/oada-srvc-docker"
 # You have to define OADABASEDIR above this.  The oada --install-self will do that.
 # Add bash_completion for all services names (oada-core and services-available)
 _oada_completions() 
