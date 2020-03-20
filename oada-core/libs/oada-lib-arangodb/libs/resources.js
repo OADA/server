@@ -65,7 +65,7 @@ async function lookupFromUrl (url, userId) {
       LET rev = DOCUMENT(LAST(path.vertices).resource_id)._oada_rev
       RETURN MERGE(path, {permissions, rev, type})
     `
-    console.log(query)
+    trace('Query', query)
     return db
       .query({ query })
       .call('next')

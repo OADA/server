@@ -102,10 +102,6 @@ responder.on('request', function handleReq (req) {
         warn('Unsupported scope type "' + type + '"')
         return false
       }
-      console.log(
-        'TEST TYPIS',
-        typeis.is('application/json', ['application/json'])
-      )
       trace('User scope:', type)
       let contentType = req.oadaGraph.permissions
         ? req.oadaGraph.permissions.type
@@ -135,19 +131,15 @@ responder.on('request', function handleReq (req) {
         return false
       }
       //let contentType = req.requestType === 'put' ? req.contentType : (resource ? resource._type : undefined);
-      console.log('contentType is', req.contentType)
+      trace('contentType is', req.contentType)
       let contentType = req.oadaGraph.permissions
         ? req.oadaGraph.permissions.type
         : undefined
       if (req.contentType) contentType = req.contentType
       trace('Does user have write scope?', scopePerm(perm, 'write'))
-      console.log('contentType is2', contentType)
-      console.log(
-        'write typeis',
-        type,
-        typeis.is(contentType, scopeTypes[type])
-      )
-      console.log('scope types', scopeTypes[type])
+      trace('contentType is2', contentType)
+      trace('write typeis', type, typeis.is(contentType, scopeTypes[type]))
+      trace('scope types', scopeTypes[type])
       return (
         typeis.is(contentType, scopeTypes[type]) && scopePerm(perm, 'write')
       )
@@ -155,7 +147,7 @@ responder.on('request', function handleReq (req) {
   }
   //Check permissions. 1. Check if owner.
   // First check if we're putting to resources
-  console.log('resource exists', req.oadaGraph.resourceExists)
+  trace('resource exists', req.oadaGraph.resourceExists)
   if (
     req.oadaGraph.permissions &&
     req.oadaGraph.permissions.owner &&
