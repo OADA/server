@@ -8,10 +8,11 @@ const cors = require('cors')
 const wellKnownJson = require('well-known-json')
 const oadaError = require('oada-error')
 const OADAError = oadaError.OADAError
-const info = require('debug')('http-handler:info')
-//const warn = require('debug')('http-handler:warn');
-const error = require('debug')('http-handler:error')
-//const trace = require('debug')('http-handler:trace');
+
+const info = require('debug')('http-handler:server:info')
+const warn = require('debug')('http-handler:server:warn');
+const error = require('debug')('http-handler:server:error')
+const trace = require('debug')('http-handler:server:trace')
 
 var config = require('./config')
 
@@ -35,9 +36,7 @@ app.get('/favicon.ico', (req, res) => res.end())
 
 function start () {
     return Promise.fromCallback(function (done) {
-        info('----------------------------------------------------------')
         info('Starting server...')
-
         server.listen(config.get('server:port'), done)
     }).tap(() => {
         info('OADA Test Server started on port ' + app.get('port'))
@@ -48,9 +47,9 @@ app.use(expressPromise())
 
 // Log all requests before anything else gets them for debugging:
 app.use(function (req, res, next) {
-    info('Received request: ' + req.method + ' ' + req.url)
-    info('req.headers = ', req.headers)
-    info('req.body = ', req.body)
+    trace('Received request: ' + req.method + ' ' + req.url)
+    trace('req.headers = ', req.headers)
+    trace('req.body = ', req.body)
     next()
 })
 // Turn on CORS for all domains, allow the necessary headers
@@ -75,7 +74,7 @@ app.use(function requestId (req, res, next) {
     req.id = uuid()
     res.set('X-Request-Id', req.id)
 
-    res.on('finish', () => info(`finished request ${req.id}`))
+    res.on('finish', () => trace(`finished request ${req.id}`))
     next()
 })
 
@@ -87,7 +86,6 @@ app.use(function sanitizeUrl (req, res, next) {
 })
 
 app.use(function tokenHandler (req, res, next) {
-    info('********************** 1')
     return tokenLookup({
         connection_id: req.id,
         domain: req.get('host'),
@@ -107,11 +105,7 @@ app.use(function tokenHandler (req, res, next) {
 
 // Rewrite the URL if it starts with /bookmarks
 app.use(function handleBookmarks (req, res, next) {
-    info('********************** ' + req.url)
     req.url = req.url.replace(/^\/bookmarks/, `/${req.user['bookmarks_id']}`)
-
-    info('********************** ' + req.url)
-
     next()
 })
 

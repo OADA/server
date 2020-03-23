@@ -15,7 +15,7 @@
 
 'use strict'
 
-var debug = require('debug')('arango:client/trace')
+var debug = require('debug')('arango:client:trace')
 var oadaLib = require('../../../../libs/oada-lib-arangodb')
 
 function findById (id, cb) {

@@ -19,6 +19,7 @@ const util = require('util')
 const uuid = require('uuid')
 const Bluebird = require('bluebird')
 
+const trace = require('debug')('oada-lib-kafka:trace')
 const info = require('debug')('oada-lib-kafka:info')
 const warn = require('debug')('oada-lib-kafka:warn')
 
@@ -63,7 +64,7 @@ module.exports = class Responder extends Base {
                 }
                 let domain = req.domain
                 let group = req.group
-                info(`Received request ${id}`)
+                trace(`Received request ${id}`)
 
                 // Check for old messages
                 if (!this.opts.old && Date.now() - req.time >= this.timeout) {

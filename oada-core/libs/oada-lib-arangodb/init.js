@@ -5,8 +5,8 @@
 
 const config = require('./config')
 const debug = require('debug')
-const trace = debug('trace:arango#init')
-const info = debug('info:arango#init')
+const trace = debug('arango:init:trace')
+const info = debug('arango:init:info')
 const _ = require('lodash')
 const users = require('./libs/users.js')
 var Promise = require('bluebird')

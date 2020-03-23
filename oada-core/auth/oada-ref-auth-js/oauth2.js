@@ -19,7 +19,7 @@ var login = require('connect-ensure-login')
 var oauth2orize = require('oauth2orize')
 var AuthorizationError = require('oauth2orize').AuthorizationError
 var passport = require('passport')
-var debug = require('debug')('oauth2/trace')
+var debug = require('debug')('oauth2:trace')
 var _ = require('lodash')
 var fs = require('fs')
 

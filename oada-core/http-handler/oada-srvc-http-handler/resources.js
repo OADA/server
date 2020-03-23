@@ -12,10 +12,10 @@ const { pipeline } = require('stream')
 const pipelineAsync = require('bluebird').promisify(pipeline)
 const cacache = require('cacache')
 
-const info = require('debug')('http-handler:info')
-const warn = require('debug')('http-handler:warn')
-const error = require('debug')('http-handler:error')
-const trace = require('debug')('http-handler:trace')
+const info = require('debug')('http-handler:resources:info')
+const warn = require('debug')('http-handler:resources:warn')
+const error = require('debug')('http-handler:resources:error')
+const trace = require('debug')('http-handler:resources:trace')
 
 const resources = require('../../libs/oada-lib-arangodb').resources
 const changes = require('../../libs/oada-lib-arangodb').changes
@@ -48,12 +48,12 @@ router.use(function graphHandler (req, res, next) {
         resources.lookupFromUrl('/resources' + req.url, req.user.user_id)
     )
         .then(function handleGraphRes (resp) {
-            info('GRAPH LOOKUP RESULT', resp)
+            trace('GRAPH LOOKUP RESULT', resp)
             if (resp['resource_id']) {
                 // Rewire URL to resource found by graph
                 let url = `${resp['resource_id']}${resp['path_leftover']}`
                 // log
-                console.log(`Graph lookup: ${req.url} => ${url}`)
+                info(`Graph lookup: ${req.url} => ${url}`)
                 // Remove "/resources" from id
                 req.url = url.replace(/^\/?resources\//, '/')
             }
@@ -244,24 +244,23 @@ router.get('/*', async function getResource (req, res, next) {
         )
 
         return Promise.join(doc, function returnDoc (doc) {
-            info('DOC IS', doc)
+            trace('DOC IS', doc)
             // TODO: Allow null values in OADA?
             if (doc === undefined || doc === null) {
-                console.log('Resource not found')
+                error('Resource not found')
                 throw new OADAError('Not Found', 404)
             } else {
-                console.log(
+                info(
                     `Resource: ${req.oadaGraph.resource_id}, Rev: ${req.oadaGraph.rev}`
                 )
             }
             doc = unflattenMeta(doc)
-            info('doc unflattened now')
             return res.json(doc)
         }).catch(next)
     } else {
         // get binary
         if (req.oadaGraph['path_leftover']) {
-            info(req.oadaGraph['path_leftover'])
+            trace(req.oadaGraph['path_leftover'])
             throw new OADAError('Path Leftover on Binary GEt')
         }
 
@@ -464,7 +463,7 @@ router.put('/*', async function ensureTypeTreeExists (req, res, next) {
 })
 
 router.put('/*', async function putResource (req, res, next) {
-    info(`Saving PUT body for request ${req.id}`)
+    trace(`Saving PUT body for request ${req.id}`)
 
     if (
         req.header('content-type') &&
@@ -479,12 +478,12 @@ router.put('/*', async function putResource (req, res, next) {
 
     return putBodies
         .savePutBody(req.body)
-        .tap(() => info(`PUT body saved for request ${req.id}`))
+        .tap(() => trace(`PUT body saved for request ${req.id}`))
         .get('_id')
 
         .then(bodyid => {
-            info('rrrRESOURCE EXISTS', req.oadaGraph)
-            info('rrrRESOURCE EXISTS', req.resourceExists)
+            trace('RESOURCE EXISTS', req.oadaGraph)
+            trace('RESOURCE EXISTS', req.resourceExists)
             return requester.send(
                 {
                     connection_id: req.id,
@@ -505,7 +504,7 @@ router.put('/*', async function putResource (req, res, next) {
             )
         })
         .tap(function checkWrite (resp) {
-            info(`Recieved write response for request ${req.id}`)
+            trace(`Recieved write response for request ${req.id}`)
             switch (resp.code) {
                 case 'success':
                     return
@@ -573,7 +572,7 @@ router.delete('/*', function deleteLink (req, res, next) {
 })
 
 router.delete('/*', function deleteResource (req, res, next) {
-    info(`Sending DELETE request for request ${req.id}`)
+    trace(`Sending DELETE request for request ${req.id}`)
     return requester
         .send(
             {
@@ -594,7 +593,7 @@ router.delete('/*', function deleteResource (req, res, next) {
             config.get('kafka:topics:writeRequest')
         )
         .tap(function checkDelete (resp) {
-            info(`Recieved delete response for request ${req.id}`)
+            trace(`Recieved delete response for request ${req.id}`)
             switch (resp.code) {
                 case 'success':
                     return
