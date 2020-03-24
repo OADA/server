@@ -21,8 +21,6 @@ process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0'
 // so set isLibrary in global scope before requiring.
 global.isLibrary = !(require.main === module)
 
-console.log('DEBUG = ', process.env.DEBUG)
-
 const util = require('util')
 var _ = require('lodash')
 var fs = require('fs')

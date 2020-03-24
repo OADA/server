@@ -1,9 +1,14 @@
+const debug = require('debug')
+const error = debug('oada-srvc-tests:trellis:putCert:error')
+const info = debug('oada-srvc-tests:trellis:putCert:info')
+const trace = debug('oada-srvc-tests:trellis:putCert:trace')
+
 let axios = require('axios')
 let expect = require('chai').expect
 let config = require('../config.js')
 config.set('isTest', true)
-console.log('isTest', config.get('isTest'))
-console.log('Using Database', config.get('arangodb:database'), 'for testing')
+trace('isTest', config.get('isTest'))
+trace('Using Database', config.get('arangodb:database'), 'for testing')
 let oadaLib = require('../../../libs/oada-lib-arangodb')
 let md5 = require('md5')
 const AUDITOR_TOKEN = 'aaa'
@@ -190,7 +195,7 @@ describe('Read/write/owner permissions should apply accordingly', function () {
 
 describe('Adding read permission', function () {
   this.timeout(10000)
-  console.log('userid', userid)
+  trace('userid', userid)
   before(`add read permission to the client\'s certifications resource`, () => {
     return axios({
       method: 'put',

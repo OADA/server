@@ -21,6 +21,7 @@ const request = Promise.promisify(require('request'))
 return Promise.try(function () {
   // Setup the loggers:
   const log = {
+    error: debuglib('well-known:error'),
     info: debuglib('well-known:info'),
     trace: debuglib('well-known:trace')
   }
@@ -143,7 +144,7 @@ return Promise.try(function () {
 
   //---------------------------------------------------
   // Use OADA middleware to catch errors and respond
-  app.use(oada_error.middleware(console.log))
+  app.use(oada_error.middleware(log.error))
 
   app.set('port', config.get('wellKnown:server:port'))
 

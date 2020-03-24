@@ -10,7 +10,7 @@ const oadaError = require('oada-error')
 const OADAError = oadaError.OADAError
 
 const info = require('debug')('http-handler:server:info')
-const warn = require('debug')('http-handler:server:warn');
+const warn = require('debug')('http-handler:server:warn')
 const error = require('debug')('http-handler:server:error')
 const trace = require('debug')('http-handler:server:trace')
 

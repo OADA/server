@@ -138,7 +138,7 @@ module.exports = function wsHandler (server) {
                 case 'unwatch':
                     request.method = 'head'
                     request.url = msg.path
-                    console.log('UNWATCH')
+                    trace('UNWATCH')
                     break
 
                 case 'watch':
