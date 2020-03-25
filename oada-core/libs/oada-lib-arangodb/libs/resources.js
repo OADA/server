@@ -82,7 +82,7 @@ async function lookupFromUrl (url, userId) {
         let from = { resource_id: '', path_leftover: '' }
 
         if (!result) {
-          console.log('1 return resource id', resource_id)
+          trace('1 return resource id', resource_id)
           return {
             resource_id,
             path_leftover,
@@ -125,7 +125,7 @@ async function lookupFromUrl (url, userId) {
         // Check for a traversal that did not finish (aka not found)
         if (result.vertices[0] === null) {
           trace('graph-lookup traversal did not finish')
-          console.log('2 return resource id', resource_id)
+          trace('2 return resource id', resource_id)
 
           return {
             resource_id,
@@ -183,7 +183,6 @@ async function lookupFromUrl (url, userId) {
           }
         }
 
-        console.log('return resource id', resource_id)
         return {
           type,
           rev,

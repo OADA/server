@@ -19,7 +19,7 @@ var bcrypt = require('bcryptjs')
 
 const config = require('../../config')
 const { users } = require('../../../../libs/oada-lib-arangodb')
-const trace = require('debug')('trace:arango#user')
+const trace = require('debug')('arango:user:trace')
 
 function findById (id, cb) {
   trace('findById: searching for user ', id)

@@ -50,9 +50,7 @@ responder.on('request', (req, ...rest) => {
       }
     })
     .tap(() => {
-      info('handleReq', Date.now() / 1000 - pTime)
-      info('~~~~~~~~~~~~~~~~~~~~~~~~')
-      info('~~~~~~~~~~~~~~~~~~~~~~~~')
+      trace('handleReq', Date.now() / 1000 - pTime)
     })
   locks[id] = p
   return p
@@ -65,7 +63,7 @@ function handleReq (req, msg) {
 
   // Get body and check permission in parallel
   var getB = Date.now() / 1000
-  console.log('handling', id)
+  info('Handling', id)
   var body = Promise.try(function getBody () {
     var pb = Date.now() / 1000
     return (
@@ -73,27 +71,27 @@ function handleReq (req, msg) {
       (req.bodyid &&
         putBodies
           .getPutBody(req.bodyid)
-          .tap(() => info('getPutBody', Date.now() / 1000 - pb)))
+          .tap(() => trace('getPutBody', Date.now() / 1000 - pb)))
     )
   })
   let existingResourceInfo = {}
-  info('getBody', Date.now() / 1000 - getB)
+  trace('getBody', Date.now() / 1000 - getB)
 
-  info(`PUTing to "${req['path_leftover']}" in "${id}"`)
+  trace(`PUTing to "${req['path_leftover']}" in "${id}"`)
 
   var changeType
   var beforeUpsert = Date.now() / 1000
   var upsert = body
     .then(async function doUpsert (body) {
-      info('FIRST BODY', body)
-      info('doUpsert', Date.now() / 1000 - beforeUpsert)
+      trace('FIRST BODY', body)
+      trace('doUpsert', Date.now() / 1000 - beforeUpsert)
       if (req['if-match']) {
         let rev = await resources.getResource(req['resource_id'], '_rev')
         if (parseInt(req['if-match']) !== rev) {
-          console.log('------------THROWING------------')
-          console.log(rev)
-          console.log(req['if-match'])
-          console.log(req)
+          error('------------THROWING------------')
+          error(rev)
+          error(req['if-match'])
+          error(req)
           throw new Error('if-match failed')
         }
       }
@@ -107,7 +105,7 @@ function handleReq (req, msg) {
           throw new Error('rev mismatch')
         }
       }
-      info('cacheRev', Date.now() / 1000 - beforeCacheRev)
+      trace('cacheRev', Date.now() / 1000 - beforeCacheRev)
 
       var beforeDeletePartial = Date.now() / 1000
       var path = pointer.parse(req['path_leftover'].replace(/\/*$/, ''))
@@ -125,11 +123,11 @@ function handleReq (req, msg) {
         } else {
           if (!req.resourceExists)
             return { rev: undefined, orev: undefined, changeId: undefined }
-          console.log('deleting resource altogether')
+          trace('deleting resource altogether')
           return resources
             .deleteResource(id)
             .tap(() =>
-              info('deleteResource', Date.now() / 1000 - beforeDeletePartial)
+              trace('deleteResource', Date.now() / 1000 - beforeDeletePartial)
             )
         }
       }
@@ -145,7 +143,7 @@ function handleReq (req, msg) {
         ')'
       )
       if (req.resourceExists === false) {
-        console.log('initializing resource', req.resource_id, req.path_leftover)
+        trace('initializing resource', req.resource_id, req.path_leftover)
         id = req.resource_id.replace(/^\//, '')
         path = path.slice(2)
 
@@ -181,7 +179,7 @@ function handleReq (req, msg) {
         obj = objectAssignDeep(obj, body)
       }
 
-      info('recursive merge', Date.now() / 1000 - ts)
+      trace('recursive merge', Date.now() / 1000 - ts)
 
       // Update meta
       var meta = {
@@ -207,7 +205,7 @@ function handleReq (req, msg) {
         userId: req['user_id'],
         authorizationId: req['authorizationid']
       })
-      info('change_id', Date.now() / 1000 - beforeChange)
+      trace('change_id', Date.now() / 1000 - beforeChange)
       var beforeMethod = Date.now() / 1000
       pointer.set(obj, '/_meta/_changes', {
         _id: id + '/_meta/_changes',
@@ -219,14 +217,14 @@ function handleReq (req, msg) {
 
       return Promise.resolve(method(id, obj))
         .then(orev => ({ rev, orev, changeId }))
-        .tap(() => info('method', Date.now() / 1000 - beforeMethod))
+        .tap(() => trace('method', Date.now() / 1000 - beforeMethod))
     })
     .then(function respond ({ rev, orev, changeId }) {
-      info('upsert then', Date.now() / 1000 - beforeUpsert)
+      trace('upsert then', Date.now() / 1000 - beforeUpsert)
       var beforeCachePut = Date.now() / 1000
       // Put the new rev into the cache
       cache.put(id, rev)
-      info('cache.put', Date.now() / 1000 - beforeCachePut)
+      trace('cache.put', Date.now() / 1000 - beforeCachePut)
 
       return {
         msgtype: 'write-response',
@@ -263,7 +261,7 @@ function handleReq (req, msg) {
 
   var beforeCleanUp = Date.now() / 1000
   var cleanup = body.then(() => {
-    info('cleanup', Date.now() / 1000 - beforeCleanUp)
+    trace('cleanup', Date.now() / 1000 - beforeCleanUp)
     var beforeRPB = Date.now() / 1000
     // Remove putBody, if there was one
     // const result = req.bodyid && putBodies.removePutBody(req.bodyid);
@@ -271,11 +269,11 @@ function handleReq (req, msg) {
       req.bodyid &&
       putBodies
         .removePutBody(req.bodyid)
-        .tap(() => info('remove Put Body', Date.now() / 1000 - beforeRPB))
+        .tap(() => trace('remove Put Body', Date.now() / 1000 - beforeRPB))
     )
   })
   var beforeJoin = Date.now() / 1000
   return Promise.join(upsert, cleanup, resp => resp).tap(() =>
-    info('join', Date.now() / 1000 - beforeJoin)
+    trace('join', Date.now() / 1000 - beforeJoin)
   )
 }

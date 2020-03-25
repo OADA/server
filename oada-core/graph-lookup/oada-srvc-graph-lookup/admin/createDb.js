@@ -60,7 +60,7 @@ var destroyDb = function destroyDb () {
 }
 
 if (require.main === module) {
-  console.log('Creating collections in database.')
+  debug('Creating collections in database.')
   return destroyDb()
     .catch(() => {})
     .then(() => {

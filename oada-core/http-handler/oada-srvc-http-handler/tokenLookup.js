@@ -33,13 +33,13 @@ module.exports = function tokenLookup (req) {
             let msg = Object.assign({}, res)
 
             if (!t) {
-                info('WARNING: token ' + req.token + ' does not exist.')
+                warn('WARNING: token ' + req.token + ' does not exist.')
                 msg.token = null
                 return msg
             }
 
             if (!t._id) {
-                info('WARNING: _id for token does not exist in response')
+                warn('WARNING: _id for token does not exist in response')
             }
 
             if (!t.user) {

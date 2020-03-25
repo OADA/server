@@ -16,7 +16,7 @@
 'use strict'
 
 var _ = require('lodash')
-var trace = require('debug')('arango:token/trace')
+var trace = require('debug')('arango:token:trace')
 var oadaLib = require('../../../../libs/oada-lib-arangodb')
 
 function findByToken (token, cb) {

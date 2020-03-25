@@ -60,7 +60,7 @@ function createNewUser (req) {
         if (!(user[res] && user[res]['_id'])) {
           let resid = 'resources/' + uuid()
 
-          console.log(
+          trace(
             `Creating ${resid} for ${res} of ${user._id} as _type = ${contentTypes[res]}`
           )
           user[res] = responder
@@ -81,7 +81,7 @@ function createNewUser (req) {
                 return Promise.resolve()
               } else {
                 // TODO: Clean up on failure?
-                console.log(resp.code)
+                trace(resp.code)
                 let err = new Error(`Failed to create ${res}`)
                 return Promise.reject(err)
               }
@@ -95,7 +95,7 @@ function createNewUser (req) {
     })
     .props()
     .then(users.update) // update the new user with the new bookmarks
-    .tap(user => console.log(`Created user ${user['_id']}`))
+    .tap(user => trace(`Created user ${user['_id']}`))
 }
 
 responder.on('request', async function handleReq (req) {
@@ -172,7 +172,7 @@ responder.on('request', async function handleReq (req) {
 
     // If anything else went wrong, respond with error
   } catch (err) {
-    console.log(err)
+    error(err)
     return { code: err.message || 'error' }
   }
 })

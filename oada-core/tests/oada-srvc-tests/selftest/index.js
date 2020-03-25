@@ -55,8 +55,8 @@ if (isSelfTesting) {
           serverResToken = response.config.headers.Authorization
         })
         .catch(function (error) {
-          console.error('FAILED sending HTTP GET using axios!')
-          console.error(error)
+          error('FAILED sending HTTP GET using axios!')
+          error(error)
           return Promise.reject(error)
         })
     })

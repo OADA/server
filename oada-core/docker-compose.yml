@@ -21,7 +21,7 @@ services:
       - ./oada-srvc-docker-config.js:/oada-srvc-docker-config.js
     environment:
       - NODE_ENV=${NODE_ENV:-development}
-      - DEBUG=${DEBUG:-""}
+      - DEBUG=${DEBUG:-*:error,*:warn,*:info}
       # set RESETDATABASE to "yes" if you want to drop database on startup and recreate
       - RESETDATABASE=${RESETDATABASE:-no}
 
@@ -53,7 +53,7 @@ services:
       - letsencrypt_www_data:/var/www/letsencrypt
     environment:
       - NODE_ENV=${NODE_ENV:-development}
-      - DEBUG=${DEBUG:-""}
+      - DEBUG=${DEBUG:-*:error,*:warn,*:info}
       - DOMAIN=${DOMAIN:-localhost}
       - NODE_TLS_REJECT_UNAUTHORIZED=${NODE_TLS_REJECT_UNAUTHORIZED:-""}
     command:
@@ -81,7 +81,7 @@ services:
     environment:
       - NODE_TLS_REJECT_UNAUTHORIZED=${NODE_TLS_REJECT_UNAUTHORIZED:-""}
       - NODE_ENV=${NODE_ENV:-development}
-      - DEBUG=${DEBUG:-""}
+      - DEBUG=${DEBUG:-*:error,*:warn,*:info}
     command:
       - /entrypoint.sh
 
@@ -107,7 +107,7 @@ services:
       - ./oada-srvc-docker-config.js:/oada-srvc-docker-config.js
     environment:
       - NODE_ENV=${NODE_ENV:-development}
-      - DEBUG=${DEBUG:-""}
+      - DEBUG=${DEBUG:-*:error,*:warn,*:info}
       - IGNORE_SCOPE=${IGNORE_SCOPE:-""}
       - NODE_TLS_REJECT_UNAUTHORIZED=${NODE_TLS_REJECT_UNAUTHORIZED:-""}
 
@@ -130,7 +130,7 @@ services:
       - ./oada-srvc-docker-config.js:/oada-srvc-docker-config.js
     environment:
       - NODE_ENV=${NODE_ENV:-development}
-      - DEBUG=${DEBUG:-""}
+      - DEBUG=${DEBUG:-*:error,*:warn,*:info}
       - NODE_TLS_REJECT_UNAUTHORIZED=${NODE_TLS_REJECT_UNAUTHORIZED:-""}
       - IGNORE_SCOPE=${IGNORE_SCOPE:-""}
 
@@ -151,7 +151,7 @@ services:
       - ./oada-srvc-docker-config.js:/oada-srvc-docker-config.js
     environment:
       - NODE_ENV=${NODE_ENV:-development}
-      - DEBUG=${DEBUG:-""}
+      - DEBUG=${DEBUG:-*:error,*:warn,*:info}
 
   users:
     depends_on:
@@ -170,7 +170,7 @@ services:
       - ./oada-srvc-docker-config.js:/oada-srvc-docker-config.js
     environment:
       - NODE_ENV=${NODE_ENV:-development}
-      - DEBUG=${DEBUG:-""}
+      - DEBUG=${DEBUG:-*:error,*:warn,*:info}
 
   token-lookup:
     depends_on:
@@ -189,7 +189,7 @@ services:
       - ./oada-srvc-docker-config.js:/oada-srvc-docker-config.js
     environment:
       - NODE_ENV=${NODE_ENV:-development}
-      - DEBUG=${DEBUG:-""}
+      - DEBUG=${DEBUG:-*:error,*:warn,*:info}
 
   rev-graph-update:
     depends_on:
@@ -208,7 +208,7 @@ services:
       - ./oada-srvc-docker-config.js:/oada-srvc-docker-config.js
     environment:
       - NODE_ENV=${NODE_ENV:-development}
-      - DEBUG=${DEBUG:-""}
+      - DEBUG=${DEBUG:-*:error,*:warn,*:info}
 
   graph-lookup:
     depends_on:
@@ -227,7 +227,7 @@ services:
       - ./oada-srvc-docker-config.js:/oada-srvc-docker-config.js
     environment:
       - NODE_ENV=${NODE_ENV:-development}
-      - DEBUG=${DEBUG:-""}
+      - DEBUG=${DEBUG:-*:error,*:warn,*:info}
 
   well-known:
     depends_on:
@@ -247,7 +247,7 @@ services:
       - '80'
     environment:
       - NODE_ENV=${NODE_ENV:-development}
-      - DEBUG=${DEBUG:-""}
+      - DEBUG=${DEBUG:-*:error,*:warn,*:info}
 
   # admin container has all the service names and volumes mapped, so you
   # can interact with them easily from this service.
@@ -295,7 +295,7 @@ services:
       - http_net
     environment:
       - NODE_ENV=${NODE_ENV:-development}
-      - DEBUG=${DEBUG:-""}
+      - DEBUG=${DEBUG:-*:error,*:warn,*:info}
 
   kafka:
     image: wurstmeister/kafka
@@ -392,7 +392,7 @@ services:
       - ./oada-srvc-docker-config.js:/oada-srvc-docker-config.js
     environment:
       - NODE_ENV=${NODE_ENV:-development}
-      - DEBUG=${DEBUG:-""}
+      - DEBUG=${DEBUG:-*:error,*:warn,*:info}
 
   webhooks:
     depends_on:
@@ -413,7 +413,7 @@ services:
       - ./oada-srvc-docker-config.js:/oada-srvc-docker-config.js
     environment:
       - NODE_ENV=${NODE_ENV:-development}
-      - DEBUG=${DEBUG:-""}
+      - DEBUG=${DEBUG:-*:error,*:warn,*:info}
       - SSL_ALLOW_SELF_SIGNED=1
 
   permissions-handler:
@@ -434,7 +434,7 @@ services:
       - ./scopes:/code/scopes
     environment:
       - NODE_ENV=${NODE_ENV:-development}
-      - DEBUG=${DEBUG:-""}
+      - DEBUG=${DEBUG:-*:error,*:warn,*:info}
 
   shares:
     depends_on:
@@ -453,7 +453,7 @@ services:
       - ./oada-srvc-docker-config.js:/oada-srvc-docker-config.js
     environment:
       - NODE_ENV=${NODE_ENV:-development}
-      - DEBUG=${DEBUG:-""}
+      - DEBUG=${DEBUG:-*:error,*:warn,*:info}
 
 volumes:
   arangodb_data:
