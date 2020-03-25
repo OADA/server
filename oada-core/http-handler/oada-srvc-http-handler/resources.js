@@ -337,6 +337,7 @@ router.put(
     })
 )
 
+/*
 router.put('/*', async function ensureTypeTreeExists (req, res, next) {
     if (req.headers['x-oada-bookmarks-type']) {
         let rev = req.oadaGraph.rev
@@ -461,7 +462,7 @@ router.put('/*', async function ensureTypeTreeExists (req, res, next) {
         next()
     }
 })
-
+*/
 router.put('/*', async function putResource (req, res, next) {
     trace(`Saving PUT body for request ${req.id}`)
 
