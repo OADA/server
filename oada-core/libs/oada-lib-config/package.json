@@ -24,5 +24,8 @@
   "homepage": "https://github.com/oada/oada-lib-config#readme",
   "dependencies": {
     "nconf": "^0.10.0"
+  },
+  "devDependencies": {
+    "@types/nconf": "^0.10.0"
   }
 }
