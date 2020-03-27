@@ -3,9 +3,9 @@ declare module 'oada-error' {
         constructor (
             message: string,
             code: number,
-            userMessage?: string,
-            href?: string,
-            detail?: string
+            userMessage?: string | null,
+            href?: string | null,
+            detail?: string | null
         )
     }
 }

@@ -1,15 +1,19 @@
+import { resolve } from 'path'
 import { strict as _assert } from 'assert'
 
 import debug from 'debug'
 
-import jsonpointer from 'jsonpointer'
+import * as jsonpointer from 'jsonpointer'
+import Ajv from 'ajv'
 
 import { OADAError } from 'oada-error'
 
-import WebSocket from 'ws'
+import * as WebSocket from 'ws'
 // prettier-ignore
-import type { Server } from 'https'
+import type { Server } from 'http'
 import axios, { AxiosRequestConfig } from 'axios'
+
+import * as TJS from 'typescript-json-schema'
 
 import { EventEmitter } from 'events'
 import { Responder, KafkaReguest } from '../../libs/oada-lib-kafka'
@@ -17,22 +21,15 @@ import { resources, changes, Change } from '../../libs/oada-lib-arangodb'
 import config from './config'
 const revLimit = 10
 
-const error = debug('websockets:error')
+const info = debug('websockets:info')
 const trace = debug('websockets:trace')
+const error = debug('websockets:error')
 
 const emitter = new EventEmitter()
 
-type Message = {
-    requestId: string | string[]
-    path: string
-    method: 'head' | 'get' | 'put' | 'post' | 'delete' | 'watch' | 'unwatch'
-    headers: { [key: string]: string }
-    data: any
-}
-
-// Make sure we stringify the request data ourselves
+// Make sure we stringify the http request data ourselves
 type RequestData = string & { __reqData__: void }
-interface Request extends AxiosRequestConfig {
+interface HTTPRequest extends AxiosRequestConfig {
     data?: RequestData
 }
 function serializeRequestData (data: any): RequestData {
@@ -47,14 +44,78 @@ function assert (value: any, message?: string | Error): asserts value {
     return _assert(value, message)
 }
 
-class Socket extends WebSocket {
+// Add our state to the websocket type?
+interface Socket extends WebSocket {
     isAlive?: boolean
 }
 
+export type SocketRequest = {
+    requestId: string | string[]
+    path: string
+    method: 'head' | 'get' | 'put' | 'post' | 'delete' | 'watch' | 'unwatch'
+    headers: { authorization: string } & { [key: string]: string }
+    data?: any
+}
+
+export type SocketResponse = {
+    requestId: string | string[]
+    /**
+     * @todo Why is this weird?
+     */
+    status: 'success' | number
+    // TODO: Figure out this mess of responses...
+    statusText?: string
+    headers?: { [key: string]: string }
+    resourceId?: string
+    resource?: any
+    data?: any
+}
+
+export type SocketChange = {
+    requestId: string | string[]
+    resourceId: string
+    path_leftover: string
+    change: any // TODO: Change type?
+}
+
+/**
+ * Check incoming requests against schema since they are coming over network
+ *
+ * This way the rest of the code can assume the format is correct
+ */
+const ajv = new Ajv()
+const program = TJS.programFromConfig(resolve('./tsconfig.json'))
+// Precompile schema validator
+const requestValidator = ajv.compile(
+    TJS.generateSchema(program, 'SocketRequest') as object
+)
+function parseRequest (data: WebSocket.Data): SocketRequest {
+    function assertRequest (value: any): asserts value is SocketRequest {
+        if (!requestValidator(value)) {
+            throw requestValidator.errors
+        }
+    }
+
+    assert(typeof data === 'string')
+    const msg = JSON.parse(data)
+
+    // Normalize method capitalization
+    msg.method = msg?.method?.toLowerCase()
+    // Normalize header name capitalization
+    const headers = msg?.headers ?? {}
+    msg.headers = {}
+    for (const header in headers) {
+        msg.headers[header.toLowerCase()] = headers[header]
+    }
+
+    // Assert type schema
+    assertRequest(msg)
+
+    return msg
+}
+
 module.exports = function wsHandler (server: Server) {
-    const wss = new WebSocket.Server({
-        server
-    })
+    const wss = new WebSocket.Server({ server })
 
     // Add socket to storage
     wss.on('connection', function connection (socket: Socket) {
@@ -63,163 +124,74 @@ module.exports = function wsHandler (server: Server) {
             socket.isAlive = true
         })
 
-        function parseMessage (data: WebSocket.Data): Message {
-            assert(typeof data === 'string')
-
-            const msg = JSON.parse(data)
-            // Normalize method
-            msg.method = msg?.method?.toLowerCase() as Message['method']
-
-            return msg
+        function sendResponse (resp: SocketResponse) {
+            socket.send(JSON.stringify(resp))
         }
+        function sendChange (resp: SocketChange) {
+            socket.send(JSON.stringify(resp))
+        }
+
         // Handle request
         socket.on('message', async function message (data) {
-            let msg: Message
+            let msg: SocketRequest
             try {
-                msg = parseMessage(data)
+                msg = parseRequest(data)
             } catch (e) {
                 const err = {
                     status: 400,
-                    headers: [],
-                    data: new OADAError('Bad Request', 400, 'Invalid JSON')
+                    requestId: [],
+                    headers: {},
+                    data: new OADAError(
+                        'Bad Request',
+                        400,
+                        'Invalid socket message format',
+                        null,
+                        e
+                    )
                 }
-                socket.send(JSON.stringify(err))
+                sendResponse(err)
                 error(e)
                 return
             }
 
-            if (!msg.requestId) {
+            try {
+                await handleRequest(msg)
+            } catch (e) {
+                error(e)
                 const err = {
-                    status: 400,
-                    headers: [],
-                    data: new OADAError(
-                        'Bad Request',
-                        400,
-                        'Missing `requestId`'
-                    )
-                }
-                socket.send(JSON.stringify(err))
-                return
-            }
-
-            if (!msg.path) {
-                const err = {
-                    status: 400,
+                    status: 500,
                     requestId: msg.requestId,
-                    headers: [],
-                    data: new OADAError('Bad Request', 400, 'Missing `path`')
+                    headers: {},
+                    data: new OADAError('Internal Error', 500)
                 }
-
-                socket.send(JSON.stringify(err))
-                return
+                sendResponse(err)
             }
+        })
 
-            if (!msg?.headers?.authorization) {
-                const err = {
-                    status: 400,
-                    requestId: msg.requestId,
-                    headers: [],
-                    data: new OADAError(
-                        'Bad Request',
-                        400,
-                        'Missing `authorization`'
-                    )
-                }
+        async function handleRequest (msg: SocketRequest) {
+            info(`Handling socket req ${msg.requestId}:`, msg.method, msg.path)
 
-                socket.send(JSON.stringify(err))
-                return
-            }
-
-            if (
-                [
-                    'unwatch',
-                    'watch',
-                    'head',
-                    'get',
-                    'put',
-                    'post',
-                    'delete'
-                ].includes(msg.method.toLowerCase()) === false
-            ) {
-                const err = {
-                    status: 400,
-                    requestId: msg.requestId,
-                    headers: [],
-                    data: new OADAError(
-                        'Bad Request',
-                        400,
-                        'Method `' + msg.method + '` is not supported.'
-                    )
-                }
-                socket.send(JSON.stringify(err))
-                return
-            }
-
-            const request: Request = {
+            const request: HTTPRequest = {
                 baseURL: 'http://127.0.0.1',
+                url: msg.path,
                 headers: msg.headers
             }
-            function assertNever (method: never): never {
-                const err = {
-                    status: 400,
-                    requestId: msg.requestId,
-                    headers: [],
-                    data: new OADAError(
-                        'Bad Request',
-                        400,
-                        'Method `' + method + '` is not supported.'
-                    )
-                }
-                throw err
+            switch (msg.method) {
+                case 'unwatch':
+                    trace('UNWATCH')
+                case 'watch':
+                    request.method = 'head'
+                    break
+
+                case 'put':
+                case 'post':
+                    request.data = serializeRequestData(msg.data)
+                default:
+                    request.method = msg.method
+                    break
             }
             try {
-                switch (msg.method) {
-                    default:
-                        return assertNever(msg.method)
-                    case 'unwatch':
-                        request.method = 'head'
-                        request.url = msg.path
-                        trace('UNWATCH')
-                        break
-
-                    case 'watch':
-                        request.method = 'head'
-                        request.url = msg.path
-                        break
-
-                    case 'head':
-                        request.method = 'head'
-                        request.url = msg.path
-                        break
-
-                    case 'get':
-                        request.method = 'get'
-                        request.url = msg.path
-                        break
-
-                    case 'post':
-                        request.method = 'post'
-                        request.url = msg.path
-                        request.data = serializeRequestData(msg.data)
-                        break
-
-                    case 'put':
-                        request.method = 'put'
-                        request.url = msg.path
-                        request.data = serializeRequestData(msg.data)
-                        break
-
-                    case 'delete':
-                        request.method = 'delete'
-                        request.url = msg.path
-                        break
-                }
-            } catch (err) {
-                socket.send(JSON.stringify(err))
-                return
-            }
-            try {
-                const res = await axios(request)
+                const res = await axios.request<any>(request)
                 const parts = res.headers['content-location'].split('/')
                 let resourceId: string
                 let path_leftover = ''
@@ -235,18 +207,22 @@ module.exports = function wsHandler (server: Server) {
                     trace('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
                     trace('responding watch', resourceId)
                     trace('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
-                    if (
-                        change &&
-                        jsonpointer.get(change.body, path_leftover) !==
-                            undefined
-                    ) {
-                        const message = {
-                            requestId: msg.requestId,
-                            resourceId,
-                            change
-                        }
-                        socket.send(JSON.stringify(message))
+
+                    const pathChange = jsonpointer.get(
+                        change?.body ?? {},
+                        path_leftover
+                    )
+                    if (pathChange === undefined) {
+                        // No change to report
+                        return
                     }
+
+                    sendChange({
+                        requestId: msg.requestId,
+                        resourceId,
+                        path_leftover,
+                        change
+                    })
                 }
 
                 switch (msg.method) {
@@ -261,12 +237,10 @@ module.exports = function wsHandler (server: Server) {
                         trace('closing watch', resourceId)
                         emitter.removeListener(resourceId, handleChange)
 
-                        socket.send(
-                            JSON.stringify({
-                                requestId: msg.requestId,
-                                status: 'success'
-                            })
-                        )
+                        sendResponse({
+                            requestId: msg.requestId,
+                            status: 'success'
+                        })
                         break
                     case 'watch':
                         trace('opening watch', resourceId)
@@ -310,22 +284,18 @@ module.exports = function wsHandler (server: Server) {
                                 const resource = await resources.getResource(
                                     resourceId
                                 )
-                                socket.send(
-                                    JSON.stringify({
-                                        requestId: msg.requestId,
-                                        resourceId,
-                                        resource,
-                                        status: 'success'
-                                    })
-                                )
+                                sendResponse({
+                                    requestId: msg.requestId,
+                                    resourceId,
+                                    resource,
+                                    status: 'success'
+                                })
                             } else {
                                 // First, declare success.
-                                socket.send(
-                                    JSON.stringify({
-                                        requestId: msg.requestId,
-                                        status: 'success'
-                                    })
-                                )
+                                sendResponse({
+                                    requestId: msg.requestId,
+                                    status: 'success'
+                                })
                                 trace(
                                     'REV NOT TOO OLD...',
                                     resourceId,
@@ -337,61 +307,50 @@ module.exports = function wsHandler (server: Server) {
                                     resourceId,
                                     request.headers['x-oada-rev']
                                 )
-                                newChanges.forEach(change => {
-                                    socket.send(
-                                        JSON.stringify({
-                                            requestId: msg.requestId,
-                                            resourceId,
-                                            path_leftover,
-                                            change
-                                        })
-                                    )
-                                })
+                                newChanges.forEach(change =>
+                                    sendChange({
+                                        requestId: msg.requestId,
+                                        resourceId,
+                                        path_leftover,
+                                        change
+                                    })
+                                )
                             }
                         } else {
-                            socket.send(
-                                JSON.stringify({
-                                    requestId: msg.requestId,
-                                    status: 'success'
-                                })
-                            )
+                            sendResponse({
+                                requestId: msg.requestId,
+                                status: 'success'
+                            })
                         }
                         break
                     default:
-                        socket.send(
-                            JSON.stringify({
-                                requestId: msg.requestId,
-                                status: res.status,
-                                headers: res.headers,
-                                data: res.data
-                            })
-                        )
+                        sendResponse({
+                            requestId: msg.requestId,
+                            status: res.status,
+                            headers: res.headers,
+                            data: res.data
+                        })
                 }
             } catch (err) {
-                let e
                 if (err.response) {
-                    e = {
+                    const e = {
+                        requestId: msg.requestId,
                         status: err.response.status,
                         statusText: err.response.statusText,
                         headers: err.response.headers,
                         data: err.response.data
                     }
+                    return sendResponse(e)
                 } else {
-                    error(err)
-                    e = {
-                        status: 500,
-                        requestId: msg.requestId,
-                        headers: [],
-                        data: new OADAError('Internal Error', 500)
-                    }
+                    throw err
                 }
-                socket.send(JSON.stringify(e))
             }
-        })
+        }
     })
 
     const interval = setInterval(function ping () {
-        wss.clients.forEach(function each (socket: Socket) {
+        wss.clients.forEach(function each (sock) {
+            const socket = sock as Socket // TODO: Better way to do this?
             if (socket.isAlive === false) {
                 return socket.terminate()
             }
