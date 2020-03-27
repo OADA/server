@@ -22,8 +22,9 @@ import config from './config'
 const revLimit = 10
 
 const info = debug('websockets:info')
-const trace = debug('websockets:trace')
 const error = debug('websockets:error')
+const warn = debug('websockets:warn')
+const trace = debug('websockets:trace')
 
 const emitter = new EventEmitter()
 
@@ -46,11 +47,17 @@ function assert (value: any, message?: string | Error): asserts value {
 
 // Add our state to the websocket type?
 interface Socket extends WebSocket {
-    isAlive?: boolean
+    isAlive: boolean
+    watches: {
+        [key: string]: {
+            resourceId: string
+            handler: ({ change }: { change: Change }) => any
+        }
+    }
 }
 
 export type SocketRequest = {
-    requestId: string | string[]
+    requestId: string
     path: string
     method: 'head' | 'get' | 'put' | 'post' | 'delete' | 'watch' | 'unwatch'
     headers: { authorization: string } & { [key: string]: string }
@@ -75,7 +82,7 @@ export type SocketChange = {
     requestId: string | string[]
     resourceId: string
     path_leftover: string
-    change: any // TODO: Change type?
+    change: Change
 }
 
 /**
@@ -119,7 +126,9 @@ module.exports = function wsHandler (server: Server) {
 
     // Add socket to storage
     wss.on('connection', function connection (socket: Socket) {
+        // Add our state stuff?
         socket.isAlive = true
+        socket.watches = {}
         socket.on('pong', function heartbeat () {
             socket.isAlive = true
         })
@@ -178,7 +187,23 @@ module.exports = function wsHandler (server: Server) {
             }
             switch (msg.method) {
                 case 'unwatch':
-                    trace('UNWATCH')
+                    trace('closing watch', msg.requestId)
+                    const watch = socket.watches[msg.requestId]
+                    delete socket.watches[msg.requestId]
+                    if (!watch.handler) {
+                        warn(
+                            `Received UNWATCH for unknown WATCH ${msg.requestId}`
+                        )
+                    }
+
+                    emitter.removeListener(watch.resourceId, watch.handler)
+                    sendResponse({
+                        requestId: msg.requestId,
+                        status: 'success'
+                    })
+
+                    // No actual request to make for UNWATCH
+                    return
                 case 'watch':
                     request.method = 'head'
                     break
@@ -190,147 +215,9 @@ module.exports = function wsHandler (server: Server) {
                     request.method = msg.method
                     break
             }
+            let res
             try {
-                const res = await axios.request<any>(request)
-                const parts = res.headers['content-location'].split('/')
-                let resourceId: string
-                let path_leftover = ''
-                assert(parts.length >= 3)
-                resourceId = `${parts[1]}/${parts[2]}`
-                if (parts.length > 3) path_leftover = parts.slice(3).join('/')
-                if (path_leftover) {
-                    path_leftover = `/${path_leftover}`
-                }
-
-                function handleChange ({ change }: { change: Change }) {
-                    // let c = change.change.merge || change.change.delete;
-                    trace('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
-                    trace('responding watch', resourceId)
-                    trace('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
-
-                    const pathChange = jsonpointer.get(
-                        change?.body ?? {},
-                        path_leftover
-                    )
-                    if (pathChange === undefined) {
-                        // No change to report
-                        return
-                    }
-
-                    sendChange({
-                        requestId: msg.requestId,
-                        resourceId,
-                        path_leftover,
-                        change
-                    })
-                }
-
-                switch (msg.method) {
-                    case 'delete':
-                        if (parts.length === 3) {
-                            // it is a resource
-                            emitter.removeAllListeners(resourceId)
-                        }
-                        break
-
-                    case 'unwatch':
-                        trace('closing watch', resourceId)
-                        emitter.removeListener(resourceId, handleChange)
-
-                        sendResponse({
-                            requestId: msg.requestId,
-                            status: 'success'
-                        })
-                        break
-                    case 'watch':
-                        trace('opening watch', resourceId)
-                        emitter.on(resourceId, handleChange)
-
-                        socket.on('close', function handleClose () {
-                            emitter.removeListener(resourceId, handleChange)
-                        })
-
-                        // Emit all new changes from the given rev in the request
-                        if (request.headers['x-oada-rev']) {
-                            trace('Setting up watch on:', resourceId)
-                            trace(
-                                'RECEIVED THIS REV:',
-                                resourceId,
-                                request.headers['x-oada-rev']
-                            )
-                            const rev = await resources.getResource(
-                                resourceId,
-                                '_rev'
-                            )
-                            // If the requested rev is behind by revLimit, simply
-                            // re-GET the entire resource
-                            trace(
-                                'REVS:',
-                                resourceId,
-                                rev,
-                                request.headers['x-oada-rev']
-                            )
-                            if (
-                                parseInt(rev) -
-                                    parseInt(request.headers['x-oada-rev']) >=
-                                revLimit
-                            ) {
-                                trace(
-                                    'REV WAY OUT OF DATE',
-                                    resourceId,
-                                    rev,
-                                    request.headers['x-oada-rev']
-                                )
-                                const resource = await resources.getResource(
-                                    resourceId
-                                )
-                                sendResponse({
-                                    requestId: msg.requestId,
-                                    resourceId,
-                                    resource,
-                                    status: 'success'
-                                })
-                            } else {
-                                // First, declare success.
-                                sendResponse({
-                                    requestId: msg.requestId,
-                                    status: 'success'
-                                })
-                                trace(
-                                    'REV NOT TOO OLD...',
-                                    resourceId,
-                                    rev,
-                                    request.headers['x-oada-rev']
-                                )
-                                // Next, feed changes to client
-                                const newChanges = await changes.getChangesSinceRev(
-                                    resourceId,
-                                    request.headers['x-oada-rev']
-                                )
-                                newChanges.forEach(change =>
-                                    sendChange({
-                                        requestId: msg.requestId,
-                                        resourceId,
-                                        path_leftover,
-                                        change
-                                    })
-                                )
-                            }
-                        } else {
-                            sendResponse({
-                                requestId: msg.requestId,
-                                status: 'success'
-                            })
-                        }
-                        break
-                    default:
-                        sendResponse({
-                            requestId: msg.requestId,
-                            status: res.status,
-                            headers: res.headers,
-                            data: res.data
-                        })
-                }
+                res = await axios.request<any>(request)
             } catch (err) {
                 if (err.response) {
                     const e = {
@@ -344,6 +231,140 @@ module.exports = function wsHandler (server: Server) {
                 } else {
                     throw err
                 }
+            }
+            const parts = res.headers['content-location'].split('/')
+            let resourceId: string
+            let path_leftover = ''
+            assert(parts.length >= 3)
+            resourceId = `${parts[1]}/${parts[2]}`
+            if (parts.length > 3) path_leftover = parts.slice(3).join('/')
+            if (path_leftover) {
+                path_leftover = `/${path_leftover}`
+            }
+
+            function handleChange ({ change }: { change: Change }) {
+                // let c = change.change.merge || change.change.delete;
+                trace('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
+                trace('responding watch', resourceId)
+                trace('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
+
+                const pathChange = jsonpointer.get(
+                    change?.body ?? {},
+                    path_leftover
+                )
+                if (pathChange === undefined) {
+                    // No change to report
+                    return
+                }
+
+                sendChange({
+                    requestId: msg.requestId,
+                    resourceId,
+                    path_leftover,
+                    change
+                })
+            }
+
+            switch (msg.method) {
+                case 'delete':
+                    if (parts.length === 3) {
+                        // it is a resource
+                        emitter.removeAllListeners(resourceId)
+                    }
+                    break
+
+                case 'watch':
+                    trace('opening watch', msg.requestId)
+                    emitter.on(resourceId, handleChange)
+
+                    socket.watches[msg.requestId] = {
+                        resourceId,
+                        handler: handleChange
+                    }
+                    socket.on('close', function handleClose () {
+                        emitter.removeListener(resourceId, handleChange)
+                    })
+
+                    // Emit all new changes from the given rev in the request
+                    if (request.headers['x-oada-rev']) {
+                        trace('Setting up watch on:', resourceId)
+                        trace(
+                            'RECEIVED THIS REV:',
+                            resourceId,
+                            request.headers['x-oada-rev']
+                        )
+                        const rev = await resources.getResource(
+                            resourceId,
+                            '_rev'
+                        )
+                        // If the requested rev is behind by revLimit, simply
+                        // re-GET the entire resource
+                        trace(
+                            'REVS:',
+                            resourceId,
+                            rev,
+                            request.headers['x-oada-rev']
+                        )
+                        if (
+                            parseInt(rev) -
+                                parseInt(request.headers['x-oada-rev']) >=
+                            revLimit
+                        ) {
+                            trace(
+                                'REV WAY OUT OF DATE',
+                                resourceId,
+                                rev,
+                                request.headers['x-oada-rev']
+                            )
+                            const resource = await resources.getResource(
+                                resourceId
+                            )
+                            sendResponse({
+                                requestId: msg.requestId,
+                                resourceId,
+                                resource,
+                                status: 'success'
+                            })
+                        } else {
+                            // First, declare success.
+                            sendResponse({
+                                requestId: msg.requestId,
+                                status: 'success'
+                            })
+                            trace(
+                                'REV NOT TOO OLD...',
+                                resourceId,
+                                rev,
+                                request.headers['x-oada-rev']
+                            )
+                            // Next, feed changes to client
+                            const newChanges = await changes.getChangesSinceRev(
+                                resourceId,
+                                request.headers['x-oada-rev']
+                            )
+                            newChanges.forEach(change =>
+                                sendChange({
+                                    requestId: msg.requestId,
+                                    resourceId,
+                                    path_leftover,
+                                    change
+                                })
+                            )
+                        }
+                    } else {
+                        sendResponse({
+                            requestId: msg.requestId,
+                            status: 'success'
+                        })
+                    }
+                    break
+                default:
+                    sendResponse({
+                        requestId: msg.requestId,
+                        status: res.status,
+                        headers: res.headers,
+                        data: res.data
+                    })
             }
         }
     })
