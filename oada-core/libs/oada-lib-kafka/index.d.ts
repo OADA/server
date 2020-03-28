@@ -9,11 +9,16 @@ interface KafkaReguest {
     code: string
 }
 
+type ConstructorOpts = {
+    consumeTopic: string
+    produceTopic?: string
+    group: string
+    /**
+     * @todo Document these opts
+     */
+    opts?: { [ key:string ]: any }
+}
 export class Responder extends Base {
-    constructor (
-        consumeTopic: string,
-        produceTopic: string | null,
-        group: string
-    )
-    on(event: 'request', cb: (reg: KafkaReguest) => any): this;
+    constructor (opts: ConstructorOpts)
+    on (event: 'request', cb: (reg: KafkaReguest) => any): this;
 }

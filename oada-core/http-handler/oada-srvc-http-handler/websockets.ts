@@ -435,11 +435,10 @@ module.exports = function wsHandler (server: Server) {
     })
 }
 
-const writeResponder = new Responder(
-    config.get('kafka:topics:httpResponse'),
-    null,
-    'websockets'
-)
+const writeResponder = new Responder({
+    consumeTopic: config.get('kafka:topics:httpResponse') as string,
+    group: 'websockets'
+})
 
 type WriteResponse = {
     msgtype: 'write-response'
