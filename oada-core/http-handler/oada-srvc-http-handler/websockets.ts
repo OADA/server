@@ -48,12 +48,17 @@ function assert (value: any, message?: string | Error): asserts value {
 // Add our state to the websocket type?
 interface Socket extends WebSocket {
     isAlive: boolean
-    watches: {
-        [key: string]: {
-            resourceId: string
-            handler: ({ change }: { change: Change }) => any
-        }
-    }
+    /**
+     * @description Indexed by resourceId
+     */
+    watches: { [key: string]: Watch }
+}
+type Watch = {
+    handler: ({ change }: { change: Change }) => any
+    /**
+     * @description Maps requestId to path_leftover
+     */
+    requests: { [key: string]: string }
 }
 
 export type SocketRequest = {
@@ -79,9 +84,9 @@ export type SocketResponse = {
 }
 
 export type SocketChange = {
-    requestId: string | string[]
+    requestId: string[]
     resourceId: string
-    path_leftover: string
+    path_leftover: string | string[]
     change: Change
 }
 
@@ -132,12 +137,57 @@ module.exports = function wsHandler (server: Server) {
         socket.on('pong', function heartbeat () {
             socket.isAlive = true
         })
+        function handleChange (resourceId: string, watch: Watch) {
+            function handler ({ change }: { change: Change }) {
+                trace('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
+                trace('responding watch', resourceId)
+                trace('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
 
+                const { requests } = watch
+
+                let mesg: SocketChange = {
+                    requestId: [],
+                    resourceId,
+                    path_leftover: [],
+                    change
+                }
+                mesg = Object.keys(requests)
+                    // Find requests with changes
+                    .filter(requestId => {
+                        const path_leftover = requests[requestId]
+                        const pathChange = jsonpointer.get(
+                            change?.body ?? {},
+                            path_leftover
+                        )
+
+                        return pathChange !== undefined
+                    })
+                    // Mux into one change message
+                    .reduce(
+                        ({ requestId, path_leftover, ...rest }, id) => ({
+                            requestId: requestId.concat(id),
+                            path_leftover: path_leftover.concat(requests[id]),
+                            ...rest
+                        }),
+                        mesg
+                    )
+                sendChange(mesg)
+            }
+            return handler
+        }
         function sendResponse (resp: SocketResponse) {
             socket.send(JSON.stringify(resp))
         }
         function sendChange (resp: SocketChange) {
-            socket.send(JSON.stringify(resp))
+            const msg = {
+                ...resp,
+                // Try to not confuse old versions of oada-cache
+                requestId:
+                    resp.requestId.length === 1
+                        ? resp.requestId[0]
+                        : resp.requestId
+            }
+            socket.send(JSON.stringify(msg))
         }
 
         // Handle request
@@ -188,15 +238,29 @@ module.exports = function wsHandler (server: Server) {
             switch (msg.method) {
                 case 'unwatch':
                     trace('closing watch', msg.requestId)
-                    const watch = socket.watches[msg.requestId]
-                    delete socket.watches[msg.requestId]
-                    if (!watch.handler) {
+
+                    // Find corresponding WATCH
+                    let res
+                    let watch
+                    for (res in socket.watches) {
+                        watch = socket.watches[res]
+                        if (watch.requests[msg.requestId]) {
+                            break
+                        }
+                    }
+
+                    if (!watch) {
                         warn(
                             `Received UNWATCH for unknown WATCH ${msg.requestId}`
                         )
+                    } else {
+                        delete watch.requests[msg.requestId]
+                        if (Object.keys(watch.requests).length === 0) {
+                            // No watches on this resource left
+                            delete socket.watches[res as string]
+                            emitter.removeListener(res as string, watch.handler)
+                        }
                     }
-
-                    emitter.removeListener(watch.resourceId, watch.handler)
                     sendResponse({
                         requestId: msg.requestId,
                         status: 'success'
@@ -242,29 +306,6 @@ module.exports = function wsHandler (server: Server) {
                 path_leftover = `/${path_leftover}`
             }
 
-            function handleChange ({ change }: { change: Change }) {
-                // let c = change.change.merge || change.change.delete;
-                trace('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
-                trace('responding watch', resourceId)
-                trace('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
-
-                const pathChange = jsonpointer.get(
-                    change?.body ?? {},
-                    path_leftover
-                )
-                if (pathChange === undefined) {
-                    // No change to report
-                    return
-                }
-
-                sendChange({
-                    requestId: msg.requestId,
-                    resourceId,
-                    path_leftover,
-                    change
-                })
-            }
-
             switch (msg.method) {
                 case 'delete':
                     if (parts.length === 3) {
@@ -275,15 +316,23 @@ module.exports = function wsHandler (server: Server) {
 
                 case 'watch':
                     trace('opening watch', msg.requestId)
-                    emitter.on(resourceId, handleChange)
 
-                    socket.watches[msg.requestId] = {
-                        resourceId,
-                        handler: handleChange
+                    let watch: Watch = socket.watches[resourceId]
+                    if (!watch) {
+                        // No existing WATCH on this resource
+                        watch = socket.watches[resourceId] = {
+                            handler: handleChange(resourceId, watch),
+                            requests: { [msg.requestId]: path_leftover }
+                        }
+
+                        emitter.on(resourceId, watch.handler)
+                        socket.on('close', function handleClose () {
+                            emitter.removeListener(resourceId, watch.handler)
+                        })
+                    } else {
+                        // Already WATCHing this resource
+                        watch.requests[msg.requestId] = path_leftover
                     }
-                    socket.on('close', function handleClose () {
-                        emitter.removeListener(resourceId, handleChange)
-                    })
 
                     // Emit all new changes from the given rev in the request
                     if (request.headers['x-oada-rev']) {
@@ -344,7 +393,7 @@ module.exports = function wsHandler (server: Server) {
                             )
                             newChanges.forEach(change =>
                                 sendChange({
-                                    requestId: msg.requestId,
+                                    requestId: [msg.requestId],
                                     resourceId,
                                     path_leftover,
                                     change
