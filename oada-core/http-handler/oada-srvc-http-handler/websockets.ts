@@ -266,7 +266,7 @@ module.exports = function wsHandler (server: Server) {
                     }
                     sendResponse({
                         requestId: msg.requestId,
-                        status: 'success'
+                        status: 200
                     })
 
                     // No actual request to make for UNWATCH
