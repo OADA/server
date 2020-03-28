@@ -54,7 +54,7 @@ interface Socket extends WebSocket {
     watches: { [key: string]: Watch }
 }
 type Watch = {
-    handler: ({ change }: { change: Change }) => any
+    handler: (this: Watch, { change }: { change: Change }) => any
     /**
      * @description Maps requestId to path_leftover
      */
@@ -139,13 +139,13 @@ module.exports = function wsHandler (server: Server) {
         socket.on('pong', function heartbeat () {
             socket.isAlive = true
         })
-        function handleChange (resourceId: string, watch: Watch) {
-            function handler ({ change }: { change: Change }) {
+        function handleChange (resourceId: string): Watch['handler'] {
+            function handler (this: Watch, { change }: { change: Change }) {
                 trace('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
                 trace('responding watch', resourceId)
                 trace('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
 
-                const { requests } = watch
+                const { requests } = socket.watches[resourceId]
 
                 let mesg: SocketChange = {
                     requestId: [],
@@ -316,10 +316,11 @@ module.exports = function wsHandler (server: Server) {
                     let watch: Watch = socket.watches[resourceId]
                     if (!watch) {
                         // No existing WATCH on this resource
-                        watch = socket.watches[resourceId] = {
-                            handler: handleChange(resourceId, watch),
+                        watch = {
+                            handler: handleChange(resourceId),
                             requests: { [msg.requestId]: path_leftover }
                         }
+                        socket.watches[resourceId] = watch
 
                         emitter.on(resourceId, watch.handler)
                         socket.on('close', function handleClose () {
