@@ -65,7 +65,9 @@ export type SocketRequest = {
     requestId: string
     path: string
     method: 'head' | 'get' | 'put' | 'post' | 'delete' | 'watch' | 'unwatch'
-    headers: { authorization: string } & { [key: string]: string }
+    headers: { authorization: string | number } & {
+        [key: string]: string | number
+    }
     data?: any
 }
 
@@ -176,6 +178,7 @@ module.exports = function wsHandler (server: Server) {
             return handler
         }
         function sendResponse (resp: SocketResponse) {
+            trace('Responding to request: %O', resp)
             socket.send(JSON.stringify(resp))
         }
         function sendChange (resp: SocketChange) {
@@ -307,13 +310,6 @@ module.exports = function wsHandler (server: Server) {
             }
 
             switch (msg.method) {
-                case 'delete':
-                    if (parts.length === 3) {
-                        // it is a resource
-                        emitter.removeAllListeners(resourceId)
-                    }
-                    break
-
                 case 'watch':
                     trace('opening watch', msg.requestId)
 
@@ -407,6 +403,12 @@ module.exports = function wsHandler (server: Server) {
                         })
                     }
                     break
+
+                case 'delete':
+                    if (parts.length === 3) {
+                        // it is a resource
+                        emitter.removeAllListeners(resourceId)
+                    }
                 default:
                     sendResponse({
                         requestId: msg.requestId,
