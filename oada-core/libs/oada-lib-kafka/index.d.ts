@@ -4,7 +4,7 @@ import type { EventEmitter } from 'events'
 declare class Base extends EventEmitter {
 }
 
-interface KafkaReguest {
+interface KafkaRequest {
     msgtype: string
     code: string
 }
@@ -20,5 +20,5 @@ type ConstructorOpts = {
 }
 export class Responder extends Base {
     constructor (opts: ConstructorOpts)
-    on (event: 'request', cb: (reg: KafkaReguest) => any): this;
+    on (event: 'request', cb: (reg: KafkaRequest) => any): this;
 }

@@ -16,7 +16,7 @@ import axios, { AxiosRequestConfig } from 'axios'
 import * as TJS from 'typescript-json-schema'
 
 import { EventEmitter } from 'events'
-import { Responder, KafkaReguest } from '../../libs/oada-lib-kafka'
+import { Responder, KafkaRequest } from '../../libs/oada-lib-kafka'
 import { resources, changes, Change } from '../../libs/oada-lib-arangodb'
 import config from './config'
 const revLimit = 10
@@ -450,7 +450,7 @@ type WriteResponse = {
     path_leftover: string
     _rev: number
 }
-function checkReq (req: KafkaReguest): req is WriteResponse {
+function checkReq (req: KafkaRequest): req is WriteResponse {
     return req.msgtype === 'write-response' && req.code === 'success'
 }
 // Listen for successful write requests to resources of interest, then emit an event
