@@ -47,6 +47,7 @@
     "timed-cache": "^1.1.0",
     "ts-node": "^8.8.1",
     "type-is": "^1.6.18",
+    "typescript": "^3.8.3",
     "typescript-json-schema": "^0.42.0",
     "uuid": "^3.0.1",
     "well-known-json": "^0.2.0"
@@ -61,7 +62,6 @@
     "mocha-steps": "^1.0.2",
     "mock-require": "^2.0.2",
     "prettier-standard": "^16.2.1",
-    "supertest": "^3.0.0",
-    "typescript": "^3.8.3"
+    "supertest": "^3.0.0"
   }
 }
