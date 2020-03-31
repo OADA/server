@@ -4,7 +4,7 @@ import { strict as _assert } from 'assert'
 import debug from 'debug'
 
 import * as jsonpointer from 'jsonpointer'
-import Ajv from 'ajv'
+import * as Ajv from 'ajv'
 
 import { OADAError } from 'oada-error'
 
