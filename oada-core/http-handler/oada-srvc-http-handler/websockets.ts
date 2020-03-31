@@ -18,7 +18,8 @@ import * as TJS from 'typescript-json-schema'
 import { EventEmitter } from 'events'
 import { Responder, KafkaRequest } from '../../libs/oada-lib-kafka'
 import { resources, changes, Change } from '../../libs/oada-lib-arangodb'
-import config from './config'
+// @ts-ignore
+import * as config from './config'
 const revLimit = 10
 
 const info = debug('websockets:info')
@@ -294,6 +295,7 @@ module.exports = function wsHandler (server: Server) {
                         headers: err.response.headers,
                         data: err.response.data
                     }
+                    error(err)
                     return sendResponse(e)
                 } else {
                     throw err
