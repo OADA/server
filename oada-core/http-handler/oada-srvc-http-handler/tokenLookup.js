@@ -1,6 +1,7 @@
 const debug = require('debug')
 const trace = debug('token-lookup:trace')
 const info = debug('token-lookup:info')
+const warn = debug('token-lookup:warn')
 const error = debug('token-lookup:error')
 const oadaLib = require('../../libs/oada-lib-arangodb')
 
