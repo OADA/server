@@ -1,10 +1,8 @@
-import { resolve } from 'path'
-import { strict as _assert } from 'assert'
+import { strict as assert } from 'assert'
 
 import debug from 'debug'
 
 import * as jsonpointer from 'jsonpointer'
-import * as Ajv from 'ajv'
 
 import { OADAError } from 'oada-error'
 
@@ -13,9 +11,15 @@ import * as WebSocket from 'ws'
 import type { Server } from 'http'
 import axios, { AxiosRequestConfig } from 'axios'
 
-import * as TJS from 'typescript-json-schema'
-
 import { EventEmitter } from 'events'
+
+import SocketRequest, {
+    // Runtime check for request type
+    assert as assertRequest
+} from '@oada/types/oada/websockets/request'
+import SocketResponse from '@oada/types/oada/websockets/response'
+import SocketChange from '@oada/types/oada/websockets/change'
+
 import { Responder, KafkaRequest } from '../../libs/oada-lib-kafka'
 import { resources, changes, Change } from '../../libs/oada-lib-arangodb'
 // @ts-ignore
@@ -38,14 +42,6 @@ function serializeRequestData (data: any): RequestData {
     return JSON.stringify(data) as RequestData
 }
 
-/**
- * Call node's strict assert function
- * @todo Fix declaration rather than wrapping in new function?
- */
-function assert (value: any, message?: string | Error): asserts value {
-    return _assert(value, message)
-}
-
 // Add our state to the websocket type?
 interface Socket extends WebSocket {
     isAlive: boolean
@@ -62,55 +58,7 @@ type Watch = {
     requests: { [key: string]: string }
 }
 
-export type SocketRequest = {
-    requestId: string
-    path: string
-    method: 'head' | 'get' | 'put' | 'post' | 'delete' | 'watch' | 'unwatch'
-    headers: { authorization: string | number } & {
-        [key: string]: string | number
-    }
-    data?: any
-}
-
-export type SocketResponse = {
-    requestId: string | string[]
-    /**
-     * @todo Why is this weird?
-     */
-    status: 'success' | number
-    // TODO: Figure out this mess of responses...
-    statusText?: string
-    headers?: { [key: string]: string }
-    resourceId?: string
-    resource?: any
-    data?: any
-}
-
-export type SocketChange = {
-    requestId: string[]
-    resourceId: string
-    path_leftover: string | string[]
-    change: Change
-}
-
-/**
- * Check incoming requests against schema since they are coming over network
- *
- * This way the rest of the code can assume the format is correct
- */
-const ajv = new Ajv()
-const program = TJS.programFromConfig(resolve('./tsconfig.json'))
-// Precompile schema validator
-const requestValidator = ajv.compile(
-    TJS.generateSchema(program, 'SocketRequest') as object
-)
 function parseRequest (data: WebSocket.Data): SocketRequest {
-    function assertRequest (value: any): asserts value is SocketRequest {
-        if (!requestValidator(value)) {
-            throw requestValidator.errors
-        }
-    }
-
     assert(typeof data === 'string')
     const msg = JSON.parse(data)
 
@@ -123,7 +71,7 @@ function parseRequest (data: WebSocket.Data): SocketRequest {
         msg.headers[header.toLowerCase()] = headers[header]
     }
 
-    // Assert type schema
+    // Assert type
     assertRequest(msg)
 
     return msg
@@ -148,13 +96,7 @@ module.exports = function wsHandler (server: Server) {
 
                 const { requests } = socket.watches[resourceId]
 
-                let mesg: SocketChange = {
-                    requestId: [],
-                    resourceId,
-                    path_leftover: [],
-                    change
-                }
-                mesg = Object.keys(requests)
+                const mesg: SocketChange = Object.keys(requests)
                     // Find requests with changes
                     .filter(requestId => {
                         const path_leftover = requests[requestId]
@@ -166,14 +108,18 @@ module.exports = function wsHandler (server: Server) {
                         return pathChange !== undefined
                     })
                     // Mux into one change message
-                    .reduce(
-                        ({ requestId, path_leftover, ...rest }, id) => ({
-                            requestId: requestId.concat(id),
-                            path_leftover: path_leftover.concat(requests[id]),
+                    .reduce<Partial<SocketChange>>(
+                        (
+                            { requestId = [], path_leftover = [], ...rest },
+                            id
+                        ) => ({
+                            requestId: [id, ...requestId],
+                            path_leftover: [requests[id], ...path_leftover],
                             ...rest
                         }),
-                        mesg
-                    )
+                        { resourceId, change }
+                    ) as SocketChange
+
                 sendChange(mesg)
             }
             return handler
@@ -202,7 +148,8 @@ module.exports = function wsHandler (server: Server) {
             } catch (e) {
                 const err = {
                     status: 400,
-                    requestId: [],
+                    // TODO: the heck??
+                    requestId: ['error'] as [string],
                     headers: {},
                     data: new OADAError(
                         'Bad Request',
