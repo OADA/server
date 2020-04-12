@@ -25,6 +25,7 @@ const server = {
 
 module.exports = {
   wellKnown: {
+    // forceProtocol: 'https', // use this to force https prefixes on URL's. Useful when behind a proxy.
     server: server,
     mergeSubServices: [],
     certs: {

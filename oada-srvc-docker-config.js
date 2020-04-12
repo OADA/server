@@ -165,6 +165,7 @@ module.exports = {
     }
   },
   wellKnown: {
+    // forceProtocol: 'https', // use this to force URL's to have https prefix.  Useful when behind a proxy.
     server: {
       port: 80,
       mode: 'http',

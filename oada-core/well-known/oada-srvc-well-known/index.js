@@ -55,11 +55,15 @@ return Promise.try(function () {
 
   //---------------------------------------------------
   // Configure the top-level OADA well-known handler middleware
-  const well_known_handler = well_known_json({
+  const options = {
     headers: {
       'content-type': 'application/vnd.oada.oada-configuration.1+json'
     }
-  })
+  };
+  if (config.get('wellKnown:forceProtocol')) { // set to 'https' to force to https.  Useful when behind another proxy.
+    options.forceProtocol = config.get('wellKnown:forceProtocol');
+  }
+  const well_known_handler = well_known_json(options)
   well_known_handler.addResource(
     'oada-configuration',
     config.get('wellKnown:oada-configuration')
