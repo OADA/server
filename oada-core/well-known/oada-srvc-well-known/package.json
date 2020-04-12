@@ -31,6 +31,6 @@
     "nconf": "^0.8.4",
     "oada-error": "^1.1.1",
     "request": "^2.81.0",
-    "well-known-json": "^1.0.1"
+    "@oada/well-known-json": "^1.0.1"
   }
 }
