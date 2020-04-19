@@ -7,9 +7,14 @@ module.exports = {
   'oada.mirrors': ['application/vnd.oada.mirrors.1+json'],
   'oada.fields': [
     'application/vnd.oada.bookmarks.1+json',
+    'application/vnd.oada.bookmarks.fields.1+json',
     'application/vnd.oada.shares.1+json',
     'application/vnd.oada.fields.1+json',
     'application/vnd.oada.field.1+json',
+    'application/vnd.oada.farms.1+json',
+    'application/vnd.oada.farm.1+json',
+    'application/vnd.oada.growers.1+json',
+    'application/vnd.oada.grower.1+json',
     'application/json'
   ],
   'oada.isoblue': [
