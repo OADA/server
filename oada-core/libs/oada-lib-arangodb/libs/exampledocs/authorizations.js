@@ -4,7 +4,7 @@ module.exports = [
     token: 'abc',
     scope: ['oada.yield:all', 'trellisfw:all'],
     createTime: 1413831649937,
-    expiresIn: 60,
+    expiresIn: 0,
     user: { _id: 'users/default:users_frank_123' },
     clientId: 'jf93caauf3uzud7f308faesf3@provider.oada-dev.com'
   },
@@ -13,7 +13,7 @@ module.exports = [
     token: 'mike',
     scope: ['oada.fields:all', 'oada.operations:all'],
     createTime: 1413831649937,
-    expiresIn: 60,
+    expiresIn: 0,
     user: { _id: 'users/default:users_servio_012' },
     clientId: 'jf93caauf3uzud7f308faesf3@provider.oada-dev.com'
   },
@@ -22,7 +22,7 @@ module.exports = [
     token: 'xyz',
     scope: ['oada.rocks:all'],
     createTime: 1413831649937,
-    expiresIn: 60,
+    expiresIn: 0,
     user: { _id: 'users/default:users_frank2_124' },
     clientId: 'jf93caauf3uzud7f308faesf3@provider.oada-dev.com'
   },
@@ -32,7 +32,7 @@ module.exports = [
     token: 'def',
     scope: ['oada.yield:all', 'trellisfw:all'],
     createTime: 1413831649937,
-    expiresIn: 60,
+    expiresIn: 0,
     user: { _id: 'users/default:users_sam_321' },
     clientId: 'jf93caauf3uzud7f308faesf3@provider.oada-dev.com'
   },
@@ -41,7 +41,7 @@ module.exports = [
     token: 'god',
     scope: ['all:all'],
     createTime: 1413831649937,
-    expiresIn: 60,
+    expiresIn: 0,
     user: { _id: 'users/default:users_sam_321' },
     clientId: 'jf93caauf3uzud7f308faesf3@provider.oada-dev.com'
   },
@@ -50,7 +50,7 @@ module.exports = [
     token: 'yyy',
     scope: ['oada.rocks:all'],
     createTime: 1413831649937,
-    expiresIn: 60,
+    expiresIn: 0,
     user: { _id: 'users/default:users_sam_321' },
     clientId: 'jf93caauf3uzud7f308faesf3@provider.oada-dev.com'
   },
@@ -59,7 +59,7 @@ module.exports = [
     token: 'aaa',
     scope: ['trellisfw:all'],
     createTime: 1413831649937,
-    expiresIn: 60,
+    expiresIn: 0,
     user: { _id: 'users/default:users_audrey_999' },
     clientId: 'jf93caauf3uzud7f308faesf3@provider.oada-dev.com'
   },
@@ -68,7 +68,7 @@ module.exports = [
     token: 'ggg',
     scope: ['trellisfw:all'],
     createTime: 1413831649937,
-    expiresIn: 60,
+    expiresIn: 0,
     user: { _id: 'users/default:users_gary_growersync' },
     clientId: 'jf93caauf3uzud7f308faesf3@provider.oada-dev.com'
   },
@@ -77,7 +77,7 @@ module.exports = [
     token: 'ppp',
     scope: ['trellisfw:all'],
     createTime: 1413831649937,
-    expiresIn: 60,
+    expiresIn: 0,
     user: { _id: 'users/default:users_pete_pspperfection' },
     clientId: 'jf93caauf3uzud7f308faesf3@provider.oada-dev.com'
   },
@@ -86,7 +86,7 @@ module.exports = [
     token: 'rrr',
     scope: ['trellisfw:all'],
     createTime: 1413831649937,
-    expiresIn: 60,
+    expiresIn: 0,
     user: { _id: 'users/default:users_rick_retailfresh' },
     clientId: 'jf93caauf3uzud7f308faesf3@provider.oada-dev.com'
   },
@@ -95,7 +95,7 @@ module.exports = [
     token: 'ddd',
     scope: ['trellisfw:all'],
     createTime: 1413831649937,
-    expiresIn: 60,
+    expiresIn: 0,
     user: { _id: 'users/default:users_diane_distributingexcellence' },
     clientId: 'jf93caauf3uzud7f308faesf3@provider.oada-dev.com'
   }

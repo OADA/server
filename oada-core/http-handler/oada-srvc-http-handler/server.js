@@ -90,17 +90,20 @@ app.use(function tokenHandler (req, res, next) {
         connection_id: req.id,
         domain: req.get('host'),
         token: req.get('authorization')
+    }).tap(function checkTok (tok) {
+      if (!tok['token_exists']) {
+        info('Token does not exist');
+        throw new OADAError('Unauthorized', 401)
+      }
+      if (tok.doc.expired) {
+        info('Token expired');
+        throw new OADAError('Unauthorized', 401);
+      }
+    }).then(function handleTokRes (resp) {
+      req.user = resp.doc
+      req.authorization = resp.doc // for users handler
     })
-        .tap(function checkTok (tok) {
-            if (!tok['token_exists']) {
-                throw new OADAError('Unauthorized', 401)
-            }
-        })
-        .then(function handleTokRes (resp) {
-            req.user = resp.doc
-            req.authorization = resp.doc // for users handler
-        })
-        .asCallback(next)
+    .asCallback(next)
 })
 
 // Rewrite the URL if it starts with /bookmarks

@@ -53,6 +53,17 @@ module.exports = function tokenLookup (req) {
                 t.user.bookmarks = {}
             }
 
+            t.expired = false;
+            if (t.expiresIn && t.createTime) {
+              const now = new Date();
+              if (now > (t.createTime+t.expiresIn)) {
+                info('Token is expired');
+                t.expired = true;
+              }
+              trace('token.createTime = ', t.createTime, ', t.expiresIn = ', t.expiresIn, ', now = ', now);
+            }
+            trace('token expired? ', t.expired);
+
             msg.token_exists = true
             trace('received authorization, _id = ', t._id)
             msg.doc.authorizationid = t._id
@@ -61,6 +72,7 @@ module.exports = function tokenLookup (req) {
             msg.doc.bookmarks_id = t.user.bookmarks._id || msg.doc.bookmarks_id
             msg.doc.shares_id = t.user.shares._id || msg.doc.shares_id
             msg.doc.scope = t.scope || msg.doc.scope
+            msg.doc.expired = t.expired
 
             return msg
         })

@@ -2,6 +2,7 @@
 
 const config = require('../config')
 const db = require('../db')
+const _ = require('lodash')
 const aql = require('arangojs').aql
 const util = require('../util')
 const debug = require('debug')
@@ -68,8 +69,16 @@ function findByUser (user) {
 }
 
 function save (token) {
-  trace('save: Saving token ', token)
-  return authorizations.save(token).then(() => findByToken(token.token))
+  const t = _.cloneDeep(token);
+  if (t.user) t.user = { _id: t.user._id }; // make sure nothing but id is in user info
+  // Have to get rid of illegal document handle _id
+  if (t._id) {
+    t._key = t._id.replace(/^authorizations\//,'');
+    delete t._id;
+  }
+  trace('save: Replacing/Inserting token ', t)
+  // overwrite will replace the given token if it already exists
+  return authorizations.save(t, { overwrite: true }).then(() => findByToken(t.token))
 }
 
 function revoke (token) {
