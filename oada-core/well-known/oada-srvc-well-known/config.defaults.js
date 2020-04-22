@@ -36,7 +36,8 @@ module.exports = {
       rejectUnauthorized: false
     },
     'oada-configuration': {
-      well_known_version: '1.0.0',
+      well_known_version: '1.1.0',
+      oada_version: '0.1.0', // Override the version in oada-srvc-docker-config.js
       oada_base_uri:
         server.mode +
         '//' +
