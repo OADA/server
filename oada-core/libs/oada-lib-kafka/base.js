@@ -15,6 +15,8 @@
 
 'use strict'
 
+const process = require('process')
+
 const EventEmitter = require('events')
 var Promise = require('bluebird')
 var uuid = require('uuid')
@@ -47,6 +49,13 @@ function topicTimeout (topic) {
     })
 
     return timeout
+}
+
+// Make it die on unhandled error
+// TODO: Figure out what is keeping node from dying on unhandled exception?
+function die (err) {
+    error('Unhandled error: %O', err)
+    process.abort()
 }
 
 class Base extends EventEmitter {
@@ -107,6 +116,16 @@ class Base extends EventEmitter {
             })
         })
         this.ready = Promise.join(consumerReady, producerReady)
+
+        super.on('error', die)
+    }
+
+    on (event, listener) {
+        if (event === 'error') {
+            // Remove our default error handler?
+            super.removeListener('error', die)
+        }
+        super.on(event, listener)
     }
 
     async [CONNECT] () {
