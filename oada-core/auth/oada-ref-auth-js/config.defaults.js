@@ -69,10 +69,10 @@ module.exports = {
     },
     token: {
       length: 40,
-      expiresIn: 3600
+      expiresIn: 0,
     },
     idToken: {
-      expiresIn: 3600,
+      expiresIn: 0,
       signKid: 'kjcScjc32dwJXXLJDs3r124sa1'
     },
     certs: {
