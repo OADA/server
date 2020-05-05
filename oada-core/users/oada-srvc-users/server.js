@@ -21,7 +21,7 @@ const info = debug('webhooks:info')
 const warn = debug('webhooks:warn')
 const error = debug('webhooks:error')
 var Promise = require('bluebird')
-const uuid = require('uuid')
+const ksuid = require('ksuid')
 const _ = require('lodash')
 
 const { ResponderRequester } = require('../../libs/oada-lib-kafka')
@@ -58,7 +58,7 @@ function createNewUser (req) {
       // Create empty resources for user
       ;['bookmarks', 'shares'].forEach(res => {
         if (!(user[res] && user[res]['_id'])) {
-          let resid = 'resources/' + uuid()
+          let resid = 'resources/' + ksuid.randomSync().string
 
           trace(
             `Creating ${resid} for ${res} of ${user._id} as _type = ${contentTypes[res]}`

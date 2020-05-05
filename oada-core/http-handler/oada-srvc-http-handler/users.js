@@ -7,7 +7,7 @@ const debug = require('debug')
 const trace = debug('http-handler:trace')
 const info = debug('http-handler:info')
 const error = debug('http-handler:error')
-const uuid = require('uuid/v4')
+const ksuid = require('ksuid')
 const { OADAError } = require('oada-error')
 
 const config = require('./config')
@@ -58,9 +58,9 @@ function requestUserWrite (req, id) {
 
 router.post('/', function (req, res, next) {
     info('Users POST, body = ', req.body)
-    // Note: if the username already exists, the uuid() below will end up
+    // Note: if the username already exists, the ksuid() below will end up
     // silently discarded and replaced in the response with the real one.
-    return requestUserWrite(req, uuid())
+    return requestUserWrite(req, ksuid.randomSync().string)
         .then(resp => {
             // TODO: Better status code choices?
             const id = resp.user['_key']

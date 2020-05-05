@@ -1,7 +1,7 @@
 'use strict'
 
 global.Promise = require('bluebird')
-const uuid = require('uuid')
+const ksuid = require('ksuid')
 const axios = require('axios')
 const express = require('express')
 const bodyParser = require('body-parser')
@@ -32,12 +32,10 @@ var expressWs = require('express-ws')(router)
 
 // Turn POSTs into PUTs at random id
 router.post('/*?', function postResource (req, res, next) {
-    // TODO: Is this a good way to generate new id?
-    if (req.url === '' || req.url.endsWith('/')) {
-        req.url += uuid()
-    } else {
-        req.url += '/' + uuid()
+    if (!req.url === '' || !req.url.endsWith('/')) {
+        req.url += '/';
     }
+    req.url += ksuid.randomSync().string
     req.method = 'PUT'
 
     next()
@@ -369,7 +367,7 @@ router.put('/*', async function ensureTypeTreeExists (req, res, next) {
                 subTree = pointer.get(subTree, nextPiece)
                 if (pointer.has(subTree, '/_type')) {
                     let contentType = pointer.get(subTree, '/_type')
-                    id = 'resources/' + uuid.v4()
+                    id = 'resources/' + ksuid.randomSync()
                     let body = await replaceLinks(_.cloneDeep(subTree))
                     // Write new resource. This may potentially become an
                     // orphan if concurrent requests make links below

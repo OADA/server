@@ -16,7 +16,7 @@
 'use strict'
 
 const util = require('util')
-const uuid = require('uuid')
+const ksuid = require('ksuid')
 const Bluebird = require('bluebird')
 
 const trace = require('debug')('oada-lib-kafka:trace')
@@ -127,7 +127,7 @@ module.exports = class Responder extends Base {
                         .each(resp => {
                             if (resp[REQ_ID_KEY] === null) {
                                 // TODO: Remove once everything migrated
-                                resp[REQ_ID_KEY] = uuid()
+                                resp[REQ_ID_KEY] = ksuid.randomSync().string
                                 util.deprecate(() => {},
                                 'Please use ReResponder instead')()
                             } else {

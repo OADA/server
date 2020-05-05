@@ -19,7 +19,7 @@ const process = require('process')
 
 const EventEmitter = require('events')
 var Promise = require('bluebird')
-var uuid = require('uuid')
+var ksuid = require('ksuid')
 const kf = require('node-rdkafka')
 const config = require('./config')
 const info = require('debug')('oada-lib-kafka:info')
@@ -110,7 +110,7 @@ class Base extends EventEmitter {
                 setInterval(() => {
                     var value = new Buffer(produceTopic + 'is alive.')
                     //TODO: other health messages here
-                    this.producer.produce('health', 0, value, uuid())
+                    this.producer.produce('health', 0, value, ksuid.randomSync().string)
                 }, config.get('kafka:producer:healthIterval') || healthInterval)
                 done()
             })

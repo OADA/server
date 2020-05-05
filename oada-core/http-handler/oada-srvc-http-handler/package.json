@@ -39,6 +39,7 @@
     "express-ws": "^4.0.0",
     "json-pointer": "^0.6.0",
     "jsonpointer": "^4.0.1",
+    "ksuid": "^1.2.0",
     "lodash": "^4.17.4",
     "nconf": "^0.8.4",
     "oada-error": "^1.1.1",

@@ -15,7 +15,7 @@
 
 'use strict'
 
-const uuid = require('uuid')
+const ksuid = require('ksuid')
 
 const { REQ_ID_KEY, DATA } = require('./base')
 const Responder = require('./Responder')
@@ -28,7 +28,7 @@ module.exports = class ReResponder extends Responder {
 
         // Make everything look like a new request
         super.prependListener(DATA, req => {
-            req[REQ_ID_KEY] = uuid()
+            req[REQ_ID_KEY] = ksuid.randomSync().string
         })
     }
 }

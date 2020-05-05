@@ -3,7 +3,7 @@
 var Promise = require('bluebird')
 const express = require('express')
 const expressPromise = require('express-promise')
-const uuid = require('uuid')
+const ksuid = require('ksuid')
 const cors = require('cors')
 const wellKnownJson = require('well-known-json')
 const oadaError = require('oada-error')
@@ -71,7 +71,8 @@ var wellKnownHandler = wellKnownJson({
 app.use(wellKnownHandler)
 
 app.use(function requestId (req, res, next) {
-    req.id = uuid()
+    req.id = ksuid.randomSync().string;
+console.log('XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXreq.id = ', req.id);
     res.set('X-Request-Id', req.id)
 
     res.on('finish', () => trace(`finished request ${req.id}`))

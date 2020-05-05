@@ -1,2 +1,0 @@
-FROM prom/prometheus
-

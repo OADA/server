@@ -17,7 +17,7 @@
 
 const EventEmitter = require('events')
 const util = require('util')
-const uuid = require('uuid')
+const ksuid = require('ksuid')
 const Bluebird = require('bluebird')
 
 const info = require('debug')('oada-lib-kafka:info')
@@ -63,7 +63,7 @@ module.exports = class Requester extends Base {
     }
 
     send (request, reqtopic) {
-        let id = request[REQ_ID_KEY] || uuid()
+        let id = request[REQ_ID_KEY] || ksuid.randomSync().string
         let topic = reqtopic || this.produceTopic
         let timeout = this.timeouts[topic]
         if (!timeout) {
@@ -90,7 +90,7 @@ module.exports = class Requester extends Base {
     emitter (request, reqtopic) {
         let emitter = new EventEmitter()
 
-        let id = request[REQ_ID_KEY] || uuid()
+        let id = request[REQ_ID_KEY] || ksuid.randomSync().string
         let topic = reqtopic || this.produceTopic
 
         request[REQ_ID_KEY] = id
