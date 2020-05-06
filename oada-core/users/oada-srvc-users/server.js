@@ -16,10 +16,10 @@
 'use strict'
 
 const debug = require('debug')
-const trace = debug('webhooks:trace')
-const info = debug('webhooks:info')
-const warn = debug('webhooks:warn')
-const error = debug('webhooks:error')
+const trace = debug('users:trace')
+const info = debug('users:info')
+const warn = debug('users:warn')
+const error = debug('users:error')
 var Promise = require('bluebird')
 const ksuid = require('ksuid')
 const _ = require('lodash')
@@ -50,8 +50,8 @@ module.exports = function stopResp () {
 
 function createNewUser (req) {
   const u = _.cloneDeep(req.user)
-  u._id = 'users/' + req.id
-  u._key = req.id
+  u._id = 'users/' + req.userid
+  u._key = req.userid
   return users
     .create(u)
     .then(user => {
@@ -101,7 +101,7 @@ function createNewUser (req) {
 responder.on('request', async function handleReq (req) {
   try {
     // TODO: Sanitize?
-    trace('REQUEST: req.user = ', req.user)
+    trace('REQUEST: req.user = ', req.user, ', userid = ', req.userid)
     trace(
       'REQUEST: req.authorization.scope = ',
       req.authorization ? req.authorization.scope : null
@@ -126,11 +126,11 @@ responder.on('request', async function handleReq (req) {
 
     // First, check if the ID exists already:
     let cur_user = null
-    if (req.id) {
-      trace('Checking if user id ', req.id, ' exists.')
-      cur_user = await users.findById(req.id, { graceful: true })
+    if (req.userid) {
+      trace('Checking if user id ', req.userid, ' exists.')
+      cur_user = await users.findById(req.userid, { graceful: true })
     }
-    trace('Result of search for user with id ', req.id, ': ', cur_user)
+    trace('Result of search for user with id ', req.userid, ': ', cur_user)
 
     // Make one if it doesn't exist already:
     let created_a_new_user = false
@@ -139,14 +139,20 @@ responder.on('request', async function handleReq (req) {
         created_a_new_user = true
         cur_user = await createNewUser(req)
       } catch (err) {
-        if (err && _.isEqual(err, users.UniqueConstraintError)) {
+        
+        if (err && err.errorNum === users.UniqueConstraintError.errorNum) {
           created_a_new_user = false
           trace(
             'Tried to create user, but it already existed (same username).  Returning as if we had created it.  User object was: ',
             req.user
           )
-          cur_user = (await users.like(user))[0]
+          cur_user = (await users.like({ username: req.user.username }))[0]
+          trace('existing user found as: ', cur_user);
+        } else {
+          error('FAILED: unknown error occurred when creating new user.  Error was: ', err);
+          throw err;
         }
+        
       }
     }
 

@@ -8,6 +8,7 @@ const trace = debug('http-handler:trace')
 const info = debug('http-handler:info')
 const error = debug('http-handler:error')
 const ksuid = require('ksuid')
+const _ = require('lodash')
 const { OADAError } = require('oada-error')
 
 const config = require('./config')
@@ -41,7 +42,7 @@ function requestUserWrite (req, id) {
                 token: req.get('authorization'),
                 authorization: req.authorization,
                 user: req.body,
-                id // need for PUT, ignored for POST
+                userid: id, // need for PUT, ignored for POST
             },
             config.get('kafka:topics:userRequest')
         )
@@ -56,29 +57,34 @@ function requestUserWrite (req, id) {
         })
 }
 
-router.post('/', function (req, res, next) {
+router.post('/', function (req, res) {
     info('Users POST, body = ', req.body)
     // Note: if the username already exists, the ksuid() below will end up
     // silently discarded and replaced in the response with the real one.
-    return requestUserWrite(req, ksuid.randomSync().string)
+    const newid = ksuid.randomSync().string; // generate a random string for ID
+    if (!req.id) req.id = ksuid.randomSync().string; // generate an ID for this particular request
+    return requestUserWrite(req, newid)
         .then(resp => {
             // TODO: Better status code choices?
-            const id = resp.user['_key']
-            return res.redirect(201, req.baseUrl + '/' + id)
+            const id = (resp && resp.user) ? resp.user['_key'] : newid; // if db didn't send back a user, it was an update so use id from URL
+            // return res.redirect(201, req.baseUrl + '/' + id)  
+            res.set('content-location', req.baseUrl + '/' + id);
+            return res.status(200).end();
         })
-        .catch(next)
 })
 
 // Update (merge) a user:
-router.put('/:id', function (req, res, next) {
-    info('Users PUT(id: ', req.id, '), body = ', req.body)
+router.put('/:id', function (req, res) {
+    info('Users PUT(id: ', req.params.id, '), body = ', req.body)
+    if (!req.id) req.id = ksuid.randomSync().string; // generate an ID for this particular request
     return requestUserWrite(req, req.params.id)
         .then(resp => {
             // TODO: Better status code choices?
-            const id = resp.user['_key']
-            return res.redirect(201, req.baseUrl + '/' + id)
+            const id = (resp && resp.user) ? resp.user['_key'] : req.params.id; // if db didn't send back a user, it was an update so use id from URL
+            // return res.redirect(201, req.baseUrl + '/' + id)  
+            res.set('content-location', req.baseUrl + '/' + id);
+            return res.status(200).end();
         })
-        .catch(next)
 })
 
 router.get('/me', function (req, res, next) {
@@ -94,7 +100,12 @@ router.get('/:id', function (req, res) {
     return users.findById(req.params.id).then(response => {
         // Copy and get rid of password field
         // eslint-disable-next-line no-unused-vars
-        let { password, ...user } = response
+        let user = _.cloneDeep(response);
+        if (!user) {
+          return res.status(404).end();
+        }
+        if (user.password) delete user.password;
+        // let { password, ...user } = response // doesn't work if no password comes back
         res.set('Content-Location', '/users/' + req.params.id)
         return res.json(user)
     })

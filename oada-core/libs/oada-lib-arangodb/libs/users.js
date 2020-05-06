@@ -3,6 +3,7 @@
 const debug = require('debug')
 const info = debug('arangodb#resources:info')
 const trace = debug('arangodb#resources:trace')
+const error = debug('arangodb#resources:error')
 const uuid = require('uuid')
 const config = require('../config')
 const db = require('../db.js')
@@ -112,8 +113,9 @@ function findByUsernamePassword (username, password) {
 
 function create (u) {
   return Promise.try(() => {
-    info('create user was called')
+    info('create user was called with data', u)
     if (u.password) u.password = hashPw(u.password)
+    // Throws if username already exists
     return users.save(u, { returnNew: true }).then(r => r.new || r)
   })
 }
