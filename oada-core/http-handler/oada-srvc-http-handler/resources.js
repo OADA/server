@@ -485,6 +485,8 @@ router.put('/*', async function putResource (req, res, next) {
         .then(bodyid => {
             trace('RESOURCE EXISTS', req.oadaGraph)
             trace('RESOURCE EXISTS', req.resourceExists)
+            let ignoreLinks =
+                (req.get('x-oada-ignore-links') || '').toLowerCase() == 'true'
             return requester.send(
                 {
                     connection_id: req.id,
@@ -499,7 +501,8 @@ router.put('/*', async function putResource (req, res, next) {
                     client_id: req.user['client_id'],
                     contentType: req.get('content-type'),
                     bodyid: bodyid,
-                    'if-match': req.get('if-match')
+                    'if-match': req.get('if-match'),
+                    ignoreLinks
                 },
                 config.get('kafka:topics:writeRequest')
             )
