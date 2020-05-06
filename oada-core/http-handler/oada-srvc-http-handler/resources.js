@@ -212,7 +212,10 @@ router.get('/*', async function getChanges (req, res, next) {
             /^\/_meta\/_changes\/.*?/.test(req.oadaGraph.path_leftover)
         ) {
             let rev = req.oadaGraph.path_leftover.split('/')[3]
-            let ch = await changes.getChange(req.oadaGraph.resource_id, rev)
+            let ch = await changes.getChangeArray(
+                req.oadaGraph.resource_id,
+                rev
+            )
             trace('CHANGE', ch)
             return res.json(ch)
         } else {

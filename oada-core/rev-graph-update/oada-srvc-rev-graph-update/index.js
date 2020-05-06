@@ -22,10 +22,15 @@ const warn = debug('rev-graph-update:warn')
 const error = debug('rev-graph-update:error')
 
 const Promise = require('bluebird')
-// const kf = require('kafka-node');
-const { ReResponder } = require('../../libs/oada-lib-kafka')
+const { ReResponder, Requester } = require('../../libs/oada-lib-kafka')
 const oadaLib = require('../../libs/oada-lib-arangodb')
 const config = require('./config')
+const { default: PQueue } = require('p-queue')
+
+//---------------------------------------------------------
+// Batching
+const requestPromises = new PQueue({ concurrency: 1 }) // adjust concurrency as needed
+const requests = new Map() // This map is used as a queue of pending write requests
 
 //---------------------------------------------------------
 // Kafka intializations:
@@ -34,6 +39,12 @@ const responder = new ReResponder({
     produceTopic: config.get('kafka:topics:writeRequest'),
     group: 'rev-graph-update'
 })
+
+var requester = new Requester(
+    config.get('kafka:topics:httpResponse'),
+    null,
+    'rev-graph-update-batch'
+)
 
 module.exports = function stopResp () {
     return responder.disconnect()
@@ -60,20 +71,6 @@ responder.on('request', function handleReq (req) {
         warn('Received message does not have authorizationid')
     }
 
-    // setup the write_request msg
-    const res = {
-        connection_id: null, // TODO: Fix ReResponder for multiple responses?
-        type: 'write_request',
-        resource_id: null,
-        path: null,
-        contentType: null,
-        body: null,
-        url: '',
-        user_id: req['user_id'],
-        from_change_id: req.change_id,
-        authorizationid: req.authorizationid
-    }
-
     info(`finding parents for resource_id = ${req['resource_id']}`)
 
     // find resource's parent
@@ -93,21 +90,50 @@ responder.on('request', function handleReq (req) {
                 return Promise.reject(err)
             }
 
-            return Promise.map(p, item => {
-                trace('parent resource_id = ', item['resource_id'])
-                trace('parent path = ', item['path'])
-                let msg = Object.assign({}, res)
-                msg['change_path'] = item['path']
-                msg['resource_id'] = item['resource_id']
-                msg['path_leftover'] = item.path + '/_rev'
-                msg.contentType = item.contentType
-                msg.body = req['_rev']
-                msg.resourceExists = true
+            p.forEach(function (item, idx) {
+                let uniqueKey = item['resource_id'] + item.path + '/_rev'
+                if (requests.has(uniqueKey)) {
+                    // Write request exists in the pending queue. Add change ID to the request.
+                    if (req.change_id) {
+                        requests
+                            .get(uniqueKey)
+                            .from_change_id.push(req.change_id)
+                    }
+                    requests.get(uniqueKey).body = req['_rev']
+                } else {
+                    // Create a new write request.
+                    let msg = {
+                        connection_id: null, // TODO: Fix ReResponder for multiple responses?
+                        type: 'write_request',
+                        resource_id: item['resource_id'],
+                        path: null,
+                        contentType: item.contentType,
+                        body: req['_rev'],
+                        url: '',
+                        user_id: 'system/rev_graph_update', // FIXME
+                        from_change_id: req.change_id ? [req.change_id] : [], // This is an array; new change IDs may be added later
+                        authorizationid: 'authorizations/rev_graph_update', // FIXME
+                        change_path: item['path'],
+                        path_leftover: item.path + '/_rev',
+                        resourceExists: true
+                    }
 
-                trace('trying to produce: ', msg)
+                    // Add the request to the pending queue
+                    requests.set(uniqueKey, msg)
 
-                return msg
+                    // push
+                    requestPromises.add(() => {
+                        const msgPending = requests.get(uniqueKey)
+                        requests.delete(uniqueKey)
+                        return requester.send(
+                            msgPending,
+                            config.get('kafka:topics:writeRequest')
+                        )
+                    })
+                }
             })
+
+            return [] // FIXME
         })
         .tapCatch(err => {
             error(err)

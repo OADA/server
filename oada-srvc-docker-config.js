@@ -176,7 +176,8 @@ module.exports = {
       { resource: 'openid-configuration', base: 'http://auth' }
     ],
     'oada-configuration': {
-      well_known_version: '1.0.0',
+      well_known_version: '1.1.0',
+      oada_version: '2.0.0',
       oada_base_uri: './',
       scopes_supported: [
         {

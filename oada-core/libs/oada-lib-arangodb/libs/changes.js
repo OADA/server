@@ -42,42 +42,6 @@ function getChanges (resourceId, changeRev) {
     })
 }
 
-function getChangesSinceRev (resourceId, rev) {
-  let num = parseInt(rev, 10)
-  return db
-    .query(
-      aql`
-    FOR change in ${changes}
-      FILTER change.resource_id == ${resourceId}
-      FILTER change.number > ${num}
-      SORT change.number
-      LET path = LAST(
-        FOR v, e, p IN 0..${MAX_DEPTH} OUTBOUND change ${changeEdges}
-        RETURN p
-      )
-      RETURN path
-  `
-    )
-    .call('all')
-    .then(results => {
-      return Promise.map(results, result => {
-        if (!result.vertices[0]) {
-          return undefined
-        }
-        let change = {
-          body: result.vertices[0].body,
-          type: result.vertices[result.vertices.length - 1].type
-        }
-        let path = ''
-        for (let i = 0; i < result.vertices.length - 1; i++) {
-          path += result.edges[i].path
-          pointer.set(change.body, path, result.vertices[i + 1].body)
-        }
-        return change
-      })
-    })
-}
-
 // Produces a bare tree has a top level key at resourceId and traces down to the
 // actual change that induced this rev update
 // TODO: using .body allows the changes to be nested, but doesn't allow us to
@@ -129,6 +93,64 @@ function getChange (resourceId, changeRev) {
     })
 }
 
+// Produces a list of changes as an array
+function getChangeArray (resourceId, changeRev) {
+  //TODO: This is meant to handle when resources are deleted directly. Edge
+  // cases remain to be tested. Does this suffice regarding the need send down a
+  // bare tree?
+  if (!changeRev) {
+    return Promise.resolve([
+      {
+        path: '',
+        body: null,
+        type: 'delete'
+      }
+    ])
+  }
+
+  return db
+    .query(
+      aql`
+    LET change = FIRST(
+      FOR change in ${changes}
+      FILTER change.resource_id == ${resourceId}
+      FILTER change.number == ${parseInt(changeRev, 10)}
+      RETURN change
+    )
+    FOR v, e, p IN 0..${MAX_DEPTH} OUTBOUND change ${changeEdges}
+      SORT LENGTH(p.edges), v.number
+      RETURN p`
+    )
+    .then(async cursor => {
+      let changeDoc = [] // array of changes
+      // iterate over the graph
+      const result = await cursor.every(doc => {
+        changeDoc.push(toChangeObj(doc)) // convert to change object
+        return true
+      })
+      return changeDoc
+    })
+}
+
+function toChangeObj (arangoPathObj) {
+  // get path
+  let path = ''
+  for (let j = 0; j < arangoPathObj.edges.length; j++) {
+    path += arangoPathObj.edges[j].path
+  }
+  // get body
+  const nVertices = arangoPathObj.vertices.length
+  let body = arangoPathObj.vertices[nVertices - 1].body
+  let resource_id = arangoPathObj.vertices[nVertices - 1].resource_id
+  // return change object
+  return {
+    resource_id,
+    path,
+    body,
+    type: arangoPathObj.vertices[nVertices - 1].type
+  }
+}
+
 function getRootChange (resourceId, changeRev) {
   return db
     .query(
@@ -154,14 +176,15 @@ function putChange ({
   resId,
   rev,
   type,
-  child,
+  children,
   path,
   userId,
   authorizationId
 }) {
+  if (!Array.isArray(children)) {
+    throw new Error('children must be an array.')
+  }
   let number = parseInt(rev, 10)
-  // The FOR loop below is an if statement handling the case where no child
-  // exists
   return db
     .query(
       aql`
@@ -178,7 +201,7 @@ function putChange ({
     )
 
     LET children = (
-      FOR child IN ${child ? [child] : []}
+      FOR child IN ${children}
         INSERT {
           _to: child,
           _from: doc._id,
@@ -192,8 +215,8 @@ function putChange ({
 }
 
 module.exports = {
-  getChangesSinceRev,
   getChange,
+  getChangeArray,
   getRootChange,
   getChanges,
   putChange

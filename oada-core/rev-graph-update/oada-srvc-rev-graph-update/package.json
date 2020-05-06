@@ -19,6 +19,7 @@
     "mocha": "^7.0.1",
     "moment": "^2.18.1",
     "nconf": "^0.8.4",
+    "p-queue": "^6.3.0",
     "randomstring": "^1.1.5"
   }
 }
