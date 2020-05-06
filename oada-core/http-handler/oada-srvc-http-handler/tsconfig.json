@@ -1,0 +1,11 @@
+{
+  "compilerOptions": {
+    "target": "ES2019",
+    "strict": true,
+    "moduleResolution": "node",
+    "module": "CommonJS",
+    "lib": ["ES2019"],
+    "noUnusedLocals": true,
+    "noUnusedParameters": true
+  }
+}

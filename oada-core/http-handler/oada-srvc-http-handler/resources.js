@@ -28,7 +28,6 @@ const CACHE_PATH = config.get('storage:binary:cacache')
 var requester = require('./requester')
 
 var router = express.Router()
-var expressWs = require('express-ws')(router)
 
 // Turn POSTs into PUTs at random id
 router.post('/*?', function postResource (req, res, next) {
