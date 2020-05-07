@@ -101,7 +101,7 @@ module.exports = function wsHandler (server: Server) {
                     .filter(requestId => {
                         const path_leftover = requests[requestId]
                         const pathChange = jsonpointer.get(
-                            change?.body ?? {},
+                            change?.[0]?.body ?? {},
                             path_leftover
                         )
 
@@ -292,6 +292,7 @@ module.exports = function wsHandler (server: Server) {
                             resourceId,
                             '_rev'
                         )
+                        const revInt = parseInt(rev)
                         // If the requested rev is behind by revLimit, simply
                         // re-GET the entire resource
                         trace(
@@ -301,8 +302,7 @@ module.exports = function wsHandler (server: Server) {
                             request.headers['x-oada-rev']
                         )
                         if (
-                            parseInt(rev) -
-                                parseInt(request.headers['x-oada-rev']) >=
+                            revInt - parseInt(request.headers['x-oada-rev']) >=
                             revLimit
                         ) {
                             trace(
@@ -333,18 +333,25 @@ module.exports = function wsHandler (server: Server) {
                                 request.headers['x-oada-rev']
                             )
                             // Next, feed changes to client
-                            const newChanges = await changes.getChangesSinceRev(
-                                resourceId,
+                            let reqRevInt = parseInt(
                                 request.headers['x-oada-rev']
                             )
-                            newChanges.forEach(change =>
-                                sendChange({
-                                    requestId: [msg.requestId],
-                                    resourceId,
-                                    path_leftover,
-                                    change
-                                })
-                            )
+                            for (
+                                let sendRev = reqRevInt + 1;
+                                sendRev <= revInt;
+                                sendRev++
+                            ) {
+                                await changes
+                                    .getChangeArray(resourceId, sendRev)
+                                    .then(change => {
+                                        sendChange({
+                                            requestId: [msg.requestId],
+                                            resourceId,
+                                            path_leftover,
+                                            change
+                                        })
+                                    })
+                            }
                         }
                     } else {
                         sendResponse({
@@ -408,15 +415,14 @@ writeResponder.on('request', async function handleReq (req) {
         return
     }
 
-    trace('@@@@@@@@@@@@@@@', req.resource_id)
     try {
-        const change = await changes.getChange(req.resource_id, req._rev)
+        const change = await changes.getChangeArray(req.resource_id, req._rev)
         trace('Emitted change for:', req.resource_id, change)
         emitter.emit(req.resource_id, {
             path_leftover: req.path_leftover,
             change
         })
-        if (change && change.type === 'delete') {
+        if (change && change?.[0]?.type === 'delete') {
             trace(
                 'Delete change received for:',
                 req.resource_id,
