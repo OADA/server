@@ -1,13 +1,10 @@
+import ChangeV2 from '@oada/types/oada/change/v2'
+
 export module resources {
   function getResource (id: string, path?: string): Promise<any>
 }
 
-type Change = Array<{
-  resource_id: string
-  path: string
-  body: any
-  type: "delete" | "merge"
-}> // TODO: use @oada/types?
+type Change = ChangeV2
 
 export module changes {
   function getChangeArray (id: string, rev: number): Promise<Change>

@@ -27,6 +27,7 @@
   },
   "homepage": "https://github.com/OADA/oada-lib-arangodb#readme",
   "dependencies": {
+    "@oada/types": "^1.0.4",
     "arangojs": "^5.6.1",
     "bcryptjs": "^2.4.3",
     "bluebird": "^3.5.0",
