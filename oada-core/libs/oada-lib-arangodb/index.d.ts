@@ -5,8 +5,8 @@ export module resources {
 type Change = Array<{
   resource_id: string
   path: string
-  body: object
-  type: string
+  body: any
+  type: "delete" | "merge"
 }> // TODO: use @oada/types?
 
 export module changes {

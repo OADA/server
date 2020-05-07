@@ -129,7 +129,7 @@ module.exports = function wsHandler (server: Server) {
             socket.send(JSON.stringify(resp))
         }
         function sendChange (resp: SocketChange) {
-            trace('Sending change: %O', resp);
+            trace('Sending change: %O', resp)
             socket.send(JSON.stringify(resp))
         }
 
@@ -150,7 +150,7 @@ module.exports = function wsHandler (server: Server) {
                         'Invalid socket message format',
                         null,
                         e
-                    )
+                    ) as Record<string, unknown>
                 }
                 sendResponse(err)
                 error(e)
@@ -165,7 +165,10 @@ module.exports = function wsHandler (server: Server) {
                     status: 500,
                     requestId: msg.requestId,
                     headers: {},
-                    data: new OADAError('Internal Error', 500)
+                    data: new OADAError('Internal Error', 500) as Record<
+                        string,
+                        unknown
+                    >
                 }
                 sendResponse(err)
             }

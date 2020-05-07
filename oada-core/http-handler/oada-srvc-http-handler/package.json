@@ -25,7 +25,7 @@
   },
   "homepage": "https://github.com/OADA/oada-srvc-http-handler#readme",
   "dependencies": {
-    "@oada/types": "oada/types",
+    "@oada/types": "^1.0.3",
     "arangojs": "^5.6.1",
     "axios": "^0.19.2",
     "bluebird": "^3.5.0",
