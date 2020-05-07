@@ -314,13 +314,13 @@ module.exports = function wsHandler (server: Server) {
                                 requestId: msg.requestId,
                                 resourceId,
                                 resource,
-                                status: 'success'
+                                status: 200
                             })
                         } else {
                             // First, declare success.
                             sendResponse({
                                 requestId: msg.requestId,
-                                status: 'success'
+                                status: 200
                             })
                             trace(
                                 'REV NOT TOO OLD...',
@@ -352,7 +352,7 @@ module.exports = function wsHandler (server: Server) {
                     } else {
                         sendResponse({
                             requestId: msg.requestId,
-                            status: 'success'
+                            status: 200
                         })
                     }
                     break
