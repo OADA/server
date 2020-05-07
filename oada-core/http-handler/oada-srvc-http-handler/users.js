@@ -6,6 +6,7 @@ const bodyParser = require('body-parser')
 const debug = require('debug')
 const trace = debug('http-handler:trace')
 const info = debug('http-handler:info')
+const warn = debug('http-handler:warn')
 const error = debug('http-handler:error')
 const ksuid = require('ksuid')
 const _ = require('lodash')
@@ -18,6 +19,14 @@ var requester = require('./requester')
 var router = express.Router()
 
 const { users } = require('../../libs/oada-lib-arangodb')
+
+function sanitizeDbResult(user) {
+  if (!user) return null;
+  const u = _.cloneDeep(user);
+  if (u._rev) delete u._rev;
+  if (u.password) delete u.password;
+  return u;
+}
 
 //router.post('/', bodyParser.json({
 //    strict: false,
@@ -87,6 +96,60 @@ router.put('/:id', function (req, res) {
         })
 })
 
+
+// Lookup a username, limited only to tokens and users with oada.admin.user scope
+router.get('/username-index/:uname', function(req,res) {
+
+  // Check token scope
+  trace('username-index: Checking token scope, req.authorization.scope = ', req.authorization ? req.authorization.scope : null)
+  const havetokenscope = _.find(req.authorization.scope, s => 
+    (s === 'oada.admin.user:read' || s === 'oada.admin.user:all')
+  );
+  if (!havetokenscope) {
+    warn('WARNING: attempt to lookup user by username (username-index), but token does not have oada.admin.user:read or oada.admin.user:all scope!');
+    return Promise.reject(
+      OADAError('Token does not have required oada.admin.user scope', 401)
+    );
+  }
+
+  // Check user's scope
+  trace('username-index: Checking user scope, req.user = ', req.user);
+  const haveuserscope = _.isArray(req.user.scope) && _.find(req.user.scope, s => 
+    (s === 'oada.admin.user:read' || s === 'oada.admin.user:all')
+  );
+  if (!haveuserscope) {
+    warn('WARNING: attempt to lookup user by username (username-index), but USER does not have oada.admin.user:read or oada.admin.user:all scope!');
+    return Promise.reject(
+      OADAError('USER does not have required oada.admin.user scope', 403)
+    );
+  }
+
+  return users.findByUsername(req.params.uname)
+  .then(u => {
+    u = sanitizeDbResult(u);
+    if (!u) {
+      info(`#username-index: 404: username ${req.params.uname} does not exist`);
+      res.status(404)
+        .send('Username '+req.params.uname+' does not exist.');
+      return res.end();
+    }
+    info(`#username-index: found user, returning info for userid ${u._id}`);
+    res.set('content-location', `/${u._id}`)
+       .set('content-type', 'application/vnd.oada.user.1+json')
+       .status(200)
+       .json(u);
+    return res.end();
+
+      
+  }).catch(e => {
+    error('FAILED to find user in DB for username-index, username = ', req.params.uname, '.  Error was: ', e);
+    res.status(500)
+       .send('Internal Error: ', e.toString());
+    return res.end();
+  });
+});
+
+
 router.get('/me', function (req, res, next) {
     req.url = req.url.replace(
         /^\/me/,
@@ -94,6 +157,7 @@ router.get('/me', function (req, res, next) {
     )
     next()
 })
+
 
 //TODO: don't return stuff to anyone anytime
 router.get('/:id', function (req, res) {
