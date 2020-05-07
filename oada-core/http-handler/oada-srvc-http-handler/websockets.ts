@@ -129,15 +129,8 @@ module.exports = function wsHandler (server: Server) {
             socket.send(JSON.stringify(resp))
         }
         function sendChange (resp: SocketChange) {
-            const msg = {
-                ...resp,
-                // Try to not confuse old versions of oada-cache
-                requestId:
-                    resp.requestId.length === 1
-                        ? resp.requestId[0]
-                        : resp.requestId
-            }
-            socket.send(JSON.stringify(msg))
+            trace('Sending change: %O', resp);
+            socket.send(JSON.stringify(resp))
         }
 
         // Handle request
