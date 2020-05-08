@@ -72,7 +72,6 @@ app.use(wellKnownHandler)
 
 app.use(function requestId (req, res, next) {
     req.id = ksuid.randomSync().string;
-console.log('XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXreq.id = ', req.id);
     res.set('X-Request-Id', req.id)
 
     res.on('finish', () => trace(`finished request ${req.id}`))
