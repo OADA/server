@@ -39,7 +39,7 @@ module.exports = [
   {
     _id: 'authorizations/default:authorization-god',
     token: 'god',
-    scope: ['all:all'],
+    scope: ['all:all', 'oada.admin.user:all'],
     createTime: 1413831649937,
     expiresIn: 0,
     user: { _id: 'users/default:users_sam_321' },

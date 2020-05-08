@@ -44,7 +44,8 @@ module.exports = [
     nickname: 'Sammy',
     email: 'sam@openag.io',
     bookmarks: { _id: 'resources/default:resources_bookmarks_321' },
-    shares: { _id: 'resources/default:resources_shares_321' }
+    shares: { _id: 'resources/default:resources_shares_321' },
+    scope: [ 'oada.admin.user:all' ],
   },
   {
     _id: 'users/default:users_wakefern_012',

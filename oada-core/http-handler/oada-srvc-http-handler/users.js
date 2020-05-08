@@ -10,7 +10,7 @@ const warn = debug('http-handler:warn')
 const error = debug('http-handler:error')
 const ksuid = require('ksuid')
 const _ = require('lodash')
-const { OADAError } = require('oada-error')
+const { OADAError, middleware } = require('oada-error')
 
 const config = require('./config')
 
@@ -107,9 +107,7 @@ router.get('/username-index/:uname', function(req,res) {
   );
   if (!havetokenscope) {
     warn('WARNING: attempt to lookup user by username (username-index), but token does not have oada.admin.user:read or oada.admin.user:all scope!');
-    return Promise.reject(
-      OADAError('Token does not have required oada.admin.user scope', 401)
-    );
+    throw new OADAError('Token does not have required oada.admin.user scope', 401)
   }
 
   // Check user's scope
@@ -119,9 +117,7 @@ router.get('/username-index/:uname', function(req,res) {
   );
   if (!haveuserscope) {
     warn('WARNING: attempt to lookup user by username (username-index), but USER does not have oada.admin.user:read or oada.admin.user:all scope!');
-    return Promise.reject(
-      OADAError('USER does not have required oada.admin.user scope', 403)
-    );
+    throw new OADAError('USER does not have required oada.admin.user scope', 403)
   }
 
   return users.findByUsername(req.params.uname)
@@ -174,5 +170,6 @@ router.get('/:id', function (req, res) {
         return res.json(user)
     })
 })
+//router.use(middleware(error))
 
 module.exports = router
