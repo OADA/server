@@ -33,7 +33,7 @@ const {
 } = require('./base')
 
 module.exports = class Responder extends Base {
-    constructor ({ consumeTopic, produceTopic, group, ...opts }) {
+    constructor ({ consumeTopic, produceTopic = null, group, ...opts }) {
         // Gross thing to support old API
         if (arguments.length > 1) {
             // eslint-disable-next-line no-param-reassign, prefer-rest-params

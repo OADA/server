@@ -1,3 +1,3 @@
 module.exports = require('../../libs/oada-lib-config')(
-    require('./config.defaults.js')
+    require('./config.defaults')
 )

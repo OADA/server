@@ -28,7 +28,6 @@ const CACHE_PATH = config.get('storage:binary:cacache')
 var requester = require('./requester')
 
 var router = express.Router()
-var expressWs = require('express-ws')(router)
 
 // Turn POSTs into PUTs at random id
 router.post('/*?', function postResource (req, res, next) {
@@ -213,7 +212,10 @@ router.get('/*', async function getChanges (req, res, next) {
             /^\/_meta\/_changes\/.*?/.test(req.oadaGraph.path_leftover)
         ) {
             let rev = req.oadaGraph.path_leftover.split('/')[3]
-            let ch = await changes.getChange(req.oadaGraph.resource_id, rev)
+            let ch = await changes.getChangeArray(
+                req.oadaGraph.resource_id,
+                rev
+            )
             trace('CHANGE', ch)
             return res.json(ch)
         } else {
@@ -483,6 +485,8 @@ router.put('/*', async function putResource (req, res, next) {
         .then(bodyid => {
             trace('RESOURCE EXISTS', req.oadaGraph)
             trace('RESOURCE EXISTS', req.resourceExists)
+            let ignoreLinks =
+                (req.get('x-oada-ignore-links') || '').toLowerCase() == 'true'
             return requester.send(
                 {
                     connection_id: req.id,
@@ -497,7 +501,8 @@ router.put('/*', async function putResource (req, res, next) {
                     client_id: req.user['client_id'],
                     contentType: req.get('content-type'),
                     bodyid: bodyid,
-                    'if-match': req.get('if-match')
+                    'if-match': req.get('if-match'),
+                    ignoreLinks
                 },
                 config.get('kafka:topics:writeRequest')
             )

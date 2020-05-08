@@ -117,7 +117,8 @@ function handleReq (req, msg) {
         if (path.length > 0) {
           // TODO: This is gross
           let ppath = Array.from(path)
-          method = (id, obj) => resources.deletePartialResource(id, ppath, obj)
+          method = (id, obj, checkLinks) =>
+            resources.deletePartialResource(id, ppath, obj)
           body = null
           changeType = 'delete'
         } else {
@@ -195,12 +196,13 @@ function handleReq (req, msg) {
 
       // Compute new change
       var beforeChange = Date.now() / 1000
+      let children = req['from_change_id'] || []
       let changeId = await changes.putChange({
         change: obj,
         resId: id,
         rev,
         type: changeType,
-        child: req['from_change_id'],
+        children,
         path: req['change_path'],
         userId: req['user_id'],
         authorizationId: req['authorizationid']
@@ -215,7 +217,7 @@ function handleReq (req, msg) {
       // Update rev of meta?
       obj['_meta']['_rev'] = rev
 
-      return Promise.resolve(method(id, obj))
+      return Promise.resolve(method(id, obj, !req.ignoreLinks))
         .then(orev => ({ rev, orev, changeId }))
         .tap(() => trace('method', Date.now() / 1000 - beforeMethod))
     })

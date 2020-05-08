@@ -265,7 +265,6 @@ services:
       - ./oada-core/auth:/code/auth
       - ./oada-core/graph-lookup:/code/graph-lookup
       - ./oada-core/http-handler:/code/http-handler
-      - ./oada-core/indexer:/code/indexer
       - ./oada-core/libs:/code/libs
       - ./oada-core/permissions-handler:/code/permissions-handler
       - ./oada-core/proxy:/code/proxy
@@ -328,7 +327,6 @@ services:
       - ./oada-core/auth:/code/auth
       - ./oada-core/graph-lookup:/code/graph-lookup
       - ./oada-core/http-handler:/code/http-handler
-      - ./oada-core/indexer:/code/indexer
       - ./oada-core/libs:/code/libs
       - ./oada-core/permissions-handler:/code/permissions-handler
       - ./oada-core/proxy:/code/proxy
@@ -374,25 +372,6 @@ services:
       - '2181'
     volumes:
       - zookeeper_data:/var/lib/zookeeper
-
-  indexer:
-    depends_on:
-      - startup
-    build:
-      context: ./oada-core/indexer
-    restart: always
-    container_name: indexer
-    networks:
-      - startup_net
-      - kafka_net
-      - arango_net
-    volumes:
-      - ./oada-core/indexer:/code/indexer
-      - ./oada-core/libs:/code/libs
-      - ./oada-srvc-docker-config.js:/oada-srvc-docker-config.js
-    environment:
-      - NODE_ENV=${NODE_ENV:-development}
-      - DEBUG=${DEBUG:-*:error,*:warn,*:info}
 
   webhooks:
     depends_on:
