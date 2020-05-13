@@ -3,9 +3,11 @@
 const Promise = require('bluebird')
 const express = require('express')
 const uuid = require('uuid')
+const _ = require('lodash');
 
-const debug = require('debug-logger')('http-handler#authorizations')
-const trace = debug.trace
+const debug = require('debug');
+const trace = debug('http-handler#authorizations:trace');
+const info = debug('http-handler#authorizations:info');
 
 const { authorizations, clients } = require('../../libs/oada-lib-arangodb')
 const { OADAError } = require('oada-error')
@@ -94,13 +96,27 @@ router.post('/', function (req, res, next) {
             req.body
         )
 
-        // Don't allow making tokens for other users
+        // Don't allow making tokens for other users unless admin.user
         if (auth.user['_id'] !== req.user['user_id']) {
+          if (!_.find(req.user.scope, s => s === 'oada.admin.user:all' || 'oada.admin.user:write')) {
             return Promise.reject(new OADAError('Forbidden', 403))
+          }
+
+          // otherwise, token has admin scope so allow it (check user too?)
+          info('Posted authorization for a different user, but token has admin.user scope so we are allowing it');
         }
 
         return authorizations.save(auth)
-    }).catch(next)
+    })
+    .then(res => {
+      if (!res) return null;
+      const ret = _.cloneDeep(res);
+      if (ret._rev) delete ret._rev;
+      if (ret.user && ret.user._id) ret.user = { _id: ret.user._id };
+      return ret;
+    }).then(res.json)
+    .then(()=>res.end())
+    .catch(next)
 })
 
 // TODO: Should another microservice revoke authorizations?
