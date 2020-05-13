@@ -108,15 +108,15 @@ router.post('/', function (req, res, next) {
 
         return authorizations.save(auth)
     })
-    .then(res => {
-      if (!res) return null;
-      const ret = _.cloneDeep(res);
+    .then(result => {
+      if (!result) return null;
+      const ret = _.cloneDeep(result);
       if (ret._rev) delete ret._rev;
       if (ret.user && ret.user._id) ret.user = { _id: ret.user._id };
-      return ret;
-    }).then(res.json)
-    .then(()=>res.end())
-    .catch(next)
+      res.set('content-location', `/${ret._id}`);
+      res.json(ret);
+      return res.end();
+    }).catch(next)
 })
 
 // TODO: Should another microservice revoke authorizations?
