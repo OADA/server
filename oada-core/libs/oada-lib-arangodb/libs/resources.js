@@ -72,8 +72,6 @@ async function lookupFromUrl (url, userId) {
       .then(result => {
         let resource_id = pointer.compile(id.concat(pieces)).replace(/^\//, '') // Get rid of leading slash from json pointer
 
-        let path_leftover_not_exists = ''
-        let path_leftover_exists = ''
         let rev = result.rev
         let type = result.type
         let resourceExists = true
@@ -145,7 +143,6 @@ async function lookupFromUrl (url, userId) {
             'resources/' + lastEdge.split('graphNodes/resources:')[1]
           trace('graph-lookup traversal uncreated resource', resource_id)
           rev = 0
-          let revVertices = _.reverse(_.cloneDeep(result.vertices))
           from = result.vertices[result.vertices.length - 2]
           let edge = result.edges[result.edges.length - 1]
           from = {
@@ -212,7 +209,7 @@ function getResource (id, path) {
   bindVars.id = id
   bindVars['@collection'] = resources.name
 
-  const returnPath = parts.reduce((p, part, i) => p.concat(`[@v${i}]`), '')
+  const returnPath = parts.reduce((p, _, i) => p.concat(`[@v${i}]`), '')
 
   return db
     .query({
@@ -313,35 +310,6 @@ function getNewDescendants (id, rev) {
         id: v.resource_id,
         changed: TO_NUMBER(ver) >= ${parseInt(rev, 10)}
       }
-  `
-    )
-    .call('all')
-}
-
-function getStuff (id, rev) {
-  // Currently utilizes fixed depth search "7..7" to get data points down
-  return db
-    .query(
-      aql`
-    WITH ${graphNodes}, ${edges}, ${resources}
-    LET node = FIRST(
-      FOR node in ${graphNodes}
-        FILTER node.resource_id == ${id}
-        RETURN node
-    )
-
-    LET objs = (FOR v, e, p IN 7..7 OUTBOUND node ${edges}
-      FILTER v.is_resource
-      LET ver = SPLIT(DOCUMENT(v.resource_id)._oada_rev, '-', 1)
-      FILTER TO_NUMBER(ver) >= ${parseInt(rev, 10)}
-      RETURN DISTINCT {
-        id: v.resource_id,
-        rev: DOCUMENT(v.resource_id)._oada_rev
-      }
-    )
-    FOR obj in objs
-      LET doc = DOCUMENT(obj.id)
-      RETURN {id: obj.id, changes: doc._meta._changes[obj.rev]}
   `
     )
     .call('all')
@@ -493,7 +461,8 @@ function forLinks (res, cb, path) {
   path = path || []
 
   return Promise.map(Object.keys(res), key => {
-    if (res[key] && res[key].hasOwnProperty('_id')) {
+    if (res[key] && res[key].hasOwnProperty('_id') && key !== '_meta') {
+      // If it has _id and is not _meta, treat as a link
       return cb(res[key], path.concat(key))
     } else if (typeof res[key] === 'object' && res[key] !== null) {
       return forLinks(res[key], cb, path.concat(key))
@@ -502,29 +471,25 @@ function forLinks (res, cb, path) {
 }
 
 // TODO: Remove links as well
-function addLinks (res) {
+async function addLinks (res) {
   // TODO: Use fewer queries or something?
-  var links = []
-  return forLinks(res, function processLinks (link, path) {
-    // Just ignore _meta for now
-    // TODO: Allow links in _meta?
-    if (path[0] === '_meta') {
+  const links = []
+
+  await forLinks(res, async function processLinks (link, path) {
+    // Ignore _changes "link"?
+    if (path[0] === '_meta' && path[1] === '_changes') {
       return
     }
 
-    var rev
     if (link.hasOwnProperty('_rev')) {
-      rev = getResource(link['_id'], '_oada_rev').then(function updateRev (
-        rev
-      ) {
-        link['_rev'] = typeof rev === 'number' ? rev : 0
-      })
+      const rev = await getResource(link['_id'], '_oada_rev')
+      link['_rev'] = typeof rev === 'number' ? rev : 0
     }
 
-    return Promise.resolve(rev).then(function () {
-      links.push(Object.assign({ path }, link))
-    })
-  }).then(() => links)
+    links.push(Object.assign({ path }, link))
+  })
+
+  return links
 }
 
 function makeRemote (res, domain) {
@@ -586,6 +551,7 @@ function recursiveMakeMergeQuery (path, i) {
   }
 }
 
+// "Delete" a part of a resource
 async function deletePartialResource (id, path, doc) {
   let pathA = path.slice(0, path.length - 1).join("']['")
   pathA = pathA ? "['" + pathA + "']" : pathA
@@ -658,60 +624,6 @@ async function deletePartialResource (id, path, doc) {
   } else {
     return hasObj.rev
   }
-}
-
-// "Delete" a part of a resource
-// TODO: Not too sure I like how this function works or its name...
-function deletePartialResource2 (id, path, doc) {
-  let key = id.replace(/^resources\//, '')
-  doc = doc || {}
-  path = Array.isArray(path) ? path : pointer.parse(path)
-
-  // Fix rev
-  doc['_oada_rev'] = doc['_rev']
-  doc['_rev'] = undefined
-
-  pointer.set(doc, path, null)
-
-  let name = path.pop()
-  path = pointer.compile(path)
-
-  let query = aql`
-    LET res = DOCUMENT(${resources}, ${key})
-
-    LET start = FIRST(
-      FOR node IN ${graphNodes}
-        LET path = node.path || null
-        FILTER node['resource_id'] == res._id AND path == ${path || null}
-        RETURN node
-    )
-
-    LET v = (
-      FOR v, e, p IN 1..${MAX_DEPTH} OUTBOUND start._id ${edges}
-        OPTIONS { bfs: true, uniqueVertices: 'global' }
-        FILTER p.edges[0].name == ${name}
-        FILTER p.vertices[*].resource_id ALL == res._id
-        REMOVE v IN ${graphNodes}
-        RETURN OLD
-    )
-
-    LET e = (
-      FOR edge IN ${edges}
-        FILTER (v[*]._id ANY == edge._to) || (v[*]._id ANY == edge._from) || (edge._from == start._id && edge.name == ${name})
-        REMOVE edge IN ${edges}
-        RETURN OLD
-    )
-
-    UPDATE { _key: ${key} }
-    WITH ${doc}
-    IN ${resources}
-    OPTIONS { keepNull: false }
-    RETURN OLD._oada_rev
-  ` // TODO: Why the heck does arango error if I update resource before graph?
-
-  //trace('Sending partial delete query:', query);
-
-  return db.query(query).call('next')
 }
 
 module.exports = {
