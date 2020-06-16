@@ -553,16 +553,16 @@ function recursiveMakeMergeQuery (path, i) {
 
 // "Delete" a part of a resource
 async function deletePartialResource (id, path, doc) {
+  let key = id.replace(/^resources\//, '')
+  doc = doc || {}
+  path = Array.isArray(path) ? path : pointer.parse(path)
+
   let pathA = path.slice(0, path.length - 1).join("']['")
   pathA = pathA ? "['" + pathA + "']" : pathA
   let pathB = path[path.length - 1]
   let stringA = `(res${pathA}, '${pathB}')`
   let hasStr = `HAS${stringA}`
   let oldPath = _.clone(path)
-
-  let key = id.replace(/^resources\//, '')
-  doc = doc || {}
-  path = Array.isArray(path) ? path : pointer.parse(path)
 
   let rev = doc['_rev']
 
@@ -574,53 +574,57 @@ async function deletePartialResource (id, path, doc) {
   let hasObj = await db
     .query({
       query: `
-    LET res = DOCUMENT(${resources.name}, '${key}')
-    LET has = ${hasStr}
+        LET res = DOCUMENT(${resources.name}, '${key}')
+        LET has = ${hasStr}
 
-    RETURN {has, rev: res._oada_rev}
-  `
+        RETURN {has, rev: res._oada_rev}
+      `
     })
     .call('next')
   if (hasObj.has) {
-    let unsetStr = `UNSET${stringA}`
-    let mergeStr = 'MERGE(res, {'
-    mergeStr += recursiveMakeMergeQuery(oldPath, 0, mergeStr)
-    mergeStr = oldPath.length > 1 ? mergeStr : 'newUnsetResult'
-    let query = `
-      LET res = DOCUMENT(${resources.name}, '${key}')
+    const toDelete = {}
+    pointer.set(toDelete, oldPath, null)
 
-      LET start = FIRST(
-        FOR node IN ${graphNodes.name}
-          LET path = node.path || null
-          FILTER node['resource_id'] == res._id AND path == ${path || null}
-          RETURN node
+    // TODO: Why the heck does arango error if I update resource before graph?
+    return db
+      .query(
+        aql`
+          LET start = FIRST(
+            FOR node IN ${graphNodes}
+              LET path = node.path || null
+              FILTER node['resource_id'] == ${id} AND path == ${path || null}
+              RETURN node
+          )
+
+          LET v = (
+            FOR v, e, p IN 1..${MAX_DEPTH} OUTBOUND start._id ${edges}
+              OPTIONS { bfs: true, uniqueVertices: 'global' }
+              FILTER p.edges[0].name == ${name}
+              FILTER p.vertices[*].resource_id ALL == ${id}
+              REMOVE v IN ${graphNodes}
+              RETURN OLD
+          )
+
+          LET e = (
+            FOR edge IN ${edges}
+              FILTER (v[*]._id ANY == edge._to) || (v[*]._id ANY == edge._from) || (edge._from == start._id && edge.name == ${name})
+              REMOVE edge IN ${edges}
+              RETURN OLD
+          )
+
+          LET newres = MERGE_RECURSIVE(
+            ${toDelete},
+            {
+              _oada_rev: ${rev},
+              _meta: {_rev: ${rev}}
+            }
+          )
+
+          UPDATE ${key} WITH newres IN ${resources} OPTIONS {keepNull: false}
+          RETURN OLD._oada_rev
+        `
       )
-
-      LET v = (
-        FOR v, e, p IN 1..${MAX_DEPTH} OUTBOUND start._id ${edges.name}
-          OPTIONS { bfs: true, uniqueVertices: 'global' }
-          FILTER p.edges[0].name == '${name}'
-          FILTER p.vertices[*].resource_id ALL == res._id
-          REMOVE v IN ${graphNodes.name}
-          RETURN OLD
-      )
-
-      LET e = (
-        FOR edge IN ${edges.name}
-          FILTER (v[*]._id ANY == edge._to) || (v[*]._id ANY == edge._from) || (edge._from == start._id && edge.name == '${name}')
-          REMOVE edge IN ${edges.name}
-          RETURN OLD
-      )
-
-      LET unsetResult = ${unsetStr}
-      LET newUnsetResult = unsetResult ? unsetResult : {}
-      LET newres = MERGE(MERGE(${mergeStr}, {_oada_rev: ${rev}}), {_meta: MERGE
-      (res._meta, {_rev: ${rev}})})
-
-      REPLACE res WITH newres IN ${resources.name} OPTIONS {keepNull: false}
-      RETURN OLD._oada_rev
-    ` // TODO: Why the heck does arango error if I update resource before graph?
-    return db.query({ query }).call('next')
+      .call('next')
   } else {
     return hasObj.rev
   }
