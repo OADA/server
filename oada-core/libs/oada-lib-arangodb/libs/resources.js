@@ -534,44 +534,24 @@ function deleteResource (id) {
     .call('next')
 }
 
-function recursiveMakeMergeQuery (path, i) {
-  if (path.length > i + 2) {
-    let pathA =
-      i + 1 > 0 ? "['" + path.slice(0, i + 1).join("'],['") + "']" : ''
-    let curStr = `'${path[i]}': MERGE(res${pathA}, {`
-    let nextStr = recursiveMakeMergeQuery(path, i + 1)
-    return curStr + nextStr + '})'
-  } else {
-    // at the bottom, put the unset object here
-    if (path[i]) {
-      return `'${path[i]}': unsetResult})`
-    } else {
-      return `})`
-    }
-  }
-}
-
 // "Delete" a part of a resource
-async function deletePartialResource (id, path, doc) {
-  let key = id.replace(/^resources\//, '')
-  doc = doc || {}
+async function deletePartialResource (id, path, doc = {}) {
+  const key = id.replace(/^resources\//, '')
   path = Array.isArray(path) ? path : pointer.parse(path)
 
+  // TODO: Less gross way to check existence of JSON pointer in AQL??
   let pathA = path.slice(0, path.length - 1).join("']['")
   pathA = pathA ? "['" + pathA + "']" : pathA
-  let pathB = path[path.length - 1]
-  let stringA = `(res${pathA}, '${pathB}')`
-  let hasStr = `HAS${stringA}`
-  let oldPath = _.clone(path)
+  const pathB = path[path.length - 1]
+  const stringA = `(res${pathA}, '${pathB}')`
+  const hasStr = `HAS${stringA}`
 
-  let rev = doc['_rev']
-
+  const rev = doc['_rev']
   pointer.set(doc, path, null)
 
-  let name = path.pop()
-  path = pointer.compile(path)
-  path = path ? "'" + path + "'" : null
-  let hasObj = await db
+  const name = path.pop()
+  path = pointer.compile(path) || null
+  const hasObj = await db
     .query({
       query: `
         LET res = DOCUMENT(${resources.name}, '${key}')
@@ -582,9 +562,6 @@ async function deletePartialResource (id, path, doc) {
     })
     .call('next')
   if (hasObj.has) {
-    const toDelete = {}
-    pointer.set(toDelete, oldPath, null)
-
     // TODO: Why the heck does arango error if I update resource before graph?
     return db
       .query(
@@ -597,7 +574,7 @@ async function deletePartialResource (id, path, doc) {
           )
 
           LET v = (
-            FOR v, e, p IN 1..${MAX_DEPTH} OUTBOUND start._id ${edges}
+            FOR v, e, p IN 1..${MAX_DEPTH} OUTBOUND start ${edges}
               OPTIONS { bfs: true, uniqueVertices: 'global' }
               FILTER p.edges[0].name == ${name}
               FILTER p.vertices[*].resource_id ALL == ${id}
@@ -613,7 +590,7 @@ async function deletePartialResource (id, path, doc) {
           )
 
           LET newres = MERGE_RECURSIVE(
-            ${toDelete},
+            ${doc},
             {
               _oada_rev: ${rev},
               _meta: {_rev: ${rev}}
