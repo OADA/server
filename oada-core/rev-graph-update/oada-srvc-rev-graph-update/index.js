@@ -21,6 +21,7 @@ const info = debug('rev-graph-update:info')
 const warn = debug('rev-graph-update:warn')
 const error = debug('rev-graph-update:error')
 
+const _ = require('lodash')
 const Promise = require('bluebird')
 const { ReResponder, Requester } = require('../../libs/oada-lib-kafka')
 const oadaLib = require('../../libs/oada-lib-arangodb')
@@ -84,16 +85,34 @@ responder.on('request', function handleReq (req) {
 
             trace('the parents are: ', p)
 
-            // TODO: Real cycle detection
             if (p.some(p => p['resource_id'] === req['resource_id'])) {
                 let err = new Error(`${req['resource_id']} is its own parent!`)
                 return Promise.reject(err)
             }
 
+            // Real cycle detection: check the write-response's causechain to see if the parent was already updated.  If so, no need to update it again, thus breaking the cycle.
+            let causechain = [];
+            if (req.causechain) {
+              try { 
+                causechain = JSON.parse(req.causechain);
+                if (!_.isArray(causechain)) causechain = []; // in case req.causechain was an empty string
+              } catch(e) { warn('WARNING: failed to JSON.parse req.causechain.  It is: ', req.causechain) }
+            }
+            causechain.push(req.resource_id); // Add this resource to the set of "causing" resources to prevent cycles
+
             p.forEach(function (item, idx) {
+                const childrev = typeof req._rev === 'number' ? req._rev : 0; // delete has null rev
+
+                // Do not update parent if it was already the cause of a rev update on this chain (prevent cycles)
+                if (_.includes(causechain, item.resource_id)) {
+                  info('Parent '+item.resource_id+' exists in causechain, not scheduling for update');
+                  return;
+                }
+
                 let uniqueKey = item['resource_id'] + item.path + '/_rev'
                 if (requests.has(uniqueKey)) {
                     // Write request exists in the pending queue. Add change ID to the request.
+                    info('Resource ',uniqueKey,' already queued for changes, adding to queue');
                     if (req.change_id) {
                         requests
                             .get(uniqueKey)
@@ -101,6 +120,7 @@ responder.on('request', function handleReq (req) {
                     }
                     requests.get(uniqueKey).body = req['_rev']
                 } else {
+                    info('Writing new child link rev (',childrev,') to ',item.resource_id+item.path+'/_rev');
                     // Create a new write request.
                     let msg = {
                         connection_id: null, // TODO: Fix ReResponder for multiple responses?
@@ -108,14 +128,15 @@ responder.on('request', function handleReq (req) {
                         resource_id: item['resource_id'],
                         path: null,
                         contentType: item.contentType,
-                        body: req['_rev'],
+                        body: childrev, 
                         url: '',
                         user_id: 'system/rev_graph_update', // FIXME
                         from_change_id: req.change_id ? [req.change_id] : [], // This is an array; new change IDs may be added later
                         authorizationid: 'authorizations/rev_graph_update', // FIXME
                         change_path: item['path'],
                         path_leftover: item.path + '/_rev',
-                        resourceExists: true
+                        resourceExists: true,
+                        causechain: JSON.stringify(causechain),
                     }
 
                     // Add the request to the pending queue

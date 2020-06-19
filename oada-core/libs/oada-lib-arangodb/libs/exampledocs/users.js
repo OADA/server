@@ -48,6 +48,22 @@ module.exports = [
     scope: [ 'oada.admin.user:all' ],
   },
   {
+    _id: 'users/default:users_sam_321-proxy',
+    username: 'sam-proxy',
+    password: 'test',
+    domain: 'proxy',
+    name: 'Sam Proxy',
+    family_name: 'Proxy',
+    given_name: 'Sam',
+    middle_name: '',
+    nickname: 'Sammy',
+    email: 'sam@openag.io',
+    bookmarks: { _id: 'resources/default:resources_bookmarks_321-proxy' },
+    shares: { _id: 'resources/default:resources_shares_321-proxy' },
+    scope: [ 'oada.admin.user:all' ],
+  },
+
+  {
     _id: 'users/default:users_wakefern_012',
     username: 'mgaspers',
     password: '01010011',

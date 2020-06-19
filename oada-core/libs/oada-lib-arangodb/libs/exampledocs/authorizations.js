@@ -46,6 +46,15 @@ module.exports = [
     clientId: 'jf93caauf3uzud7f308faesf3@provider.oada-dev.com'
   },
   {
+    _id: 'authorizations/default:authorization-god-proxy',
+    token: 'god-proxy',
+    scope: ['all:all', 'oada.admin.user:all'],
+    createTime: 1413831649937,
+    expiresIn: 0,
+    user: { _id: 'users/default:users_sam_321-proxy' },
+    clientId: 'jf93caauf3uzud7f308faesf3@provider.oada-dev.com'
+  },
+  {
     _id: 'authorizations/default:authorization-654',
     token: 'yyy',
     scope: ['oada.rocks:all'],

@@ -12,6 +12,7 @@ const pointer = require('json-pointer')
 const debug = require('debug')
 const error = debug('write-handler:error')
 const info = debug('write-handler:info')
+const warn = debug('write-handler:warn')
 const trace = debug('write-handler:trace')
 const Cache = require('timed-cache')
 const objectAssignDeep = require('object-assign-deep')
@@ -66,13 +67,11 @@ function handleReq (req, msg) {
   info('Handling', id)
   var body = Promise.try(function getBody () {
     var pb = Date.now() / 1000
-    return (
-      req.body ||
-      (req.bodyid &&
-        putBodies
-          .getPutBody(req.bodyid)
-          .tap(() => trace('getPutBody', Date.now() / 1000 - pb)))
-    )
+    if (req.bodyid) {
+      return putBodies.getPutBody(req.bodyid)
+      .tap(() => trace('getPutBody', Date.now() / 1000 - pb));
+    }
+    return req.body;
   })
   let existingResourceInfo = {}
   trace('getBody', Date.now() / 1000 - getB)
@@ -108,7 +107,7 @@ function handleReq (req, msg) {
       trace('cacheRev', Date.now() / 1000 - beforeCacheRev)
 
       var beforeDeletePartial = Date.now() / 1000
-      var path = pointer.parse(req['path_leftover'].replace(/\/*$/, ''))
+      var path = pointer.parse(req['path_leftover'].replace(/\/*$/, '')) /* comment so syntax highlighting is ok */
       let method = resources.putResource
       changeType = 'merge'
 
@@ -228,7 +227,7 @@ function handleReq (req, msg) {
       cache.put(id, rev)
       trace('cache.put', Date.now() / 1000 - beforeCachePut)
 
-      return {
+      const res = {
         msgtype: 'write-response',
         code: 'success',
         resource_id: id,
@@ -239,8 +238,11 @@ function handleReq (req, msg) {
         path_leftover: req['path_leftover'],
         contentType: req['contentType'],
         indexer: req['indexer'],
-        change_id: changeId
+        change_id: changeId,
       }
+      // causechain comes from rev-graph-update
+      if (req.causechain) res.causechain = req.causechain; // pass through causechain if present
+      return res;
     })
     .catch(resources.NotFoundError, function respondNotFound (err) {
       error(err)

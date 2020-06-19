@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "DEBUG=* mocha test/rev-graph-update.js",
+    "test": "DEBUG=\"*rev-graph-update*\" NODE_TLS_REJECT_UNAUTHORIZED=0 mocha",
     "start": "node index.js"
   },
   "author": "",
@@ -15,11 +15,14 @@
     "bluebird": "^3.5.0",
     "chai": "^3.5.0",
     "debug": "^4.1.1",
-    "lodash": "^4.17.4",
+    "lodash": "^4.17.15",
     "mocha": "^7.0.1",
     "moment": "^2.18.1",
     "nconf": "^0.8.4",
     "p-queue": "^6.3.0",
     "randomstring": "^1.1.5"
+  },
+  "devDependencies": {
+    "@oada/client": "^1.0.2"
   }
 }

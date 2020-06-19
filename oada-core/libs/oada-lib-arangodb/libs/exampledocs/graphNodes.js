@@ -49,6 +49,14 @@ module.exports = [
     is_resource: true
   },
   //------------------------------------------------
+  // Bookmarks document (for user sam-proxy):
+  {
+    _id: 'graphNodes/resources:default:resources_bookmarks_321-proxy',
+    resource_id: 'resources/default:resources_bookmarks_321-proxy',
+    is_resource: true
+  },
+
+  //------------------------------------------------
   // Bookmarks document (for user audrey):
   {
     _id: 'graphNodes/resources:default:resources_bookmarks_999',
@@ -88,6 +96,13 @@ module.exports = [
   {
     _id: 'graphNodes/resources:default:resources_shares_321',
     resource_id: 'resources/default:resources_shares_321',
+    is_resource: true
+  },
+  //------------------------------------------------
+  // Shares document (for user sam-proxy):
+  {
+    _id: 'graphNodes/resources:default:resources_shares_321-proxy',
+    resource_id: 'resources/default:resources_shares_321-proxy',
     is_resource: true
   },
   //------------------------------------------------

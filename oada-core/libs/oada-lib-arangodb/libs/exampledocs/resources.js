@@ -100,6 +100,34 @@ module.exports = [
       }
     }
   },
+
+  //--------------------
+  //Bookmarks document (for sam-proxy):
+  {
+    _id: 'resources/default:resources_bookmarks_321-proxy',
+    _oada_rev: 1,
+    _type: 'application/vnd.oada.bookmarks.1+json',
+    _meta: {
+      _id: 'resources/default:resources_bookmarks_321-proxy/_meta',
+      _rev: 1,
+      _type: 'application/vnd.oada.bookmarks.1+json',
+      _owner: 'users/default:users_sam_321-proxy',
+      stats: {
+        // stats on meta is exempt from _changes
+        // because that would generate loop of rev updates with resource
+        createdBy: 'users/default:users_sam_321-proxy',
+        created: 1494133055,
+        modifiedBy: 'users/default:users_sam_321-proxy',
+        modified: 1494133055
+      },
+      _changes: {
+        _id: 'resources/default:resources_bookmarks_321-proxy/_meta/_changes',
+        _rev: 1
+      }
+    }
+  },
+
+
   //--------------------
   //Bookmarks document (for audrey):
   {
@@ -407,6 +435,30 @@ module.exports = [
       _changes: {}
     }
   },
+
+  //------------------------------------------------
+  // Shares document (for user sam-proxy):
+  {
+    _id: 'resources/default:resources_shares_321-proxy',
+    _oada_rev: 1,
+    _type: 'application/vnd.oada.shares.1+json',
+    _meta: {
+      _id: 'resources/default:resources_shares_321-proxy/_meta',
+      _rev: 1,
+      _type: 'application/vnd.oada.shares.1+json',
+      _owner: 'users/default:users_sam_321-proxy', // TODO: Who "owns" /shares?
+      stats: {
+        // stats on meta is exempt from _changes
+        // because that would generate loop of rev updates with resource
+        createdBy: 'system',
+        created: 1494133055,
+        modifiedBy: 'system',
+        modified: 1494133055
+      },
+      _changes: {}
+    }
+  },
+
   {
     _id: 'resources/default:resources_shares_999',
     _oada_rev: 1,
