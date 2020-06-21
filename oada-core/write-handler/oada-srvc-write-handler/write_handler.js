@@ -113,13 +113,17 @@ function handleReq (req, msg) {
 
       // Perform delete
       if (body === undefined) {
+        trace('Body is undefined, doing delete');
         if (path.length > 0) {
+          trace('Delete path = ', path);
           // TODO: This is gross
           let ppath = Array.from(path)
           method = (id, obj, checkLinks) =>
             resources.deletePartialResource(id, ppath, obj)
+          trace(`Setting method = deletePartialResource(${id}, ${ppath}, ${obj})`);
           body = null
           changeType = 'delete'
+          trace(`Setting changeType = 'delete'`);
         } else {
           if (!req.resourceExists)
             return { rev: undefined, orev: undefined, changeId: undefined }
@@ -136,14 +140,9 @@ function handleReq (req, msg) {
       var ts = Date.now() / 1000
       // TODO: Sanitize keys?
 
-      trace(
-        req.resource_id +
-          ': Checking if resource exists (req.resourceExists = ',
-        req.resourceExists,
-        ')'
-      )
+      trace(req.resource_id + ': Checking if resource exists (req.resourceExists = ', req.resourceExists,')')
       if (req.resourceExists === false) {
-        trace('initializing resource', req.resource_id, req.path_leftover)
+        trace('initializing arango: resource_id = ', req.resource_id, ', path_leftover = ', req.path_leftover)
         id = req.resource_id.replace(/^\//, '')
         path = path.slice(2)
 
@@ -164,10 +163,12 @@ function handleReq (req, msg) {
       }
 
       // Create object to recursively merge into the resource
+      trace('Recursively merging path into arango object, path = ', path)
       if (path.length > 0) {
         let o = obj
         let endk = path.pop()
         path.forEach(k => {
+          trace('Adding path for key ', k);
           if (!(k in o)) {
             // TODO: Support arrays better?
             o[k] = {}
@@ -178,6 +179,7 @@ function handleReq (req, msg) {
       } else {
         obj = objectAssignDeep(obj, body)
       }
+      trace('Setting body on arango object to ', obj);
 
       trace('recursive merge', Date.now() / 1000 - ts)
 
@@ -190,12 +192,25 @@ function handleReq (req, msg) {
 
       // Increment rev number
       let rev = parseInt(cacheRev || 0, 10) + 1
+
+      // If rev is supposed to be set to 1, this is a "new" resource.  However,
+      // change feed could still be around from an earlier delete, so check that
+      // and set rev to more than biggest one
+      if (rev === 1) {
+        const changerev = await changes.getMaxChangeRev(id);
+        if (changerev && changerev > 1) {
+          rev = +(changerev) + 1;
+          trace(`Found old changes (max rev ${changerev}) for new resource, setting initial _rev to ${rev} include them`);
+        }
+      }
+
       obj['_rev'] = rev
       pointer.set(obj, '/_meta/_rev', rev)
 
       // Compute new change
       var beforeChange = Date.now() / 1000
       let children = req['from_change_id'] || []
+      trace('Putting change, "change" = ', obj);
       let changeId = await changes.putChange({
         change: obj,
         resId: id,

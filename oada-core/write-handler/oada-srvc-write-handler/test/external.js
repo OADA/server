@@ -44,7 +44,7 @@ describe('External tests of write-handler, run from admin', () => {
       await buildTree()
     });
 
-    after(async () => cleanup());
+//    after(async () => cleanup());
 
     it('Should include the link key in the change document when deleting a link to a non-existent resource', async function() {
       this.timeout(2000);
