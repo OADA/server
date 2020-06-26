@@ -65,14 +65,14 @@ module.exports = [
   {
     _id: 'changes/default:resources_bookmarks_321',
     resource_id: 'resources/default:resources_bookmarks_321',
-    number: 3,
+    number: 1,
     type: 'merge',
     body: {
-      _rev: 3,
+      _rev: 1,
       _type: 'application/vnd.oada.bookmarks.1+json',
       _meta: {
         _id: 'resources/default:resources_bookmarks_321/_meta',
-        _rev: 3,
+        _rev: 1,
         _type: 'application/vnd.oada.bookmarks.1+json',
         _owner: 'users/default:users_sam_321',
         stats: {
