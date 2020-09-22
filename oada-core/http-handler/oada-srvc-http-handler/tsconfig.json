@@ -6,6 +6,9 @@
     "module": "CommonJS",
     "lib": ["ES2019"],
     "noUnusedLocals": true,
-    "noUnusedParameters": true
+    "noUnusedParameters": true,
+    "noImplicitThis": true,
+    "noImplicitAny": true,
+    "rootDir": "."
   }
 }
