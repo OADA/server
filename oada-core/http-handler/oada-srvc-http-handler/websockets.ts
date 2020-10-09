@@ -189,6 +189,14 @@ module.exports = function wsHandler(server: Server) {
                 },
             };
             switch (msg.method) {
+                case 'ping':
+                    trace('ping');
+                    // Send an empty response
+                    sendResponse({
+                        requestId: msg.requestId,
+                        status: 204, // HTTP 204: No Content
+                    });
+                    return;
                 case 'unwatch':
                     trace('closing watch', msg.requestId);
 
