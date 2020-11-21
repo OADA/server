@@ -163,7 +163,7 @@ responder.on('request', async function handleReq (req) {
     // Create mapping of IDs here to IDs there
     let idmapping = rids
       .map(({ id, rid }) => ({ [id]: rid }))
-      .reduce((a, b) => ({ ...a, ...b }))
+      .reduce((a, b) => ({ ...a, ...b }), {})
     let docs = Promise.map(rids, async ({ id, rid }) => {
       let change = await lchanges[id]
       if (!change) {

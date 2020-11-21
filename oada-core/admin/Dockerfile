@@ -34,12 +34,12 @@ RUN wget https://github.com/outbrain/zookeepercli/releases/download/v1.0.10/zook
 # Install nvm: can't source /root/.bashrc because this stuff all runs in sh
 # If you don't set NVM_DIR, then it will install to /bin instead of /root/.nvm
 ENV NVM_DIR=/root/.nvm
-RUN wget -qO- https://raw.githubusercontent.com/creationix/nvm/v0.30.2/install.sh | bash \
+RUN wget -qO- https://raw.githubusercontent.com/creationix/nvm/v0.35.2/install.sh | bash \
     && . /root/.nvm/nvm.sh \
-    && nvm install v11.15 \
-    && nvm alias default v11.15
+    && nvm install v14 \
+    && nvm alias default v14
 RUN . /root/.nvm/nvm.sh \
-    && nvm use v11.15  \
+    && nvm use v14 \
     && npm install -g yarn \
     && yarn global add mocha \
     # You can put any global NPM installs here

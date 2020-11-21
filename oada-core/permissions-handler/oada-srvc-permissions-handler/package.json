@@ -18,7 +18,6 @@
     "mocha": "^7.0.1",
     "moment": "^2.18.1",
     "nconf": "^0.8.4",
-    "node-rdkafka": "2.7.0",
     "randomstring": "^1.1.5",
     "type-is": "^1.6.15"
   }
