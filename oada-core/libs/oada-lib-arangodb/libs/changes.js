@@ -42,7 +42,7 @@ function getChanges (resourceId, changeRev) {
     })
 }
 
-function getMaxChangeRev(resourceId) {
+function getMaxChangeRev (resourceId) {
   return db
     .query(
       aql`
@@ -53,11 +53,12 @@ function getMaxChangeRev(resourceId) {
             LIMIT 1
             RETURN change.number
         )`
-    ).call('next')
+    )
+    .call('next')
     .then(result => {
-      if (!result) return 0;
-      return result;
-    });
+      if (!result) return 0
+      return result
+    })
 }
 
 // Produces a bare tree has a top level key at resourceId and traces down to the
@@ -119,6 +120,7 @@ function getChangeArray (resourceId, changeRev) {
   if (!changeRev) {
     return Promise.resolve([
       {
+        resource_id: resourceId,
         path: '',
         body: null,
         type: 'delete'
@@ -161,7 +163,7 @@ function toChangeObj (arangoPathObj) {
   let body = arangoPathObj.vertices[nVertices - 1].body
   let resource_id = arangoPathObj.vertices[nVertices - 1].resource_id
   // return change object
-  trace('toChangeObj: returning change object with body ', body);
+  trace('toChangeObj: returning change object with body ', body)
   return {
     resource_id,
     path,
@@ -204,7 +206,7 @@ function putChange ({
     throw new Error('children must be an array.')
   }
   let number = parseInt(rev, 10)
-  trace('putChange: inserting change with body ', change);
+  trace('putChange: inserting change with body ', change)
   return db
     .query(
       aql`
@@ -242,3 +244,4 @@ module.exports = {
   getMaxChangeRev,
   putChange
 }
+
