@@ -12,24 +12,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-'use strict'
+'use strict';
 
-var path = require('path')
-var fs = require('fs')
+var path = require('path');
+var fs = require('fs');
 
 module.exports = {
   domainsDir: '/domains-enabled',
   auth: {
-    init: function () {}, // this will run if you call npm run init.  Replace in your own config with your own init.
+    init: function() {}, // this will run if you call npm run init.  Replace in your own config with your own init.
     server: {
-      jsonSpaces: 2,
-      sessionSecret: 'Xka*32F@*!15',
-      passwordSalt: '$2a$10$l64QftVz6.7KR5BXNc29IO',
+      'jsonSpaces': 2,
+      'sessionSecret': 'Xka*32F@*!15',
+      'passwordSalt': '$2a$10$l64QftVz6.7KR5BXNc29IO',
       'port-http': 80,
       'port-https': 443,
-      mode: 'https',
-      domain: 'localhost',
-      publicUri: undefined
+      'mode': 'https',
+      'domain': 'localhost',
+      'publicUri': undefined
     },
     wkj: undefined,
     endpointsPrefix: '', // so you can place this under a sub-path in your domain
@@ -50,7 +50,7 @@ module.exports = {
     // page.  This allows other services to override the login page itself with their
     // own custom one via docker-compose.
     views: {
-      basedir: '/code/auth/oada-ref-auth-js/views',
+      basedir: '/oada-core/auth/oada-srvc-auth/views',
       loginPage: 'login',
       approvePage: 'approve'
     },
@@ -69,7 +69,7 @@ module.exports = {
     },
     token: {
       length: 40,
-      expiresIn: 0,
+      expiresIn: 0
     },
     idToken: {
       expiresIn: 0,
@@ -94,4 +94,4 @@ module.exports = {
       password: 'test'
     }
   }
-}
+};

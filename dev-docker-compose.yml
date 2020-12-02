@@ -1,12 +1,38 @@
-version: '3'
+version: '3.7'
+
+# Common configuration overridesfor all of our core uservices
+x-oada-uservice: &oada-uservice
+    volumes:
+      # Mount host code over images in development mode?
+      - ./oada-core:/oada-core
+    environment:
+      - NODE_ENV=${NODE_ENV:-development}
+      - DEBUG=${DEBUG:-*}
 
 services:
   # In development, put the dummy users/tokens into database
   startup:
+    << : *oada-uservice
     environment:
-      - DEBUG=*
+      - NODE_ENV=${NODE_ENV:-development}
+      - DEBUG=${DEBUG:-*}
       - arangodb__ensureDefaults="true"
 
   arangodb:
     ports:
       - 8529:8529
+
+  auth: *oada-uservice
+  http-handler: *oada-uservice
+  sync-handler: *oada-uservice
+  write-handler: *oada-uservice
+  users: *oada-uservice
+  token-lookup: *oada-uservice
+  rev-graph-update: *oada-uservice
+  graph-lookup: *oada-uservice
+  well-known: *oada-uservice
+  #admin: *oada-uservice
+  #yarn: *oada-uservice
+  webhooks: *oada-uservice
+  permissions-handler: *oada-uservice
+  shares: *oada-uservice

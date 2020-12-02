@@ -13,9 +13,9 @@
  * limitations under the License.
  */
 
-'use strict'
+'use strict';
 
-const domain = process.env.DOMAIN || 'localhost'
+const domain = process.env.DOMAIN || 'localhost';
 
 /* eslint indent: "off" */
 module.exports = {
@@ -141,17 +141,17 @@ module.exports = {
     serviceLongName: 'Trellis - A Framework for Produce Audit Data',
     server: {
       // Replace these in production with things that are actually secret...
-      sessionSecret: '2jp901p3#2#(!)kd9',
-      passwordSalt: '$2a$06$xbh/gQcEgAX5eapjlCgMYO',
+      'sessionSecret': '2jp901p3#2#(!)kd9',
+      'passwordSalt': '$2a$06$xbh/gQcEgAX5eapjlCgMYO',
       'port-http': 80,
-      mode: 'http',
-      proxy: 'uniquelocal',
-      domain: domain, // in docker it's port 80 localhost
+      'mode': 'http',
+      'proxy': 'uniquelocal',
+      'domain': domain, // in docker it's port 80 localhost
       // but to nginx proxy, it's https://localhost in dev
-      publicUri: 'https://' + domain
+      'publicUri': 'https://' + domain
     },
     keys: {
-      signPems: '/code/auth/sign/'
+      signPems: '/oada-core/auth/sign/'
     },
     idToken: {
       expiresIn: 3600,
@@ -166,12 +166,12 @@ module.exports = {
   },
   wellKnown: {
     // forceProtocol: 'https', // use this to force URL's to have https prefix.  Useful when behind a proxy.
-    server: {
+    'server': {
       port: 80,
       mode: 'http',
       domain: domain
     },
-    mergeSubServices: [
+    'mergeSubServices': [
       { resource: 'oada-configuration', base: 'http://auth' },
       { resource: 'openid-configuration', base: 'http://auth' }
     ],
@@ -181,7 +181,7 @@ module.exports = {
       oada_base_uri: './',
       scopes_supported: [
         {
-          name: 'oada.all.1', // can do anything the user can do
+          'name': 'oada.all.1', // can do anything the user can do
           /* pattern: /oada\..*\.1/  */
           'read+write': true // can read/write anything the user can read/write
         }
@@ -189,4 +189,4 @@ module.exports = {
     },
     'openid-configuration': {}
   }
-}
+};

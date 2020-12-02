@@ -1,0 +1,5 @@
+# Don't copy host node_modules into images
+**/node_modules
+
+**/*.log
+**/.DS_Store

@@ -1,0 +1,38 @@
+version: '3.7'
+
+# Common configuration for all of our core uservices
+x-oada-uservice: &oada-uservice
+    build:
+      context: .
+      dockerfile: ./oada-core/oada-core.Dockerfile
+    restart: always
+    networks:
+      - startup_net
+      - kafka_net
+      - arango_net
+    volumes:
+      - ./oada-srvc-docker-config.js:/oada-srvc-docker-config.js
+    environment:
+      - NODE_ENV=${NODE_ENV:-development}
+      - DEBUG=${DEBUG:-*:error,*:warn,*:info}
+      - DOMAIN=${DOMAIN:-localhost}
+      - NODE_TLS_REJECT_UNAUTHORIZED=${NODE_TLS_REJECT_UNAUTHORIZED:-""}
+
+# Need to do this before main docker-compose.yml becasue docker/yaml sucks
+# Yes yaml has merge, but it does not work for this
+services:
+  startup: *oada-uservice
+  auth: *oada-uservice
+  http-handler: *oada-uservice
+  sync-handler: *oada-uservice
+  write-handler: *oada-uservice
+  users: *oada-uservice
+  token-lookup: *oada-uservice
+  rev-graph-update: *oada-uservice
+  graph-lookup: *oada-uservice
+  well-known: *oada-uservice
+  #admin: *oada-uservice
+  #yarn: *oada-uservice
+  webhooks: *oada-uservice
+  permissions-handler: *oada-uservice
+  shares: *oada-uservice

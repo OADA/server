@@ -1,4 +1,4 @@
-version: '3'
+version: '3.7'
 
 services:
   startup:
@@ -6,22 +6,13 @@ services:
       - zookeeper
       - kafka
       - arangodb
-    build: ./oada-core/startup
-    restart: always
+    build:
+      args:
+        OADA_SERVICE: startup
     container_name: startup
-    networks:
-      - kafka_net
-      - arango_net
-      - startup_net
     expose: # expose only internally, not on host
       - '80'
-    volumes:
-      - ./oada-core/startup:/code/startup
-      - ./oada-core/libs:/code/libs
-      - ./oada-srvc-docker-config.js:/oada-srvc-docker-config.js
     environment:
-      - NODE_ENV=${NODE_ENV:-development}
-      - DEBUG=${DEBUG:-*:error,*:warn,*:info}
       # set RESETDATABASE to "yes" if you want to drop database on startup and recreate
       - RESETDATABASE=${RESETDATABASE:-no}
 
@@ -48,14 +39,10 @@ services:
       - proxy_certs:/certs
       - ./oada-core/proxy/dev-certs/localhost:/certs/localhost
       - ./oada-core/proxy:/code/proxy
-      - ./oada-srvc-docker-config.js:/oada-srvc-docker-config.js
       # Need the letsencrypt_www_data volume so admin's certbot command can put web-accessible files there
       - letsencrypt_www_data:/var/www/letsencrypt
     environment:
-      - NODE_ENV=${NODE_ENV:-development}
-      - DEBUG=${DEBUG:-*:error,*:warn,*:info}
       - DOMAIN=${DOMAIN:-localhost}
-      - NODE_TLS_REJECT_UNAUTHORIZED=${NODE_TLS_REJECT_UNAUTHORIZED:-""}
     command:
       - /entrypoint.sh
 
@@ -63,25 +50,16 @@ services:
     depends_on:
       - startup
     build:
-      context: ./oada-core/auth
+      args:
+        OADA_SERVICE: auth
     container_name: auth
-    restart: always
     networks:
       - http_net
-      - arango_net
-      - startup_net
     expose: # expose only internally, not on host
       - '80'
     volumes:
       - ./domains-available:/domains-available
       - ./domains-enabled:/domains-enabled
-      - ./oada-core/auth:/code/auth
-      - ./oada-core/libs:/code/libs
-      - ./oada-srvc-docker-config.js:/oada-srvc-docker-config.js
-    environment:
-      - NODE_TLS_REJECT_UNAUTHORIZED=${NODE_TLS_REJECT_UNAUTHORIZED:-""}
-      - NODE_ENV=${NODE_ENV:-development}
-      - DEBUG=${DEBUG:-*:error,*:warn,*:info}
     command:
       - /entrypoint.sh
 
@@ -91,172 +69,89 @@ services:
     depends_on:
       - startup
     build:
-      context: ./oada-core/http-handler
-    restart: always
+      args:
+        OADA_SERVICE: http-handler
     container_name: http-handler
     networks:
-      - startup_net
       - http_net
-      - kafka_net
-      - arango_net
     expose: # expose only internally, not on host
       - '80' # at one time this mapped 34135 from host to local 80 for some reason
-    volumes:
-      - ./oada-core/http-handler:/code/http-handler
-      - ./oada-core/libs:/code/libs
-      - ./oada-srvc-docker-config.js:/oada-srvc-docker-config.js
     environment:
-      - NODE_ENV=${NODE_ENV:-development}
-      - DEBUG=${DEBUG:-*:error,*:warn,*:info}
       - IGNORE_SCOPE=${IGNORE_SCOPE:-""}
-      - NODE_TLS_REJECT_UNAUTHORIZED=${NODE_TLS_REJECT_UNAUTHORIZED:-""}
 
   sync-handler:
     depends_on:
       - startup
       - proxy
     build:
-      context: ./oada-core/sync-handler
-    restart: always
+      args:
+        OADA_SERVICE: sync-handler
     container_name: sync-handler
     networks:
-      - startup_net
-      - kafka_net
-      - arango_net
       - http_net
-    volumes:
-      - ./oada-core/sync-handler:/code/sync-handler
-      - ./oada-core/libs:/code/libs
-      - ./oada-srvc-docker-config.js:/oada-srvc-docker-config.js
     environment:
-      - NODE_ENV=${NODE_ENV:-development}
-      - DEBUG=${DEBUG:-*:error,*:warn,*:info}
-      - NODE_TLS_REJECT_UNAUTHORIZED=${NODE_TLS_REJECT_UNAUTHORIZED:-""}
       - IGNORE_SCOPE=${IGNORE_SCOPE:-""}
 
   write-handler:
     depends_on:
       - startup
     build:
-      context: ./oada-core/write-handler
-    restart: always
+      args:
+        OADA_SERVICE: write-handler
     container_name: write-handler
-    networks:
-      - startup_net
-      - kafka_net
-      - arango_net
-    volumes:
-      - ./oada-core/write-handler:/code/write-handler
-      - ./oada-core/libs:/code/libs
-      - ./oada-srvc-docker-config.js:/oada-srvc-docker-config.js
-    environment:
-      - NODE_ENV=${NODE_ENV:-development}
-      - DEBUG=${DEBUG:-*:error,*:warn,*:info}
 
   users:
     depends_on:
       - startup
     build:
-      context: ./oada-core/users
-    restart: always
+      args:
+        OADA_SERVICE: users
     container_name: users
-    networks:
-      - startup_net
-      - kafka_net
-      - arango_net
-    volumes:
-      - ./oada-core/users:/code/users
-      - ./oada-core/libs:/code/libs
-      - ./oada-srvc-docker-config.js:/oada-srvc-docker-config.js
-    environment:
-      - NODE_ENV=${NODE_ENV:-development}
-      - DEBUG=${DEBUG:-*:error,*:warn,*:info}
 
   token-lookup:
     depends_on:
       - startup
     build:
-      context: ./oada-core/token-lookup
-    restart: always
+      args:
+        OADA_SERVICE: token-lookup
     container_name: token-lookup
-    networks:
-      - startup_net
-      - kafka_net
-      - arango_net
-    volumes:
-      - ./oada-core/token-lookup:/code/token-lookup
-      - ./oada-core/libs:/code/libs
-      - ./oada-srvc-docker-config.js:/oada-srvc-docker-config.js
-    environment:
-      - NODE_ENV=${NODE_ENV:-development}
-      - DEBUG=${DEBUG:-*:error,*:warn,*:info}
 
   rev-graph-update:
     depends_on:
       - startup
     build:
-      context: ./oada-core/rev-graph-update
-    restart: always
+      args:
+        OADA_SERVICE: rev-graph-update
     container_name: rev-graph-update
-    networks:
-      - startup_net
-      - kafka_net
-      - arango_net
-    volumes:
-      - ./oada-core/rev-graph-update:/code/rev-graph-update
-      - ./oada-core/libs:/code/libs
-      - ./oada-srvc-docker-config.js:/oada-srvc-docker-config.js
-    environment:
-      - NODE_ENV=${NODE_ENV:-development}
-      - DEBUG=${DEBUG:-*:error,*:warn,*:info}
 
   graph-lookup:
     depends_on:
       - startup
     build:
-      context: ./oada-core/graph-lookup
-    restart: always
+      args:
+        OADA_SERVICE: graph-lookup
     container_name: graph-lookup
-    networks:
-      - startup_net
-      - kafka_net
-      - arango_net
-    volumes:
-      - ./oada-core/graph-lookup:/code/graph-lookup
-      - ./oada-core/libs:/code/libs
-      - ./oada-srvc-docker-config.js:/oada-srvc-docker-config.js
-    environment:
-      - NODE_ENV=${NODE_ENV:-development}
-      - DEBUG=${DEBUG:-*:error,*:warn,*:info}
 
   well-known:
     depends_on:
       - startup
     build:
-      context: ./oada-core/well-known
-    restart: always
+      args:
+        OADA_SERVICE: well-known
     container_name: well-known
     networks:
-      - startup_net
       - http_net
-    volumes:
-      - ./oada-core/well-known:/code/well-known
-      - ./oada-core/libs:/code/libs
-      - ./oada-srvc-docker-config.js:/oada-srvc-docker-config.js
     expose: # expose only internally, not on host
       - '80'
-    environment:
-      - NODE_ENV=${NODE_ENV:-development}
-      - DEBUG=${DEBUG:-*:error,*:warn,*:info}
 
   # admin container has all the service names and volumes mapped, so you
   # can interact with them easily from this service.
   admin:
+    scale: 0
     build: ./oada-core/admin
     volumes:
       - ./domains-available:/domains-available
       - ./domains-enabled:/domains-enabled
-      - ./oada-srvc-docker-config.js:/oada-srvc-docker-config.js
       - arangodb_data:/volumes/arangodb
       - arangodb_apps_data:/volumes/arangodb_apps
       - zookeeper_data:/volumes/zookeeper
@@ -292,9 +187,6 @@ services:
       - kafka_net
       - arango_net
       - http_net
-    environment:
-      - NODE_ENV=${NODE_ENV:-development}
-      - DEBUG=${DEBUG:-*:error,*:warn,*:info}
 
   kafka:
     image: wurstmeister/kafka
@@ -319,28 +211,10 @@ services:
       - kafka_data:/var/lib/kafka
 
   # Needed for installing native Node dependencies
-  yarn:
-    build:
-      context: ./oada-core/yarn
-    volumes:
-      - ./oada-core/admin:/code/admin
-      - ./oada-core/auth:/code/auth
-      - ./oada-core/graph-lookup:/code/graph-lookup
-      - ./oada-core/http-handler:/code/http-handler
-      - ./oada-core/libs:/code/libs
-      - ./oada-core/permissions-handler:/code/permissions-handler
-      - ./oada-core/proxy:/code/proxy
-      - ./oada-core/rev-graph-update:/code/rev-graph-update
-      - ./oada-core/shares:/code/shares
-      - ./oada-core/startup:/code/startup
-      - ./oada-core/sync-handler:/code/sync-handler
-      - ./oada-core/tests:/code/tests
-      - ./oada-core/token-lookup:/code/token-lookup
-      - ./oada-core/users:/code/users
-      - ./oada-core/webhooks:/code/webhooks
-      - ./oada-core/well-known:/code/well-known
-      - ./oada-core/write-handler:/code/write-handler
-      - ./oada-core/yarn:/code/yarn
+  #yarn:
+  #scale: 0
+  #build:
+  #context: ./oada-core/yarn
 
   # Arango is the main backend where core data and graph is stored
   arangodb:
@@ -378,61 +252,31 @@ services:
       - startup
       - proxy
     build:
-      context: ./oada-core/webhooks
-    restart: always
+      args:
+        OADA_SERVICE: webhooks
     container_name: webhooks
     networks:
-      - startup_net
-      - kafka_net
-      - arango_net
       - http_net
-    volumes:
-      - ./oada-core/webhooks:/code/webhooks
-      - ./oada-core/libs:/code/libs
-      - ./oada-srvc-docker-config.js:/oada-srvc-docker-config.js
     environment:
-      - NODE_ENV=${NODE_ENV:-development}
-      - DEBUG=${DEBUG:-*:error,*:warn,*:info}
       - SSL_ALLOW_SELF_SIGNED=1
 
   permissions-handler:
     depends_on:
       - startup
     build:
-      context: ./oada-core/permissions-handler
-    restart: always
+      args:
+        OADA_SERVICE: permissions-handler
     container_name: permissions-handler
-    networks:
-      - startup_net
-      - kafka_net
-      - arango_net
     volumes:
-      - ./oada-core/permissions-handler:/code/permissions-handler
-      - ./oada-core/libs:/code/libs
-      - ./oada-srvc-docker-config.js:/oada-srvc-docker-config.js
       - ./scopes:/code/scopes
-    environment:
-      - NODE_ENV=${NODE_ENV:-development}
-      - DEBUG=${DEBUG:-*:error,*:warn,*:info}
 
   shares:
     depends_on:
       - startup
     build:
-      context: ./oada-core/shares
-    restart: always
+      args:
+        OADA_SERVICE: shares
     container_name: shares
-    networks:
-      - startup_net
-      - kafka_net
-      - arango_net
-    volumes:
-      - ./oada-core/shares:/code/shares
-      - ./oada-core/libs:/code/libs
-      - ./oada-srvc-docker-config.js:/oada-srvc-docker-config.js
-    environment:
-      - NODE_ENV=${NODE_ENV:-development}
-      - DEBUG=${DEBUG:-*:error,*:warn,*:info}
 
 volumes:
   arangodb_data:

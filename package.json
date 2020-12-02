@@ -1,0 +1,8 @@
+{
+  "name": "oada",
+  "private": true,
+  "workspaces": ["oada-core/**", "services-available/**"],
+  "devDependencies": {
+    "lerna": "^3.22.1"
+  }
+}
