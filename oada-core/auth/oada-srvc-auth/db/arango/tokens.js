@@ -13,38 +13,38 @@
  * limitations under the License.
  */
 
-'use strict'
+'use strict';
 
-var _ = require('lodash')
-var trace = require('debug')('arango:token:trace')
-var oadaLib = require('../../../../libs/oada-lib-arangodb')
+var _ = require('lodash');
+var trace = require('debug')('arango:token:trace');
+var oadaLib = require('oada-lib-arangodb');
 
-function findByToken (token, cb) {
-  trace('findByToken: searching for token ', token)
+function findByToken(token, cb) {
+  trace('findByToken: searching for token ', token);
   oadaLib.authorizations
     .findByToken(token)
-    .then(t => t && Object.assign(t, { id: t._id, _id: undefined }))
-    .then(t => {
+    .then((t) => t && Object.assign(t, { id: t._id, _id: undefined }))
+    .then((t) => {
       if (t && t.user) {
         // Why eliminate the _id?
         // Object.assign(t.user, {id: t.user._id, _id: undefined});
       }
 
-      return t
+      return t;
     })
-    .asCallback(cb)
+    .asCallback(cb);
 }
 
-function save (token, cb) {
-  token = _.cloneDeep(token)
-  Object.assign(token, { _id: token.id, id: undefined })
+function save(token, cb) {
+  token = _.cloneDeep(token);
+  Object.assign(token, { _id: token.id, id: undefined });
   // Link user
-  token.user = { _id: token.user._id }
-  trace('save: saving token ', token)
-  oadaLib.authorizations.save(token).asCallback(cb)
+  token.user = { _id: token.user._id };
+  trace('save: saving token ', token);
+  oadaLib.authorizations.save(token).asCallback(cb);
 }
 
 module.exports = {
   findByToken: findByToken,
-  save: save
-}
+  save: save,
+};

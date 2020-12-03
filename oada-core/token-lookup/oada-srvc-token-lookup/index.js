@@ -13,31 +13,31 @@
  * limitations under the License.
  */
 
-'use strict'
+'use strict';
 
-const debug = require('debug')
-const trace = debug('token-lookup:trace')
-const info = debug('token-lookup:info')
-const error = debug('token-lookup:error')
+const debug = require('debug');
+const trace = debug('token-lookup:trace');
+const info = debug('token-lookup:info');
+const error = debug('token-lookup:error');
 
 // const kf = require('kafka-node');
-const Responder = require('../../libs/oada-lib-kafka').Responder
-const oadaLib = require('../../libs/oada-lib-arangodb')
-const config = require('./config')
+const Responder = require('oada-lib-kafka').Responder;
+const oadaLib = require('oada-lib-arangodb');
+const config = require('./config');
 
 process.on('exit', () => {
-  info('process exit')
-})
+  info('process exit');
+});
 
 process.on('SIGINT', () => {
-  info('SIGINT')
-  process.exit(2)
-})
+  info('SIGINT');
+  process.exit(2);
+});
 
-process.on('uncaughtException', a => {
-  info('uncaughtException: ', a)
-  process.exit(99)
-})
+process.on('uncaughtException', (a) => {
+  info('uncaughtException: ', a);
+  process.exit(99);
+});
 
 //---------------------------------------------------------
 // Kafka intializations:
@@ -45,20 +45,20 @@ const responder = new Responder(
   config.get('kafka:topics:tokenRequest'),
   config.get('kafka:topics:httpResponse'),
   config.get('kafka:groupId')
-)
+);
 
-module.exports = function stopResp () {
-  return responder.disconnect()
-}
+module.exports = function stopResp() {
+  return responder.disconnect();
+};
 
-responder.on('request', function handleReq (req) {
+responder.on('request', function handleReq(req) {
   if (
     !req ||
     typeof req.resp_partition === 'undefined' ||
     typeof req.connection_id === 'undefined'
   ) {
-    error('Invalid token_request for request: ' + JSON.stringify(req))
-    return {}
+    error('Invalid token_request for request: ' + JSON.stringify(req));
+    return {};
   }
 
   const res = {
@@ -73,54 +73,54 @@ responder.on('request', function handleReq (req) {
       scope: [],
       bookmarks_id: null,
       shares_id: null,
-      client_id: null
-    }
-  }
+      client_id: null,
+    },
+  };
 
   if (typeof req.token === 'undefined') {
-    trace('No token supplied with the request.')
-    return res
+    trace('No token supplied with the request.');
+    return res;
   }
   // Get token from db.  Later on, we should speed this up
   // by getting everything in one query.
   return oadaLib.authorizations
     .findByToken(req.token.trim().replace(/^Bearer /, ''))
-    .then(t => {
-      let msg = Object.assign({}, res)
+    .then((t) => {
+      let msg = Object.assign({}, res);
 
       if (!t) {
-        info('WARNING: token ' + req.token + ' does not exist.')
-        msg.token = null
-        return msg
+        info('WARNING: token ' + req.token + ' does not exist.');
+        msg.token = null;
+        return msg;
       }
 
       if (!t._id) {
-        info('WARNING: _id for token does not exist in response')
+        info('WARNING: _id for token does not exist in response');
       }
 
       if (!t.user) {
-        info(`user for token ${t.token} not found`)
-        t.user = {}
+        info(`user for token ${t.token} not found`);
+        t.user = {};
       }
 
       if (!t.user.bookmarks) {
-        info(`No bookmarks for user from token ${t.token}`)
-        t.user.bookmarks = {}
+        info(`No bookmarks for user from token ${t.token}`);
+        t.user.bookmarks = {};
       }
 
-      msg.token_exists = true
-      trace('received authorization, _id = ', t._id)
-      msg.doc.authorizationid = t._id
-      msg.doc.client_id = t.clientId
-      msg.doc.user_id = t.user._id || msg.doc.user_id
-      msg.doc.bookmarks_id = t.user.bookmarks._id || msg.doc.bookmarks_id
-      msg.doc.shares_id = t.user.shares._id || msg.doc.shares_id
-      msg.doc.scope = t.scope || msg.doc.scope
+      msg.token_exists = true;
+      trace('received authorization, _id = ', t._id);
+      msg.doc.authorizationid = t._id;
+      msg.doc.client_id = t.clientId;
+      msg.doc.user_id = t.user._id || msg.doc.user_id;
+      msg.doc.bookmarks_id = t.user.bookmarks._id || msg.doc.bookmarks_id;
+      msg.doc.shares_id = t.user.shares._id || msg.doc.shares_id;
+      msg.doc.scope = t.scope || msg.doc.scope;
 
-      return msg
+      return msg;
     })
-    .catch(err => {
-      error(err)
-      return res
-    })
-})
+    .catch((err) => {
+      error(err);
+      return res;
+    });
+});

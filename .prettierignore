@@ -1,4 +1,6 @@
-dist
-node_modules
-yarn-cache
-services-available
+LICENSE
+
+tags*
+
+yarn.lock
+yarn-error.log

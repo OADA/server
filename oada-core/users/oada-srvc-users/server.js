@@ -13,56 +13,56 @@
  * limitations under the License.
  */
 
-'use strict'
+'use strict';
 
-const debug = require('debug')
-const trace = debug('users:trace')
-const info = debug('users:info')
-const warn = debug('users:warn')
-const error = debug('users:error')
-var Promise = require('bluebird')
-const ksuid = require('ksuid')
-const _ = require('lodash')
+const debug = require('debug');
+const trace = debug('users:trace');
+const info = debug('users:info');
+const warn = debug('users:warn');
+const error = debug('users:error');
+var Promise = require('bluebird');
+const ksuid = require('ksuid');
+const _ = require('lodash');
 
-const { ResponderRequester } = require('../../libs/oada-lib-kafka')
-const { users } = require('../../libs/oada-lib-arangodb')
-const config = require('./config')
+const { ResponderRequester } = require('oada-lib-kafka');
+const { users } = require('oada-lib-arangodb');
+const config = require('./config');
 const contentTypes = {
   bookmarks: 'application/vnd.oada.bookmarks.1+json',
-  shares: 'application/vnd.oada.shares.1+json'
-}
+  shares: 'application/vnd.oada.shares.1+json',
+};
 
 const responder = new ResponderRequester({
   requestTopics: {
     produceTopic: config.get('kafka:topics:writeRequest'),
-    consumeTopic: config.get('kafka:topics:httpResponse')
+    consumeTopic: config.get('kafka:topics:httpResponse'),
   },
   respondTopics: {
     consumeTopic: config.get('kafka:topics:userRequest'),
-    produceTopic: config.get('kafka:topics:httpResponse')
+    produceTopic: config.get('kafka:topics:httpResponse'),
   },
-  group: 'user-handlers'
-})
+  group: 'user-handlers',
+});
 
-module.exports = function stopResp () {
-  return responder.disconnect()
-}
+module.exports = function stopResp() {
+  return responder.disconnect();
+};
 
-function createNewUser (req) {
-  const u = _.cloneDeep(req.user)
-  u._id = 'users/' + req.userid
-  u._key = req.userid
+function createNewUser(req) {
+  const u = _.cloneDeep(req.user);
+  u._id = 'users/' + req.userid;
+  u._key = req.userid;
   return users
     .create(u)
-    .then(user => {
+    .then((user) => {
       // Create empty resources for user
-      ;['bookmarks', 'shares'].forEach(res => {
+      ['bookmarks', 'shares'].forEach((res) => {
         if (!(user[res] && user[res]['_id'])) {
-          let resid = 'resources/' + ksuid.randomSync().string
+          let resid = 'resources/' + ksuid.randomSync().string;
 
           trace(
             `Creating ${resid} for ${res} of ${user._id} as _type = ${contentTypes[res]}`
-          )
+          );
           user[res] = responder
             .send({
               url: '/' + resid,
@@ -74,85 +74,86 @@ function createNewUser (req) {
               //'authorizationid': ,
               //'client_id': ,
               contentType: contentTypes[res],
-              body: {}
+              body: {},
             })
-            .tap(resp => {
+            .tap((resp) => {
               if (resp.code === 'success') {
-                return Promise.resolve()
+                return Promise.resolve();
               } else {
                 // TODO: Clean up on failure?
-                trace(resp.code)
-                let err = new Error(`Failed to create ${res}`)
-                return Promise.reject(err)
+                trace(resp.code);
+                let err = new Error(`Failed to create ${res}`);
+                return Promise.reject(err);
               }
             })
-            .return({ _id: resid })
+            .return({ _id: resid });
         }
-      })
+      });
       // If we keep the password, we end up re-hashing it in the update
-      delete user.password
-      return user
+      delete user.password;
+      return user;
     })
     .props()
     .then(users.update) // update the new user with the new bookmarks
-    .tap(user => trace(`Created user ${user['_id']}`))
+    .tap((user) => trace(`Created user ${user['_id']}`));
 }
 
-responder.on('request', async function handleReq (req) {
+responder.on('request', async function handleReq(req) {
   try {
     // TODO: Sanitize?
-    trace('REQUEST: req.user = ', req.user, ', userid = ', req.userid)
+    trace('REQUEST: req.user = ', req.user, ', userid = ', req.userid);
     trace(
       'REQUEST: req.authorization.scope = ',
       req.authorization ? req.authorization.scope : null
-    )
+    );
     // While this could fit in permissions_handler, since users are not really resources (i.e. no graph),
     // we'll add a check here that the user has oada.admin.user:write or oada.admin.user:all scope
-    const authorization = _.cloneDeep(req.authorization) || {}
+    const authorization = _.cloneDeep(req.authorization) || {};
     const tokenscope = _.isArray(authorization.scope)
       ? _.join(authorization.scope, ' ')
-      : authorization.scope || '' // force to space-separated string
+      : authorization.scope || ''; // force to space-separated string
     if (
       !tokenscope.match(/oada.admin.user:write/) &&
       !tokenscope.match(/oada.admin.user:all/)
     ) {
       warn(
         'WARNING: attempt to create a user, but request does not have token with oada.admin.user:write or oada.admin.user:all scope'
-      )
+      );
       return {
-        code: 'ERROR: token does not have required scope to create users.'
-      }
+        code: 'ERROR: token does not have required scope to create users.',
+      };
     }
 
     // First, check if the ID exists already:
-    let cur_user = null
+    let cur_user = null;
     if (req.userid) {
-      trace('Checking if user id ', req.userid, ' exists.')
-      cur_user = await users.findById(req.userid, { graceful: true })
+      trace('Checking if user id ', req.userid, ' exists.');
+      cur_user = await users.findById(req.userid, { graceful: true });
     }
-    trace('Result of search for user with id ', req.userid, ': ', cur_user)
+    trace('Result of search for user with id ', req.userid, ': ', cur_user);
 
     // Make one if it doesn't exist already:
-    let created_a_new_user = false
+    let created_a_new_user = false;
     if (!cur_user) {
       try {
-        created_a_new_user = true
-        cur_user = await createNewUser(req)
+        created_a_new_user = true;
+        cur_user = await createNewUser(req);
       } catch (err) {
-        
         if (err && err.errorNum === users.UniqueConstraintError.errorNum) {
-          created_a_new_user = false
+          created_a_new_user = false;
           trace(
             'Tried to create user, but it already existed (same username).  Returning as if we had created it.  User object was: ',
             req.user
-          )
-          cur_user = (await users.like({ username: req.user.username }))[0]
+          );
+          cur_user = (await users.like({ username: req.user.username }))[0];
           trace('existing user found as: ', cur_user);
         } else {
-          error('FAILED: unknown error occurred when creating new user.  Error was: ', err);
+          error(
+            'FAILED: unknown error occurred when creating new user.  Error was: ',
+            err
+          );
           throw err;
         }
-        
       }
     }
 
@@ -161,24 +162,24 @@ responder.on('request', async function handleReq (req) {
       trace(
         'We did not create a new user, so we are now updating user id ',
         cur_user._id
-      )
-      const u = _.cloneDeep(req.user) // Get the "update" merge body
-      u._id = cur_user._id // Add the correct _id (overwrite any incorrect one)
-      cur_user = await users.update(u)
+      );
+      const u = _.cloneDeep(req.user); // Get the "update" merge body
+      u._id = cur_user._id; // Add the correct _id (overwrite any incorrect one)
+      cur_user = await users.update(u);
     }
 
     // All done!
     // Respond to the request with success:
-    trace('Finished with update, responding with success, user = ', cur_user)
+    trace('Finished with update, responding with success, user = ', cur_user);
     return {
       code: 'success',
       new: created_a_new_user,
-      user: cur_user
-    }
+      user: cur_user,
+    };
 
     // If anything else went wrong, respond with error
   } catch (err) {
-    error(err)
-    return { code: err.message || 'error' }
+    error(err);
+    return { code: err.message || 'error' };
   }
-})
+});
