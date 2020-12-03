@@ -34,8 +34,7 @@
     "@types/jsonpointer": "^4.0.0",
     "@types/node": "^14.11.2",
     "@types/ws": "^7.2.3",
-    "arangojs": "^5.6.1",
-    "axios": "^0.19.2",
+    "axios": "^0.21.0",
     "bluebird": "^3.5.0",
     "body-parser": "^1.17.1",
     "cacache": "^13.0.1",
@@ -48,24 +47,19 @@
     "express-ws": "^4.0.0",
     "json-pointer": "^0.6.0",
     "jsonpointer": "^4.0.1",
-    "ksuid": "^1.2.0",
+    "ksuid": "^2.0.0",
     "lodash": "^4.17.20",
-    "nconf": "^0.8.4",
+    "nconf": "^0.11.0",
     "oada-error": "^1.1.1",
+    "oada-lib-arangodb": "^0.0.2",
+    "oada-lib-config": "^0.0.1",
+    "oada-lib-kafka": "^1.0.0",
     "stream": "^0.0.2",
     "timed-cache": "^1.1.0",
-    "ts-node": "^9.0.0",
+    "ts-node": "^9.1.0",
     "type-is": "^1.6.18",
-    "typescript": "^4.0.3",
     "uuid": "^3.0.1",
-    "well-known-json": "^0.2.0"
-  },
-  "devDependencies": {
-    "chai": "^3.5.0",
-    "mocha": "^7.0.1",
-    "mocha-steps": "^1.0.2",
-    "mock-require": "^2.0.2",
-    "prettier": "^2.1.2",
-    "supertest": "^3.0.0"
+    "well-known-json": "^0.2.0",
+    "ws": "^7.4.0"
   }
 }

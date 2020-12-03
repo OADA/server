@@ -22,12 +22,8 @@
     "debug": "^4.3.1",
     "ksuid": "^2.0.0",
     "node-rdkafka": "^2.9.1",
+    "oada-lib-arangodb": "^0.0.2",
+    "oada-lib-config": "^0.0.1",
     "uuid": "^8.3.1"
-  },
-  "devDependencies": {
-    "chai": "^4.0.2",
-    "chai-as-promised": "^7.1.1",
-    "kafka-please": "^1.0.1",
-    "mocha": "^8.2.1"
   }
 }

@@ -10,19 +10,16 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "arangojs": "^5.6.1",
     "bcryptjs": "^2.4.3",
     "bluebird": "^3.5.0",
-    "chai": "^3.5.0",
     "debug": "^4.1.1",
     "lodash": "^4.17.15",
-    "mocha": "^7.0.1",
     "moment": "^2.18.1",
-    "nconf": "^0.8.4",
+    "nconf": "^0.11.0",
+    "oada-lib-arangodb": "^0.0.2",
+    "oada-lib-config": "^0.0.1",
+    "oada-lib-kafka": "^1.0.0",
     "p-queue": "^6.3.0",
     "randomstring": "^1.1.5"
-  },
-  "devDependencies": {
-    "@oada/client": "^1.0.2"
   }
 }

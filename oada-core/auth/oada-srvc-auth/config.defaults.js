@@ -20,7 +20,7 @@ var fs = require('fs');
 module.exports = {
   domainsDir: '/domains-enabled',
   auth: {
-    init: function() {}, // this will run if you call npm run init.  Replace in your own config with your own init.
+    init: function () {}, // this will run if you call npm run init.  Replace in your own config with your own init.
     server: {
       'jsonSpaces': 2,
       'sessionSecret': 'Xka*32F@*!15',
@@ -29,7 +29,7 @@ module.exports = {
       'port-https': 443,
       'mode': 'https',
       'domain': 'localhost',
-      'publicUri': undefined
+      'publicUri': undefined,
     },
     wkj: undefined,
     endpointsPrefix: '', // so you can place this under a sub-path in your domain
@@ -43,55 +43,55 @@ module.exports = {
       redirectConnect: '/id-redirect', // redirect URL for OpenIDConnect
       logout: '/logout',
       certs: '/certs',
-      userinfo: '/userinfo'
+      userinfo: '/userinfo',
     },
     // Views controls what name is used for the EJS template in the views/ folder for
     // various pages.  For now, there's just login.  In the future can also add the allow
     // page.  This allows other services to override the login page itself with their
     // own custom one via docker-compose.
     views: {
-      basedir: '/oada-core/auth/oada-srvc-auth/views',
+      basedir: '/oada/oada-core/auth/oada-srvc-auth/views',
       loginPage: 'login',
-      approvePage: 'approve'
+      approvePage: 'approve',
     },
     oauth2: {
-      enable: true
+      enable: true,
     },
     oidc: {
-      enable: true
+      enable: true,
     },
     dynamicRegistration: {
-      trustedListLookupTimeout: 5000
+      trustedListLookupTimeout: 5000,
     },
     code: {
       length: 25,
-      expiresIn: 10
+      expiresIn: 10,
     },
     token: {
       length: 40,
-      expiresIn: 0
+      expiresIn: 0,
     },
     idToken: {
       expiresIn: 0,
-      signKid: 'kjcScjc32dwJXXLJDs3r124sa1'
+      signKid: 'kjcScjc32dwJXXLJDs3r124sa1',
     },
     certs: {
       key: fs.readFileSync(path.join(__dirname, 'certs/ssl/server.key')),
       cert: fs.readFileSync(path.join(__dirname, 'certs/ssl/server.crt')),
       ca: fs.readFileSync(path.join(__dirname, 'certs/ssl/ca.crt')),
       requestCrt: true,
-      rejectUnauthorized: false
+      rejectUnauthorized: false,
     },
     keys: {
-      signPems: path.join(__dirname, 'certs/sign/')
+      signPems: path.join(__dirname, 'certs/sign/'),
     },
     mongo: {
-      connectionString: 'localhost/oada-ref-auth'
+      connectionString: 'localhost/oada-ref-auth',
     },
     datastoresDriver: 'flat',
     hint: {
       username: 'frank',
-      password: 'test'
-    }
-  }
+      password: 'test',
+    },
+  },
 };

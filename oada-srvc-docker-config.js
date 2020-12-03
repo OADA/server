@@ -38,74 +38,74 @@ module.exports = {
       users: {
         name: 'users',
         indexes: ['username', { name: 'oadaid', sparse: true }],
-        defaults: './libs/exampledocs/users'
+        defaults: './libs/exampledocs/users',
       },
       clients: {
         name: 'clients',
         indexes: ['clientId'],
-        defaults: './libs/exampledocs/clients'
+        defaults: './libs/exampledocs/clients',
       },
       authorizations: {
         name: 'authorizations',
         indexes: ['token', { name: 'user', unique: false }],
-        defaults: './libs/exampledocs/authorizations'
+        defaults: './libs/exampledocs/authorizations',
       },
       changes: {
         name: 'changes',
         indexes: [{ name: ['resource_id', 'number'], unique: false }],
-        defaults: './libs/exampledocs/changes'
+        defaults: './libs/exampledocs/changes',
       },
       codes: {
         name: 'codes',
         indexes: ['code'],
-        defaults: './libs/exampledocs/codes'
+        defaults: './libs/exampledocs/codes',
       },
       resources: {
         name: 'resources',
         indexes: [],
-        defaults: './libs/exampledocs/resources'
+        defaults: './libs/exampledocs/resources',
       },
       remoteResources: {
         name: 'remoteResources',
-        indexes: [{ name: ['domain', 'resource_id'], unique: true }]
+        indexes: [{ name: ['domain', 'resource_id'], unique: true }],
       },
       graphNodes: {
         name: 'graphNodes',
         indexes: [{ name: 'resource_id', unique: false }],
-        defaults: './libs/exampledocs/graphNodes'
+        defaults: './libs/exampledocs/graphNodes',
       },
       changeEdges: {
         name: 'changeEdges',
         indexes: [],
         edgeCollection: true,
-        defaults: './libs/exampledocs/changeEdges'
+        defaults: './libs/exampledocs/changeEdges',
       },
       edges: {
         name: 'edges',
         indexes: [
           // TODO: Do we need both these indexes?
           { name: 'name', unique: false },
-          { name: ['_from', 'name'], unique: true }
+          { name: ['_from', 'name'], unique: true },
         ],
         defaults: './libs/exampledocs/edges',
-        edgeCollection: true
+        edgeCollection: true,
       },
       putBodies: {
         name: 'putBodies',
         indexes: [],
         defaults: './libs/exampledocs/putBodies',
-        createOptions: { isVolatile: false }
+        createOptions: { isVolatile: false },
       },
       sessions: {
         name: 'sessions',
         indexes: [],
-        createOptions: { isVolatile: false }
-      }
+        createOptions: { isVolatile: false },
+      },
     },
     init: {
       // NOTE: passwordSalt HAS to match the one in auth
-      passwordSalt: '$2a$10$l64QftVz6.7KR5BXNc29IO'
-    }
+      passwordSalt: '$2a$10$l64QftVz6.7KR5BXNc29IO',
+    },
   },
   kafka: {
     topics: {
@@ -116,11 +116,11 @@ module.exports = {
       userRequest: 'user_request',
       permissionsRequest: 'permissions_request', //show bobs
       httpResponse: 'http_response',
-      websocketsRequest: 'websockets_request'
-    }
+      websocketsRequest: 'websockets_request',
+    },
   },
   zookeeper: {
-    host: 'zookeeper:2181'
+    host: 'zookeeper:2181',
   },
   auth: {
     // Prefix should match nginx proxy's prefix for the auth service
@@ -135,7 +135,7 @@ module.exports = {
       redirectConnect: '/id-redirect', // redirect URL for OpenIDConnect
       logout: '/logout',
       certs: '/certs',
-      userinfo: '/userinfo'
+      userinfo: '/userinfo',
     },
     serviceName: 'Trellis',
     serviceLongName: 'Trellis - A Framework for Produce Audit Data',
@@ -148,32 +148,32 @@ module.exports = {
       'proxy': 'uniquelocal',
       'domain': domain, // in docker it's port 80 localhost
       // but to nginx proxy, it's https://localhost in dev
-      'publicUri': 'https://' + domain
+      'publicUri': 'https://' + domain,
     },
     keys: {
-      signPems: '/oada-core/auth/sign/'
+      signPems: '/oada/oada-core/auth/sign/',
     },
     idToken: {
       expiresIn: 3600,
       // Note: signKid has to match the name of the .pem at the signPem path above
-      signKid: '02llkjf92jieiekk2'
+      signKid: '02llkjf92jieiekk2',
     },
     datastoresDriver: 'arango',
     hint: {
       username: 'frank',
-      password: 'test'
-    }
+      password: 'test',
+    },
   },
   wellKnown: {
     // forceProtocol: 'https', // use this to force URL's to have https prefix.  Useful when behind a proxy.
     'server': {
       port: 80,
       mode: 'http',
-      domain: domain
+      domain: domain,
     },
     'mergeSubServices': [
       { resource: 'oada-configuration', base: 'http://auth' },
-      { resource: 'openid-configuration', base: 'http://auth' }
+      { resource: 'openid-configuration', base: 'http://auth' },
     ],
     'oada-configuration': {
       well_known_version: '1.1.0',
@@ -183,10 +183,10 @@ module.exports = {
         {
           'name': 'oada.all.1', // can do anything the user can do
           /* pattern: /oada\..*\.1/  */
-          'read+write': true // can read/write anything the user can read/write
-        }
-      ]
+          'read+write': true, // can read/write anything the user can read/write
+        },
+      ],
     },
-    'openid-configuration': {}
-  }
+    'openid-configuration': {},
+  },
 };

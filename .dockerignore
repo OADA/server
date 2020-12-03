@@ -1,5 +1,16 @@
 # Don't copy host node_modules into images
 **/node_modules
 
+# Don't copy in git history?
+**/.git*
+
 **/*.log
 **/.DS_Store
+
+# Editor junk
+**/tags*
+**/GTAGS
+**/GPATH
+**/GRTAGS
+**/.session*
+**/.undodir
