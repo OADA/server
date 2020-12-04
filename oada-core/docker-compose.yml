@@ -77,7 +77,7 @@ services:
     expose: # expose only internally, not on host
       - '80' # at one time this mapped 34135 from host to local 80 for some reason
     environment:
-      - IGNORE_SCOPE=${IGNORE_SCOPE:-""}
+      - IGNORE_SCOPE=${IGNORE_SCOPE:-}
 
   sync-handler:
     depends_on:
@@ -90,7 +90,7 @@ services:
     networks:
       - http_net
     environment:
-      - IGNORE_SCOPE=${IGNORE_SCOPE:-""}
+      - IGNORE_SCOPE=${IGNORE_SCOPE:-}
 
   write-handler:
     depends_on:

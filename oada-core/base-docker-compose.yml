@@ -13,10 +13,10 @@ x-oada-uservice: &oada-uservice
     volumes:
       - ./oada-srvc-docker-config.js:/oada-srvc-docker-config.js
     environment:
-      - NODE_ENV=${NODE_ENV:-development}
+      - NODE_ENV=${NODE_ENV:-production}
       - DEBUG=${DEBUG:-*:error,*:warn,*:info}
       - DOMAIN=${DOMAIN:-localhost}
-      - NODE_TLS_REJECT_UNAUTHORIZED=${NODE_TLS_REJECT_UNAUTHORIZED:-""}
+      - NODE_TLS_REJECT_UNAUTHORIZED=${NODE_TLS_REJECT_UNAUTHORIZED:-}
 
 # Need to do this before main docker-compose.yml becasue docker/yaml sucks
 # Yes yaml has merge, but it does not work for this
