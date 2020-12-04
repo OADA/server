@@ -173,7 +173,6 @@ services:
       - ./oada-core/webhooks:/code/webhooks
       - ./oada-core/well-known:/code/well-known
       - ./oada-core/write-handler:/code/write-handler
-      - ./oada-core/yarn:/code/yarn
       - ./scopes:/code/scopes
       - /var/run/docker.sock:/var/run/docker.sock
       - letsencrypt_www_data:/var/www/letsencrypt
@@ -209,12 +208,6 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - kafka_data:/var/lib/kafka
-
-  # Needed for installing native Node dependencies
-  #yarn:
-  #scale: 0
-  #build:
-  #context: ./oada-core/yarn
 
   # Arango is the main backend where core data and graph is stored
   arangodb:

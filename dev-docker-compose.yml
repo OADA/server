@@ -36,7 +36,6 @@ services:
   graph-lookup: *oada-uservice
   well-known: *oada-uservice
   #admin: *oada-uservice
-  #yarn: *oada-uservice
   webhooks: *oada-uservice
   permissions-handler: *oada-uservice
   shares: *oada-uservice
