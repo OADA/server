@@ -6,7 +6,7 @@ const _ = require('lodash')
 const aql = require('arangojs').aql
 const util = require('../util')
 const debug = require('debug')
-const trace = debug('oada-lib-arangodb#authorizations:trace')
+const trace = debug('@oada/lib-arangodb#authorizations:trace')
 
 const users = require('./users.js')
 

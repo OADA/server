@@ -1,0 +1,17 @@
+{
+  "name": "@oada/users",
+  "version": "1.0.0",
+  "description": "",
+  "author": "Alex Layton <alex@layton.in>",
+  "license": "ISC",
+  "dependencies": {
+    "bluebird": "^3.5.0",
+    "debug": "^4.1.1",
+    "ksuid": "^2.0.0",
+    "lodash": "^4.17.15",
+    "@oada/lib-arangodb": "^0.0.2",
+    "@oada/lib-config": "^0.0.1",
+    "@oada/lib-kafka": "^1.0.0",
+    "uuid": "^3.3.3"
+  }
+}

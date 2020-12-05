@@ -12,11 +12,12 @@ x-oada-uservice: &oada-uservice
 
 services:
   # Service to intitialize node_modules in dev?
-  dev-yarn:
+  yarn:
     image: oada/docker-base-node
     volumes:
       - code:/oada
-    command: yarn --cwd /oada install
+    entrypoint: ["yarn", "--cwd", "/oada"]
+    command: install
 
   # In development, put the dummy users/tokens into database
   startup:
@@ -53,9 +54,10 @@ x-mutagen:
     code:
       alpha: "./"
       beta: "volume://code"
-      mode: "one-way-safe"
+      mode: "one-way-replica"
       ignore:
         paths:
+          # Don't map host/local node_modules into conainters
           - "node_modules"
   forward:
     agrango:

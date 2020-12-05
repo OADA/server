@@ -20,8 +20,8 @@ const util = require('util')
 const ksuid = require('ksuid')
 const Bluebird = require('bluebird')
 
-const info = require('debug')('oada-lib-kafka:info')
-const warn = require('debug')('oada-lib-kafka:warn')
+const info = require('debug')('@oada/lib-kafka:info')
+const warn = require('debug')('@oada/lib-kafka:warn')
 
 const {
     Base,

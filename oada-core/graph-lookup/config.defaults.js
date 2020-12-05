@@ -15,7 +15,11 @@
 'use strict'
 
 module.exports = {
-  arango: {
-    connectionString: 'http://localhost:8529'
+  kafka: {
+    topics: {
+      graphRequest: 'graph_request',
+      httpResponse: 'http_response'
+    },
+    groupId: 'graph-lookup'
   }
 }

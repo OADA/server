@@ -1,5 +1,5 @@
 {
-  "name": "oada-lib-arangodb",
+  "name": "@oada/lib-arangodb",
   "version": "0.0.2",
   "description": "All OADA Arango interface code in one place.",
   "main": "index.js",
@@ -13,7 +13,7 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/OADA/oada-lib-arangodb.git"
+    "url": "git+https://github.com/OADA/@oada/lib-arangodb.git"
   },
   "keywords": [
     "oada",
@@ -23,9 +23,9 @@
   "author": "Aaron Ault <aultac@gmail.com> (https://github.com/aultac)",
   "license": "Apache-2.0",
   "bugs": {
-    "url": "https://github.com/OADA/oada-lib-arangodb/issues"
+    "url": "https://github.com/OADA/@oada/lib-arangodb/issues"
   },
-  "homepage": "https://github.com/OADA/oada-lib-arangodb#readme",
+  "homepage": "https://github.com/OADA/@oada/lib-arangodb#readme",
   "dependencies": {
     "@oada/types": "^1.0.4",
     "arangojs": "^5.6.1",
@@ -38,8 +38,7 @@
     "md5": "^2.2.1",
     "moment": "^2.18.1",
     "nconf": "^0.11.0",
-    "oada-lib-config": "^0.0.1",
-    "oada-lib-kafka": "^1.0.0",
+    "@oada/lib-config": "^0.0.1",
     "uuid": "^3.0.1"
   }
 }

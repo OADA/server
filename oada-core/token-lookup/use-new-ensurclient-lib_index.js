@@ -22,10 +22,10 @@ const error = debug('token-lookup:error');
 
 const Promise = require('bluebird');
 const kf = require('kafka-node');
-const oadaLib = require('oada-lib-arangodb');
+const oadaLib = require('@oada/lib-arangodb');
 const config = require('./config');
 
-const ensureClient = require('oada-lib-kafka').ensureClient;
+const ensureClient = require('@oada/lib-kafka').ensureClient;
 
 //---------------------------------------------------------
 // Kafka intializations:

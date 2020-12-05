@@ -1,5 +1,5 @@
 {
-  "name": "oada-lib-kafka",
+  "name": "@oada/lib-kafka",
   "version": "1.0.0",
   "description": "OADA Kafka library",
   "main": "index.js",
@@ -13,7 +13,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/OADA/oada-lib-kafka.git"
+    "url": "git+https://github.com/OADA/@oada/lib-kafka.git"
   },
   "author": "",
   "license": "ISC",
@@ -22,8 +22,7 @@
     "debug": "^4.3.1",
     "ksuid": "^2.0.0",
     "node-rdkafka": "^2.9.1",
-    "oada-lib-arangodb": "^0.0.2",
-    "oada-lib-config": "^0.0.1",
+    "@oada/lib-config": "^0.0.1",
     "uuid": "^8.3.1"
   }
 }

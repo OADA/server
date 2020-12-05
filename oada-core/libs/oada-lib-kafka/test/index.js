@@ -6,8 +6,8 @@ chai.use(require('chai-as-promised'))
 const expect = chai.expect
 const kf = require('node-rdkafka')
 const uuid = require('uuid')
-const info = require('debug')('oada-lib-kafka:tests:info')
-const error = require('debug')('oada-lib-kafka:tests:error')
+const info = require('debug')('@oada/lib-kafka:tests:info')
+const error = require('debug')('@oada/lib-kafka:tests:error')
 
 const config = require('../config')
 
@@ -18,7 +18,7 @@ const REQ_TOPIC = 'test_requests'
 const RES_TOPIC = 'test_responses'
 const GROUP = 'test_group'
 
-describe('oada-lib-kafka', () => {
+describe('@oada/lib-kafka', () => {
     let prod
     before(function makeTestProd (done) {
         this.timeout(10000)
