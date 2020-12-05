@@ -82,8 +82,13 @@ fi;
 COMPOSEFILES=" -f docker-compose.yml -f oada-core/base-docker-compose.yml -f oada-core/docker-compose.yml"
 if [[ $@ == *"--dev"* ]]; then
   COMPOSEFILES="${COMPOSEFILES} -f dev-docker-compose.yml"
-  ARGS=$(echo "$@" | sed "s/--dev //")
-  COMPOSE="mutagen compose"
+  ARGS=$(echo "$@" | sed "s/--dev *//")
+  if [ $(which mutagen 2> /dev/null) ]; then
+    COMPOSE="mutagen compose"
+  else
+    echo -e "${YELLOW}Install mutagen for better dev mode${NC}" >&2
+    COMPOSE="docker-compose"
+  fi
 else
   ARGS=$@
   COMPOSE="docker-compose"
