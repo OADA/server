@@ -72,5 +72,5 @@ RUN echo 'deb http://deb.debian.org/debian stretch-backports main ' | tee /etc/a
 # Installing socat to help with port-forwarding arangodb
 RUN apt-get -y install socat
 
-WORKDIR "/code/admin"
+WORKDIR "/oada/oada-core/admin"
 CMD bash

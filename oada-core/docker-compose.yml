@@ -149,31 +149,21 @@ services:
   admin:
     scale: 0
     build: ./oada-core/admin
+    networks:
+      - startup_net
+      - kafka_net
+      - arango_net
     volumes:
+      - ./oada-srvc-docker-config.js:/oada-srvc-docker-config.js
       - ./domains-available:/domains-available
       - ./domains-enabled:/domains-enabled
       - arangodb_data:/volumes/arangodb
       - arangodb_apps_data:/volumes/arangodb_apps
       - zookeeper_data:/volumes/zookeeper
       - kafka_data:/volumes/kafka
-      - ./oada-core/admin:/code/admin
-      - ./oada-core/auth:/code/auth
-      - ./oada-core/graph-lookup:/code/graph-lookup
-      - ./oada-core/http-handler:/code/http-handler
-      - ./oada-core/libs:/code/libs
-      - ./oada-core/permissions-handler:/code/permissions-handler
-      - ./oada-core/proxy:/code/proxy
-      - ./oada-core/rev-graph-update:/code/rev-graph-update
-      - ./oada-core/shares:/code/shares
-      - ./oada-core/startup:/code/startup
-      - ./oada-core/sync-handler:/code/sync-handler
-      - ./oada-core/tests:/code/tests
-      - ./oada-core/token-lookup:/code/token-lookup
-      - ./oada-core/users:/code/users
-      - ./oada-core/webhooks:/code/webhooks
-      - ./oada-core/well-known:/code/well-known
-      - ./oada-core/write-handler:/code/write-handler
-      - ./scopes:/code/scopes
+      # TODO: What should admin do in not dev mode??
+      #- ./oada:/oada
+      - ./scopes:/oada/scopes
       - /var/run/docker.sock:/var/run/docker.sock
       - letsencrypt_www_data:/var/www/letsencrypt
       # Need to map proxy's /certs for letsencrypt to save all its stuff where proxy can get it

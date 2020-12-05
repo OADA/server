@@ -35,7 +35,7 @@ services:
   rev-graph-update: *oada-uservice
   graph-lookup: *oada-uservice
   well-known: *oada-uservice
-  #admin: *oada-uservice
+  admin: *oada-uservice
   webhooks: *oada-uservice
   permissions-handler: *oada-uservice
   shares: *oada-uservice
