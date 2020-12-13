@@ -1,23 +1,12 @@
 version: '3.7'
 
-# Common configuration overridesfor all of our core uservices
+# Common configuration overrides for all of our core uservices
 x-oada-uservice: &oada-uservice
-    volumes:
-      # Mount host code over images in development mode?
-      #- ./oada-core:/oada-core
-      - code:/oada
     environment:
       - NODE_ENV=${NODE_ENV:-development}
       - DEBUG=${DEBUG:-*}
 
 services:
-  # Service to intitialize node_modules in dev?
-  yarn:
-    image: oada/docker-base-node
-    volumes:
-      - code:/oada
-    entrypoint: ["yarn", "--cwd", "/oada"]
-    command: install
 
   # In development, put the dummy users/tokens into database
   startup:
@@ -40,32 +29,3 @@ services:
   webhooks: *oada-uservice
   permissions-handler: *oada-uservice
   shares: *oada-uservice
-
-volumes:
-  # Volume for code sync from host
-  code:
-
-# Set up Mutagen synchronization and forwarding.
-x-mutagen:
-  sync:
-    defaults:
-      ignore:
-        vcs: true
-    code:
-      alpha: "./"
-      beta: "volume://code"
-      mode: "one-way-replica"
-      ignore:
-        paths:
-          # Don't map host/local node_modules into conainters
-          - "node_modules"
-  forward:
-    agrango:
-      source: "tcp:localhost:8529"
-      destination: "network://arango_net:tcp:arangodb:8529"
-    kafka:
-      source: "tcp:localhost:9092"
-      destination: "network://kafka_net:tcp:kafka:9092"
-    zookeeper:
-      source: "tcp:localhost:2181"
-      destination: "network://kafka_net:tcp:zookeeper:2181"

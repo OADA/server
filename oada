@@ -85,9 +85,11 @@ if [[ $@ == *"--dev"* ]]; then
   ARGS=$(echo "$@" | sed "s/--dev *//")
   if [ $(which mutagen 2> /dev/null) ]; then
     COMPOSE="mutagen compose"
+    COMPOSEFILES="${COMPOSEFILES} -f mutagen-compose.yml -f dev-docker-compose.yml"
   else
     echo -e "${YELLOW}Install mutagen for better dev mode${NC}" >&2
     COMPOSE="docker-compose"
+    COMPOSEFILES="${COMPOSEFILES} -f dev-docker-compose.yml"
   fi
 else
   ARGS=$@
