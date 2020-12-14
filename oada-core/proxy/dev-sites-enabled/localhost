@@ -16,7 +16,7 @@ server {
     proxy_set_header X-Forwarded-Proto $scheme;
     proxy_set_header Host $host;
     # 127.0.0.11 is the docker DNS server
-    resolver 127.0.0.11;
+    resolver 127.0.0.11 [::1]:5353 valid=15s;
     set $proxy "http://auth:80";
     proxy_pass $proxy;
     # Don't rewrite oadaauth because auth service knows about prefix
@@ -36,7 +36,7 @@ server {
     proxy_set_header X-Forwarded-Proto $scheme;
     proxy_set_header Host $host;
     # 127.0.0.11 is the docker DNS server
-    resolver 127.0.0.11;
+    resolver 127.0.0.11 [::1]:5353 valid=15s;
     set $proxy "http://well-known:80";
     proxy_pass $proxy;
   }
@@ -54,8 +54,9 @@ server {
     proxy_set_header X-Forwarded-For $remote_addr;
     proxy_set_header X-Forwarded-Proto $scheme;
     proxy_set_header Host $host;
-    resolver 127.0.0.11;
-    proxy_pass "http://http-handler:80";
+    resolver 127.0.0.11 [::1]:5353 valid=15s;
+    set $proxy "http://http-handler:80";
+    proxy_pass $proxy;
   }
 
   # In order for a microservice to add it's own location,
@@ -98,7 +99,7 @@ server {
     proxy_set_header X-Forwarded-Proto $scheme;
     proxy_set_header Host $host;
     # 127.0.0.11 is the docker DNS server
-    resolver 127.0.0.11;
+    resolver 127.0.0.11 [::1]:5353 valid=15s;
     set $proxy "http://auth:80";
     proxy_pass $proxy;
     # Don't rewrite oadaauth because auth service knows about prefix
@@ -114,7 +115,7 @@ server {
     proxy_set_header X-Forwarded-Proto $scheme;
     proxy_set_header Host $host;
     # 127.0.0.11 is the docker DNS server
-    resolver 127.0.0.11;
+    resolver 127.0.0.11 [::1]:5353 valid=15s;
     set $proxy "http://well-known:80";
     proxy_pass $proxy;
   }
@@ -132,7 +133,8 @@ server {
     proxy_set_header X-Forwarded-For $remote_addr;
     proxy_set_header X-Forwarded-Proto $scheme;
     proxy_set_header Host $host;
-    resolver 127.0.0.11;
-    proxy_pass "http://http-handler:80";
+    resolver 127.0.0.11 [::1]:5353 valid=15s;
+    set $proxy "http://http-handler:80";
+    proxy_pass $proxy;
   }
 }

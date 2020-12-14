@@ -177,7 +177,7 @@ module.exports = {
     ],
     'oada-configuration': {
       well_known_version: '1.1.0',
-      oada_version: '2.1.0',
+      oada_version: '2.1.1',
       oada_base_uri: './',
       scopes_supported: [
         {
