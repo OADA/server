@@ -31,7 +31,7 @@
   "dependencies": {
     "@oada/types": "^1.2.0-beta.5",
     "arangojs": "^5.6.1",
-    "axios": "^0.19.2",
+    "axios": "^0.21.1",
     "bluebird": "^3.5.0",
     "body-parser": "^1.17.1",
     "cacache": "^13.0.1",
