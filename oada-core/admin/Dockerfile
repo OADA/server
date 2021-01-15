@@ -44,16 +44,8 @@ RUN rm -rf /code/admin/node_modules
 RUN . /root/.nvm/nvm.sh \
     && nvm use v14 \
     && npm install -g yarn \
-    && yarn global add mocha \
+    && yarn global add mocha
     # You can put any global NPM installs here
-
-# RUN . /root/.nvm/nvm.sh \
-#     && nvm install v14 \
-#     && nvm use v14 \
-#     && npm install -g @oada/oada-certs
-
-RUN . /root/.nvm/nvm.sh \
-    && nvm use v11.15
    
 # Add any forced upgrades here:
 # RUN yarn global upgrade @oada/oada-certs
