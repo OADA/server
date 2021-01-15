@@ -38,15 +38,25 @@ RUN wget -qO- https://raw.githubusercontent.com/creationix/nvm/v0.35.2/install.s
     && . /root/.nvm/nvm.sh \
     && nvm install v14 \
     && nvm alias default v14
+
+# Install stuff from npm, clear out any existing node_modules to ensure clean build
+RUN rm -rf /code/admin/node_modules
 RUN . /root/.nvm/nvm.sh \
     && nvm use v14 \
     && npm install -g yarn \
     && yarn global add mocha \
     # You can put any global NPM installs here
-    && yarn global add @oada/oada-certs
+
+# RUN . /root/.nvm/nvm.sh \
+#     && nvm install v14 \
+#     && nvm use v14 \
+#     && npm install -g @oada/oada-certs
+
+RUN . /root/.nvm/nvm.sh \
+    && nvm use v11.15
    
 # Add any forced upgrades here:
-RUN yarn global upgrade @oada/oada-certs
+# RUN yarn global upgrade @oada/oada-certs
 
 COPY "./.vimrc" "/root/.vimrc"
 
