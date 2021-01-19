@@ -286,7 +286,7 @@ module.exports = function wsHandler(server: Server) {
           }
 
           // Emit all new changes from the given rev in the request
-          if (request.headers['x-oada-rev']) {
+          if (request.headers['x-oada-rev'] !== undefined) {
             trace('Setting up watch on:', resourceId);
             trace(
               'RECEIVED THIS REV:',
