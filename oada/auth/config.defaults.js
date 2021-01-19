@@ -50,7 +50,7 @@ module.exports = {
     // page.  This allows other services to override the login page itself with their
     // own custom one via docker-compose.
     views: {
-      basedir: '/oada/oada-core/auth/oada-srvc-auth/views',
+      basedir: '/oada/auth/oada-srvc-auth/views',
       loginPage: 'login',
       approvePage: 'approve',
     },
