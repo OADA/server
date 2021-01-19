@@ -37,7 +37,7 @@ module.exports = {
     collections: {
       users: {
         name: 'users',
-        indexes: ['username', { name: 'oadaid', sparse: true }],
+        indexes: ['username', {name: 'oadaid', sparse: true}],
         defaults: './libs/exampledocs/users',
       },
       clients: {
@@ -47,12 +47,12 @@ module.exports = {
       },
       authorizations: {
         name: 'authorizations',
-        indexes: ['token', { name: 'user', unique: false }],
+        indexes: ['token', {name: 'user', unique: false}],
         defaults: './libs/exampledocs/authorizations',
       },
       changes: {
         name: 'changes',
-        indexes: [{ name: ['resource_id', 'number'], unique: false }],
+        indexes: [{name: ['resource_id', 'number'], unique: false}],
         defaults: './libs/exampledocs/changes',
       },
       codes: {
@@ -67,11 +67,11 @@ module.exports = {
       },
       remoteResources: {
         name: 'remoteResources',
-        indexes: [{ name: ['domain', 'resource_id'], unique: true }],
+        indexes: [{name: ['domain', 'resource_id'], unique: true}],
       },
       graphNodes: {
         name: 'graphNodes',
-        indexes: [{ name: 'resource_id', unique: false }],
+        indexes: [{name: 'resource_id', unique: false}],
         defaults: './libs/exampledocs/graphNodes',
       },
       changeEdges: {
@@ -84,8 +84,8 @@ module.exports = {
         name: 'edges',
         indexes: [
           // TODO: Do we need both these indexes?
-          { name: 'name', unique: false },
-          { name: ['_from', 'name'], unique: true },
+          {name: 'name', unique: false},
+          {name: ['_from', 'name'], unique: true},
         ],
         defaults: './libs/exampledocs/edges',
         edgeCollection: true,
@@ -94,12 +94,12 @@ module.exports = {
         name: 'putBodies',
         indexes: [],
         defaults: './libs/exampledocs/putBodies',
-        createOptions: { isVolatile: false },
+        createOptions: {isVolatile: false},
       },
       sessions: {
         name: 'sessions',
         indexes: [],
-        createOptions: { isVolatile: false },
+        createOptions: {isVolatile: false},
       },
     },
     init: {
@@ -151,7 +151,7 @@ module.exports = {
       'publicUri': 'https://' + domain,
     },
     keys: {
-      signPems: '/oada/oada-core/auth/sign/',
+      signPems: '/oada/services/auth/sign/',
     },
     idToken: {
       expiresIn: 3600,
@@ -172,8 +172,8 @@ module.exports = {
       domain: domain,
     },
     'mergeSubServices': [
-      { resource: 'oada-configuration', base: 'http://auth' },
-      { resource: 'openid-configuration', base: 'http://auth' },
+      {resource: 'oada-configuration', base: 'http://auth'},
+      {resource: 'openid-configuration', base: 'http://auth'},
     ],
     'oada-configuration': {
       well_known_version: '1.1.0',

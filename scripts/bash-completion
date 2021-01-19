@@ -1,13 +1,13 @@
 # You have to define OADABASEDIR above this.  The oada --install-self will do that.
-# Add bash_completion for all services names (oada-core and services-available)
-_oada_completions() 
+# Add bash_completion for all services names (oada and services-available)
+_oada_completions()
 {
-  # list the core service names (folder names in oada-core)
-  # CORE=$(cd ${OADABASEDIR}/oada-core; /bin/ls -d *)
-  CORE=$(grep container_name ${OADABASEDIR}/oada-core/docker-compose.yml | sed 's/^.*container_name: *//')
+  # list the core service names (folder names in oadae)
+  # CORE=$(cd ${OADABASEDIR}/oada; /bin/ls -d *)
+  CORE=$(grep container_name ${OADABASEDIR}/docker-compose.yml | sed 's/^.*container_name: *//')
   # list the installed service names (folder names in services-available)
   # SERVICES=$(cd ${OADABASEDIR}/services-available; /bin/ls -d *)
-  if [ "$(/bin/ls ${OADABASEDIR}/services-available)" ]; then 
+  if [ "$(/bin/ls ${OADABASEDIR}/services-available)" ]; then
     # Services folder is not empty, so we can safely do services-available/*/docker-compose.yml
     SERVICES=$(grep container_name ${OADABASEDIR}/services-available/*/docker-compose.yml | sed 's/^.*container_name: *//')
   else

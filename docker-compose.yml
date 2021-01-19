@@ -16,36 +16,6 @@ services:
       # set RESETDATABASE to "yes" if you want to drop database on startup and recreate
       - RESETDATABASE=${RESETDATABASE:-no}
 
-  # proxy routes OAuth2 requests (/auth, /code) to auth service,
-  # and the rest to main http-handlers.  TODO: add load balancing with multiple handlers.
-  proxy:
-    depends_on:
-      - auth
-      - http-handler
-      - well-known
-    build: ./oada-core/proxy
-    container_name: proxy
-    restart: always
-    networks:
-      - http_net
-    ports:
-      - '${BIND:-0.0.0.0}:${PORT_HTTPS:-443}:443'
-      - '${BIND:-0.0.0.0}:${PORT_HTTP:-80}:80'
-    volumes:
-      - ./domains-available:/domains-available
-      - ./domains-enabled:/domains-enabled
-      - ./oada-core/proxy/nginx.conf:/etc/nginx/nginx.conf
-      - ./oada-core/proxy/dev-sites-enabled/:/etc/nginx/sites-templates/
-      - proxy_certs:/certs
-      - ./oada-core/proxy/dev-certs/localhost:/certs/localhost
-      - ./oada-core/proxy:/code/proxy
-      # Need the letsencrypt_www_data volume so admin's certbot command can put web-accessible files there
-      - letsencrypt_www_data:/var/www/letsencrypt
-    environment:
-      - DOMAIN=${DOMAIN:-localhost}
-    command:
-      - /entrypoint.sh
-
   auth:
     depends_on:
       - startup
@@ -60,8 +30,6 @@ services:
     volumes:
       - ./domains-available:/domains-available
       - ./domains-enabled:/domains-enabled
-    command:
-      - /entrypoint.sh
 
   # http-handler is in charge of maintaining connectiongs to clients and starting
   # the first message for a request into Kafka
@@ -144,11 +112,70 @@ services:
     expose: # expose only internally, not on host
       - '80'
 
+  webhooks:
+    depends_on:
+      - startup
+      - proxy
+    build:
+      args:
+        OADA_SERVICE: webhooks
+    container_name: webhooks
+    networks:
+      - http_net
+    environment:
+      - SSL_ALLOW_SELF_SIGNED=1
+
+  permissions-handler:
+    depends_on:
+      - startup
+    build:
+      args:
+        OADA_SERVICE: permissions-handler
+    container_name: permissions-handler
+    volumes:
+      - ./scopes:/code/scopes
+
+  shares:
+    depends_on:
+      - startup
+    build:
+      args:
+        OADA_SERVICE: shares
+    container_name: shares
+
+  # proxy routes OAuth2 requests (/auth, /code) to auth service,
+  # and the rest to main http-handlers.  TODO: add load balancing with multiple handlers.
+  proxy:
+    depends_on:
+      - auth
+      - http-handler
+      - well-known
+    build: ./support/proxy
+    container_name: proxy
+    restart: unless-stopped
+    networks:
+      - http_net
+    ports:
+      - '${BIND:-0.0.0.0}:${PORT_HTTPS:-443}:443'
+      - '${BIND:-0.0.0.0}:${PORT_HTTP:-80}:80'
+    volumes:
+      - ./domains-available:/domains-available
+      - ./domains-enabled:/domains-enabled
+      - ./support/proxy/nginx.conf:/etc/nginx/nginx.conf
+      - ./support/proxy/dev-sites-enabled/:/etc/nginx/sites-templates/
+      - proxy_certs:/certs
+      - ./support/proxy/dev-certs/localhost:/certs/localhost
+      - ./support/proxy:/code/proxy
+      # Need the letsencrypt_www_data volume so admin's certbot command can put web-accessible files there
+      - letsencrypt_www_data:/var/www/letsencrypt
+    environment:
+      - DOMAIN=${DOMAIN:-localhost}
+
   # admin container has all the service names and volumes mapped, so you
   # can interact with them easily from this service.
   admin:
     scale: 0
-    build: ./oada-core/admin
+    build: ./support/admin
     networks:
       - startup_net
       - kafka_net
@@ -183,7 +210,7 @@ services:
       - zookeeper
     expose: # expose only internally, not on host
       - '9092'
-    restart: always
+    restart: unless-stopped
     hostname: kafka
     networks:
       - kafka_net
@@ -203,7 +230,7 @@ services:
   arangodb:
     image: arangodb:3.4.0
     container_name: arangodb
-    restart: always
+    restart: unless-stopped
     networks:
       - arango_net
     volumes:
@@ -222,44 +249,13 @@ services:
   # from https://github.com/wurstmeister/kafka-docker/blob/master/docker-compose.yml
   zookeeper:
     image: wurstmeister/zookeeper
-    restart: always
+    restart: unless-stopped
     networks:
       - kafka_net
     expose: # expose only internally, not on host
       - '2181'
     volumes:
       - zookeeper_data:/var/lib/zookeeper
-
-  webhooks:
-    depends_on:
-      - startup
-      - proxy
-    build:
-      args:
-        OADA_SERVICE: webhooks
-    container_name: webhooks
-    networks:
-      - http_net
-    environment:
-      - SSL_ALLOW_SELF_SIGNED=1
-
-  permissions-handler:
-    depends_on:
-      - startup
-    build:
-      args:
-        OADA_SERVICE: permissions-handler
-    container_name: permissions-handler
-    volumes:
-      - ./scopes:/code/scopes
-
-  shares:
-    depends_on:
-      - startup
-    build:
-      args:
-        OADA_SERVICE: shares
-    container_name: shares
 
 volumes:
   arangodb_data:
