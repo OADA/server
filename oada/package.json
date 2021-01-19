@@ -2,7 +2,8 @@
   "name": "oada",
   "private": true,
   "workspaces": [
-    "oada-core/**"
+    "services/**",
+    "libs/**"
   ],
   "devDependencies": {
     "@oada/client": "^1.1.3",

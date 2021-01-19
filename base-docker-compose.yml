@@ -3,9 +3,8 @@ version: '3.7'
 # Common configuration for all of our core uservices
 x-oada-uservice: &oada-uservice
     build:
-      context: ./oada-core
-      #      dockerfile: ./oada-core/oada-core.Dockerfile
-    restart: always
+      context: ./oada
+    restart: unless-stopped
     networks:
       - startup_net
       - kafka_net

@@ -45,7 +45,7 @@ if [[ $@ == *"--install-self"* ]]; then
 
   # Run yarn container to ensure node_modules are created
   echo -e "${GREEN}Install: 2 of 3:${NC} running yarn container to ensure all node_modules" >&2
-  if [ ! -e "${OADABASEDIR}/oada-core/http-handler/oada-srvc-http-handler/node_modules" ]; then
+  if [ ! -e "${OADABASEDIR}/oada/http-handler/oada-srvc-http-handler/node_modules" ]; then
     ${OADABASEDIR}/oada run --rm yarn
   else
     echo -e "${YELLOW}Looks like yarn already ran, no need to repeat...${NC}" >&2
@@ -54,8 +54,8 @@ if [[ $@ == *"--install-self"* ]]; then
   # bash-completion setup
   echo -e "${GREEN}Install: 3 of 3:${NC} adding bash completion for core and service names" >&2
 
-  if [ ! -e "~/.oada" ]; then 
-    mkdir -p ~/.oada 
+  if [ ! -e "~/.oada" ]; then
+    mkdir -p ~/.oada
   fi
   echo "OADABASEDIR=\"${OADABASEDIR}\"" > ~/.oada/bash-completion
   cat "${OADABASEDIR}/scripts/bash-completion" >> ~/.oada/bash-completion
@@ -79,7 +79,7 @@ fi;
 # The Main Event:
 #############################################
 
-COMPOSEFILES=" -f docker-compose.yml -f oada-core/base-docker-compose.yml -f oada-core/docker-compose.yml"
+COMPOSEFILES=" -f docker-compose.yml -f base-docker-compose.yml -f docker-compose.yml"
 if [[ $@ == *"--dev"* ]]; then
   COMPOSEFILES="${COMPOSEFILES} -f dev-docker-compose.yml"
   ARGS=$(echo "$@" | sed "s/--dev *//")
