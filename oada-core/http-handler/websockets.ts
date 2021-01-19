@@ -24,7 +24,10 @@ import { resources, changes, Change } from '@oada/lib-arangodb';
 // @ts-ignore
 import * as config from './config';
 
-const revLimit = 100;
+/**
+ * @todo Actually figure out how "foregtting history" should work...
+ */
+const revLimit = Infinity;
 
 const info = debug('websockets:info');
 const error = debug('websockets:error');
