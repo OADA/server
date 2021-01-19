@@ -1,3 +1,276 @@
-# Stub file to get paths in all docker-compose files to work from project root.
-# Need this per: https://github.com/docker/compose/issues/3874
 version: '3.7'
+
+services:
+  startup:
+    depends_on:
+      - zookeeper
+      - kafka
+      - arangodb
+    build:
+      args:
+        OADA_SERVICE: startup
+    container_name: startup
+    expose: # expose only internally, not on host
+      - '80'
+    environment:
+      # set RESETDATABASE to "yes" if you want to drop database on startup and recreate
+      - RESETDATABASE=${RESETDATABASE:-no}
+
+  # proxy routes OAuth2 requests (/auth, /code) to auth service,
+  # and the rest to main http-handlers.  TODO: add load balancing with multiple handlers.
+  proxy:
+    depends_on:
+      - auth
+      - http-handler
+      - well-known
+    build: ./oada-core/proxy
+    container_name: proxy
+    restart: always
+    networks:
+      - http_net
+    ports:
+      - '${BIND:-0.0.0.0}:${PORT_HTTPS:-443}:443'
+      - '${BIND:-0.0.0.0}:${PORT_HTTP:-80}:80'
+    volumes:
+      - ./domains-available:/domains-available
+      - ./domains-enabled:/domains-enabled
+      - ./oada-core/proxy/nginx.conf:/etc/nginx/nginx.conf
+      - ./oada-core/proxy/dev-sites-enabled/:/etc/nginx/sites-templates/
+      - proxy_certs:/certs
+      - ./oada-core/proxy/dev-certs/localhost:/certs/localhost
+      - ./oada-core/proxy:/code/proxy
+      # Need the letsencrypt_www_data volume so admin's certbot command can put web-accessible files there
+      - letsencrypt_www_data:/var/www/letsencrypt
+    environment:
+      - DOMAIN=${DOMAIN:-localhost}
+    command:
+      - /entrypoint.sh
+
+  auth:
+    depends_on:
+      - startup
+    build:
+      args:
+        OADA_SERVICE: auth
+    container_name: auth
+    networks:
+      - http_net
+    expose: # expose only internally, not on host
+      - '80'
+    volumes:
+      - ./domains-available:/domains-available
+      - ./domains-enabled:/domains-enabled
+    command:
+      - /entrypoint.sh
+
+  # http-handler is in charge of maintaining connectiongs to clients and starting
+  # the first message for a request into Kafka
+  http-handler:
+    depends_on:
+      - startup
+    build:
+      args:
+        OADA_SERVICE: http-handler
+    container_name: http-handler
+    networks:
+      - http_net
+    expose: # expose only internally, not on host
+      - '80' # at one time this mapped 34135 from host to local 80 for some reason
+    environment:
+      - IGNORE_SCOPE=${IGNORE_SCOPE:-}
+
+  sync-handler:
+    depends_on:
+      - startup
+      - proxy
+    build:
+      args:
+        OADA_SERVICE: sync-handler
+    container_name: sync-handler
+    networks:
+      - http_net
+    environment:
+      - IGNORE_SCOPE=${IGNORE_SCOPE:-}
+
+  write-handler:
+    depends_on:
+      - startup
+    build:
+      args:
+        OADA_SERVICE: write-handler
+    container_name: write-handler
+
+  users:
+    depends_on:
+      - startup
+    build:
+      args:
+        OADA_SERVICE: users
+    container_name: users
+
+  token-lookup:
+    depends_on:
+      - startup
+    build:
+      args:
+        OADA_SERVICE: token-lookup
+    container_name: token-lookup
+
+  rev-graph-update:
+    depends_on:
+      - startup
+    build:
+      args:
+        OADA_SERVICE: rev-graph-update
+    container_name: rev-graph-update
+
+  graph-lookup:
+    depends_on:
+      - startup
+    build:
+      args:
+        OADA_SERVICE: graph-lookup
+    container_name: graph-lookup
+
+  well-known:
+    depends_on:
+      - startup
+    build:
+      args:
+        OADA_SERVICE: well-known
+    container_name: well-known
+    networks:
+      - http_net
+    expose: # expose only internally, not on host
+      - '80'
+
+  # admin container has all the service names and volumes mapped, so you
+  # can interact with them easily from this service.
+  admin:
+    scale: 0
+    build: ./oada-core/admin
+    networks:
+      - startup_net
+      - kafka_net
+      - arango_net
+    volumes:
+      - ./oada-srvc-docker-config.js:/oada-srvc-docker-config.js
+      - ./domains-available:/domains-available
+      - ./domains-enabled:/domains-enabled
+      - arangodb_data:/volumes/arangodb
+      - arangodb_apps_data:/volumes/arangodb_apps
+      - zookeeper_data:/volumes/zookeeper
+      - kafka_data:/volumes/kafka
+      # TODO: What should admin do in not dev mode??
+      #- ./oada:/oada
+      - ./scopes:/oada/scopes
+      - /var/run/docker.sock:/var/run/docker.sock
+      - letsencrypt_www_data:/var/www/letsencrypt
+      # Need to map proxy's /certs for letsencrypt to save all its stuff where proxy can get it
+      - proxy_certs:/etc/letsencrypt
+      # also map it to /certs so it's in the same path as on proxy to avoid confusion
+      - proxy_certs:/certs
+    command: bash
+    networks:
+      - startup_net
+      - kafka_net
+      - arango_net
+      - http_net
+
+  kafka:
+    image: wurstmeister/kafka
+    depends_on:
+      - zookeeper
+    expose: # expose only internally, not on host
+      - '9092'
+    restart: always
+    hostname: kafka
+    networks:
+      - kafka_net
+    environment:
+      KAFKA_ADVERTISED_HOST_NAME: 'kafka' # NOTE: this only allows services inside this docker network
+      KAFKA_ADVERTISED_PORT: '9092' # to connect to kafka.  Set to machine's IP if you want external.
+      KAFKA_ZOOKEEPER_CONNECT: 'zookeeper:2181'
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: 'true'
+      KAFKA_HEAP_OPTS: '-Xmx1g -Xms512M'
+      KAFKA_BROKER_ID: 1
+      JMX_PORT: 9999
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - kafka_data:/var/lib/kafka
+
+  # Arango is the main backend where core data and graph is stored
+  arangodb:
+    image: arangodb:3.4.0
+    container_name: arangodb
+    restart: always
+    networks:
+      - arango_net
+    volumes:
+      - arangodb_data:/var/lib/arangodb3
+      - arangodb_data:/var/lib/arangodb3-apps
+    expose: # expose only internally, not on host
+      - '8529'
+    environment:
+      # - ARANGO_RANDOM_ROOT_PASSWORD=1
+      - ARANGO_NO_AUTH=1
+      - ARANGO_STORAGE_ENGINE=rocksdb
+      - ARANGO_STATISTICS=0
+    command: ['arangod', '--server.statistics', 'true']
+
+  # zookeeper and kafka entries are based on:
+  # from https://github.com/wurstmeister/kafka-docker/blob/master/docker-compose.yml
+  zookeeper:
+    image: wurstmeister/zookeeper
+    restart: always
+    networks:
+      - kafka_net
+    expose: # expose only internally, not on host
+      - '2181'
+    volumes:
+      - zookeeper_data:/var/lib/zookeeper
+
+  webhooks:
+    depends_on:
+      - startup
+      - proxy
+    build:
+      args:
+        OADA_SERVICE: webhooks
+    container_name: webhooks
+    networks:
+      - http_net
+    environment:
+      - SSL_ALLOW_SELF_SIGNED=1
+
+  permissions-handler:
+    depends_on:
+      - startup
+    build:
+      args:
+        OADA_SERVICE: permissions-handler
+    container_name: permissions-handler
+    volumes:
+      - ./scopes:/code/scopes
+
+  shares:
+    depends_on:
+      - startup
+    build:
+      args:
+        OADA_SERVICE: shares
+    container_name: shares
+
+volumes:
+  arangodb_data:
+  arangodb_apps_data:
+  kafka_data:
+  zookeeper_data:
+  letsencrypt_www_data:
+  proxy_certs:
+
+networks:
+  arango_net:
+  kafka_net:
+  http_net:
+  startup_net:

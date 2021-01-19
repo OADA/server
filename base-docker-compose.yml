@@ -3,8 +3,8 @@ version: '3.7'
 # Common configuration for all of our core uservices
 x-oada-uservice: &oada-uservice
     build:
-      context: .
-      dockerfile: ./oada-core/oada-core.Dockerfile
+      context: ./oada-core
+      #      dockerfile: ./oada-core/oada-core.Dockerfile
     restart: always
     networks:
       - startup_net

@@ -46,7 +46,7 @@ RUN . /root/.nvm/nvm.sh \
     && npm install -g yarn \
     && yarn global add mocha
     # You can put any global NPM installs here
-   
+
 # Add any forced upgrades here:
 # RUN yarn global upgrade @oada/oada-certs
 
@@ -74,5 +74,5 @@ RUN echo 'deb http://deb.debian.org/debian stretch-backports main ' | tee /etc/a
 # Installing socat to help with port-forwarding arangodb
 RUN apt-get -y install socat
 
-WORKDIR "/oada/oada-core/admin"
+WORKDIR "/oada/admin"
 CMD bash
