@@ -1,0 +1,22 @@
+services:
+  # Common configuration for all of our core uservices
+  oada-uservice:
+    build:
+      context: ./oada
+    restart: unless-stopped
+    networks:
+      - startup_net
+      - kafka_net
+      - arango_net
+    volumes:
+      - ./oada-srvc-docker-config.js:/oada-srvc-docker-config.js
+    environment:
+      - NODE_ENV=${NODE_ENV:-development}
+      - DEBUG=${DEBUG:-*}
+      # Should just be an external script someone can run on their instance?
+      - arangodb__ensureDefaults="false"
+      - DOMAIN=${DOMAIN:-localhost}
+      - NODE_TLS_REJECT_UNAUTHORIZED=${NODE_TLS_REJECT_UNAUTHORIZED:-}
+      # These should just be part of the release compose file
+      #- NODE_ENV=${NODE_ENV:-production}
+      #- DEBUG=${DEBUG:-*:error,*:warn,*:info}

@@ -1,15 +1,17 @@
-version: '3.7'
-
 services:
   startup:
+    extends:
+      file: common.yml
+      service: oada-uservice
+    image: oada/startup:${OADA_VERSION-build}
+    build:
+      args:
+        OADA_SERVICE: oada
+    container_name: oada
     depends_on:
       - zookeeper
       - kafka
       - arangodb
-    build:
-      args:
-        OADA_SERVICE: startup
-    container_name: startup
     expose: # expose only internally, not on host
       - '80'
     environment:
@@ -17,12 +19,16 @@ services:
       - RESETDATABASE=${RESETDATABASE:-no}
 
   auth:
-    depends_on:
-      - startup
+    extends:
+      file: common.yml
+      service: oada-uservice
+    image: oada/auth:${OADA_VERSION-build}
     build:
       args:
         OADA_SERVICE: auth
     container_name: auth
+    depends_on:
+      - startup
     networks:
       - http_net
     expose: # expose only internally, not on host
@@ -34,12 +40,16 @@ services:
   # http-handler is in charge of maintaining connectiongs to clients and starting
   # the first message for a request into Kafka
   http-handler:
-    depends_on:
-      - startup
+    extends:
+      file: common.yml
+      service: oada-uservice
+    image: oada/http-handler:${OADA_VERSION-build}
     build:
       args:
         OADA_SERVICE: http-handler
     container_name: http-handler
+    depends_on:
+      - startup
     networks:
       - http_net
     expose: # expose only internally, not on host
@@ -48,100 +58,140 @@ services:
       - IGNORE_SCOPE=${IGNORE_SCOPE:-}
 
   sync-handler:
-    depends_on:
-      - startup
-      - proxy
+    extends:
+      file: common.yml
+      service: oada-uservice
+    image: oada/sync-handler:${OADA_VERSION-build}
     build:
       args:
         OADA_SERVICE: sync-handler
     container_name: sync-handler
+    depends_on:
+      - startup
+      - proxy
     networks:
       - http_net
     environment:
       - IGNORE_SCOPE=${IGNORE_SCOPE:-}
 
   write-handler:
-    depends_on:
-      - startup
+    extends:
+      file: common.yml
+      service: oada-uservice
+    image: oada/write-handler:${OADA_VERSION-build}
     build:
       args:
         OADA_SERVICE: write-handler
     container_name: write-handler
-
-  users:
     depends_on:
       - startup
+
+  users:
+    extends:
+      file: common.yml
+      service: oada-uservice
+    image: oada/users:${OADA_VERSION-build}
     build:
       args:
         OADA_SERVICE: users
     container_name: users
-
-  token-lookup:
     depends_on:
       - startup
+
+  token-lookup:
+    extends:
+      file: common.yml
+      service: oada-uservice
+    image: oada/token-lookup:${OADA_VERSION-build}
     build:
       args:
         OADA_SERVICE: token-lookup
     container_name: token-lookup
-
-  rev-graph-update:
     depends_on:
       - startup
+
+  rev-graph-update:
+    extends:
+      file: common.yml
+      service: oada-uservice
+    image: oada/rev-graph-update:${OADA_VERSION-build}
     build:
       args:
         OADA_SERVICE: rev-graph-update
     container_name: rev-graph-update
-
-  graph-lookup:
     depends_on:
       - startup
+
+  graph-lookup:
+    extends:
+      file: common.yml
+      service: oada-uservice
+    image: oada/graph-lookup:${OADA_VERSION-build}
     build:
       args:
         OADA_SERVICE: graph-lookup
     container_name: graph-lookup
-
-  well-known:
     depends_on:
       - startup
+
+  well-known:
+    extends:
+      file: common.yml
+      service: oada-uservice
+    image: oada/well-known:${OADA_VERSION-build}
     build:
       args:
         OADA_SERVICE: well-known
     container_name: well-known
+    depends_on:
+      - startup
     networks:
       - http_net
     expose: # expose only internally, not on host
       - '80'
 
   webhooks:
-    depends_on:
-      - startup
-      - proxy
+    extends:
+      file: common.yml
+      service: oada-uservice
+    image: oada/webhooks:${OADA_VERSION-build}
     build:
       args:
         OADA_SERVICE: webhooks
     container_name: webhooks
+    depends_on:
+      - startup
+      - proxy
     networks:
       - http_net
     environment:
       - SSL_ALLOW_SELF_SIGNED=1
 
   permissions-handler:
-    depends_on:
-      - startup
+    extends:
+      file: common.yml
+      service: oada-uservice
+    image: oada/permissions-handler:${OADA_VERSION-build}
     build:
       args:
         OADA_SERVICE: permissions-handler
     container_name: permissions-handler
+    depends_on:
+      - startup
     volumes:
       - ./scopes:/code/scopes
 
   shares:
-    depends_on:
-      - startup
+    extends:
+      file: common.yml
+      service: oada-uservice
+    image: oada/shares:${OADA_VERSION-build}
     build:
       args:
         OADA_SERVICE: shares
     container_name: shares
+    depends_on:
+      - startup
 
   # proxy routes OAuth2 requests (/auth, /code) to auth service,
   # and the rest to main http-handlers.  TODO: add load balancing with multiple handlers.
@@ -180,6 +230,7 @@ services:
       - startup_net
       - kafka_net
       - arango_net
+      - http_net
     volumes:
       - ./oada-srvc-docker-config.js:/oada-srvc-docker-config.js
       - ./domains-available:/domains-available
@@ -198,11 +249,6 @@ services:
       # also map it to /certs so it's in the same path as on proxy to avoid confusion
       - proxy_certs:/certs
     command: bash
-    networks:
-      - startup_net
-      - kafka_net
-      - arango_net
-      - http_net
 
   kafka:
     image: wurstmeister/kafka
