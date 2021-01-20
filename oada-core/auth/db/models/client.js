@@ -12,43 +12,43 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-'use strict'
+'use strict';
 
-var uuid = require('uuid/v4')
+const { v4: uuid } = require('uuid');
 
-var config = require('../../config')
-var debug = require('debug')('info')
-var path = require('path')
+var config = require('../../config');
+var debug = require('debug')('info');
+var path = require('path');
 var db = require(path.join(
   __dirname,
   '/../../db',
   config.get('auth:datastoresDriver'),
   'clients.js'
-))
+));
 
-function makeClient (client) {
+function makeClient(client) {
   // No model needed (yet)
-  return client
+  return client;
 }
 
-function findById (id, cb) {
+function findById(id, cb) {
   db.findById(id, function (err, c) {
-    var client
+    var client;
     if (!err) {
-      client = makeClient(c)
+      client = makeClient(c);
     }
 
-    cb(err, client)
-  })
+    cb(err, client);
+  });
 }
 
-function save (client, cb) {
-  client.clientId = uuid()
+function save(client, cb) {
+  client.clientId = uuid();
 
   db.findById(client.clientId, function (err, c) {
     if (err) {
-      debug(err)
-      return cb(err)
+      debug(err);
+      return cb(err);
     }
 
     if (c) {
@@ -58,21 +58,21 @@ function save (client, cb) {
           OADAError.codes.BAD_REQUEST,
           'There was a problem durring the login'
         )
-      )
+      );
     }
 
     db.save(client, function (err) {
       if (err) {
-        debug(err)
-        return cb(err)
+        debug(err);
+        return cb(err);
       }
 
-      findById(client.clientId, cb)
-    })
-  })
+      findById(client.clientId, cb);
+    });
+  });
 }
 
 module.exports = {
   findById: findById,
-  save: save
-}
+  save: save,
+};

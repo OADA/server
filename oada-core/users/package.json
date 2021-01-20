@@ -5,13 +5,13 @@
   "author": "Alex Layton <alex@layton.in>",
   "license": "ISC",
   "dependencies": {
+    "@oada/lib-arangodb": "^0.0.2",
+    "@oada/lib-config": "^0.0.1",
+    "@oada/lib-kafka": "^1.0.0",
     "bluebird": "^3.5.0",
     "debug": "^4.1.1",
     "ksuid": "^2.0.0",
     "lodash": "^4.17.15",
-    "@oada/lib-arangodb": "^0.0.2",
-    "@oada/lib-config": "^0.0.1",
-    "@oada/lib-kafka": "^1.0.0",
-    "uuid": "^3.3.3"
+    "uuid": "^8.3.2"
   }
 }
