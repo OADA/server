@@ -6,8 +6,8 @@ services:
     image: oada/startup:${OADA_VERSION-build}
     build:
       args:
-        OADA_SERVICE: oada
-    container_name: oada
+        OADA_SERVICE: startup
+    container_name: startup
     depends_on:
       - zookeeper
       - kafka
