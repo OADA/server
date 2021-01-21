@@ -12,10 +12,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-'use strict'
+'use strict';
 
-var path = require('path')
-var fs = require('fs')
+var path = require('path');
+var fs = require('fs');
 
 module.exports = {
   // By default, this checks for NODE_ENV===production
@@ -26,11 +26,12 @@ module.exports = {
 
   kafka: {
     topics: {
+      permissionsRequest: 'permissions_request',
       tokenRequest: 'token_request',
       graphRequest: 'graph_request',
       writeRequest: 'write_request',
-      httpResponse: 'http_response'
+      httpResponse: 'http_response',
     },
-    groupId: 'permissions'
-  }
-}
+    groupId: 'permissions',
+  },
+};

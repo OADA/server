@@ -1,8 +1,13 @@
-module.exports = {
-  all: ['*/*'],
+export type ContentType = string;
+export interface Scopes {
+  [key: string]: Array<ContentType>;
+}
+
+const scopes: Scopes = {
+  'all': ['*/*'],
   'oada.admin.user': [
     // can interact with /users
-    'application/vnd.oada.user.1+json'
+    'application/vnd.oada.user.1+json',
   ],
   'oada.mirrors': ['application/vnd.oada.mirrors.1+json'],
   'oada.fields': [
@@ -15,7 +20,7 @@ module.exports = {
     'application/vnd.oada.farm.1+json',
     'application/vnd.oada.growers.1+json',
     'application/vnd.oada.grower.1+json',
-    'application/json'
+    'application/json',
   ],
   'oada.isoblue': [
     'application/vnd.oada.bookmarks.1+json',
@@ -24,23 +29,23 @@ module.exports = {
     'application/vnd.oada.isoblue.dataset.1+json',
     'application/vnd.oada.isoblue.day.1+json',
     'application/vnd.oada.isoblue.hour.1+json',
-    'application/json'
+    'application/json',
   ],
   'oada.operations': [
     'application/vnd.oada.bookmarks.1+json',
     'application/vnd.oada.shares.1+json',
     'application/vnd.oada.operation.1+json',
     'application/vnd.oada.operations.1+json',
-    'application/json'
+    'application/json',
   ],
   'oada.rocks': [
     'application/vnd.oada.bookmarks.1+json',
     'application/vnd.oada.shares.1+json',
     'application/vnd.oada.rocks.1+json',
     'application/vnd.oada.rock.1+json',
-    'application/json'
+    'application/json',
   ],
-  trellisfw: [
+  'trellisfw': [
     'application/vnd.oada.bookmarks.1+json',
     'application/vnd.oada.shares.1+json',
     'application/vnd.oada.rocks.1+json',
@@ -63,9 +68,9 @@ module.exports = {
     'application/vnd.trellisfw.1+json',
     'application/vnd.trellisfw.document.1+json',
     'application/json',
-    'application/pdf'
+    'application/pdf',
   ],
-  trellis: [
+  'trellis': [
     'application/vnd.oada.bookmarks.1+json',
     'application/vnd.oada.shares.1+json',
     'application/vnd.oada.rocks.1+json',
@@ -82,7 +87,7 @@ module.exports = {
     'application/vnd.trellis.connection.1+json',
     'application/vnd.trellis.1+json',
     'application/json',
-    'application/pdf'
+    'application/pdf',
   ],
   'oada.yield': [
     'multipart/form-data',
@@ -113,6 +118,8 @@ module.exports = {
     'application/vnd.oada.farms.1+json',
     'application/vnd.oada.yield.1+json',
     'application/vnd.oada.as-harvested.geohash.1+json',
-    'application/json'
-  ]
-}
+    'application/json',
+  ],
+};
+
+export default scopes;
