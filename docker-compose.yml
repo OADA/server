@@ -3,7 +3,7 @@ services:
     extends:
       file: common.yml
       service: oada-uservice
-    image: oada/startup:${OADA_VERSION-build}
+    image: oada/startup:${OADA_VERSION:-build}
     build:
       args:
         OADA_SERVICE: startup
@@ -22,7 +22,7 @@ services:
     extends:
       file: common.yml
       service: oada-uservice
-    image: oada/auth:${OADA_VERSION-build}
+    image: oada/auth:${OADA_VERSION:-build}
     build:
       args:
         OADA_SERVICE: auth
@@ -43,7 +43,7 @@ services:
     extends:
       file: common.yml
       service: oada-uservice
-    image: oada/http-handler:${OADA_VERSION-build}
+    image: oada/http-handler:${OADA_VERSION:-build}
     build:
       args:
         OADA_SERVICE: http-handler
@@ -61,7 +61,7 @@ services:
     extends:
       file: common.yml
       service: oada-uservice
-    image: oada/sync-handler:${OADA_VERSION-build}
+    image: oada/sync-handler:${OADA_VERSION:-build}
     build:
       args:
         OADA_SERVICE: sync-handler
@@ -78,7 +78,7 @@ services:
     extends:
       file: common.yml
       service: oada-uservice
-    image: oada/write-handler:${OADA_VERSION-build}
+    image: oada/write-handler:${OADA_VERSION:-build}
     build:
       args:
         OADA_SERVICE: write-handler
@@ -90,7 +90,7 @@ services:
     extends:
       file: common.yml
       service: oada-uservice
-    image: oada/users:${OADA_VERSION-build}
+    image: oada/users:${OADA_VERSION:-build}
     build:
       args:
         OADA_SERVICE: users
@@ -102,7 +102,7 @@ services:
     extends:
       file: common.yml
       service: oada-uservice
-    image: oada/token-lookup:${OADA_VERSION-build}
+    image: oada/token-lookup:${OADA_VERSION:-build}
     build:
       args:
         OADA_SERVICE: token-lookup
@@ -114,7 +114,7 @@ services:
     extends:
       file: common.yml
       service: oada-uservice
-    image: oada/rev-graph-update:${OADA_VERSION-build}
+    image: oada/rev-graph-update:${OADA_VERSION:-build}
     build:
       args:
         OADA_SERVICE: rev-graph-update
@@ -126,7 +126,7 @@ services:
     extends:
       file: common.yml
       service: oada-uservice
-    image: oada/graph-lookup:${OADA_VERSION-build}
+    image: oada/graph-lookup:${OADA_VERSION:-build}
     build:
       args:
         OADA_SERVICE: graph-lookup
@@ -138,7 +138,7 @@ services:
     extends:
       file: common.yml
       service: oada-uservice
-    image: oada/well-known:${OADA_VERSION-build}
+    image: oada/well-known:${OADA_VERSION:-build}
     build:
       args:
         OADA_SERVICE: well-known
@@ -154,7 +154,7 @@ services:
     extends:
       file: common.yml
       service: oada-uservice
-    image: oada/webhooks:${OADA_VERSION-build}
+    image: oada/webhooks:${OADA_VERSION:-build}
     build:
       args:
         OADA_SERVICE: webhooks
@@ -171,7 +171,7 @@ services:
     extends:
       file: common.yml
       service: oada-uservice
-    image: oada/permissions-handler:${OADA_VERSION-build}
+    image: oada/permissions-handler:${OADA_VERSION:-build}
     build:
       args:
         OADA_SERVICE: permissions-handler
@@ -185,7 +185,7 @@ services:
     extends:
       file: common.yml
       service: oada-uservice
-    image: oada/shares:${OADA_VERSION-build}
+    image: oada/shares:${OADA_VERSION:-build}
     build:
       args:
         OADA_SERVICE: shares
