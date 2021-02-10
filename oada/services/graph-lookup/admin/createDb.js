@@ -1,15 +1,15 @@
-'use strict'
-let arangojs = require('arangojs')
-let Database = arangojs.Database
-let aql = arangojs.aql
-let Promise = require('bluebird')
-let debug = require('debug')('graph-lookup:admin:createDb')
-let ADD_SAMPLE_DATA = process.env.ADD_SAMPLE_DATA
-let config = require('../config.js')
-let serverAddr = config.get('arango:connectionString')
-let dbname = 'graph-lookup-test'
-let db = new Database(serverAddr)
-db.useDatabase(dbname)
+'use strict';
+let arangojs = require('arangojs');
+let Database = arangojs.Database;
+let aql = arangojs.aql;
+let Promise = require('bluebird');
+let debug = require('debug')('graph-lookup:admin:createDb');
+let ADD_SAMPLE_DATA = process.env.ADD_SAMPLE_DATA;
+let config = require('../config.js');
+let serverAddr = config.get('arango:connectionString');
+let dbname = 'graph-lookup-test';
+let db = new Database(serverAddr);
+db.useDatabase(dbname);
 /*
   Creates Database.
   Can be required as module:
@@ -44,28 +44,28 @@ db.useDatabase(dbname)
     }
 */
 
-let resources = db.collection('resources')
-let graphNodes = db.collection('graphNodes')
-let edges = db.edgeCollection('edges')
+let resources = db.collection('resources');
+let graphNodes = db.collection('graphNodes');
+let edges = db.edgeCollection('edges');
 
 //Clear out any data that exists already.
 
-var createDb = function createDB () {
-  debug('Creating collections in database.')
-  return Promise.all([resources.create(), graphNodes.create(), edges.create()])
-}
+var createDb = function createDB() {
+  debug('Creating collections in database.');
+  return Promise.all([resources.create(), graphNodes.create(), edges.create()]);
+};
 
-var destroyDb = function destroyDb () {
-  return Promise.all([resources.drop(), graphNodes.drop(), edges.drop()])
-}
+var destroyDb = function destroyDb() {
+  return Promise.all([resources.drop(), graphNodes.drop(), edges.drop()]);
+};
 
 if (require.main === module) {
-  debug('Creating collections in database.')
+  debug('Creating collections in database.');
   return destroyDb()
     .catch(() => {})
     .then(() => {
-      return createDb()
-    })
+      return createDb();
+    });
 }
 
 module.exports = {
@@ -74,6 +74,6 @@ module.exports = {
   collections: {
     resources: resources,
     graphNodes: graphNodes,
-    edges: edges
-  }
-}
+    edges: edges,
+  },
+};

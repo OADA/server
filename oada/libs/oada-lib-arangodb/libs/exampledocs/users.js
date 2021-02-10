@@ -11,7 +11,7 @@ module.exports = [
     nickname: 'Frankie',
     email: 'frank@openag.io',
     bookmarks: { _id: 'resources/default:resources_bookmarks_123' },
-    shares: { _id: 'resources/default:resources_shares_123' }
+    shares: { _id: 'resources/default:resources_shares_123' },
   },
   /*
   {
@@ -45,7 +45,7 @@ module.exports = [
     email: 'sam@openag.io',
     bookmarks: { _id: 'resources/default:resources_bookmarks_321' },
     shares: { _id: 'resources/default:resources_shares_321' },
-    scope: [ 'oada.admin.user:all' ],
+    scope: ['oada.admin.user:all'],
   },
   {
     _id: 'users/default:users_sam_321-proxy',
@@ -60,7 +60,7 @@ module.exports = [
     email: 'sam@openag.io',
     bookmarks: { _id: 'resources/default:resources_bookmarks_321-proxy' },
     shares: { _id: 'resources/default:resources_shares_321-proxy' },
-    scope: [ 'oada.admin.user:all' ],
+    scope: ['oada.admin.user:all'],
   },
 
   {
@@ -75,7 +75,7 @@ module.exports = [
     nickname: 'Mike',
     email: 'mgaspers@wakefern.com',
     bookmarks: { _id: 'resources/default:resources_bookmarks_012' },
-    shares: { _id: 'resources/default:resources_shares_012' }
+    shares: { _id: 'resources/default:resources_shares_012' },
   },
   {
     _id: 'users/default:users_audrey_999',
@@ -89,7 +89,7 @@ module.exports = [
     nickname: 'Audinator',
     email: 'audrey@openag.io',
     bookmarks: { _id: 'resources/default:resources_bookmarks_999' },
-    shares: { _id: 'resources/default:resources_shares_999' }
+    shares: { _id: 'resources/default:resources_shares_999' },
   },
   {
     _id: 'users/default:users_gary_growersync',
@@ -103,7 +103,7 @@ module.exports = [
     nickname: 'G-Man',
     email: 'gary@gmail.com',
     bookmarks: { _id: 'resources/default:resources_bookmarks_777' },
-    shares: { _id: 'resources/default:resources_shares_777' }
+    shares: { _id: 'resources/default:resources_shares_777' },
   },
   {
     _id: 'users/default:users_pete_pspperfection',
@@ -117,7 +117,7 @@ module.exports = [
     nickname: 'Peter Piper',
     email: 'pete@gmail.com',
     bookmarks: { _id: 'resources/default:resources_bookmarks_444' },
-    shares: { _id: 'resources/default:resources_shares_444' }
+    shares: { _id: 'resources/default:resources_shares_444' },
   },
   {
     _id: 'users/default:users_rick_retailfresh',
@@ -131,7 +131,7 @@ module.exports = [
     nickname: 'Retail King',
     email: 'rick@gmail.com',
     bookmarks: { _id: 'resources/default:resources_bookmarks_555' },
-    shares: { _id: 'resources/default:resources_shares_555' }
+    shares: { _id: 'resources/default:resources_shares_555' },
   },
   {
     _id: 'users/default:users_diane_distributingexcellence',
@@ -145,6 +145,6 @@ module.exports = [
     nickname: 'The Distribunator',
     email: 'diane@gmail.com',
     bookmarks: { _id: 'resources/default:resources_bookmarks_666' },
-    shares: { _id: 'resources/default:resources_shares_666' }
-  }
-]
+    shares: { _id: 'resources/default:resources_shares_666' },
+  },
+];

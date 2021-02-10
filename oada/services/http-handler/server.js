@@ -30,101 +30,101 @@ require('./websockets')(server);
 var requester = require('./requester');
 
 app.get('*', (req, res, next) => {
-    next();
+  next();
 });
 app.get('/favicon.ico', (req, res) => res.end());
 
 function start() {
-    return Promise.fromCallback(function (done) {
-        info('Starting server...');
-        server.listen(config.get('server:port'), done);
-    }).tap(() => {
-        info('OADA Test Server started on port ' + app.get('port'));
-    });
+  return Promise.fromCallback(function (done) {
+    info('Starting server...');
+    server.listen(config.get('server:port'), done);
+  }).tap(() => {
+    info('OADA Test Server started on port ' + app.get('port'));
+  });
 }
 // Allow route handlers to return promises:
 app.use(expressPromise());
 
 // Log all requests before anything else gets them for debugging:
 app.use(function (req, res, next) {
-    trace('Received request: ' + req.method + ' ' + req.url);
-    trace('req.headers = ', req.headers);
-    trace('req.body = ', req.body);
-    next();
+  trace('Received request: ' + req.method + ' ' + req.url);
+  trace('req.headers = ', req.headers);
+  trace('req.body = ', req.body);
+  next();
 });
 // Turn on CORS for all domains, allow the necessary headers
 app.use(
-    cors({
-        exposedHeaders: ['x-oada-rev', 'location', 'content-location'],
-    })
+  cors({
+    exposedHeaders: ['x-oada-rev', 'location', 'content-location'],
+  })
 );
 app.options('*', cors());
 
 ////////////////////////////////////////////////////////
 // Configure the OADA well-known handler middleware
 var wellKnownHandler = wellKnownJson({
-    headers: {
-        'content-type': 'application/vnd.oada.oada-configuration.1+json',
-    },
+  headers: {
+    'content-type': 'application/vnd.oada.oada-configuration.1+json',
+  },
 });
 //wellKnownHandler.addResource('oada-configuration', config.oada_configuration);
 app.use(wellKnownHandler);
 
 app.use(function requestId(req, res, next) {
-    const { localAddress, remoteAddress } = req.connection;
-    const requestId = req.get('X-Request-ID');
-    // Allow requesting certain requestId with local requests
-    if (localAddress === remoteAddress && requestId) {
-        req.id = requestId;
-    } else {
-        req.id = ksuid.randomSync().string;
-    }
-    res.set('X-Request-ID', req.id);
+  const { localAddress, remoteAddress } = req.connection;
+  const requestId = req.get('X-Request-ID');
+  // Allow requesting certain requestId with local requests
+  if (localAddress === remoteAddress && requestId) {
+    req.id = requestId;
+  } else {
+    req.id = ksuid.randomSync().string;
+  }
+  res.set('X-Request-ID', req.id);
 
-    res.on('finish', () => trace(`finished request ${req.id}`));
-    next();
+  res.on('finish', () => trace(`finished request ${req.id}`));
+  next();
 });
 
 app.use(function sanitizeUrl(req, res, next) {
-    // OADA doesn't care about trailing slash
-    req.url = req.url.replace(/\/$/, '');
+  // OADA doesn't care about trailing slash
+  req.url = req.url.replace(/\/$/, '');
 
-    next();
+  next();
 });
 
 app.use(function tokenHandler(req, res, next) {
-    return tokenLookup({
-        connection_id: req.id,
-        domain: req.get('host'),
-        token: req.get('authorization'),
+  return tokenLookup({
+    connection_id: req.id,
+    domain: req.get('host'),
+    token: req.get('authorization'),
+  })
+    .tap(function checkTok(tok) {
+      if (!tok['token_exists']) {
+        info('Token does not exist');
+        throw new OADAError('Unauthorized', 401);
+      }
+      if (tok.doc.expired) {
+        info('Token expired');
+        throw new OADAError('Unauthorized', 401);
+      }
     })
-        .tap(function checkTok(tok) {
-            if (!tok['token_exists']) {
-                info('Token does not exist');
-                throw new OADAError('Unauthorized', 401);
-            }
-            if (tok.doc.expired) {
-                info('Token expired');
-                throw new OADAError('Unauthorized', 401);
-            }
-        })
-        .then(function handleTokRes(resp) {
-            req.user = resp.doc;
-            req.authorization = resp.doc; // for users handler
-        })
-        .asCallback(next);
+    .then(function handleTokRes(resp) {
+      req.user = resp.doc;
+      req.authorization = resp.doc; // for users handler
+    })
+    .asCallback(next);
 });
 
 // Rewrite the URL if it starts with /bookmarks
 app.use(function handleBookmarks(req, res, next) {
-    req.url = req.url.replace(/^\/bookmarks/, `/${req.user['bookmarks_id']}`);
-    next();
+  req.url = req.url.replace(/^\/bookmarks/, `/${req.user['bookmarks_id']}`);
+  next();
 });
 
 // Rewrite the URL if it starts with /shares
 app.use(function handleShares(req, res, next) {
-    req.url = req.url.replace(/^\/shares/, `/${req.user['shares_id']}`);
-    next();
+  req.url = req.url.replace(/^\/shares/, `/${req.user['shares_id']}`);
+  next();
 });
 /*
 // Rewrite the URL if it starts with /services
@@ -149,10 +149,10 @@ app.use('/users', users);
 //////////////////////////////////////////////////
 // Default handler for top-level routes not found:
 app.use(function (req) {
-    throw new oadaError.OADAError(
-        'Route not found: ' + req.url,
-        oadaError.codes.NOT_FOUND
-    );
+  throw new oadaError.OADAError(
+    'Route not found: ' + req.url,
+    oadaError.codes.NOT_FOUND
+  );
 });
 
 ///////////////////////////////////////////////////
@@ -160,6 +160,6 @@ app.use(function (req) {
 app.use(oadaError.middleware(error));
 
 if (require.main === module) {
-    start();
+  start();
 }
 module.exports = { start };

@@ -1,23 +1,23 @@
-'use strict'
-let arangojs = require('arangojs')
-let Database = arangojs.Database
-let aql = arangojs.aql
+'use strict';
+let arangojs = require('arangojs');
+let Database = arangojs.Database;
+let aql = arangojs.aql;
 //keysData - DATE,DEPARTMENT,LAST NAME,FIRST,PUID,STATUS,SUPERVISOR,BUILDING,ROOM NUMBER,KEY NUMBER,KEY IDENTIFIER
-let keysData = require('./keysData/keys-data.json')
+let keysData = require('./keysData/keys-data.json');
 //roomsData - Bldg,Room,ShareNumber,%,Area,Department Using,Department Assigned,Sta,Room Type,Description,Internal Note
-let smasData = require('./smas-data/json/smas-data.json')
-let smasRoomTypesWithPeople = ['MEDIA PROD', 'NONCLAS LAB', 'OFFICE']
-let _ = require('lodash')
-let fs = require('fs')
-const path = require('path')
-let Promise = require('bluebird').Promise
-let isDeveloping = process.env.NODE_ENV !== 'production'
-let thePort = isDeveloping ? 3000 : process.env.PORT
-let contentBase = path.resolve(__dirname, '../build')
+let smasData = require('./smas-data/json/smas-data.json');
+let smasRoomTypesWithPeople = ['MEDIA PROD', 'NONCLAS LAB', 'OFFICE'];
+let _ = require('lodash');
+let fs = require('fs');
+const path = require('path');
+let Promise = require('bluebird').Promise;
+let isDeveloping = process.env.NODE_ENV !== 'production';
+let thePort = isDeveloping ? 3000 : process.env.PORT;
+let contentBase = path.resolve(__dirname, '../build');
 let server_addr = process.env.ARANGODB_SERVER
   ? process.env.ARANGODB_SERVER
-  : 'http://localhost:8529'
-let db = new Database(server_addr)
+  : 'http://localhost:8529';
+let db = new Database(server_addr);
 
 /* ////// Person Object Example ////////////////
 {
@@ -30,7 +30,7 @@ let db = new Database(server_addr)
   _type: 'person',
 }
 */
-let searchablePeopleAttributes = ['name', 'id', 'department', 'status']
+let searchablePeopleAttributes = ['name', 'id', 'department', 'status'];
 
 /* ////// Room Object Example ////////////////
 {
@@ -60,8 +60,8 @@ let searchableRoomAttributes = [
   'note',
   'assigned',
   'description',
-  'type'
-]
+  'type',
+];
 
 /* ////// Floorplan Object Example ////////////////
 {
@@ -73,35 +73,35 @@ let searchableRoomAttributes = [
   _type: 'floorplan'
 }
 */
-let searchableFloorplanAttributes = ['building', 'level', 'name']
+let searchableFloorplanAttributes = ['building', 'level', 'name'];
 
-let roomCollection = db.collection('room')
-roomCollection.drop()
-let personCollection = db.collection('person')
-personCollection.drop()
-let floorplanCollection = db.collection('floorplan')
-floorplanCollection.drop()
-let buildingCollection = db.collection('building')
-buildingCollection.drop()
-let buildingFloorplanEdges = db.edgeCollection('buildingFloorplanEdges')
-buildingFloorplanEdges.drop()
-let supervisorPersonEdges = db.edgeCollection('supervisorPersonEdges')
-supervisorPersonEdges.drop()
-let roomPersonEdges = db.edgeCollection('roomPersonEdges')
-roomPersonEdges.drop()
-let roomKeyholderEdges = db.edgeCollection('roomKeyholderEdges')
-roomKeyholderEdges.drop()
-let floorplanRoomEdges = db.edgeCollection('floorplanRoomEdges')
-floorplanRoomEdges.drop()
-let floorplanViewer = db.graph('floorplan-viewer')
-floorplanViewer.drop()
+let roomCollection = db.collection('room');
+roomCollection.drop();
+let personCollection = db.collection('person');
+personCollection.drop();
+let floorplanCollection = db.collection('floorplan');
+floorplanCollection.drop();
+let buildingCollection = db.collection('building');
+buildingCollection.drop();
+let buildingFloorplanEdges = db.edgeCollection('buildingFloorplanEdges');
+buildingFloorplanEdges.drop();
+let supervisorPersonEdges = db.edgeCollection('supervisorPersonEdges');
+supervisorPersonEdges.drop();
+let roomPersonEdges = db.edgeCollection('roomPersonEdges');
+roomPersonEdges.drop();
+let roomKeyholderEdges = db.edgeCollection('roomKeyholderEdges');
+roomKeyholderEdges.drop();
+let floorplanRoomEdges = db.edgeCollection('floorplanRoomEdges');
+floorplanRoomEdges.drop();
+let floorplanViewer = db.graph('floorplan-viewer');
+floorplanViewer.drop();
 
 //Setup rooms
 return (
   roomCollection
     .create()
     .then(function () {
-      return getSmasRooms(smasData)
+      return getSmasRooms(smasData);
     })
     .then(function (smasRooms) {
       return populateCollection(roomCollection, smasRooms, [
@@ -109,33 +109,33 @@ return (
         'level',
         'room',
         'name',
-        'type'
-      ])
+        'type',
+      ]);
     })
 
     //Setup people
     .then(function () {
-      return personCollection.create()
+      return personCollection.create();
     })
     .then(function () {
-      return getSmasPeople(smasData, smasRoomTypesWithPeople)
+      return getSmasPeople(smasData, smasRoomTypesWithPeople);
     })
     .then(function (smasPersons) {
-      return populateCollection(personCollection, smasPersons, ['name'])
+      return populateCollection(personCollection, smasPersons, ['name']);
     })
     .then(function () {
-      return getKeysDataPeople(keysData)
+      return getKeysDataPeople(keysData);
     })
     .then(function (keysPersons) {
-      return populateCollection(personCollection, keysPersons, ['name'])
+      return populateCollection(personCollection, keysPersons, ['name']);
     })
 
     //Setup room -> person edges
     .then(function () {
-      return roomPersonEdges.create()
+      return roomPersonEdges.create();
     })
     .then(function () {
-      return roomKeyholderEdges.create()
+      return roomKeyholderEdges.create();
     })
     .then(function () {
       return findSmasRoomPersonEdges(
@@ -143,7 +143,7 @@ return (
         personCollection,
         roomPersonEdges,
         smasData
-      )
+      );
     })
     .then(function () {
       return findKeysDataRoomPersonEdges(
@@ -151,38 +151,38 @@ return (
         personCollection,
         roomKeyholderEdges,
         keysData
-      )
+      );
     })
 
     //Setup supervisor -> subordinate edges
     .then(function () {
-      return supervisorPersonEdges.create()
+      return supervisorPersonEdges.create();
     })
     .then(function () {
       return findSupervisorEdges(
         personCollection,
         supervisorPersonEdges,
         keysData
-      )
+      );
     })
 
     //Setup floorplans and buildings; Setup building -> floorplan edges
     .then(function () {
-      return floorplanCollection.create()
+      return floorplanCollection.create();
     })
     .then(function () {
-      return buildingCollection.create()
+      return buildingCollection.create();
     })
     .then(function () {
-      return buildingFloorplanEdges.create()
+      return buildingFloorplanEdges.create();
     })
     .then(function () {
-      return addBuildingsFloorplans(floorplanCollection, buildingCollection)
+      return addBuildingsFloorplans(floorplanCollection, buildingCollection);
     })
 
     //Setup floorplan -> building edges
     .then(function () {
-      return floorplanRoomEdges.create()
+      return floorplanRoomEdges.create();
     })
     .then(function () {
       return findFloorplanRoomEdges(
@@ -190,21 +190,21 @@ return (
         floorplanCollection,
         floorplanRoomEdges,
         smasData
-      )
+      );
     })
 
     //Create fulltext indexes
     .then(function () {
-      return roomCollection.createFulltextIndex('fulltext')
+      return roomCollection.createFulltextIndex('fulltext');
     })
     .then(function () {
-      return personCollection.createFulltextIndex('fulltext')
+      return personCollection.createFulltextIndex('fulltext');
     })
     .then(function () {
-      return floorplanCollection.createFulltextIndex('fulltext')
+      return floorplanCollection.createFulltextIndex('fulltext');
     })
     .then(function () {
-      return buildingCollection.createFulltextIndex('fulltext')
+      return buildingCollection.createFulltextIndex('fulltext');
     })
 
     //Setup floorplan viewer graph
@@ -214,30 +214,30 @@ return (
           {
             collection: 'roomPersonEdges',
             from: ['room'],
-            to: ['people']
+            to: ['people'],
           },
           {
             collection: 'supervisorPersonEdges',
             from: ['people'],
-            to: ['people']
+            to: ['people'],
           },
           {
             collection: 'buildingFloorplanEdges',
             from: ['building'],
-            to: ['floorplan']
+            to: ['floorplan'],
           },
           {
             collection: 'floorplanRoomEdges',
             from: ['floorplan'],
-            to: ['room']
-          }
-        ]
-      })
+            to: ['room'],
+          },
+        ],
+      });
     })
-    .catch(err => {
-      console.log(err)
+    .catch((err) => {
+      console.log(err);
     })
-)
+);
 
 /* Unique SMAS Departments Assigned/Using
 Aero & Astro
@@ -277,33 +277,33 @@ VP Research
 Women Engr
 */
 
-function convertDeptName (name) {
+function convertDeptName(name) {
   switch (name) {
     case 'Elec&CptEngr':
-      return 'ECE'
+      return 'ECE';
     case 'Aero & Astro':
-      return 'AAE'
+      return 'AAE';
     case 'Matl Engr':
-      return 'MSE'
+      return 'MSE';
     case 'Indust Engr':
-      return 'IE'
+      return 'IE';
     case 'Nucl Engry':
-      return 'NUC'
+      return 'NUC';
     case 'Eng Cpt Ntwk':
-      return 'ECN'
+      return 'ECN';
     case 'Engineering':
-      return 'COE'
+      return 'COE';
     default:
-      return name
+      return name;
   }
 }
 
 ///////// Handle SMAS Data /////////////
 //Each row corresponds to a room share: 1 share, 1 row; 2 shares for one room, 2 rows in the file.
-function getSmasRooms (data) {
-  let rooms = {}
+function getSmasRooms(data) {
+  let rooms = {};
   return Promise.each(data, function (row, i) {
-    let name = row['Bldg'] + ' ' + row['Room']
+    let name = row['Bldg'] + ' ' + row['Room'];
     rooms[name] = rooms[name] || {
       building: row['Bldg'],
       room: row['Room'],
@@ -313,132 +313,140 @@ function getSmasRooms (data) {
       shares: [],
       type: row['Room Type'],
       date: row['date'] || Date.now(),
-      _type: 'room'
-    }
-    rooms[name].area = parseInt(rooms[name].area) + parseInt(row['Area'])
-    let share = parseInt(row['Share Number'])
+      _type: 'room',
+    };
+    rooms[name].area = parseInt(rooms[name].area) + parseInt(row['Area']);
+    let share = parseInt(row['Share Number']);
     rooms[name].shares[share] = {
       share: row['Share Number'],
       assigned: row['Department Assigned'],
       using: row['Department Using'],
       stations: row['Sta'],
       area: row['Area'],
-      percent: row['%']
-    }
+      percent: row['%'],
+    };
     if ('On Loan'.indexOf(row['Description'])) {
-      rooms[name].shares[share].description = row['Internal Note']
-      rooms[name].shares[share].loans = row['Description']
+      rooms[name].shares[share].description = row['Internal Note'];
+      rooms[name].shares[share].loans = row['Description'];
     } else {
-      rooms[name].shares[share].description = row['Description']
-      rooms[name].shares[share].note = row['Internal Note']
+      rooms[name].shares[share].description = row['Description'];
+      rooms[name].shares[share].note = row['Internal Note'];
     }
-    rooms[name].fulltext = createFullText(rooms[name], searchableRoomAttributes)
-    return rooms[name]
+    rooms[name].fulltext = createFullText(
+      rooms[name],
+      searchableRoomAttributes
+    );
+    return rooms[name];
   }).then(() => {
-    return rooms
-  })
+    return rooms;
+  });
 }
 
-function populateCollection (collection, data, exampleKeys) {
-  return Promise.each(Object.keys(data), obj => {
-    let example = {}
-    exampleKeys.forEach(key => {
-      example[key] = data[obj][key]
-    })
+function populateCollection(collection, data, exampleKeys) {
+  return Promise.each(Object.keys(data), (obj) => {
+    let example = {};
+    exampleKeys.forEach((key) => {
+      example[key] = data[obj][key];
+    });
     return collection.byExample(example).then(function (cursor) {
       if (cursor.count === 0) {
-        return collection.save(data[obj])
+        return collection.save(data[obj]);
       } else if (cursor.count === 1) {
-        return collection.update(cursor._result[0]._id, data[obj])
-      } else return null
-    })
-  })
+        return collection.update(cursor._result[0]._id, data[obj]);
+      } else return null;
+    });
+  });
 }
 
-function parsePersonsFromSmasDescription (description) {
-  return description.split(/[+-]+/)
+function parsePersonsFromSmasDescription(description) {
+  return description.split(/[+-]+/);
 }
 
-function getSmasPeople (smasData, smasRoomTypesWithPeople) {
-  let smasPersons = {}
+function getSmasPeople(smasData, smasRoomTypesWithPeople) {
+  let smasPersons = {};
   return Promise.each(smasData, function (row, i) {
     // People entries should only be found in specific types of rooms
     if (smasRoomTypesWithPeople.indexOf(row['Room Type']) >= 0) {
-      let persons = parsePersonsFromSmasDescription(row['Description'])
+      let persons = parsePersonsFromSmasDescription(row['Description']);
       return Promise.each(persons, function (person) {
-        let name = person.trim()
+        let name = person.trim();
         return (smasPersons[name] = {
           name: name,
           //      dept: row['Department Using'],
           _type: 'person',
-          fulltext: createFullText(person, searchablePeopleAttributes)
-        })
-      })
-    } else return null
+          fulltext: createFullText(person, searchablePeopleAttributes),
+        });
+      });
+    } else return null;
   }).then(() => {
-    return smasPersons
-  })
+    return smasPersons;
+  });
 }
 
 // Use the keys data to find and add people to the database (each row has a keyholder and possibly their supervisor);
-function getKeysDataPeople (keysData) {
-  let keysPeople = {}
+function getKeysDataPeople(keysData) {
+  let keysPeople = {};
   return Promise.each(keysData, function (row, i) {
     //Parse out the keyholder as a person
-    let keyholder = (row['FIRST'].trim() + ' ' + row['LAST NAME'].trim()).trim()
+    let keyholder = (
+      row['FIRST'].trim() +
+      ' ' +
+      row['LAST NAME'].trim()
+    ).trim();
     keysPeople[keyholder] = keysPeople[keyholder] || {
       name: keyholder,
       keys: [],
       puid: row['PUID'],
       status: row['STATUS'],
       department: row['DEPARTMENT'],
-      _type: 'person'
-    }
-    keysPeople[keyholder].keys.push(row['KEY NUMBER'])
+      _type: 'person',
+    };
+    keysPeople[keyholder].keys.push(row['KEY NUMBER']);
     keysPeople[keyholder].fulltext = createFullText(
       keysPeople[keyholder],
       searchablePeopleAttributes
-    )
+    );
 
     //Parse out the supervisor as a person
     if (row['SUPERVISOR'] && row['SUPERVISOR'].trim().length > 0) {
-      let supervisor = row['SUPERVISOR'].trim()
+      let supervisor = row['SUPERVISOR'].trim();
       let name =
-        supervisor[0] + supervisor.substring(1, supervisor.length).toLowerCase()
+        supervisor[0] +
+        supervisor.substring(1, supervisor.length).toLowerCase();
       keysPeople[name] = {
         name: name,
-        _type: 'person'
-      }
+        _type: 'person',
+      };
       keysPeople[name].fulltext = createFullText(
         keysPeople[name],
         searchablePeopleAttributes
-      )
+      );
     }
-    return null
+    return null;
   }).then(() => {
-    return keysPeople
-  })
+    return keysPeople;
+  });
 }
 
 // Create edges linking rooms to people based on the SMAS data
-function findSmasRoomPersonEdges (
+function findSmasRoomPersonEdges(
   roomCollection,
   personCollection,
   roomPersonEdges,
   smasData
 ) {
   return Promise.each(smasData, function (row, i) {
-    let smasRoom = { name: row['Bldg'] + ' ' + row['Room'] }
-    let smasPersons = parsePersonsFromSmasDescription(row['Description'])
+    let smasRoom = { name: row['Bldg'] + ' ' + row['Room'] };
+    let smasPersons = parsePersonsFromSmasDescription(row['Description']);
     return Promise.each(smasPersons, function (person) {
-      let smasPerson = { name: person.trim() }
+      let smasPerson = { name: person.trim() };
       return roomCollection.byExample(smasRoom).then(function (roomCursor) {
         if (roomCursor.count === 0) {
-          console.log('ROOM NOT FOUND:', smasRoom)
-          return null
+          console.log('ROOM NOT FOUND:', smasRoom);
+          return null;
         } else if (roomCursor.count > 1) {
-          console.log('MULTIPLE ROOMS FOUND: ', roomCursor._result)
-          return null
+          console.log('MULTIPLE ROOMS FOUND: ', roomCursor._result);
+          return null;
         } else {
           return personCollection
             .byExample(smasPerson)
@@ -448,249 +456,249 @@ function findSmasRoomPersonEdges (
                 // non-person values for rooms of particular types (e.g. mechanical closets). These should
                 // be the only ones that are caught in this part of the logic.
                 //              console.log('PERSON NOT FOUND:', smasPerson);
-                return null
+                return null;
               } else if (peopleCursor.count > 1) {
-                console.log('MULTIPLE PEOPLE FOUND: ', peopleCursor._result)
-                return null
+                console.log('MULTIPLE PEOPLE FOUND: ', peopleCursor._result);
+                return null;
               } else {
                 let edge = {
                   _from: roomCursor._result[0]._id,
-                  _to: peopleCursor._result[0]._id
-                }
+                  _to: peopleCursor._result[0]._id,
+                };
                 return roomPersonEdges
                   .byExample(edge)
                   .then(function (edgeCursor) {
                     if (edgeCursor.count === 0) {
                       //                  console.log('LINKED ROOM', smasRoom.name, ' TO PERSON ', smasPerson.name);
-                      return roomPersonEdges.save(edge)
+                      return roomPersonEdges.save(edge);
                     } else {
                       //                  console.log('EDGE ALREADY FOUND: ', smasRoom.name, smasPerson.name);
-                      return null
+                      return null;
                     }
-                  })
+                  });
               }
-            })
+            });
         }
-      })
-    })
-  })
+      });
+    });
+  });
 }
 
 // Find Room->Person in the keys data
 // This will only add edges for those rooms that are already in the database. No new rooms were
 //introduced from the keysData due to presence of non-room values in the ROOM column (due to
 // master keys, etc);
-function findKeysDataRoomPersonEdges (
+function findKeysDataRoomPersonEdges(
   roomCollection,
   personCollection,
   roomKeyholderEdges,
   keysData
 ) {
   return Promise.each(keysData, function (row, i) {
-    let room = { name: row['BUILDING'] + ' ' + row['ROOM NUMBER'] }
-    let keyholder = { name: row['FIRST'] + ' ' + row['LAST NAME'] }
+    let room = { name: row['BUILDING'] + ' ' + row['ROOM NUMBER'] };
+    let keyholder = { name: row['FIRST'] + ' ' + row['LAST NAME'] };
     return roomCollection.byExample(room).then(function (roomCursor) {
       if (roomCursor.count === 0) {
         // Not finding rooms in the keys dataset is likely okay. The ROOM column may contain
         // some values that aren't strictly room numbers (e.g., master or building keys). These should
         // be the only ones that are caught in this part of the logic.
         //          console.log('ROOM NOT FOUND:', room.name);
-        return null
+        return null;
       } else if (roomCursor.count > 1) {
-        console.log('MULTIPLE ROOMS FOUND: ', roomCursor._result)
-        return null
+        console.log('MULTIPLE ROOMS FOUND: ', roomCursor._result);
+        return null;
       } else {
         return personCollection
           .byExample(keyholder)
           .then(function (keyholderCursor) {
             if (keyholderCursor.count === 0) {
-              console.log('KEYHOLDER NOT FOUND:', keyholder.name)
-              return null
+              console.log('KEYHOLDER NOT FOUND:', keyholder.name);
+              return null;
             } else if (keyholderCursor.count > 1) {
               console.log(
                 'MULTIPLE PEOPLE FOUND FOR KEYHOLDER: ',
                 keyholderCursor._result
-              )
-              return null
+              );
+              return null;
             } else {
               //              console.log('LINKED ROOM', room.name, ' TO PERSON ', keyholder.name);
               let edge = {
                 _from: roomCursor._result[0]._id,
-                _to: keyholderCursor._result[0]._id
-              }
-              return roomKeyholderEdges.save(edge)
+                _to: keyholderCursor._result[0]._id,
+              };
+              return roomKeyholderEdges.save(edge);
             }
           })
           .then(function () {
             if (row['SUPERVISOR'] && row['SUPERVISOR'].trim().length > 0) {
-              let supervisor = row['SUPERVISOR'].trim()
+              let supervisor = row['SUPERVISOR'].trim();
               supervisor = {
                 name:
                   supervisor[0] +
-                  supervisor.substring(1, supervisor.length).toLowerCase()
-              }
+                  supervisor.substring(1, supervisor.length).toLowerCase(),
+              };
               return personCollection
                 .byExample(supervisor)
                 .then(function (supervisorCursor) {
                   if (supervisorCursor.count === 0) {
-                    console.log('SUPERVISOR NOT FOUND:', supervisor.name)
-                    return null
+                    console.log('SUPERVISOR NOT FOUND:', supervisor.name);
+                    return null;
                   } else if (supervisorCursor.count > 1) {
                     console.log(
                       'MULTIPLE PEOPLE FOUND FOR SUPERVISOR: ',
                       supervisorCursor._result
-                    )
-                    return null
+                    );
+                    return null;
                   } else {
                     //                  console.log('LINKED ROOM', room.name, ' TO PERSON ', supervisor.name);
                     let edge = {
                       _from: roomCursor._result[0]._id,
-                      _to: supervisorCursor._result[0]._id
-                    }
-                    return roomKeyholderEdges.save(edge)
+                      _to: supervisorCursor._result[0]._id,
+                    };
+                    return roomKeyholderEdges.save(edge);
                   }
-                })
+                });
             }
-          })
+          });
       }
-    })
-  })
+    });
+  });
 }
 
-function findFloorplanRoomEdges (
+function findFloorplanRoomEdges(
   roomCollection,
   floorplanCollection,
   floorplanRoomEdges,
   smasData
 ) {
   return Promise.each(smasData, function (row, i) {
-    let smasRoom = { name: row['Bldg'] + ' ' + row['Room'] }
-    let smasFloorplan = { name: row['Bldg'] + ' ' + row['Room'].charAt(0) }
+    let smasRoom = { name: row['Bldg'] + ' ' + row['Room'] };
+    let smasFloorplan = { name: row['Bldg'] + ' ' + row['Room'].charAt(0) };
     return roomCollection.byExample(smasRoom).then(function (roomCursor) {
       if (roomCursor.count === 0) {
-        console.log('ROOM NOT FOUND:', smasRoom)
-        return null
+        console.log('ROOM NOT FOUND:', smasRoom);
+        return null;
       } else if (roomCursor.count > 1) {
-        console.log('MULTIPLE ROOMS FOUND: ', roomCursor._result)
-        return null
+        console.log('MULTIPLE ROOMS FOUND: ', roomCursor._result);
+        return null;
       } else {
         return floorplanCollection
           .byExample(smasFloorplan)
           .then(function (floorplanCursor) {
             if (floorplanCursor.count === 0) {
-              return null
+              return null;
             } else if (floorplanCursor.count > 1) {
               console.log(
                 'MULTIPLE FLOORPLANS FOUND: ',
                 floorplanCursor._result
-              )
-              return null
+              );
+              return null;
             } else {
               let edge = {
                 _from: floorplanCursor._result[0]._id,
-                _to: roomCursor._result[0]._id
-              }
+                _to: roomCursor._result[0]._id,
+              };
               return floorplanRoomEdges
                 .byExample(edge)
                 .then(function (edgeCursor) {
                   if (edgeCursor.count === 0) {
                     //                console.log('LINKED ROOM', smasRoom.name, ' TO PERSON ', sma
-                    return floorplanRoomEdges.save(edge)
+                    return floorplanRoomEdges.save(edge);
                   } else {
                     // This scenario occurs because rooms with multiple shares get multiple row entries.
                     //                console.log('EDGE ALREADY FOUND: ', smasFloorplan.name, smasRoom.name)
-                    return null
+                    return null;
                   }
-                })
+                });
             }
-          })
+          });
       }
-    })
-  })
+    });
+  });
 }
 
 // Only the keys data contains person -> person relationships (supervisor -> keyholder)
-function findSupervisorEdges (
+function findSupervisorEdges(
   personCollection,
   supervisorPersonEdges,
   keysData
 ) {
   return Promise.each(keysData, function (row, i) {
-    let keyholder = { name: row['FIRST'] + ' ' + row['LAST NAME'] }
+    let keyholder = { name: row['FIRST'] + ' ' + row['LAST NAME'] };
     if (row['SUPERVISOR'] && row['SUPERVISOR'].trim().length > 0) {
-      let supervisor = row['SUPERVISOR'].trim()
+      let supervisor = row['SUPERVISOR'].trim();
       supervisor = {
         name:
           supervisor[0] +
-          supervisor.substring(1, supervisor.length).toLowerCase()
-      }
+          supervisor.substring(1, supervisor.length).toLowerCase(),
+      };
       return personCollection
         .byExample(keyholder)
         .then(function (keyholderCursor) {
           if (keyholderCursor.count === 0) {
-            console.log('KEYHOLDER NOT FOUND:', keyholder)
-            return null
+            console.log('KEYHOLDER NOT FOUND:', keyholder);
+            return null;
           } else if (keyholderCursor.count > 1) {
             console.log(
               'MULTIPLE PEOPLE FOUND FOR KEYHOLDER: ',
               keyholderCursor._result
-            )
-            return null
+            );
+            return null;
           } else {
             return personCollection
               .byExample(supervisor)
               .then(function (supervisorCursor) {
                 if (supervisorCursor.count === 0) {
-                  console.log('SUPERVISOR NOT FOUND:', supervisor)
-                  return null
+                  console.log('SUPERVISOR NOT FOUND:', supervisor);
+                  return null;
                 } else if (supervisorCursor.count > 1) {
                   console.log(
                     'MULTIPLE PEOPLE FOUND FOR SUPERVISOR: ',
                     supervisorCursor._result
-                  )
-                  return null
+                  );
+                  return null;
                 } else {
                   //              console.log('LINKED SUPERVISOR', supervisor.name, ' TO PERSON ', keyholder.name);
                   let edge = {
                     _from: supervisorCursor._result[0]._id,
-                    _to: keyholderCursor._result[0]._id
-                  }
-                  return supervisorPersonEdges.save(edge)
+                    _to: keyholderCursor._result[0]._id,
+                  };
+                  return supervisorPersonEdges.save(edge);
                 }
-              })
+              });
           }
-        })
-    } else return null
-  })
+        });
+    } else return null;
+  });
 }
 
-function addBuildingsFloorplans (floorplanCollection, buildingCollection) {
-  let path = './svgoManSvgo/'
-  let files = fs.readdirSync(path)
-  let buildings = {}
+function addBuildingsFloorplans(floorplanCollection, buildingCollection) {
+  let path = './svgoManSvgo/';
+  let files = fs.readdirSync(path);
+  let buildings = {};
   return Promise.each(files, function (file) {
-    let building = file.match('^(.+)_.+.svg$')[1]
-    let level = file.match('^.+_(.+).svg$')[1]
+    let building = file.match('^(.+)_.+.svg$')[1];
+    let level = file.match('^.+_(.+).svg$')[1];
     let floorplan = {
       name: building + ' ' + level,
       building,
       level,
       filename: file,
-      _type: 'floorplan'
-    }
+      _type: 'floorplan',
+    };
     floorplan.fulltext = createFullText(
       floorplan,
       searchableFloorplanAttributes
-    )
+    );
     if (!buildings[building]) {
       buildings[building] = {
         name: building,
         levels: [level],
         fulltext: building,
-        _type: 'building'
-      }
-    } else buildings[building].levels.push(level)
-    return floorplanCollection.save(floorplan)
+        _type: 'building',
+      };
+    } else buildings[building].levels.push(level);
+    return floorplanCollection.save(floorplan);
   }).then(function () {
     return Promise.each(Object.keys(buildings), function (building) {
       return buildingCollection.save(buildings[building]).then(function (data) {
@@ -699,30 +707,30 @@ function addBuildingsFloorplans (floorplanCollection, buildingCollection) {
             .byExample({ name: building + ' ' + level })
             .then(function (cursor) {
               if (cursor.count === 0) {
-                console.log('FLOORPLAN NOT FOUND:', building + ' ' + level)
-                return null
+                console.log('FLOORPLAN NOT FOUND:', building + ' ' + level);
+                return null;
               } else if (cursor.count > 1) {
                 console.log(
                   'MULTIPLE PEOPLE FOUND FOR FLOORPLAN: ',
                   cursor._result
-                )
-                return null
+                );
+                return null;
               }
-              let edge = { _from: data._id, _to: cursor._result[0]._id }
-              return buildingFloorplanEdges.save(edge)
-            })
-        })
-      })
-    })
-  })
+              let edge = { _from: data._id, _to: cursor._result[0]._id };
+              return buildingFloorplanEdges.save(edge);
+            });
+        });
+      });
+    });
+  });
 }
 
 // Create a fulltext searchable string of an row, given an array of keys to use
 // Currently a dumb operation where row[key] should be of type string
-function createFullText (row, keys) {
-  let fulltext = ''
+function createFullText(row, keys) {
+  let fulltext = '';
   keys.forEach(function (key) {
-    if (row[key]) fulltext += ' ' + row[key]
-  })
-  return fulltext
+    if (row[key]) fulltext += ' ' + row[key];
+  });
+  return fulltext;
 }

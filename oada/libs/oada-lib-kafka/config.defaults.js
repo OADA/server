@@ -13,13 +13,13 @@
  * limitations under the License.
  */
 
-'use strict'
+'use strict';
 
 module.exports = {
     kafka: {
         healthInterval: 5 * 60 * 1000, // ms
         producer: {
-            pollInterval: 500 // ms
+            pollInterval: 500, // ms
         },
         broker: 'kafka',
         // https://github.com/edenhill/librdkafka/blob/master/CONFIGURATION.md
@@ -32,12 +32,12 @@ module.exports = {
             //'fetch.min.bytes': 1,
             'request.required.acks': 0,
             'socket.blocking.max.ms': 10,
-            'queue.buffering.max.ms': 5
+            'queue.buffering.max.ms': 5,
         },
         timeouts: {
             default: 5000,
             writeRequest: 45000,
-            websocketsRequest: Infinity
+            websocketsRequest: Infinity,
         },
         topics: {
             tokenRequest: 'token_request',
@@ -46,7 +46,7 @@ module.exports = {
             websocketsRequest: 'websockets_request',
             permissionsRequest: 'permissions_request',
             permissionsResponse: 'permissions_response',
-            httpResponse: 'http_response'
-        }
-    }
-}
+            httpResponse: 'http_response',
+        },
+    },
+};

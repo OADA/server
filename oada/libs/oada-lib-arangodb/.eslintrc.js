@@ -1,16 +1,16 @@
-'use strict'
+'use strict';
 
 module.exports = {
   env: {
     es6: true,
-    node: true
+    node: true,
   },
   extends: 'eslint:recommended',
   parserOptions: {
     ecmaVersion: 8,
     ecmaFeatures: {
-      experimentalObjectRestSpread: true
-    }
+      experimentalObjectRestSpread: true,
+    },
   },
   rules: {
     'accessor-pairs': 'error',
@@ -21,7 +21,7 @@ module.exports = {
     'block-spacing': 'error',
     'brace-style': 'error',
     'callback-return': 'error',
-    camelcase: 'error',
+    'camelcase': 'error',
     'capitalized-comments': 'off',
     'class-methods-use-this': 'error',
     'comma-dangle': 'off',
@@ -29,20 +29,20 @@ module.exports = {
       'error',
       {
         after: true,
-        before: false
-      }
+        before: false,
+      },
     ],
     'comma-style': ['error', 'last'],
-    complexity: 'error',
+    'complexity': 'error',
     'computed-property-spacing': ['error', 'never'],
     'consistent-return': 'error',
     'consistent-this': ['error', 'self'],
-    curly: 'error',
+    'curly': 'error',
     'default-case': 'error',
     'dot-location': ['error', 'property'],
     'dot-notation': 'off',
     'eol-last': 'error',
-    eqeqeq: 'error',
+    'eqeqeq': 'error',
     'for-direction': 'error',
     'func-call-spacing': 'error',
     'func-name-matching': 'error',
@@ -56,13 +56,13 @@ module.exports = {
     'handle-callback-err': 'error',
     'id-blacklist': 'error',
     'id-match': 'error',
-    indent: [
+    'indent': [
       'warn',
       2,
       {
         SwitchCase: 1,
-        CallExpression: { arguments: 2 }
-      }
+        CallExpression: { arguments: 2 },
+      },
     ],
     'init-declarations': 'off',
     'jsx-quotes': 'error',
@@ -77,8 +77,8 @@ module.exports = {
       {
         max: 300,
         skipBlankLines: true,
-        skipComments: true
-      }
+        skipComments: true,
+      },
     ],
     'max-nested-callbacks': 'error',
     'max-statements-per-line': 'error',
@@ -170,7 +170,7 @@ module.exports = {
     'object-curly-newline': 'off',
     'object-property-newline': [
       'error',
-      { allowMultiplePropertiesPerLine: true }
+      { allowMultiplePropertiesPerLine: true },
     ],
     'one-var': 'off',
     'one-var-declaration-per-line': 'error',
@@ -187,12 +187,12 @@ module.exports = {
     'prefer-spread': 'error',
     'prefer-template': 'off',
     'quote-props': 'off',
-    quotes: ['error', 'single'],
-    radix: 'error',
+    'quotes': ['error', 'single'],
+    'radix': 'error',
     'require-await': 'error',
     'require-jsdoc': 'off',
     'rest-spread-spacing': 'error',
-    semi: 'error',
+    'semi': 'error',
     'semi-spacing': 'error',
     'semi-style': ['error', 'last'],
     'sort-imports': 'error',
@@ -203,7 +203,7 @@ module.exports = {
     'space-infix-ops': 'error',
     'space-unary-ops': 'error',
     'spaced-comment': 'off',
-    strict: 'error',
+    'strict': 'error',
     'switch-colon-spacing': 'error',
     'symbol-description': 'error',
     'template-curly-spacing': ['error', 'never'],
@@ -214,6 +214,6 @@ module.exports = {
     'wrap-iife': ['error', 'inside'],
     'wrap-regex': 'error',
     'yield-star-spacing': 'error',
-    yoda: ['error', 'never']
-  }
-}
+    'yoda': ['error', 'never'],
+  },
+};

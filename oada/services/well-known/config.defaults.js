@@ -12,28 +12,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-'use strict'
+'use strict';
 
-var path = require('path')
-var fs = require('fs')
+var path = require('path');
+var fs = require('fs');
 
 const server = {
   port: 443,
   mode: 'https',
-  domain: 'localhost'
-}
+  domain: 'localhost',
+};
 
 module.exports = {
   wellKnown: {
     // forceProtocol: 'https', // use this to force https prefixes on URL's. Useful when behind a proxy.
-    server: server,
-    mergeSubServices: [],
-    certs: {
+    'server': server,
+    'mergeSubServices': [],
+    'certs': {
       key: fs.readFileSync(path.join(__dirname, 'certs/ssl/server.key')),
       cert: fs.readFileSync(path.join(__dirname, 'certs/ssl/server.crt')),
       ca: fs.readFileSync(path.join(__dirname, 'certs/ssl/ca.crt')),
       requestCrt: true,
-      rejectUnauthorized: false
+      rejectUnauthorized: false,
     },
     'oada-configuration': {
       well_known_version: '1.1.0',
@@ -46,11 +46,11 @@ module.exports = {
         (server.path_prefix ? server.path_prefix : ''),
       scopes_supported: [
         {
-          name: 'oada.all.1', // can do anything the user can do
+          'name': 'oada.all.1', // can do anything the user can do
           /* pattern: /oada\..*\.1/  */
-          'read+write': true // can read/write anything the user can read/write
-        }
-      ]
-    }
-  }
-}
+          'read+write': true, // can read/write anything the user can read/write
+        },
+      ],
+    },
+  },
+};

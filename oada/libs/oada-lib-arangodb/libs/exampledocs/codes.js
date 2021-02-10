@@ -9,6 +9,6 @@ module.exports = [
     expiresIn: 60,
     redeemed: true,
     clientId: 'jf93caauf3uzud7f308faesf3@provider.oada-dev.com',
-    redirectUri: 'http://client.oada-dev.com/redirect'
-  }
-]
+    redirectUri: 'http://client.oada-dev.com/redirect',
+  },
+];

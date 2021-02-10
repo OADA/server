@@ -21,17 +21,17 @@ module.exports = [
           createdBy: 'users/default:users_frank_123',
           created: 1494133055,
           modifiedBy: 'users/default:users_frank_123',
-          modified: 1494133055
-        }
+          modified: 1494133055,
+        },
         // leave out _changes in the _changes itself
       },
       rocks: {
         _id: 'resources/default:resources_rocks_123',
-        _rev: 9
-      }
+        _rev: 9,
+      },
     },
     userid: 'users/default:users_frank_123',
-    authorizationid: 'authorizations/default:authorizations-123'
+    authorizationid: 'authorizations/default:authorizations-123',
   },
 
   {
@@ -52,13 +52,13 @@ module.exports = [
           createdBy: 'users/default:users_frank2_124',
           created: 1494133055,
           modifiedBy: 'users/default:users_frank2_124',
-          modified: 1494133055
-        }
+          modified: 1494133055,
+        },
       },
-      thisisopenidconnectexampleuser: true
+      thisisopenidconnectexampleuser: true,
     },
     userid: 'users/default:users_frank2_124',
-    authorizationid: 'authorizations/default:authorizations-123'
+    authorizationid: 'authorizations/default:authorizations-123',
   },
 
   //user sam's bookmarks changes doc
@@ -81,13 +81,13 @@ module.exports = [
           createdBy: 'users/default:users_sam_321',
           created: 1494133055,
           modifiedBy: 'users/default:users_sam_321',
-          modified: 1494133055
-        }
+          modified: 1494133055,
+        },
         // leave out _changes in the _changes itself
-      }
+      },
     },
     userid: 'users/default:users_sam_321',
-    authorizationid: 'authorizations/default:authorizations-321'
+    authorizationid: 'authorizations/default:authorizations-321',
   },
 
   {
@@ -110,17 +110,17 @@ module.exports = [
           createdBy: 'users/default:users_audrey_999',
           created: 1494133055,
           modifiedBy: 'users/default:users_audrey_999',
-          modified: 1494133055
-        }
+          modified: 1494133055,
+        },
         // leave out _changes in the _changes itself
       },
       trellisfw: {
         _id: 'resources/default:resources_trellisfw_999',
-        _rev: 10
-      }
+        _rev: 10,
+      },
     },
     userid: 'users/default:users_audrey_999',
-    authorizationid: 'authorizations/default:authorizations-321'
+    authorizationid: 'authorizations/default:authorizations-321',
   },
 
   {
@@ -143,13 +143,13 @@ module.exports = [
           createdBy: 'users/default:users_gary_growersync',
           created: 1494133055,
           modifiedBy: 'users/default:users_gary_growersync',
-          modified: 1494133055
-        }
+          modified: 1494133055,
+        },
         // leave out _changes in the _changes itself
-      }
+      },
     },
     userid: 'users/default:users_gary_growersync',
-    authorizationid: 'authorizations/default:authorizations-777'
+    authorizationid: 'authorizations/default:authorizations-777',
   },
 
   {
@@ -172,13 +172,13 @@ module.exports = [
           createdBy: 'users/default:users_pete_pspperfection',
           created: 1494133055,
           modifiedBy: 'users/default:users_pete_pspperfection',
-          modified: 1494133055
-        }
+          modified: 1494133055,
+        },
         // leave out _changes in the _changes itself
-      }
+      },
     },
     userid: 'users/default:users_pete_pspperfection',
-    authorizationid: 'authorizations/default:authorizations-444'
+    authorizationid: 'authorizations/default:authorizations-444',
   },
 
   {
@@ -201,13 +201,13 @@ module.exports = [
           createdBy: 'users/default:users_rick_retailfresh',
           created: 1494133055,
           modifiedBy: 'users/default:users_rick_retailfresh',
-          modified: 1494133055
-        }
+          modified: 1494133055,
+        },
         // leave out _changes in the _changes itself
-      }
+      },
     },
     userid: 'users/default:users_rick_retailfresh',
-    authorizationid: 'authorizations/default:authorizations-555'
+    authorizationid: 'authorizations/default:authorizations-555',
   },
 
   {
@@ -230,13 +230,13 @@ module.exports = [
           createdBy: 'users/default:users_diane_distributingexcellence',
           created: 1494133055,
           modifiedBy: 'users/default:users_diane_distributingexcellence',
-          modified: 1494133055
-        }
+          modified: 1494133055,
+        },
         // leave out _changes in the _changes itself
-      }
+      },
     },
     userid: 'users/default:users_diane_distributingexcellence',
-    authorizationid: 'authorizations/default:authorizations-666'
+    authorizationid: 'authorizations/default:authorizations-666',
   },
 
   //------------------------------------------------------
@@ -248,9 +248,9 @@ module.exports = [
     hash: 'i',
     type: 'merge',
     body: {
-      _rev: 9,
-      _type: 'application/vnd.oada.rocks.1+json',
-      _meta: {
+      '_rev': 9,
+      '_type': 'application/vnd.oada.rocks.1+json',
+      '_meta': {
         _id: 'resources/default:resources_rocks_123/_meta',
         _rev: 9,
         _type: 'application/vnd.oada.rocks.1+json',
@@ -259,18 +259,18 @@ module.exports = [
           createdBy: 'users/default:users_frank_123',
           created: 1494133055,
           modifiedBy: 'users/default:users_frank_123',
-          modified: 1494133055
-        }
+          modified: 1494133055,
+        },
       },
       'rocks-index': {
         '90j2klfdjss': {
           _id: 'resources/default:resources_rock_123',
-          _rev: 12
-        }
-      }
+          _rev: 12,
+        },
+      },
     },
     userid: 'users/default:users_frank_123',
-    authorizationid: 'authorizations/default:authorizations-123'
+    authorizationid: 'authorizations/default:authorizations-123',
   },
 
   {
@@ -291,16 +291,16 @@ module.exports = [
           createdBy: 'users/default:users_audrey_999',
           created: 1494133055,
           modifiedBy: 'users/default:users_audrey_999',
-          modified: 1494133055
-        }
+          modified: 1494133055,
+        },
       },
       clients: {
         _id: 'resources/default:resources_clients_999',
-        _rev: 1
-      }
+        _rev: 1,
+      },
     },
     userid: 'users/default:users_audrey_999',
-    authorizationid: 'authorizations/default:authorizations-999'
+    authorizationid: 'authorizations/default:authorizations-999',
   },
 
   {
@@ -321,12 +321,12 @@ module.exports = [
           createdBy: 'users/default:users_audrey_999',
           created: 1494133055,
           modifiedBy: 'users/default:users_audrey_999',
-          modified: 1494133055
-        }
-      }
+          modified: 1494133055,
+        },
+      },
     },
     userid: 'users/default:users_audrey_999',
-    authorizationid: 'authorizations/default:authorizations-999'
+    authorizationid: 'authorizations/default:authorizations-999',
   },
 
   {
@@ -347,16 +347,16 @@ module.exports = [
           createdBy: 'users/default:users_frank_123',
           created: 1494133055,
           modifiedBy: 'users/default:users_frank_123',
-          modified: 1494133055
-        }
+          modified: 1494133055,
+        },
       },
       location: {
         latitude: '-40.1231242',
-        longitude: '82.192089123'
+        longitude: '82.192089123',
       },
-      picked_up: false
+      picked_up: false,
     },
     userid: 'users/default:users_frank_123',
-    authorizationid: 'authorizations/default:authorizations-123'
-  }
-]
+    authorizationid: 'authorizations/default:authorizations-123',
+  },
+];

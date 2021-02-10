@@ -12,22 +12,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-'use strict'
+'use strict';
 
-var debug = require('debug')('model-codes:trace')
-var URI = require('urijs')
+var debug = require('debug')('model-codes:trace');
+var URI = require('urijs');
 
-var OADAError = require('oada-error')
-var config = require('../../config')
-var path = require('path')
+var OADAError = require('oada-error');
+var config = require('../../config');
+var path = require('path');
 var db = require(path.join(
   __dirname,
   '/../../db',
   config.get('auth:datastoresDriver'),
   'codes.js'
-))
+));
 
-function makeCode (code) {
+function makeCode(code) {
   code.isValid = function () {
     if (
       typeof code.code !== 'string' ||
@@ -36,71 +36,71 @@ function makeCode (code) {
       typeof code.clientId != 'string' ||
       typeof code.redirectUri != 'string'
     ) {
-      return false
+      return false;
     } else {
-      return true
+      return true;
     }
-  }
+  };
 
   code.isExpired = function () {
-    return this.createTime + this.expiresIn > new Date().getTime()
-  }
+    return this.createTime + this.expiresIn > new Date().getTime();
+  };
 
   code.matchesClientId = function (clientId) {
-    return this.clientId === clientId
-  }
+    return this.clientId === clientId;
+  };
 
   code.matchesRedirectUri = function (redirectUri) {
-    return URI(this.redirectUri).equals(redirectUri)
-  }
+    return URI(this.redirectUri).equals(redirectUri);
+  };
 
   code.isRedeemed = function () {
-    return this.redeemed
-  }
+    return this.redeemed;
+  };
 
   code.redeem = function (cb) {
-    var self = this
-    this.redeemed = true
+    var self = this;
+    this.redeemed = true;
 
-    debug('makeCode#redeem: saving redeemed code ', self.code)
+    debug('makeCode#redeem: saving redeemed code ', self.code);
     db.save(this, function (err) {
       if (err) {
-        debug(err)
-        return cb(err)
+        debug(err);
+        return cb(err);
       }
 
-      findByCode(self.code, cb)
-    })
-  }
+      findByCode(self.code, cb);
+    });
+  };
 
-  return code
+  return code;
 }
 
-function findByCode (code, cb) {
+function findByCode(code, cb) {
   db.findByCode(code, function (err, c) {
-    var code
+    var code;
     if (c === undefined) {
-      err = 'Code not found'
+      err = 'Code not found';
     }
 
     if (!err) {
-      code = makeCode(c)
+      code = makeCode(c);
     }
 
-    cb(err, code)
-  })
+    cb(err, code);
+  });
 }
 
-function save (c, cb) {
-  var code
+function save(c, cb) {
+  var code;
 
   if (c.isValid === undefined) {
-    code = makeCode(c)
+    code = makeCode(c);
   } else {
-    code = c
+    code = c;
   }
 
-  code.scope = code.scope || {}
+  code.scope = code.scope || {};
 
   if (!code.isValid()) {
     return cb(
@@ -109,13 +109,13 @@ function save (c, cb) {
         OADAError.codes.BAD_REQUEST,
         'There was a problem durring the login'
       )
-    )
+    );
   }
 
   db.findByCode(code.code, function (err, c) {
     if (err) {
-      debug(err)
-      return cb(err)
+      debug(err);
+      return cb(err);
     }
 
     if (c) {
@@ -125,28 +125,28 @@ function save (c, cb) {
           OADAError.codes.BAD_REQUEST,
           'There was a problem durring the login'
         )
-      )
+      );
     }
 
     if (typeof code.expiresIn !== 'number') {
-      code.expiresIn = 60
+      code.expiresIn = 60;
     }
 
-    code.createTime = new Date().getTime()
-    code.redeemed = false
+    code.createTime = new Date().getTime();
+    code.redeemed = false;
 
     db.save(code, function (err) {
       if (err) {
-        debug(err)
-        return cb(err)
+        debug(err);
+        return cb(err);
       }
 
-      findByCode(code.code, cb)
-    })
-  })
+      findByCode(code.code, cb);
+    });
+  });
 }
 
 module.exports = {
   findByCode: findByCode,
-  save: save
-}
+  save: save,
+};

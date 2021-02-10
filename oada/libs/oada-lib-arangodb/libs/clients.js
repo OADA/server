@@ -1,11 +1,11 @@
-'use strict'
+'use strict';
 
-const config = require('../config')
-const db = require('../db')
-const aql = require('arangojs').aql
-const util = require('../util')
+const config = require('../config');
+const db = require('../db');
+const aql = require('arangojs').aql;
+const util = require('../util');
 
-function findById (id) {
+function findById(id) {
   return db
     .query(
       aql`
@@ -14,23 +14,23 @@ function findById (id) {
       RETURN c`
     )
     .call('next')
-    .then(client => {
+    .then((client) => {
       if (!client) {
-        return null
+        return null;
       }
 
-      return util.sanitizeResult(client)
-    })
+      return util.sanitizeResult(client);
+    });
 }
 
-function save (client) {
+function save(client) {
   return db
     .collection(config.get('arangodb:collections:clients:name'))
     .save(client)
-    .then(() => findById(client.clientId))
+    .then(() => findById(client.clientId));
 }
 
 module.exports = {
   findById,
-  save
-}
+  save,
+};

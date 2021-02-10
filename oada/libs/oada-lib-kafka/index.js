@@ -13,16 +13,16 @@
  * limitations under the License.
  */
 
-'use strict'
+'use strict';
 
-const Responder = require('./Responder')
-const ReResponder = require('./ReResponder')
-const Requester = require('./Requester')
-const ResponderRequester = require('./ResponderRequester')
+const Responder = require('./Responder');
+const ReResponder = require('./ReResponder');
+const Requester = require('./Requester');
+const ResponderRequester = require('./ResponderRequester');
 
 module.exports = {
     Responder,
     ReResponder,
     Requester,
-    ResponderRequester
-}
+    ResponderRequester,
+};

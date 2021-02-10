@@ -1,30 +1,30 @@
-'use strict'
+'use strict';
 
-const db = require('../db')
-const debug = require('debug')
-const info = debug('arangodb#resources:info')
-const trace = debug('arangodb#resources:trace')
-const _ = require('lodash')
-var Promise = require('bluebird')
-const aql = require('arangojs').aqlQuery
-const pointer = require('json-pointer')
-const config = require('../config')
-const util = require('../util')
-const changes = db.collection(config.get('arangodb:collections:changes:name'))
+const db = require('../db');
+const debug = require('debug');
+const info = debug('arangodb#resources:info');
+const trace = debug('arangodb#resources:trace');
+const _ = require('lodash');
+var Promise = require('bluebird');
+const aql = require('arangojs').aqlQuery;
+const pointer = require('json-pointer');
+const config = require('../config');
+const util = require('../util');
+const changes = db.collection(config.get('arangodb:collections:changes:name'));
 const resources = db.collection(
   config.get('arangodb:collections:resources:name')
-)
+);
 const graphNodes = db.collection(
   config.get('arangodb:collections:graphNodes:name')
-)
-const edges = db.collection(config.get('arangodb:collections:edges:name'))
+);
+const edges = db.collection(config.get('arangodb:collections:edges:name'));
 const changeEdges = db.collection(
   config.get('arangodb:collections:changeEdges:name')
-)
+);
 
-const MAX_DEPTH = 100
+const MAX_DEPTH = 100;
 
-function getChanges (resourceId, changeRev) {
+function getChanges(resourceId, changeRev) {
   return db
     .query(
       aql`
@@ -34,15 +34,15 @@ function getChanges (resourceId, changeRev) {
   `
     )
     .call('all')
-    .then(result => {
+    .then((result) => {
       if (!result) {
-        return undefined
+        return undefined;
       }
-      return result
-    })
+      return result;
+    });
 }
 
-function getMaxChangeRev (resourceId) {
+function getMaxChangeRev(resourceId) {
   return db
     .query(
       aql`
@@ -55,25 +55,25 @@ function getMaxChangeRev (resourceId) {
         )`
     )
     .call('next')
-    .then(result => {
-      if (!result) return 0
-      return result
-    })
+    .then((result) => {
+      if (!result) return 0;
+      return result;
+    });
 }
 
 // Produces a bare tree has a top level key at resourceId and traces down to the
 // actual change that induced this rev update
 // TODO: using .body allows the changes to be nested, but doesn't allow us to
 // specify all of the other change details along the way down.
-function getChange (resourceId, changeRev) {
+function getChange(resourceId, changeRev) {
   //TODO: This is meant to handle when resources are deleted directly. Edge
   // cases remain to be tested. Does this suffice regarding the need send down a
   // bare tree?
   if (!changeRev) {
     return Promise.resolve({
       body: null,
-      type: 'delete'
-    })
+      type: 'delete',
+    });
   }
 
   return db
@@ -94,26 +94,27 @@ function getChange (resourceId, changeRev) {
   `
     )
     .call('next')
-    .then(result => {
+    .then((result) => {
       if (!result || !result.vertices[0]) {
-        return undefined
+        return undefined;
       }
       let change = {
         body: result.vertices[0].body,
         type: result.vertices[0].type,
-        wasDelete: result.vertices[result.vertices.length - 1].type === 'delete'
-      }
-      let path = ''
+        wasDelete:
+          result.vertices[result.vertices.length - 1].type === 'delete',
+      };
+      let path = '';
       for (let i = 0; i < result.vertices.length - 1; i++) {
-        path += result.edges[i].path
-        pointer.set(change.body, path, result.vertices[i + 1].body)
+        path += result.edges[i].path;
+        pointer.set(change.body, path, result.vertices[i + 1].body);
       }
-      return change
-    })
+      return change;
+    });
 }
 
 // Produces a list of changes as an array
-function getChangeArray (resourceId, changeRev) {
+function getChangeArray(resourceId, changeRev) {
   //TODO: This is meant to handle when resources are deleted directly. Edge
   // cases remain to be tested. Does this suffice regarding the need send down a
   // bare tree?
@@ -123,9 +124,9 @@ function getChangeArray (resourceId, changeRev) {
         resource_id: resourceId,
         path: '',
         body: null,
-        type: 'delete'
-      }
-    ])
+        type: 'delete',
+      },
+    ]);
   }
 
   return db
@@ -141,38 +142,38 @@ function getChangeArray (resourceId, changeRev) {
       SORT LENGTH(p.edges), v.number
       RETURN p`
     )
-    .then(async cursor => {
-      let changeDoc = [] // array of changes
+    .then(async (cursor) => {
+      let changeDoc = []; // array of changes
       // iterate over the graph
-      const result = await cursor.every(doc => {
-        changeDoc.push(toChangeObj(doc)) // convert to change object
-        return true
-      })
-      return changeDoc
-    })
+      const result = await cursor.every((doc) => {
+        changeDoc.push(toChangeObj(doc)); // convert to change object
+        return true;
+      });
+      return changeDoc;
+    });
 }
 
-function toChangeObj (arangoPathObj) {
+function toChangeObj(arangoPathObj) {
   // get path
-  let path = ''
+  let path = '';
   for (let j = 0; j < arangoPathObj.edges.length; j++) {
-    path += arangoPathObj.edges[j].path
+    path += arangoPathObj.edges[j].path;
   }
   // get body
-  const nVertices = arangoPathObj.vertices.length
-  let body = arangoPathObj.vertices[nVertices - 1].body
-  let resource_id = arangoPathObj.vertices[nVertices - 1].resource_id
+  const nVertices = arangoPathObj.vertices.length;
+  let body = arangoPathObj.vertices[nVertices - 1].body;
+  let resource_id = arangoPathObj.vertices[nVertices - 1].resource_id;
   // return change object
-  trace('toChangeObj: returning change object with body ', body)
+  trace('toChangeObj: returning change object with body ', body);
   return {
     resource_id,
     path,
     body,
-    type: arangoPathObj.vertices[nVertices - 1].type
-  }
+    type: arangoPathObj.vertices[nVertices - 1].type,
+  };
 }
 
-function getRootChange (resourceId, changeRev) {
+function getRootChange(resourceId, changeRev) {
   return db
     .query(
       aql`
@@ -189,10 +190,10 @@ function getRootChange (resourceId, changeRev) {
     RETURN path
   `
     )
-    .call('next')
+    .call('next');
 }
 
-function putChange ({
+function putChange({
   change,
   resId,
   rev,
@@ -200,13 +201,13 @@ function putChange ({
   children,
   path,
   userId,
-  authorizationId
+  authorizationId,
 }) {
   if (!Array.isArray(children)) {
-    throw new Error('children must be an array.')
+    throw new Error('children must be an array.');
   }
-  let number = parseInt(rev, 10)
-  trace('putChange: inserting change with body ', change)
+  let number = parseInt(rev, 10);
+  trace('putChange: inserting change with body ', change);
   return db
     .query(
       aql`
@@ -233,7 +234,7 @@ function putChange ({
     RETURN doc._id
   `
     )
-    .call('next')
+    .call('next');
 }
 
 module.exports = {
@@ -242,6 +243,5 @@ module.exports = {
   getRootChange,
   getChanges,
   getMaxChangeRev,
-  putChange
-}
-
+  putChange,
+};

@@ -297,11 +297,11 @@ networks:
 x-mutagen:
   forward:
     agrango:
-      source: "tcp:localhost:8529"
-      destination: "network://arango_net:tcp:arangodb:8529"
+      source: 'tcp:localhost:8529'
+      destination: 'network://arango_net:tcp:arangodb:8529'
     kafka:
-      source: "tcp:localhost:9092"
-      destination: "network://kafka_net:tcp:kafka:9092"
+      source: 'tcp:localhost:9092'
+      destination: 'network://kafka_net:tcp:kafka:9092'
     zookeeper:
-      source: "tcp:localhost:2181"
-      destination: "network://kafka_net:tcp:zookeeper:2181"
+      source: 'tcp:localhost:2181'
+      destination: 'network://kafka_net:tcp:zookeeper:2181'

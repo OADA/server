@@ -13,58 +13,76 @@
  )* limitations under the License.
  */
 
-'use strict'
+'use strict';
 
-const _ = require('lodash')
-const expect = require('chai').expect
-const Promise = require('bluebird')
-const config = require('../config')
-const debug = require('debug')
-const trace = debug('trace:write-handler#test')
+const _ = require('lodash');
+const expect = require('chai').expect;
+const Promise = require('bluebird');
+const config = require('../config');
+const debug = require('debug');
+const trace = debug('trace:write-handler#test');
 
-// DO NOT include ../ because we are testing externally.  Including here will cause admin copy of it 
+// DO NOT include ../ because we are testing externally.  Including here will cause admin copy of it
 // to receive some of the kafka responses.
 
 const oada = require('@oada/client');
 
 const headers = { 'content-type': 'application/json' };
-const    topid = `resources/WRITEHANDLERTEST_TOP1`;
+const topid = `resources/WRITEHANDLERTEST_TOP1`;
 const middleid = `resources/WRITEHANDLERTEST_MIDDLE1`;
 const bottomid = `resources/WRITEHANDLERTEST_BOTTOM1`;
 
 let con = false;
 describe('External tests of write-handler, run from admin', () => {
+  before(async () => {
+    con = await oada.connect({ domain: 'proxy', token: 'god-proxy' });
+  });
 
-    before(async () => {
-      con = await oada.connect({ domain: 'proxy', token: 'god-proxy' });
-    })
+  beforeEach(async () => {
+    await cleanup();
+    await buildTree();
+  });
 
-    beforeEach(async () => {
-      await cleanup()
-      await buildTree()
+  //    after(async () => cleanup());
+
+  it('Should include the link key in the change document when deleting a link to a non-existent resource', async function () {
+    this.timeout(2000);
+    await con.put({
+      path: `/${topid}`,
+      data: { nonexistentlink: { _id: 'resources/DOESNOTEXIST', _rev: 0 } },
+      headers,
     });
+    const firstrev = await con
+      .get({ path: `/${topid}/_rev` })
+      .then((r) => r.data);
+    await con
+      .delete({ path: `/${topid}/nonexistentlink` })
+      .catch((e) => trace('FAILED DELETE: e = ', e));
+    const changedocs = await con
+      .get({ path: `/${topid}/_meta/_changes/${firstrev + 1}` })
+      .then((r) => r.data)
+      .catch((e) => trace('FAILED GET CHANGE DOC, e = ', e));
+    const thechange = _.find(changedocs, (c) => c.type === 'delete');
 
-//    after(async () => cleanup());
-
-    it('Should include the link key in the change document when deleting a link to a non-existent resource', async function() {
-      this.timeout(2000);
-      await con.put({ path: `/${topid}`, data: { nonexistentlink: { _id: "resources/DOESNOTEXIST", _rev: 0 } }, headers });
-      const firstrev = await con.get({ path: `/${topid}/_rev` }).then(r=>r.data);
-      await con.delete({ path: `/${topid}/nonexistentlink` }).catch(e => trace("FAILED DELETE: e = ", e));
-      const changedocs = await con.get({ path: `/${topid}/_meta/_changes/${firstrev+1}` }).then(r=>r.data).catch(e => trace('FAILED GET CHANGE DOC, e = ', e));
-      const thechange = _.find(changedocs, c => c.type === 'delete');
-
-      expect(_.get(thechange, 'type')).to.equal('delete');
-      expect(_.has(thechange, 'body.nonexistentlink')).to.equal(true);
-      expect(_.get(thechange, 'body.nonexistentlink')).to.equal(null);
-    });
-})
+    expect(_.get(thechange, 'type')).to.equal('delete');
+    expect(_.has(thechange, 'body.nonexistentlink')).to.equal(true);
+    expect(_.get(thechange, 'body.nonexistentlink')).to.equal(null);
+  });
+});
 
 async function buildTree() {
   try {
     await con.put({ path: `/${bottomid}`, data: { iam: 'bottom' }, headers });
-    await con.put({ path: `/${middleid}`, data: { iam: 'middle', bottom: { _id: bottomid, _rev: 0 } }, headers });
-    await con.put({ path: `/${topid}`,    data: { iam:    'top', middle: { _id: middleid, _rev: 0 } }, headers });
+    await con.put({
+      path: `/${middleid}`,
+      data: { iam: 'middle', bottom: { _id: bottomid, _rev: 0 } },
+      headers,
+    });
+    await con.put({
+      path: `/${topid}`,
+      data: { iam: 'top', middle: { _id: middleid, _rev: 0 } },
+      headers,
+    });
   } catch (e) {
     console.log('FAILED TO BUILD TREE.  ERROR = ', e);
     throw e;
@@ -72,10 +90,10 @@ async function buildTree() {
 }
 
 async function cleanup() {
-  await Promise.each([topid, middleid, bottomid], async id => {
-    await con.get({ path: `/${id}` })
-    .then(async () => con.delete({ path: `/${id}` })) // delete it
-    .catch(e => {} ) // do nothing, didn't exist
+  await Promise.each([topid, middleid, bottomid], async (id) => {
+    await con
+      .get({ path: `/${id}` })
+      .then(async () => con.delete({ path: `/${id}` })) // delete it
+      .catch((e) => {}); // do nothing, didn't exist
   });
 }
-

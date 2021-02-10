@@ -12,13 +12,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-'use strict'
+'use strict';
 
-var fs = require('fs')
-var path = require('path')
-var rsaPemToJwk = require('rsa-pem-to-jwk')
+var fs = require('fs');
+var path = require('path');
+var rsaPemToJwk = require('rsa-pem-to-jwk');
 
-var config = require('./config')
+var config = require('./config');
 
 /*
  * Loadis in all PEM files at config.keys.signPems to sign IdTokens with. The
@@ -27,39 +27,39 @@ var config = require('./config')
 // Initialize the keys objects
 var keys = {
   jwks: {
-    keys: []
+    keys: [],
   },
-  sign: {}
-}
+  sign: {},
+};
 
 // Load in all PEM files
-var files = fs.readdirSync(config.get('auth:keys:signPems'))
+var files = fs.readdirSync(config.get('auth:keys:signPems'));
 for (var i = 0; i < files.length; i++) {
   if (path.extname(files[i]).toLowerCase() === '.pem') {
     var pem = fs.readFileSync(
       path.join(config.get('auth:keys:signPems'), files[i])
-    )
+    );
 
-    var kid = path.basename(files[i], '.pem')
+    var kid = path.basename(files[i], '.pem');
     var jwkExtras = {
       alg: 'RS256',
       use: 'sig',
-      kid: kid
-    }
-    var jwk = rsaPemToJwk(pem, jwkExtras, 'public')
+      kid: kid,
+    };
+    var jwk = rsaPemToJwk(pem, jwkExtras, 'public');
 
     // Make sure PEM is valid
     if (jwk !== undefined) {
-      keys.jwks.keys.push(jwk)
+      keys.jwks.keys.push(jwk);
       keys.sign[kid] = {
         kty: 'PEM',
         alg: 'RS256',
         use: 'sig',
         kid: kid,
-        pem: pem
-      }
+        pem: pem,
+      };
     }
   }
 }
 
-module.exports = keys
+module.exports = keys;

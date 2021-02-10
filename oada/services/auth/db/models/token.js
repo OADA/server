@@ -12,21 +12,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-'use strict'
+'use strict';
 
-var debug = require('debug')('model-tokens')
+var debug = require('debug')('model-tokens');
 
-var OADAError = require('oada-error')
-var config = require('../../config')
-var path = require('path')
+var OADAError = require('oada-error');
+var config = require('../../config');
+var path = require('path');
 var db = require(path.join(
   __dirname,
   '/../../db',
   config.get('auth:datastoresDriver'),
   'tokens.js'
-))
+));
 
-function makeToken (token) {
+function makeToken(token) {
   token.isValid = function () {
     if (
       typeof token.token !== 'string' ||
@@ -34,49 +34,49 @@ function makeToken (token) {
       typeof token.user !== 'object' ||
       typeof token.clientId != 'string'
     ) {
-      return false
+      return false;
     } else {
-      return true
+      return true;
     }
-  }
+  };
 
   token.isExpired = function () {
-    return this.createTime + this.expiresIn < new Date().getTime()
-  }
+    return this.createTime + this.expiresIn < new Date().getTime();
+  };
 
-  return token
+  return token;
 }
 
-function findByToken (token, cb) {
+function findByToken(token, cb) {
   db.findByToken(token, function (err, t) {
-    var token
+    var token;
     if (t) {
-      token = makeToken(t)
+      token = makeToken(t);
     }
 
-    cb(err, token)
-  })
+    cb(err, token);
+  });
 }
 
-function save (t, cb) {
-  var token
+function save(t, cb) {
+  var token;
 
   if (t.isValid === undefined) {
-    token = makeToken(t)
+    token = makeToken(t);
   } else {
-    token = t
+    token = t;
   }
 
-  token.scope = token.scope || []
+  token.scope = token.scope || [];
 
   if (!token.isValid()) {
-    return cb(new Error('Invalid token'))
+    return cb(new Error('Invalid token'));
   }
 
   findByToken(token.token, function (err, t) {
     if (err) {
-      debug(err)
-      return cb(err)
+      debug(err);
+      return cb(err);
     }
 
     if (t) {
@@ -86,28 +86,28 @@ function save (t, cb) {
           OADAError.codes.BAD_REQUEST,
           'There was a problem login in'
         )
-      )
+      );
     }
 
     if (typeof token.expiresIn !== 'number') {
-      token.expiresIn = 60
+      token.expiresIn = 60;
     }
 
-    token.createTime = new Date().getTime()
+    token.createTime = new Date().getTime();
 
-    debug('save: saving token ', token)
+    debug('save: saving token ', token);
     db.save(token, function (err) {
       if (err) {
-        debug(err)
-        return cb(err)
+        debug(err);
+        return cb(err);
       }
 
-      findByToken(token.token, cb)
-    })
-  })
+      findByToken(token.token, cb);
+    });
+  });
 }
 
 module.exports = {
   findByToken: findByToken,
-  save: save
-}
+  save: save,
+};

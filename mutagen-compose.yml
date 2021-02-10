@@ -6,9 +6,9 @@ volumes:
 
 # Common mutagen related configuration overrides for all of our core uservices
 x-oada-uservice: &oada-uservice
-    volumes:
-      # Mount host code over images in development mode
-      - code:/oada
+  volumes:
+    # Mount host code over images in development mode
+    - code:/oada
 
 services:
   # Service to intitialize node_modules in dev?
@@ -16,7 +16,7 @@ services:
     image: oada/docker-base-node
     volumes:
       - code:/oada
-    entrypoint: ["yarn", "--cwd", "/oada"]
+    entrypoint: ['yarn', '--cwd', '/oada']
     command: install
 
   startup: *oada-uservice
@@ -41,10 +41,10 @@ x-mutagen:
       ignore:
         vcs: true
     code:
-      alpha: "./"
-      beta: "volume://code"
-      mode: "one-way-replica"
+      alpha: './'
+      beta: 'volume://code'
+      mode: 'one-way-replica'
       ignore:
         paths:
           # Don't map host/local node_modules into conainters
-          - "node_modules"
+          - 'node_modules'

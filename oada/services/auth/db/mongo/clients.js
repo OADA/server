@@ -12,35 +12,35 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-'use strict'
+'use strict';
 
-var db = require('./mongo.js')
+var db = require('./mongo.js');
 
-function findById (id, cb) {
+function findById(id, cb) {
   db.clients.findOne({ clientId: id }, { _id: 0 }, function (err, client) {
     if (err) {
-      return cb(err)
+      return cb(err);
     }
 
     if (client) {
-      cb(null, client)
+      cb(null, client);
     } else {
-      cb(err)
+      cb(err);
     }
-  })
+  });
 }
 
-function save (client, cb) {
+function save(client, cb) {
   db.clients.save(client, function (err) {
     if (err) {
-      return cb(err)
+      return cb(err);
     }
 
-    findById(client, cb)
-  })
+    findById(client, cb);
+  });
 }
 
 module.exports = {
   findById: findById,
-  save: save
-}
+  save: save,
+};

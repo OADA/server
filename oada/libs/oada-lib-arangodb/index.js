@@ -1,4 +1,4 @@
-'use strict'
+'use strict';
 
 module.exports = {
   arango: require('./db.js'),
@@ -12,5 +12,5 @@ module.exports = {
   authorizations: require('./libs/authorizations.js'),
   putBodies: require('./libs/putBodies.js'),
   // call examples('resources') to get the list of example resources, etc.
-  examples: collectionName => require('./libs/exampledocs/' + collectionName)
-}
+  examples: (collectionName) => require('./libs/exampledocs/' + collectionName),
+};

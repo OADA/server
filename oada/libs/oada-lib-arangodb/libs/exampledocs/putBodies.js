@@ -1,1 +1,1 @@
-module.exports = [{ _id: 'putBodies/default:putbody123', bodystr: '{}' }]
+module.exports = [{ _id: 'putBodies/default:putbody123', bodystr: '{}' }];

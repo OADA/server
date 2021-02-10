@@ -12,22 +12,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-'use strict'
+'use strict';
 
-var _ = require('lodash')
-var codes = require('./codes.json')
+var _ = require('lodash');
+var codes = require('./codes.json');
 
-function findByCode (code, cb) {
-  cb(null, _.cloneDeep(codes[code]))
+function findByCode(code, cb) {
+  cb(null, _.cloneDeep(codes[code]));
 }
 
-function save (code, cb) {
-  codes[code.code] = JSON.parse(JSON.stringify(code))
+function save(code, cb) {
+  codes[code.code] = JSON.parse(JSON.stringify(code));
 
-  findByCode(code.code, cb)
+  findByCode(code.code, cb);
 }
 
 module.exports = {
   findByCode: findByCode,
-  save: save
-}
+  save: save,
+};

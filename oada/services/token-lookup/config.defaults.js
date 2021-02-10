@@ -12,10 +12,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-'use strict'
+'use strict';
 
-var path = require('path')
-var fs = require('fs')
+var path = require('path');
+var fs = require('fs');
 
 module.exports = {
   // By default, this checks for NODE_ENV===production
@@ -29,11 +29,11 @@ module.exports = {
       tokenRequest: 'token_request',
       graphRequest: 'graph_request',
       writeRequest: 'write_request',
-      httpResponse: 'http_response'
+      httpResponse: 'http_response',
     },
-    groupId: 'token-lookup'
+    groupId: 'token-lookup',
   },
   zookeeper: {
-    host: 'zookeeper:2181'
-  }
-}
+    host: 'zookeeper:2181',
+  },
+};

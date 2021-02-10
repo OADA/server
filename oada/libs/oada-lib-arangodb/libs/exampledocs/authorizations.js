@@ -6,7 +6,7 @@ module.exports = [
     createTime: 1413831649937,
     expiresIn: 0,
     user: { _id: 'users/default:users_frank_123' },
-    clientId: 'jf93caauf3uzud7f308faesf3@provider.oada-dev.com'
+    clientId: 'jf93caauf3uzud7f308faesf3@provider.oada-dev.com',
   },
   {
     _id: 'authorizations/default:authorization-012',
@@ -15,7 +15,7 @@ module.exports = [
     createTime: 1413831649937,
     expiresIn: 0,
     user: { _id: 'users/default:users_servio_012' },
-    clientId: 'jf93caauf3uzud7f308faesf3@provider.oada-dev.com'
+    clientId: 'jf93caauf3uzud7f308faesf3@provider.oada-dev.com',
   },
   {
     _id: 'authorizations/default:authorization-124',
@@ -24,7 +24,7 @@ module.exports = [
     createTime: 1413831649937,
     expiresIn: 0,
     user: { _id: 'users/default:users_frank2_124' },
-    clientId: 'jf93caauf3uzud7f308faesf3@provider.oada-dev.com'
+    clientId: 'jf93caauf3uzud7f308faesf3@provider.oada-dev.com',
   },
 
   {
@@ -34,7 +34,7 @@ module.exports = [
     createTime: 1413831649937,
     expiresIn: 0,
     user: { _id: 'users/default:users_sam_321' },
-    clientId: 'jf93caauf3uzud7f308faesf3@provider.oada-dev.com'
+    clientId: 'jf93caauf3uzud7f308faesf3@provider.oada-dev.com',
   },
   {
     _id: 'authorizations/default:authorization-god',
@@ -43,7 +43,7 @@ module.exports = [
     createTime: 1413831649937,
     expiresIn: 0,
     user: { _id: 'users/default:users_sam_321' },
-    clientId: 'jf93caauf3uzud7f308faesf3@provider.oada-dev.com'
+    clientId: 'jf93caauf3uzud7f308faesf3@provider.oada-dev.com',
   },
   {
     _id: 'authorizations/default:authorization-god-proxy',
@@ -52,7 +52,7 @@ module.exports = [
     createTime: 1413831649937,
     expiresIn: 0,
     user: { _id: 'users/default:users_sam_321-proxy' },
-    clientId: 'jf93caauf3uzud7f308faesf3@provider.oada-dev.com'
+    clientId: 'jf93caauf3uzud7f308faesf3@provider.oada-dev.com',
   },
   {
     _id: 'authorizations/default:authorization-654',
@@ -61,7 +61,7 @@ module.exports = [
     createTime: 1413831649937,
     expiresIn: 0,
     user: { _id: 'users/default:users_sam_321' },
-    clientId: 'jf93caauf3uzud7f308faesf3@provider.oada-dev.com'
+    clientId: 'jf93caauf3uzud7f308faesf3@provider.oada-dev.com',
   },
   {
     _id: 'authorizations/default:authorization-999',
@@ -70,7 +70,7 @@ module.exports = [
     createTime: 1413831649937,
     expiresIn: 0,
     user: { _id: 'users/default:users_audrey_999' },
-    clientId: 'jf93caauf3uzud7f308faesf3@provider.oada-dev.com'
+    clientId: 'jf93caauf3uzud7f308faesf3@provider.oada-dev.com',
   },
   {
     _id: 'authorizations/default:authorization-777',
@@ -79,7 +79,7 @@ module.exports = [
     createTime: 1413831649937,
     expiresIn: 0,
     user: { _id: 'users/default:users_gary_growersync' },
-    clientId: 'jf93caauf3uzud7f308faesf3@provider.oada-dev.com'
+    clientId: 'jf93caauf3uzud7f308faesf3@provider.oada-dev.com',
   },
   {
     _id: 'authorizations/default:authorization-444',
@@ -88,7 +88,7 @@ module.exports = [
     createTime: 1413831649937,
     expiresIn: 0,
     user: { _id: 'users/default:users_pete_pspperfection' },
-    clientId: 'jf93caauf3uzud7f308faesf3@provider.oada-dev.com'
+    clientId: 'jf93caauf3uzud7f308faesf3@provider.oada-dev.com',
   },
   {
     _id: 'authorizations/default:authorization-555',
@@ -97,7 +97,7 @@ module.exports = [
     createTime: 1413831649937,
     expiresIn: 0,
     user: { _id: 'users/default:users_rick_retailfresh' },
-    clientId: 'jf93caauf3uzud7f308faesf3@provider.oada-dev.com'
+    clientId: 'jf93caauf3uzud7f308faesf3@provider.oada-dev.com',
   },
   {
     _id: 'authorizations/default:authorization-666',
@@ -106,6 +106,6 @@ module.exports = [
     createTime: 1413831649937,
     expiresIn: 0,
     user: { _id: 'users/default:users_diane_distributingexcellence' },
-    clientId: 'jf93caauf3uzud7f308faesf3@provider.oada-dev.com'
-  }
-]
+    clientId: 'jf93caauf3uzud7f308faesf3@provider.oada-dev.com',
+  },
+];

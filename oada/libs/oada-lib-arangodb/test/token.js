@@ -13,37 +13,37 @@
  )* limitations under the License.
  */
 
-'use strict'
+'use strict';
 
-const expect = require('chai').expect
-const Promise = require('bluebird')
-const oadaLib = require('..')
-const config = require('../config')
+const expect = require('chai').expect;
+const Promise = require('bluebird');
+const oadaLib = require('..');
+const config = require('../config');
 
 // TODO: Would be nice to just expose these examples on oadaLib itself --- feel
 // like we will want them for all of the microservice tests
-const exampleTokens = require('../libs/exampledocs/authorizations.js')
-const exampleUsers = require('../libs/exampledocs/users.js')
+const exampleTokens = require('../libs/exampledocs/authorizations.js');
+const exampleUsers = require('../libs/exampledocs/users.js');
 
 describe('token lib', () => {
-  before(oadaLib.init.run)
+  before(oadaLib.init.run);
 
   it('should find a token', () => {
-    const token = exampleTokens[0]
+    const token = exampleTokens[0];
 
-    return oadaLib.authorizations.findByToken(token.token).then(t => {
-      expect(t.token).to.equal(token.token)
-      expect(t.createTime).to.equal(token.createTime)
-      expect(t.expiresIn).to.equal(token.expiresIn)
-      expect(t.user).to.be.a('object')
-      expect(t.user._id).to.equal(token.user._id)
-      expect(t.clientId).to.equal(token.clientId)
-    })
-  })
+    return oadaLib.authorizations.findByToken(token.token).then((t) => {
+      expect(t.token).to.equal(token.token);
+      expect(t.createTime).to.equal(token.createTime);
+      expect(t.expiresIn).to.equal(token.expiresIn);
+      expect(t.user).to.be.a('object');
+      expect(t.user._id).to.equal(token.user._id);
+      expect(t.clientId).to.equal(token.clientId);
+    });
+  });
 
   it('should save a token', () => {
-    const token = exampleTokens[0]
-    const user = exampleUsers[0]
+    const token = exampleTokens[0];
+    const user = exampleUsers[0];
 
     return oadaLib.authorizations
       .save(
@@ -51,20 +51,20 @@ describe('token lib', () => {
           _key: token._key + '-no-duplicates',
           token: 'abc-no-duplicates',
           user: {
-            _id: user._id
-          }
+            _id: user._id,
+          },
         })
       )
       .then(() => oadaLib.authorizations.findByToken('abc-no-duplicates'))
-      .then(function checkNewToken (t) {
-        expect(t.token).to.equal('abc-no-duplicates')
-        expect(t.createTime).to.equal(token.createTime)
-        expect(t.expiresIn).to.equal(token.expiresIn)
-        expect(t.user).to.be.a('object')
-        expect(t.user._id).to.equal(user._id)
-        expect(t.clientId).to.equal(token.clientId)
-      })
-  })
+      .then(function checkNewToken(t) {
+        expect(t.token).to.equal('abc-no-duplicates');
+        expect(t.createTime).to.equal(token.createTime);
+        expect(t.expiresIn).to.equal(token.expiresIn);
+        expect(t.user).to.be.a('object');
+        expect(t.user._id).to.equal(user._id);
+        expect(t.clientId).to.equal(token.clientId);
+      });
+  });
 
-  after(oadaLib.init.cleanup)
-})
+  after(oadaLib.init.cleanup);
+});

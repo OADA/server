@@ -16,14 +16,14 @@ module.exports = [
         createdBy: 'users/default:users_frank_123',
         created: 1494133055,
         modifiedBy: 'users/default:users_frank_123',
-        modified: 1494133055
+        modified: 1494133055,
       },
       _changes: {
         _id: 'resources/default:changes_bookmarks_123/_meta/_changes',
-        _rev: 1
-      }
+        _rev: 1,
+      },
     },
-    rocks: { _id: 'resources/default:resources_rocks_123', _rev: 1 }
+    rocks: { _id: 'resources/default:resources_rocks_123', _rev: 1 },
   },
   //------------------------------------------------
   // Bookmarks document (for servio):
@@ -42,13 +42,13 @@ module.exports = [
         createdBy: 'users/default:users_frank_012',
         created: 1494133055,
         modifiedBy: 'users/default:users_frank_012',
-        modified: 1494133055
+        modified: 1494133055,
       },
       _changes: {
         _id: 'resources/default:changes_bookmarks_012/_meta/_changes',
-        _rev: 1
-      }
-    }
+        _rev: 1,
+      },
+    },
   },
   {
     _id: 'resources/default:resources_bookmarks_124',
@@ -65,14 +65,14 @@ module.exports = [
         createdBy: 'users/default:users_frank2_124',
         created: 1494133055,
         modifiedBy: 'users/default:users_frank2_124',
-        modified: 1494133055
+        modified: 1494133055,
       },
       _changes: {
         _id: 'resources/default:resources_bookmarks_124/_meta/_changes',
-        _rev: 1
-      }
+        _rev: 1,
+      },
     },
-    thisisopenidconnectexampleuser: true
+    thisisopenidconnectexampleuser: true,
   },
 
   //--------------------
@@ -92,13 +92,13 @@ module.exports = [
         createdBy: 'users/default:users_sam_321',
         created: 1494133055,
         modifiedBy: 'users/default:users_sam_321',
-        modified: 1494133055
+        modified: 1494133055,
       },
       _changes: {
         _id: 'resources/default:resources_bookmarks_321/_meta/_changes',
-        _rev: 1
-      }
-    }
+        _rev: 1,
+      },
+    },
   },
 
   //--------------------
@@ -118,15 +118,14 @@ module.exports = [
         createdBy: 'users/default:users_sam_321-proxy',
         created: 1494133055,
         modifiedBy: 'users/default:users_sam_321-proxy',
-        modified: 1494133055
+        modified: 1494133055,
       },
       _changes: {
         _id: 'resources/default:resources_bookmarks_321-proxy/_meta/_changes',
-        _rev: 1
-      }
-    }
+        _rev: 1,
+      },
+    },
   },
-
 
   //--------------------
   //Bookmarks document (for audrey):
@@ -145,14 +144,14 @@ module.exports = [
         createdBy: 'users/default:users_audrey_999',
         created: 1494133055,
         modifiedBy: 'users/default:users_audrey_999',
-        modified: 1494133055
+        modified: 1494133055,
       },
       _changes: {
         _id: 'resources/default:resources_bookmarks_999/_meta/_changes',
-        _rev: 1
-      }
+        _rev: 1,
+      },
     },
-    trellisfw: { _id: 'resources/default:resources_clients_999', _rev: 1 }
+    trellisfw: { _id: 'resources/default:resources_clients_999', _rev: 1 },
   },
 
   //--------------------
@@ -172,13 +171,13 @@ module.exports = [
         createdBy: 'users/default:users_gary_growersync',
         created: 1494133055,
         modifiedBy: 'users/default:users_gary_growersync',
-        modified: 1494133055
+        modified: 1494133055,
       },
       _changes: {
         _id: 'resources/default:resources_bookmarks_777/_meta/_changes',
-        _rev: 1
-      }
-    }
+        _rev: 1,
+      },
+    },
   },
 
   //--------------------
@@ -198,13 +197,13 @@ module.exports = [
         createdBy: 'users/default:users_pete_pspperfection',
         created: 1494133055,
         modifiedBy: 'users/default:users_pete_pspperfection',
-        modified: 1494133055
+        modified: 1494133055,
       },
       _changes: {
         _id: 'resources/default:resources_bookmarks_444/_meta/_changes',
-        _rev: 1
-      }
-    }
+        _rev: 1,
+      },
+    },
   },
 
   //--------------------
@@ -224,13 +223,13 @@ module.exports = [
         createdBy: 'users/default:users_rick_retailfresh',
         created: 1494133055,
         modifiedBy: 'users/default:users_rick_retailfresh',
-        modified: 1494133055
+        modified: 1494133055,
       },
       _changes: {
         _id: 'resources/default:resources_bookmarks_555_meta/_changes',
-        _rev: 1
-      }
-    }
+        _rev: 1,
+      },
+    },
   },
 
   //--------------------
@@ -250,13 +249,13 @@ module.exports = [
         createdBy: 'users/default:users_diane_distributingexcellence',
         created: 1494133055,
         modifiedBy: 'users/default:users_diane_distributingexcellence',
-        modified: 1494133055
+        modified: 1494133055,
       },
       _changes: {
         _id: 'resources/default:resources_bookmarks_666/_meta/_changes',
-        _rev: 1
-      }
-    }
+        _rev: 1,
+      },
+    },
   },
 
   //------------------------------------------------
@@ -276,10 +275,10 @@ module.exports = [
         createdBy: 'system',
         created: 1494133055,
         modifiedBy: 'system',
-        modified: 1494133055
+        modified: 1494133055,
       },
-      _changes: {}
-    }
+      _changes: {},
+    },
   },
   {
     _id: 'resources/default:resources_shares_123',
@@ -296,10 +295,10 @@ module.exports = [
         createdBy: 'system',
         created: 1494133055,
         modifiedBy: 'system',
-        modified: 1494133055
+        modified: 1494133055,
       },
-      _changes: {}
-    }
+      _changes: {},
+    },
   },
   {
     _id: 'resources/default:resources_shares_124',
@@ -316,10 +315,10 @@ module.exports = [
         createdBy: 'system',
         created: 1494133055,
         modifiedBy: 'system',
-        modified: 1494133055
+        modified: 1494133055,
       },
-      _changes: {}
-    }
+      _changes: {},
+    },
   },
 
   //------------------------------------------------
@@ -338,10 +337,10 @@ module.exports = [
         createdBy: 'system',
         created: 1494133055,
         modifiedBy: 'system',
-        modified: 1494133055
+        modified: 1494133055,
       },
-      _changes: {}
-    }
+      _changes: {},
+    },
   },
 
   //------------------------------------------------
@@ -361,10 +360,10 @@ module.exports = [
         createdBy: 'system',
         created: 1494133055,
         modifiedBy: 'system',
-        modified: 1494133055
+        modified: 1494133055,
       },
-      _changes: {}
-    }
+      _changes: {},
+    },
   },
 
   //------------------------------------------------
@@ -384,10 +383,10 @@ module.exports = [
         createdBy: 'system',
         created: 1494133055,
         modifiedBy: 'system',
-        modified: 1494133055
+        modified: 1494133055,
       },
-      _changes: {}
-    }
+      _changes: {},
+    },
   },
 
   //------------------------------------------------
@@ -407,10 +406,10 @@ module.exports = [
         createdBy: 'system',
         created: 1494133055,
         modifiedBy: 'system',
-        modified: 1494133055
+        modified: 1494133055,
       },
-      _changes: {}
-    }
+      _changes: {},
+    },
   },
 
   //------------------------------------------------
@@ -430,10 +429,10 @@ module.exports = [
         createdBy: 'system',
         created: 1494133055,
         modifiedBy: 'system',
-        modified: 1494133055
+        modified: 1494133055,
       },
-      _changes: {}
-    }
+      _changes: {},
+    },
   },
 
   //------------------------------------------------
@@ -453,10 +452,10 @@ module.exports = [
         createdBy: 'system',
         created: 1494133055,
         modifiedBy: 'system',
-        modified: 1494133055
+        modified: 1494133055,
       },
-      _changes: {}
-    }
+      _changes: {},
+    },
   },
 
   {
@@ -474,18 +473,18 @@ module.exports = [
         createdBy: 'system',
         created: 1494133055,
         modifiedBy: 'system',
-        modified: 1494133055
+        modified: 1494133055,
       },
-      _changes: {}
-    }
+      _changes: {},
+    },
   },
   //------------------------------------------------------
   // Rocks document:
   {
-    _id: 'resources/default:resources_rocks_123',
-    _oada_rev: 1,
-    _type: 'application/vnd.oada.rocks.1+json',
-    _meta: {
+    '_id': 'resources/default:resources_rocks_123',
+    '_oada_rev': 1,
+    '_type': 'application/vnd.oada.rocks.1+json',
+    '_meta': {
       _id: 'resources/default:resources_rocks_123/_meta',
       _rev: 1,
       _type: 'application/vnd.oada.rocks.1+json',
@@ -494,16 +493,16 @@ module.exports = [
         createdBy: 'users/default:users_frank_123',
         created: 1494133055,
         modifiedBy: 'users/default:users_frank_123',
-        modified: 1494133055
+        modified: 1494133055,
       },
       _changes: {
         _id: 'resources/default:resources_rocks_123/_meta/_changes',
         _rev: 1,
         1: {
           merge: {
-            _rev: 1,
-            _type: 'application/vnd.oada.rocks.1+json',
-            _meta: {
+            '_rev': 1,
+            '_type': 'application/vnd.oada.rocks.1+json',
+            '_meta': {
               _id: 'resources/default:resources_rocks_123/_meta',
               _rev: 1,
               _type: 'application/vnd.oada.rocks.1+json',
@@ -512,27 +511,27 @@ module.exports = [
                 createdBy: 'users/default:users_frank_123',
                 created: 1494133055,
                 modifiedBy: 'users/default:users_frank_123',
-                modified: 1494133055
-              }
+                modified: 1494133055,
+              },
             },
             'rocks-index': {
               '90j2klfdjss': {
                 _id: 'resources/default:resources_rock_123',
-                _rev: 1
-              }
-            }
+                _rev: 1,
+              },
+            },
           },
           userid: 'users/default:users_frank_123',
-          authorizationid: 'authorizations/default:authorizations-123'
-        }
-      }
+          authorizationid: 'authorizations/default:authorizations-123',
+        },
+      },
     },
     'rocks-index': {
       '90j2klfdjss': {
         _id: 'resources/default:resources_rock_123',
-        _rev: 1
-      }
-    }
+        _rev: 1,
+      },
+    },
   },
   //------------------------------------------------------
   // trellisfw document (audrey):
@@ -549,7 +548,7 @@ module.exports = [
         createdBy: 'users/default:users_audrey_999',
         created: 1494133055,
         modifiedBy: 'users/default:users_audrey_999',
-        modified: 1494133055
+        modified: 1494133055,
       },
       _changes: {
         _id: 'resources/default:resources_trellisfw_999/_meta/_changes',
@@ -567,23 +566,23 @@ module.exports = [
                 createdBy: 'users/default:users_audrey_999',
                 created: 1494133055,
                 modifiedBy: 'users/default:users_audrey_999',
-                modified: 1494133055
-              }
+                modified: 1494133055,
+              },
             },
             clients: {
               _id: 'resources/default:resources_clients_999',
-              _rev: 1
-            }
+              _rev: 1,
+            },
           },
           userid: 'users/default:users_audrey_999',
-          authorizationid: 'authorizations/default:authorizations-999'
-        }
-      }
+          authorizationid: 'authorizations/default:authorizations-999',
+        },
+      },
     },
     clients: {
       _id: 'resources/default:resources_clients_999',
-      _rev: 1
-    }
+      _rev: 1,
+    },
   },
   //-----------------------------------------------------------------
   // Clients document (audrey)
@@ -600,7 +599,7 @@ module.exports = [
         createdBy: 'users/default:users_audrey_999',
         created: 1494133055,
         modifiedBy: 'users/default:users_audrey_999',
-        modified: 1494133055
+        modified: 1494133055,
       },
 
       _changes: {
@@ -619,15 +618,15 @@ module.exports = [
                 createdBy: 'users/default:users_audrey_999',
                 created: 1494133055,
                 modifiedBy: 'users/default:users_audrey_999',
-                modified: 1494133055
-              }
-            }
+                modified: 1494133055,
+              },
+            },
           },
           userid: 'users/default:users_audrey_999',
-          authorizationid: 'authorizations/default:authorizations-999'
-        }
-      }
-    }
+          authorizationid: 'authorizations/default:authorizations-999',
+        },
+      },
+    },
   },
 
   //-----------------------------------------------------------------
@@ -645,7 +644,7 @@ module.exports = [
         createdBy: 'users/default:users_frank_123',
         created: 1494133055,
         modifiedBy: 'users/default:users_frank_123',
-        modified: 1494133055
+        modified: 1494133055,
       },
 
       _changes: {
@@ -664,21 +663,21 @@ module.exports = [
                 createdBy: 'users/default:users_frank_123',
                 created: 1494133055,
                 modifiedBy: 'users/default:users_frank_123',
-                modified: 1494133055
-              }
+                modified: 1494133055,
+              },
             },
             location: {
               latitude: '-40.1231242',
-              longitude: '82.192089123'
+              longitude: '82.192089123',
             },
-            picked_up: false
+            picked_up: false,
           },
           userid: 'users/default:users_frank_123',
-          authorizationid: 'authorizations/default:authorizations-123'
-        }
-      }
+          authorizationid: 'authorizations/default:authorizations-123',
+        },
+      },
     },
     location: { latitude: '-40.1231242', longitude: '82.192089123' },
-    picked_up: false
-  }
-]
+    picked_up: false,
+  },
+];

@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-'use strict'
+'use strict';
 
 module.exports = {
   //isProduction: false, // set to true and random database will be created for you
@@ -24,66 +24,66 @@ module.exports = {
       users: {
         name: 'users',
         indexes: ['username'],
-        defaults: './libs/exampledocs/users'
+        defaults: './libs/exampledocs/users',
       },
       clients: {
         name: 'clients',
         indexes: ['clientId'],
-        defaults: './libs/exampledocs/clients'
+        defaults: './libs/exampledocs/clients',
       },
       authorizations: {
         name: 'authorizations',
         indexes: ['token', { name: 'user', unique: false }],
-        defaults: './libs/exampledocs/authorizations'
+        defaults: './libs/exampledocs/authorizations',
       },
       codes: {
         name: 'codes',
         indexes: ['code'],
-        defaults: './libs/exampledocs/codes'
+        defaults: './libs/exampledocs/codes',
       },
       resources: {
         name: 'resources',
         indexes: [],
-        defaults: './libs/exampledocs/resources'
+        defaults: './libs/exampledocs/resources',
       },
       graphNodes: {
         name: 'graphNodes',
         indexes: [],
-        defaults: './libs/exampledocs/graphNodes'
+        defaults: './libs/exampledocs/graphNodes',
       },
       changes: {
         name: 'changes',
         indexes: [],
-        defaults: './libs/exampledocs/changes'
+        defaults: './libs/exampledocs/changes',
       },
       changeEdges: {
         name: 'changeEdges',
         indexes: [{ name: 'name', unique: false }],
         defaults: './libs/exampledocs/changeEdges',
-        edgeCollection: true
+        edgeCollection: true,
       },
       edges: {
         name: 'edges',
         indexes: [{ name: 'name', unique: false }],
         defaults: './libs/exampledocs/edges',
-        edgeCollection: true
+        edgeCollection: true,
       },
       putBodies: {
         name: 'putBodies',
         indexes: [],
         defaults: './libs/exampledocs/putBodies',
-        createOptions: { isVolatile: false }
-      }
+        createOptions: { isVolatile: false },
+      },
     },
     retry: {
       deadlock: {
         retries: 10,
-        delay: 50
-      }
+        delay: 50,
+      },
     },
     init: {
       // NOTE: passwordSalt HAS to match the one in auth
-      passwordSalt: '$2a$10$l64QftVz6.7KR5BXNc29IO'
-    }
-  }
-}
+      passwordSalt: '$2a$10$l64QftVz6.7KR5BXNc29IO',
+    },
+  },
+};

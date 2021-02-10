@@ -1,10 +1,10 @@
 {
     "preset": "google",
-    "fileExtensions": [ ".js" ],
+    "fileExtensions": [".js"],
     "validateIndentation": 4,
     "maximumLineLength": 80,
     "requireCapitalizedConstructors": true,
     "disallowEmptyBlocks": true,
     "requireDotNotation": false,
-    "excludeFiles": [ "node_modules/**" ]
+    "excludeFiles": ["node_modules/**"]
 }

@@ -1,47 +1,47 @@
-'use strict'
+'use strict';
 
-const db = require('../db')
-const debug = require('debug')
-const info = debug('arangodb#resources:info')
-const trace = debug('arangodb#resources:trace')
-const _ = require('lodash')
-global.Promise = require('bluebird')
-const aql = require('arangojs').aqlQuery
-const pointer = require('json-pointer')
-const config = require('../config')
-const util = require('../util')
-const users = require('./users')
+const db = require('../db');
+const debug = require('debug');
+const info = debug('arangodb#resources:info');
+const trace = debug('arangodb#resources:trace');
+const _ = require('lodash');
+global.Promise = require('bluebird');
+const aql = require('arangojs').aqlQuery;
+const pointer = require('json-pointer');
+const config = require('../config');
+const util = require('../util');
+const users = require('./users');
 const resources = db.collection(
   config.get('arangodb:collections:resources:name')
-)
+);
 const graphNodes = db.collection(
   config.get('arangodb:collections:graphNodes:name')
-)
-const edges = db.collection(config.get('arangodb:collections:edges:name'))
+);
+const edges = db.collection(config.get('arangodb:collections:edges:name'));
 
-const MAX_DEPTH = 100 // TODO: Is this good?
+const MAX_DEPTH = 100; // TODO: Is this good?
 
-async function lookupFromUrl (url, userId) {
-  var user = await users.findById(userId)
-  if (!user) throw 'No User Found for given userId'
+async function lookupFromUrl(url, userId) {
+  var user = await users.findById(userId);
+  if (!user) throw 'No User Found for given userId';
   if (/^\/bookmarks/.test(url)) {
-    url = url.replace(/^\/bookmarks/, '/' + user.bookmarks._id)
+    url = url.replace(/^\/bookmarks/, '/' + user.bookmarks._id);
   }
   if (/^\/shares/.test(url)) {
-    url = url.replace(/^\/shares/, '/' + user.shares._id)
+    url = url.replace(/^\/shares/, '/' + user.shares._id);
   }
   return Promise.try(() => {
     //    trace(userId);
-    let pieces = pointer.parse(url)
+    let pieces = pointer.parse(url);
     // resources/123 => graphNodes/resources:123
-    var startNode = graphNodes.name + '/' + pieces[0] + ':' + pieces[1]
-    let id = pieces.splice(0, 2)
+    var startNode = graphNodes.name + '/' + pieces[0] + ':' + pieces[1];
+    let id = pieces.splice(0, 2);
     // Create a filter for each segment of the url
     const filters = pieces
       .map((urlPiece, i) => {
-        return `FILTER p.edges[${i}].name == '${urlPiece}' || p.edges[${i}].name == null`
+        return `FILTER p.edges[${i}].name == '${urlPiece}' || p.edges[${i}].name == null`;
       })
-      .join(' ')
+      .join(' ');
     let query = `
       WITH ${edges.name}, ${graphNodes.name}
       LET path = LAST(
@@ -64,49 +64,49 @@ async function lookupFromUrl (url, userId) {
       )
       LET rev = DOCUMENT(LAST(path.vertices).resource_id)._oada_rev
       RETURN MERGE(path, {permissions, rev, type})
-    `
-    trace('Query', query)
+    `;
+    trace('Query', query);
     return db
       .query({ query })
       .call('next')
-      .then(result => {
-        let resource_id = pointer.compile(id.concat(pieces)).replace(/^\//, '') // Get rid of leading slash from json pointer
+      .then((result) => {
+        let resource_id = pointer.compile(id.concat(pieces)).replace(/^\//, ''); // Get rid of leading slash from json pointer
 
-        let rev = result.rev
-        let type = result.type
-        let resourceExists = true
+        let rev = result.rev;
+        let type = result.type;
+        let resourceExists = true;
 
-        let path_leftover = ''
-        let from = { resource_id: '', path_leftover: '' }
+        let path_leftover = '';
+        let from = { resource_id: '', path_leftover: '' };
 
         if (!result) {
-          trace('1 return resource id', resource_id)
+          trace('1 return resource id', resource_id);
           return {
             resource_id,
             path_leftover,
             from,
             permissions: {},
             rev,
-            type
-          }
+            type,
+          };
         }
 
         // Walk up and find the graph and return furthest known permissions (and
         // type)
-        let permissions = { owner: null, read: null, write: null, type: null }
-        result.permissions.reverse().some(p => {
+        let permissions = { owner: null, read: null, write: null, type: null };
+        result.permissions.reverse().some((p) => {
           if (p) {
             if (permissions.read === null) {
-              permissions.read = p.read
+              permissions.read = p.read;
             }
             if (permissions.write === null) {
-              permissions.write = p.write
+              permissions.write = p.write;
             }
             if (permissions.owner === null) {
-              permissions.owner = p.owner
+              permissions.owner = p.owner;
             }
             if (permissions.type === null) {
-              permissions.type = p.type
+              permissions.type = p.type;
             }
             if (
               permissions.read !== null &&
@@ -114,16 +114,16 @@ async function lookupFromUrl (url, userId) {
               permissions.owner !== null &&
               permissions.type !== null
             ) {
-              return true
+              return true;
             }
           }
-        })
-        type = permissions.type
+        });
+        type = permissions.type;
 
         // Check for a traversal that did not finish (aka not found)
         if (result.vertices[0] === null) {
-          trace('graph-lookup traversal did not finish')
-          trace('2 return resource id', resource_id)
+          trace('graph-lookup traversal did not finish');
+          trace('2 return resource id', resource_id);
 
           return {
             resource_id,
@@ -132,52 +132,52 @@ async function lookupFromUrl (url, userId) {
             permissions,
             rev,
             type,
-            resourceExists: false
-          }
+            resourceExists: false,
+          };
           // A dangling edge indicates uncreated resource; return graph lookup
           // starting at this uncreated resource
         } else if (!result.vertices[result.vertices.length - 1]) {
-          let lastEdge = result.edges[result.edges.length - 1]._to
-          path_leftover = ''
+          let lastEdge = result.edges[result.edges.length - 1]._to;
+          path_leftover = '';
           resource_id =
-            'resources/' + lastEdge.split('graphNodes/resources:')[1]
-          trace('graph-lookup traversal uncreated resource', resource_id)
-          rev = 0
-          from = result.vertices[result.vertices.length - 2]
-          let edge = result.edges[result.edges.length - 1]
+            'resources/' + lastEdge.split('graphNodes/resources:')[1];
+          trace('graph-lookup traversal uncreated resource', resource_id);
+          rev = 0;
+          from = result.vertices[result.vertices.length - 2];
+          let edge = result.edges[result.edges.length - 1];
           from = {
             resource_id: from ? from['resource_id'] : '',
             path_leftover:
-              ((from && from['path']) || '') + (edge ? '/' + edge.name : '')
-          }
-          resourceExists = false
+              ((from && from['path']) || '') + (edge ? '/' + edge.name : ''),
+          };
+          resourceExists = false;
         } else {
           resource_id =
-            result.vertices[result.vertices.length - 1]['resource_id']
-          trace('graph-lookup traversal found resource', resource_id)
-          from = result.vertices[result.vertices.length - 2]
-          let edge = result.edges[result.edges.length - 1]
+            result.vertices[result.vertices.length - 1]['resource_id'];
+          trace('graph-lookup traversal found resource', resource_id);
+          from = result.vertices[result.vertices.length - 2];
+          let edge = result.edges[result.edges.length - 1];
           // If the desired url has more pieces than the longest path, the
           // pathLeftover is the extra pieces
           if (result.vertices.length - 1 < pieces.length) {
-            let revVertices = _.reverse(_.cloneDeep(result.vertices))
+            let revVertices = _.reverse(_.cloneDeep(result.vertices));
             let lastResource =
               result.vertices.length -
               1 -
-              _.findIndex(revVertices, 'is_resource')
+              _.findIndex(revVertices, 'is_resource');
             // Slice a negative value to take the last n pieces of the array
             path_leftover = pointer.compile(
               pieces.slice(lastResource - pieces.length)
-            )
+            );
           } else {
             path_leftover =
-              result.vertices[result.vertices.length - 1].path || ''
+              result.vertices[result.vertices.length - 1].path || '';
           }
           from = {
             resource_id: from ? from['resource_id'] : '',
             path_leftover:
-              ((from && from['path']) || '') + (edge ? '/' + edge.name : '')
-          }
+              ((from && from['path']) || '') + (edge ? '/' + edge.name : ''),
+          };
         }
 
         return {
@@ -187,29 +187,29 @@ async function lookupFromUrl (url, userId) {
           path_leftover,
           permissions,
           from,
-          resourceExists
-        }
-      })
-  })
+          resourceExists,
+        };
+      });
+  });
 }
 
-function getResource (id, path) {
+function getResource(id, path) {
   // TODO: Escaping stuff?
-  const parts = (path || '').split('/').filter(x => !!x)
+  const parts = (path || '').split('/').filter((x) => !!x);
 
   if (parts[0] === '_rev') {
     // Get OADA rev, not arango one
-    parts[0] = '_oada_rev'
+    parts[0] = '_oada_rev';
   }
 
   let bindVars = parts.reduce((b, part, i) => {
-    b[`v${i}`] = part
-    return b
-  }, {})
-  bindVars.id = id
-  bindVars['@collection'] = resources.name
+    b[`v${i}`] = part;
+    return b;
+  }, {});
+  bindVars.id = id;
+  bindVars['@collection'] = resources.name;
 
-  const returnPath = parts.reduce((p, _, i) => p.concat(`[@v${i}]`), '')
+  const returnPath = parts.reduce((p, _, i) => p.concat(`[@v${i}]`), '');
 
   return db
     .query({
@@ -218,20 +218,20 @@ function getResource (id, path) {
       FOR r IN @@collection
         FILTER r._id == @id
         RETURN r${returnPath}`,
-      bindVars
+      bindVars,
     })
-    .then(result => result.next())
+    .then((result) => result.next())
     .then(util.sanitizeResult)
     .catch(
       {
         isArangoError: true,
-        errorMessage: 'invalid traversal depth (while instantiating plan)'
+        errorMessage: 'invalid traversal depth (while instantiating plan)',
       },
       () => null
-    ) // Treat non-existing path has not-found
+    ); // Treat non-existing path has not-found
 }
 
-function getResourceOwnerIdRev (id) {
+function getResourceOwnerIdRev(id) {
   return db
     .query({
       query: `
@@ -246,24 +246,24 @@ function getResourceOwnerIdRev (id) {
     `,
       bindVars: {
         id,
-        '@collection': resources.name
-      } // bind id to @id
+        '@collection': resources.name,
+      }, // bind id to @id
     })
-    .then(result => result.next())
-    .then(obj => {
-      trace('getResourceOwnerIdRev(' + id + '): result = ', obj)
-      return obj
+    .then((result) => result.next())
+    .then((obj) => {
+      trace('getResourceOwnerIdRev(' + id + '): result = ', obj);
+      return obj;
     })
     .catch(
       {
         isArangoError: true,
-        errorMessage: 'invalid traversal depth (while instantiating plan)'
+        errorMessage: 'invalid traversal depth (while instantiating plan)',
       },
       () => null
-    ) // Treat non-existing path has not-found
+    ); // Treat non-existing path has not-found
 }
 
-function getParents (id) {
+function getParents(id) {
   return db
     .query(
       aql`
@@ -283,13 +283,13 @@ function getParents (id) {
     .catch(
       {
         isArangoError: true,
-        errorMessage: 'invalid traversal depth (while instantiating plan)'
+        errorMessage: 'invalid traversal depth (while instantiating plan)',
       },
       () => null
-    ) // Treat non-existing path has not-found
+    ); // Treat non-existing path has not-found
 }
 
-function getNewDescendants (id, rev) {
+function getNewDescendants(id, rev) {
   // TODO: Better way to compare the revs?
   return db
     .query(
@@ -312,10 +312,10 @@ function getNewDescendants (id, rev) {
       }
   `
     )
-    .call('all')
+    .call('all');
 }
 
-function getChanges (id, rev) {
+function getChanges(id, rev) {
   // Currently utilizes fixed depth search "7..7" to get data points down
   return db
     .query(
@@ -341,26 +341,26 @@ function getChanges (id, rev) {
       RETURN {id: obj.id, changes: doc._meta._changes[obj.rev]}
   `
     )
-    .call('all')
+    .call('all');
 }
 
-function putResource (id, obj, checkLinks = true) {
+function putResource(id, obj, checkLinks = true) {
   // Fix rev
-  obj['_oada_rev'] = obj['_rev']
-  obj['_rev'] = undefined
+  obj['_oada_rev'] = obj['_rev'];
+  obj['_rev'] = undefined;
 
   // TODO: Sanitize OADA keys?
   // _key is now an illegal document key
-  obj['_key'] = id.replace(/^\/?resources\//, '')
-  trace(`Adding links for resource ${id}...`)
+  obj['_key'] = id.replace(/^\/?resources\//, '');
+  trace(`Adding links for resource ${id}...`);
 
   return (checkLinks ? addLinks(obj) : Promise.resolve([])).then(
-    function docUpsert (links) {
-      info(`Upserting resource ${obj._key}`)
-      trace(`Upserting links: ${JSON.stringify(links, null, 2)}`)
+    function docUpsert(links) {
+      info(`Upserting resource ${obj._key}`);
+      trace(`Upserting links: ${JSON.stringify(links, null, 2)}`);
 
       // TODO: Should it check that graphNodes exist but are wrong?
-      var q
+      var q;
       if (links.length > 0) {
         let thingy = aql`
         LET reskey = ${obj['_key']}
@@ -424,9 +424,9 @@ function putResource (id, obj, checkLinks = true) {
               RETURN NEW
           )
           RETURN resup.orev
-      `
+      `;
 
-        q = db.query(thingy)
+        q = db.query(thingy);
       } else {
         q = db.query(aql`
         LET resup = FIRST(
@@ -449,64 +449,64 @@ function putResource (id, obj, checkLinks = true) {
         IN ${graphNodes}
         OPTIONS {exclusive: true, ignoreErrors: true }
         RETURN resup.orev
-      `)
+      `);
       }
 
-      return q.call('next')
+      return q.call('next');
     }
-  )
+  );
 }
 
-function forLinks (res, cb, path) {
-  path = path || []
+function forLinks(res, cb, path) {
+  path = path || [];
 
-  return Promise.map(Object.keys(res), key => {
+  return Promise.map(Object.keys(res), (key) => {
     if (res[key] && res[key].hasOwnProperty('_id') && key !== '_meta') {
       // If it has _id and is not _meta, treat as a link
-      return cb(res[key], path.concat(key))
+      return cb(res[key], path.concat(key));
     } else if (typeof res[key] === 'object' && res[key] !== null) {
-      return forLinks(res[key], cb, path.concat(key))
+      return forLinks(res[key], cb, path.concat(key));
     }
-  })
+  });
 }
 
 // TODO: Remove links as well
-async function addLinks (res) {
+async function addLinks(res) {
   // TODO: Use fewer queries or something?
-  const links = []
+  const links = [];
 
-  await forLinks(res, async function processLinks (link, path) {
+  await forLinks(res, async function processLinks(link, path) {
     // Ignore _changes "link"?
     if (path[0] === '_meta' && path[1] === '_changes') {
-      return
+      return;
     }
 
     if (link.hasOwnProperty('_rev')) {
-      const rev = await getResource(link['_id'], '_oada_rev')
-      link['_rev'] = typeof rev === 'number' ? rev : 0
+      const rev = await getResource(link['_id'], '_oada_rev');
+      link['_rev'] = typeof rev === 'number' ? rev : 0;
     }
 
-    links.push(Object.assign({ path }, link))
-  })
+    links.push(Object.assign({ path }, link));
+  });
 
-  return links
+  return links;
 }
 
-function makeRemote (res, domain) {
-  return forLinks(res, link => {
+function makeRemote(res, domain) {
+  return forLinks(res, (link) => {
     // Change all links to remote links
-    link['_rid'] = link['_id']
-    link['_rrev'] = link['_rev']
-    delete link['_id']
-    delete link['_rev']
-    link['_rdomain'] = domain
-  }).then(() => res)
+    link['_rid'] = link['_id'];
+    link['_rrev'] = link['_rev'];
+    delete link['_id'];
+    delete link['_rev'];
+    link['_rdomain'] = domain;
+  }).then(() => res);
 }
 
-function deleteResource (id) {
+function deleteResource(id) {
   //TODO: fix this: for some reason, the id that came in started with
   ///resources, unlike everywhere else in this file
-  let key = id.replace(/^\/?resources\//, '')
+  let key = id.replace(/^\/?resources\//, '');
 
   // Query deletes resouce, its nodes, and outgoing edges (but not incoming)
   return db
@@ -531,26 +531,26 @@ function deleteResource (id) {
     RETURN res._oada_rev
   `
     )
-    .call('next')
+    .call('next');
 }
 
 // "Delete" a part of a resource
-async function deletePartialResource (id, path, doc = {}) {
-  const key = id.replace(/^resources\//, '')
-  path = Array.isArray(path) ? path : pointer.parse(path)
+async function deletePartialResource(id, path, doc = {}) {
+  const key = id.replace(/^resources\//, '');
+  path = Array.isArray(path) ? path : pointer.parse(path);
 
   // TODO: Less gross way to check existence of JSON pointer in AQL??
-  let pathA = path.slice(0, path.length - 1).join("']['")
-  pathA = pathA ? "['" + pathA + "']" : pathA
-  const pathB = path[path.length - 1]
-  const stringA = `(res${pathA}, '${pathB}')`
-  const hasStr = `HAS${stringA}`
+  let pathA = path.slice(0, path.length - 1).join("']['");
+  pathA = pathA ? "['" + pathA + "']" : pathA;
+  const pathB = path[path.length - 1];
+  const stringA = `(res${pathA}, '${pathB}')`;
+  const hasStr = `HAS${stringA}`;
 
-  const rev = doc['_rev']
-  pointer.set(doc, path, null)
+  const rev = doc['_rev'];
+  pointer.set(doc, path, null);
 
-  const name = path.pop()
-  path = pointer.compile(path) || null
+  const name = path.pop();
+  path = pointer.compile(path) || null;
   const hasObj = await db
     .query({
       query: `
@@ -558,9 +558,9 @@ async function deletePartialResource (id, path, doc = {}) {
         LET has = ${hasStr}
 
         RETURN {has, rev: res._oada_rev}
-      `
+      `,
     })
-    .call('next')
+    .call('next');
   if (hasObj.has) {
     // TODO: Why the heck does arango error if I update resource before graph?
     return db
@@ -601,9 +601,9 @@ async function deletePartialResource (id, path, doc = {}) {
           RETURN OLD._oada_rev
         `
       )
-      .call('next')
+      .call('next');
   } else {
-    return hasObj.rev
+    return hasObj.rev;
   }
 }
 
@@ -622,10 +622,10 @@ module.exports = {
   // ErrorNum from: https://docs.arangodb.com/2.8/ErrorCodes/
   NotFoundError: {
     name: 'ArangoError',
-    errorNum: 1202
+    errorNum: 1202,
   },
   UniqueConstraintError: {
     name: 'ArangoError',
-    errorNum: 1210
-  }
-}
+    errorNum: 1210,
+  },
+};

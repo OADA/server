@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-'use strict'
+'use strict';
 
 module.exports = {
   // By default, this checks for NODE_ENV===production
@@ -24,7 +24,7 @@ module.exports = {
 
   kafka: {
     topics: {
-      userRequest: 'user_request'
-    }
-  }
-}
+      userRequest: 'user_request',
+    },
+  },
+};

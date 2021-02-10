@@ -12,25 +12,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-'use strict'
+'use strict';
 
-var path = require('path')
-var fs = require('fs')
+var path = require('path');
+var fs = require('fs');
 
 module.exports = {
-    // By default, this checks for NODE_ENV===production
-    // to determine if is production.
-    // set to true to use the production database name
-    // and prevent init.cleanup() from being called.
-    isProduction: process.env.NODE_ENV === 'production',
+  // By default, this checks for NODE_ENV===production
+  // to determine if is production.
+  // set to true to use the production database name
+  // and prevent init.cleanup() from being called.
+  isProduction: process.env.NODE_ENV === 'production',
 
-    kafka: {
-        topics: {
-            tokenRequest: 'token_request',
-            graphRequest: 'graph_request',
-            writeRequest: 'write_request',
-            httpResponse: 'http_response'
-        },
-        groupId: 'rev-graph-update'
-    }
-}
+  kafka: {
+    topics: {
+      tokenRequest: 'token_request',
+      graphRequest: 'graph_request',
+      writeRequest: 'write_request',
+      httpResponse: 'http_response',
+    },
+    groupId: 'rev-graph-update',
+  },
+};
