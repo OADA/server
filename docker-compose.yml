@@ -98,18 +98,6 @@ services:
     depends_on:
       - startup
 
-  token-lookup:
-    extends:
-      file: common.yml
-      service: oada-uservice
-    image: oada/token-lookup:${OADA_VERSION-build}
-    build:
-      args:
-        OADA_SERVICE: token-lookup
-    container_name: token-lookup
-    depends_on:
-      - startup
-
   rev-graph-update:
     extends:
       file: common.yml
@@ -119,18 +107,6 @@ services:
       args:
         OADA_SERVICE: rev-graph-update
     container_name: rev-graph-update
-    depends_on:
-      - startup
-
-  graph-lookup:
-    extends:
-      file: common.yml
-      service: oada-uservice
-    image: oada/graph-lookup:${OADA_VERSION-build}
-    build:
-      args:
-        OADA_SERVICE: graph-lookup
-    container_name: graph-lookup
     depends_on:
       - startup
 
