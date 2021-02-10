@@ -34,7 +34,7 @@ services:
   permissions-handler: *oada-uservice
   shares: *oada-uservice
 
-# Set up Mutagen synchronization and forwarding.
+# Set up Mutagen synchronization
 x-mutagen:
   sync:
     defaults:
@@ -48,13 +48,3 @@ x-mutagen:
         paths:
           # Don't map host/local node_modules into conainters
           - "node_modules"
-  forward:
-    agrango:
-      source: "tcp:localhost:8529"
-      destination: "network://arango_net:tcp:arangodb:8529"
-    kafka:
-      source: "tcp:localhost:9092"
-      destination: "network://kafka_net:tcp:kafka:9092"
-    zookeeper:
-      source: "tcp:localhost:2181"
-      destination: "network://kafka_net:tcp:zookeeper:2181"
