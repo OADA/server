@@ -4,21 +4,20 @@
   "description": "",
   "main": "server.js",
   "scripts": {
+    "start": "node server.js",
     "test": "DEBUG=* mocha test/index.js"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@oada/lib-arangodb": "^0.0.2",
+    "@oada/lib-config": "^0.0.1",
+    "@oada/lib-kafka": "^1.0.0",
     "axios": "^0.21.0",
     "bcryptjs": "^2.4.3",
     "bluebird": "^3.5.0",
     "debug": "^4.3.1",
     "lodash": "^4.17.4",
-    "moment": "^2.18.1",
-    "nconf": "^0.11.0",
-    "@oada/lib-arangodb": "^0.0.2",
-    "@oada/lib-config": "^0.0.1",
-    "@oada/lib-kafka": "^1.0.0",
     "randomstring": "^1.1.5"
   }
 }

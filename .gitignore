@@ -13,3 +13,12 @@ package.lock
 # Ignore act stuff?
 .actrc
 act/
+
+# yarn 2 stuff
+.yarn/*
+!.yarn/releases
+!.yarn/plugins
+!.yarn/versions
+.pnp.*
+# ignore sdk stuff
+.vim

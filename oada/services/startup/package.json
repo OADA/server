@@ -23,11 +23,8 @@
   },
   "homepage": "https://github.com/oada/oada-srvc-startup#readme",
   "dependencies": {
-    "bluebird": "^3.5.0",
-    "debug": "^4.1.1",
-    "express": "^4.15.2",
     "@oada/lib-arangodb": "^0.0.2",
-    "@oada/lib-config": "^0.0.1",
-    "@oada/lib-kafka": "^1.0.0"
+    "debug": "^4.1.1",
+    "express": "^4.15.2"
   }
 }

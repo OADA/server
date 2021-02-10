@@ -12,13 +12,12 @@ const express = require('express');
 const express_promise = require('express-promise');
 const _ = require('lodash');
 const cors = require('cors');
-const fs = require('fs');
 const well_known_json = require('@oada/well-known-json');
 const oada_error = require('oada-error');
 const config = require('./config');
 const request = Promise.promisify(require('request'));
 
-return Promise.try(function () {
+Promise.try(function () {
   // Setup the loggers:
   const log = {
     error: debuglib('well-known:error'),

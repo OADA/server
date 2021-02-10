@@ -18,11 +18,11 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@oada/lib-config": "^0.0.1",
     "bluebird": "^3.5.0",
     "debug": "^4.3.1",
     "ksuid": "^2.0.0",
     "node-rdkafka": "^2.9.1",
-    "@oada/lib-config": "^0.0.1",
     "uuid": "^8.3.1"
   }
 }

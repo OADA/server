@@ -4,6 +4,9 @@
   "description": "",
   "author": "Alex Layton <alex@layton.in>",
   "license": "ISC",
+  "scripts": {
+    "start": "node server.js"
+  },
   "dependencies": {
     "@oada/lib-arangodb": "^0.0.2",
     "@oada/lib-config": "^0.0.1",
@@ -11,7 +14,6 @@
     "bluebird": "^3.5.0",
     "debug": "^4.1.1",
     "ksuid": "^2.0.0",
-    "lodash": "^4.17.15",
-    "uuid": "^8.3.2"
+    "lodash": "^4.17.15"
   }
 }
