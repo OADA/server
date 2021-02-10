@@ -9,3 +9,7 @@ domains-enabled/*
 package.lock
 *.log
 .DS_Store
+
+# Ignore act stuff?
+.actrc
+act/
