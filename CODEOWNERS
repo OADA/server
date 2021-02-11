@@ -5,7 +5,7 @@
 # Default group of people?
 * @awlayton @abalmos @aultac
 
-.dockerignore @awalyton
+oada/.dockerignore @awalyton
 .prettierignore @awlayton
 .prettierrc.json @awlayton
 .gitattributes @aultac
