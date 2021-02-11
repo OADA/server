@@ -148,7 +148,7 @@ jobs:
       # TODO: Separate Snyk job?
       - name: Run Snyk to check Docker image for vulnerabilities
         # TODO: Don't push images if we find vulnerabilities?
-        continue-one-error: true
+        continue-on-error: true
         uses: snyk/actions/docker@master
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
