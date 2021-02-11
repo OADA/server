@@ -187,11 +187,9 @@ services:
     volumes:
       - ./domains-available:/domains-available
       - ./domains-enabled:/domains-enabled
-      - ./support/proxy/nginx.conf:/etc/nginx/nginx.conf
       - ./support/proxy/dev-sites-enabled/:/etc/nginx/sites-templates/
       - proxy_certs:/certs
       - ./support/proxy/dev-certs/localhost:/certs/localhost
-      - ./support/proxy:/code/proxy
       # Need the letsencrypt_www_data volume so admin's certbot command can put web-accessible files there
       - letsencrypt_www_data:/var/www/letsencrypt
     environment:
