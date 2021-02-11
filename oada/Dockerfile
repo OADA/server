@@ -4,25 +4,28 @@ WORKDIR /oada
 
 # node-rdkafka requires these things to be installed:
 RUN apt-get update -y && apt-get install -y --no-install-recommends \
-    gcc \
     zlibc \
-    libc6-dev \
-    bash \
-    g++ \
+    libc6 \
+    liblz4-1 \
+    libsasl2-2 \
+    libssl1.1 \
     ca-certificates \
-    liblz4-dev \
-    musl-dev \
-    libsasl2-dev \
-    libssl-dev \
-    make \
-    python \
   && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 FROM install AS build
 
 # install things only needed for build?
 RUN apt-get update -y && apt-get install -y --no-install-recommends \
+    gcc \
     git \
+    libc6-dev \
+    g++ \
+    liblz4-dev \
+    musl-dev \
+    libsasl2-dev \
+    libssl-dev \
+    make \
+    python \
   && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # TODO: How to COPY all package.json files?
