@@ -7,7 +7,9 @@ LICENSE
 
 tags*
 
-yarn.lock
-yarn-error.log
+**/yarn.lock
+**/yarn-error.log
+**/.yarn/*
+**/.pnp.*
 
 act
