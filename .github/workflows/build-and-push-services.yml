@@ -153,16 +153,18 @@ jobs:
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         with:
-          image: oada/${{ matrix.service }}
-          args: --file=${{ matrix.context }}/Dockerfile --org=oada
+          image: oada/${{ matrix.service }}:${{ steps.prepare.outputs.version }}
+          args: --org=oada --file=${{ matrix.context }}/Dockerfile
 
       - name: Secure Code Warrior
+        continue-on-error: true
         uses: SecureCodeWarrior/github-action-add-sarif-contextual-training@v1
         with:
           inputSarifFile: ./snyk.sarif
           outputSarifFile: ./securecodewarrior.sarif
 
       - name: Upload SARIF file to GitHub Code Scanning
+        continue-on-error: true
         uses: github/codeql-action/upload-sarif@v1
         with:
           sarif_file: ./securecodewarrior.sarif
