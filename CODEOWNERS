@@ -51,4 +51,6 @@ domains-enabled @aultac
 # Andrew intially created all the files in .github with some additions by Aaron
 .github            @abalmos
 .github/workflows/validate-codeowners.yml @aaron97neu
+.github/workflows/build-and-push-services.yml @abalmos @awlayton
+.github/workflows/codeql-analysis.yml @awlayton
 
