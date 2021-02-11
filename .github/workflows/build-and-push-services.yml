@@ -160,9 +160,9 @@ jobs:
         uses: SecureCodeWarrior/github-action-add-sarif-contextual-training@v1
         with:
           inputSarifFile: snyk.sarif
-          outputSarifFile: snyk+securecodewarrior.sarif
+          outputSarifFile: securecodewarrior.sarif
 
       - name: Upload SARIF file to GitHub Code Scanning
         uses: github/codeql-action/upload-sarif@v1
         with:
-          sarif_file: snyk+securecodewarrior.sarif
+          sarif_file: securecodewarrior.sarif
