@@ -1,4 +1,6 @@
-FROM node:14-slim as install
+FROM node:14-slim AS install
+
+WORKDIR /oada
 
 # node-rdkafka requires these things to be installed:
 RUN apt-get update -y && apt-get install -y --no-install-recommends \
@@ -16,9 +18,19 @@ RUN apt-get update -y && apt-get install -y --no-install-recommends \
     python \
   && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-FROM install as build
+FROM install AS build
+
+# install things only needed for build?
+RUN apt-get update -y && apt-get install -y --no-install-recommends \
+    git \
+  && apt-get clean && rm -rf /var/lib/apt/lists/*
+
+# TODO: How to COPY all package.json files?
+#COPY **/package.json yarn.lock .yarnrc.yml /oada/
+#COPY .yarn/ /oada/.yarn/
 COPY . /oada/
-RUN yarn --cwd /oada install --frozen-lockfile --production
+
+RUN yarn workspaces focus --all --production
 
 FROM install
 
@@ -28,12 +40,13 @@ RUN chmod u+x /entrypoint.sh
 COPY ./utils/wait-for-it.sh /wait-for-it.sh
 RUN chmod u+x /wait-for-it.sh
 
-COPY --from=build /oada /oada
+COPY --from=build /oada/ /oada/
+#COPY . /oada/
 
 ARG OADA_SERVICE
 ENV OADA_SERVICE=${OADA_SERVICE}
 
-WORKDIR /oada/${OADA_SERVICE}
+WORKDIR /oada/services/${OADA_SERVICE}
 
 CMD /entrypoint.sh
 
