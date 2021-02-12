@@ -1,4 +1,4 @@
-FROM node:14-slim AS install
+FROM node:14-buster-slim AS install
 
 WORKDIR /oada
 
