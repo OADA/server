@@ -21,7 +21,7 @@ jobs:
       - name: Find Docker Contexts
         id: contexts
         run: |
-          SERVICES=$(find -name Dockerfile | sed s/\\/Dockerfile$// | tr '\n' ',' | sed 's/,/","/g' | sed 's/^/["/' | sed 's/,"$/]/')
+          SERVICES=$(find -name Dockerfile | sed s/\\/Dockerfile$// | sed s/^\.\\/// | tr '\n' ',' | sed 's/,/","/g' | sed 's/^/["/' | sed 's/,"$/]/')
           echo ::set-output name=list::${SERVICES}
 
   build-dockers:
@@ -87,13 +87,15 @@ jobs:
           image: dut:test
           args: --org=oada --file=${{ matrix.context }}/Dockerfile
 
-      - name: Secure Code Warrior
-        uses: SecureCodeWarrior/github-action-add-sarif-contextual-training@v1
-        with:
-          inputSarifFile: ./snyk.sarif
-          outputSarifFile: ./securecodewarrior.sarif
+      # TODO: Is this making the duplicate alerts??
+      #- name: Secure Code Warrior
+      #  uses: SecureCodeWarrior/github-action-add-sarif-contextual-training@v1
+      #  with:
+      #    inputSarifFile: ./snyk.sarif
+      #    outputSarifFile: ./securecodewarrior.sarif
 
       - name: Upload SARIF file to GitHub Code Scanning
         uses: github/codeql-action/upload-sarif@v1
         with:
-          sarif_file: ./securecodewarrior.sarif
+          #sarif_file: ./securecodewarrior.sarif
+          sarif_file: ./snyk.sarif
