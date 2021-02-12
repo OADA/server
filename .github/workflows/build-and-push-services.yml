@@ -5,23 +5,28 @@ on:
   pull_request:
 
 jobs:
+  services:
+    runs-on: ubuntu-latest
+
+    outputs:
+      services: ${{ steps.services.outputs.list }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Find Services
+        id: services
+        run: |
+          SERVICES=$(ls -1 oada/services | tr '\n' ',' | sed 's/,/","/g' | sed 's/^/["/' | sed 's/,"$/]/')
+          echo ::set-output name=list::${SERVICES}
+
   build-and-push-services:
+    needs: services
+
     strategy:
       matrix:
-        service:
-          - auth
-          - graph-lookup
-          - http-handler
-          - permissions-handler
-          - rev-graph-update
-          - shares
-          - startup
-          - sync-handler
-          - token-lookup
-          - users
-          - webhooks
-          - well-known
-          - write-handler
+        service: ${{ fromJson(needs.services.outputs.services) }}
         context:
           - oada
         include:
@@ -144,27 +149,3 @@ jobs:
             org.opencontainers.image.licenses=${{ github.event.repository.license.spdx_id }}
             cache-from: type=local,src=/tmp/.buildx-cache
             cache-to: type=local,dest=/tmp/.buildx-cache
-
-      # TODO: Separate Snyk job?
-      - name: Run Snyk to check Docker image for vulnerabilities
-        # TODO: Don't push images if we find vulnerabilities?
-        continue-on-error: true
-        uses: snyk/actions/docker@master
-        env:
-          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-        with:
-          image: oada/${{ matrix.service }}:${{ steps.prepare.outputs.version }}
-          args: --org=oada --file=${{ matrix.context }}/Dockerfile
-
-      - name: Secure Code Warrior
-        continue-on-error: true
-        uses: SecureCodeWarrior/github-action-add-sarif-contextual-training@v1
-        with:
-          inputSarifFile: ./snyk.sarif
-          outputSarifFile: ./securecodewarrior.sarif
-
-      - name: Upload SARIF file to GitHub Code Scanning
-        continue-on-error: true
-        uses: github/codeql-action/upload-sarif@v1
-        with:
-          sarif_file: ./securecodewarrior.sarif

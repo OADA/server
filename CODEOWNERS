@@ -53,4 +53,5 @@ domains-enabled @aultac
 .github/workflows/validate-codeowners.yml @aaron97neu
 .github/workflows/build-and-push-services.yml @abalmos @awlayton
 .github/workflows/codeql-analysis.yml @awlayton
+.github/workflows/snyk-dockers.yml @awlayton
 
