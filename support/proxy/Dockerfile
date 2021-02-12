@@ -1,11 +1,4 @@
-FROM library/nginx
+FROM linuxserver/swag
 
-COPY ./entrypoint.sh /entrypoint.sh
-RUN chmod u+x /entrypoint.sh
-
-COPY nginx.conf /etc/nginx/nginx.conf
-
-COPY . /code/proxy/
-WORKDIR /code/proxy
-
-CMD /entrypoint.sh
+# Copy our configs in?
+COPY ./proxy-confs/* /config/nginx/proxy-confs/

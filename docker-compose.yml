@@ -169,31 +169,37 @@ services:
     depends_on:
       - startup
 
-  # proxy routes OAuth2 requests (/auth, /code) to auth service,
-  # and the rest to main http-handlers.  TODO: add load balancing with multiple handlers.
+  # swag with configs for auth, well-known, and http-handler
   proxy:
-    depends_on:
-      - auth
-      - http-handler
-      - well-known
     build: ./support/proxy
     container_name: proxy
-    restart: unless-stopped
+    cap_add:
+      - NET_ADMIN
     networks:
       - http_net
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=America/New_york
+      - URL=${DOMAIN:-localhost}
+      - SUBDOMAINS=www,
+      - VALIDATION=http
+      - CERTPROVIDER= #optional
+      - DNSPLUGIN= #optional
+      - PROPAGATION= #optional
+      - DUCKDNSTOKEN= #optional
+      - EMAIL= #optional
+      - ONLY_SUBDOMAINS=false #optional
+      - EXTRA_DOMAINS= #optional
+      - STAGING=true #optional (set false for release)
+      - MAXMINDDB_LICENSE_KEY= #optional
+    volumes:
+      # Hack in self-signed ssl for localhost
+      - ./support/proxy/selfsigned:/config/keys/letsencrypt:ro
     ports:
       - '${BIND:-0.0.0.0}:${PORT_HTTPS:-443}:443'
       - '${BIND:-0.0.0.0}:${PORT_HTTP:-80}:80'
-    volumes:
-      - ./domains-available:/domains-available
-      - ./domains-enabled:/domains-enabled
-      - ./support/proxy/dev-sites-enabled/:/etc/nginx/sites-templates/
-      - proxy_certs:/certs
-      - ./support/proxy/dev-certs/localhost:/certs/localhost
-      # Need the letsencrypt_www_data volume so admin's certbot command can put web-accessible files there
-      - letsencrypt_www_data:/var/www/letsencrypt
-    environment:
-      - DOMAIN=${DOMAIN:-localhost}
+    restart: unless-stopped
 
   # admin container has all the service names and volumes mapped, so you
   # can interact with them easily from this service.
@@ -217,11 +223,6 @@ services:
       #- ./oada:/oada
       - ./scopes:/oada/scopes
       - /var/run/docker.sock:/var/run/docker.sock
-      - letsencrypt_www_data:/var/www/letsencrypt
-      # Need to map proxy's /certs for letsencrypt to save all its stuff where proxy can get it
-      - proxy_certs:/etc/letsencrypt
-      # also map it to /certs so it's in the same path as on proxy to avoid confusion
-      - proxy_certs:/certs
     command: bash
 
   kafka:
@@ -282,8 +283,6 @@ volumes:
   arangodb_apps_data:
   kafka_data:
   zookeeper_data:
-  letsencrypt_www_data:
-  proxy_certs:
 
 networks:
   arango_net:
