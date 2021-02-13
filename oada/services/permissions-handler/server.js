@@ -19,11 +19,9 @@ const debug = require('debug');
 const fs = require('fs');
 const typeis = require('type-is');
 const warn = debug('permissions-handler:warn');
-const info = debug('permissions-handler:info');
 const trace = debug('permissions-handler:trace');
 
-const Responder = require('@oada/lib-kafka').Responder;
-const oadaLib = require('@oada/lib-arangodb');
+const { Responder } = require('@oada/lib-kafka');
 const config = require('./config');
 const _ = require('lodash');
 
@@ -39,24 +37,24 @@ module.exports = function stopResp() {
   return responder.disconnect();
 };
 
-const scopeTypes = require('/code/scopes/builtin');
+const scopeTypes = require('./scopes/builtin');
 trace('Parsed builtin scopes, they are: ', scopeTypes);
 // Augment scopeTypes by merging in anything in /scopes/additional-scopes
 const additionalScopesFiles = _.filter(
-  fs.readdirSync('/code/scopes/additional-scopes'),
+  fs.readdirSync('./scopes/additional-scopes'),
   (f) => !f.match(/^\./) // remove hidden files
 );
 _.each(additionalScopesFiles, (af) => {
   try {
     trace('Trying to add additional scope ' + af);
-    const newscope = require('/code/scopes/additional-scopes/' + af);
+    const newscope = require('./scopes/additional-scopes/' + af);
     _.each(_.keys(newscope), (k) => {
       trace('Setting scopeTypes[' + k + '] to new scope ', newscope[k]);
       scopeTypes[k] = newscope[k]; // overwrite entire scope, or create new if doesn't exist
     });
   } catch (e) {
     warn(
-      'FAILED to require(/code/scopes/additional-scopes/' + af + ': error was ',
+      'FAILED to require(scopes/additional-scopes/' + af + ': error was ',
       e
     );
   }

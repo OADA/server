@@ -151,8 +151,6 @@ services:
     container_name: permissions-handler
     depends_on:
       - startup
-    volumes:
-      - ./scopes:/code/scopes
 
   shares:
     extends:
@@ -197,21 +195,6 @@ services:
       - '${BIND:-0.0.0.0}:${PORT_HTTPS:-443}:443'
       - '${BIND:-0.0.0.0}:${PORT_HTTP:-80}:80'
     restart: unless-stopped
-
-  # admin container has all the service names and volumes mapped, so you
-  # can interact with them easily from this service.
-  admin:
-    scale: 0
-    build: ./support/admin
-    networks:
-      - startup_net
-      - kafka_net
-      - arango_net
-      - http_net
-    volumes:
-      - ./scopes:/oada/scopes
-      - /var/run/docker.sock:/var/run/docker.sock
-    command: bash
 
   kafka:
     image: wurstmeister/kafka

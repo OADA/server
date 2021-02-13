@@ -10,7 +10,6 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@oada/lib-arangodb": "^0.0.2",
     "@oada/lib-config": "^0.0.1",
     "@oada/lib-kafka": "^1.0.0",
     "bcryptjs": "^2.4.3",
@@ -19,5 +18,8 @@
     "lodash": "^4.17.4",
     "randomstring": "^1.1.5",
     "type-is": "^1.6.15"
+  },
+  "devDependencies": {
+    "@oada/lib-arangodb": "^0.0.2"
   }
 }
