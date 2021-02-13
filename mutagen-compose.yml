@@ -25,11 +25,10 @@ services:
   sync-handler: *oada-uservice
   write-handler: *oada-uservice
   users: *oada-uservice
-  token-lookup: *oada-uservice
+  #token-lookup: *oada-uservice
   rev-graph-update: *oada-uservice
-  graph-lookup: *oada-uservice
+  #graph-lookup: *oada-uservice
   well-known: *oada-uservice
-  admin: *oada-uservice
   webhooks: *oada-uservice
   permissions-handler: *oada-uservice
   shares: *oada-uservice
