@@ -33,9 +33,6 @@ services:
       - http_net
     expose: # expose only internally, not on host
       - '80'
-    volumes:
-      - ./domains-available:/domains-available
-      - ./domains-enabled:/domains-enabled
 
   # http-handler is in charge of maintaining connectiongs to clients and starting
   # the first message for a request into Kafka
@@ -212,15 +209,6 @@ services:
       - arango_net
       - http_net
     volumes:
-      - ./oada-srvc-docker-config.js:/oada-srvc-docker-config.js
-      - ./domains-available:/domains-available
-      - ./domains-enabled:/domains-enabled
-      - arangodb_data:/volumes/arangodb
-      - arangodb_apps_data:/volumes/arangodb_apps
-      - zookeeper_data:/volumes/zookeeper
-      - kafka_data:/volumes/kafka
-      # TODO: What should admin do in not dev mode??
-      #- ./oada:/oada
       - ./scopes:/oada/scopes
       - /var/run/docker.sock:/var/run/docker.sock
     command: bash

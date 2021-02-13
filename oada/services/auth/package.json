@@ -52,7 +52,6 @@
     "debug-logger": "^0.4.1",
     "express": "^4.13.1",
     "express-session": "^1.11.3",
-    "fs-symlink": "^1.2.1",
     "jsonwebtoken": "^8.5.1",
     "jwt-bearer-client-auth": "^1.0.0",
     "lodash": "^4.17.11",

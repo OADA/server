@@ -25,7 +25,7 @@ module.exports = {
   // and prevent init.cleanup() from being called.
   isProduction: process.env.NODE_ENV === 'production',
 
-  domainsDir: '/domains-enabled', // served by auth for login pages, software statements, keys, etc.
+  domainsDir: '/oada/services/auth/domains', // served by auth for login pages, software statements, keys, etc.
 
   arangodb: {
     connectionString: 'http://arangodb:8529',

@@ -1168,7 +1168,6 @@ __metadata:
     debug-logger: ^0.4.1
     express: ^4.13.1
     express-session: ^1.11.3
-    fs-symlink: ^1.2.1
     jsonwebtoken: ^8.5.1
     jwt-bearer-client-auth: ^1.0.0
     lodash: ^4.17.11
@@ -2140,7 +2139,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"any-promise@npm:^1.0.0, any-promise@npm:^1.1.0":
+"any-promise@npm:^1.0.0":
   version: 1.3.0
   resolution: "any-promise@npm:1.3.0"
   checksum: e829425e4aef532fb9063c638de4693feaf285dae8ba84bcabd9c6d49446264650d1e16b73af8a25ae1e4480f9a4dc7cae364b4c4d4753b57dd1900cdfab8183
@@ -5483,17 +5482,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"fs-symlink@npm:^1.2.1":
-  version: 1.2.1
-  resolution: "fs-symlink@npm:1.2.1"
-  dependencies:
-    mkdirp: ^0.5.0
-    mkdirp-then: 1
-    mz: ^2.0.0
-  checksum: b9eac2fe1ff4348e6245c71e49d249c9c474d9d085df21e7d33d759446c912a56dffd142d85c68300071703e418aaf10e408694da084a640f94fdfc174ddea6e
-  languageName: node
-  linkType: hard
-
 "fs-write-stream-atomic@npm:^1.0.8":
   version: 1.0.10
   resolution: "fs-write-stream-atomic@npm:1.0.10"
@@ -8661,16 +8649,6 @@ fsevents@~2.3.1:
   languageName: node
   linkType: hard
 
-"mkdirp-then@npm:1":
-  version: 1.2.0
-  resolution: "mkdirp-then@npm:1.2.0"
-  dependencies:
-    any-promise: ^1.1.0
-    mkdirp: ^0.5.0
-  checksum: 80899e00d40de6172cac7bfad2229bbc7461080b6ad20a0212e4a5ddfc64f2351c1448e63e23575de1d7da001a2b3868ea25cc0052b0aeaa0e9b468cf8e31ba1
-  languageName: node
-  linkType: hard
-
 "mkdirp@npm:*, mkdirp@npm:^1.0.3, mkdirp@npm:^1.0.4":
   version: 1.0.4
   resolution: "mkdirp@npm:1.0.4"
@@ -8925,7 +8903,7 @@ fsevents@~2.3.1:
   languageName: node
   linkType: hard
 
-"mz@npm:^2.0.0, mz@npm:^2.5.0":
+"mz@npm:^2.5.0":
   version: 2.7.0
   resolution: "mz@npm:2.7.0"
   dependencies:
