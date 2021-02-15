@@ -22,7 +22,7 @@ import type SocketChange from '@oada/types/oada/websockets/change';
 import { Responder, KafkaRequest } from '@oada/lib-kafka';
 import { resources, changes, Change } from '@oada/lib-arangodb';
 // @ts-ignore
-import * as config from './config';
+import config from './config';
 
 /**
  * @todo Actually figure out how "foregtting history" should work...
@@ -368,6 +368,7 @@ module.exports = function wsHandler(server: Server) {
 
   const interval = setInterval(function ping() {
     wss.clients.forEach(function each(sock) {
+      // @ts-ignore
       const socket: Socket = sock;
       if (socket.isAlive === false) {
         return socket.terminate();

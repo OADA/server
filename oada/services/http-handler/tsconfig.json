@@ -1,14 +1,9 @@
 {
+  "extends": "../../tsconfig.json",
   "compilerOptions": {
-    "target": "ES2019",
-    "strict": true,
-    "moduleResolution": "node",
-    "module": "CommonJS",
-    "lib": ["ES2019"],
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
-    "noImplicitThis": true,
-    "noImplicitAny": true,
-    "rootDir": "."
-  }
+    "allowJs": true,
+    "rootDir": "src",
+    "outDir": "dist"
+  },
+  "exclude": ["test"]
 }

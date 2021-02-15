@@ -15,6 +15,9 @@
 **/.session*
 **/.undodir
 
+# Built TS etc.
+**/dist
+
 # yarn 2 stuff
 .yarn/*
 !.yarn/releases

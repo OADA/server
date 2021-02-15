@@ -12,7 +12,7 @@ RUN apt-get update -y && apt-get install -y --no-install-recommends \
     ca-certificates \
   && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-FROM install AS build
+FROM install AS yarn
 
 # install things only needed for build?
 RUN apt-get update -y && apt-get install -y --no-install-recommends \
@@ -35,6 +35,12 @@ COPY . /oada/
 
 RUN yarn workspaces focus --all --production
 
+# Allow for workspaces to have build step (e.g., for TypeScript)
+FROM yarn as build
+
+# Build and then remove yarn stuff??
+RUN yarn install && yarn workspaces foreach run build; rm -rf .yarn .pnp.*
+
 FROM install
 
 COPY ./utils/entrypoint.sh /entrypoint.sh
@@ -43,6 +49,8 @@ RUN chmod u+x /entrypoint.sh
 COPY ./utils/wait-for-it.sh /wait-for-it.sh
 RUN chmod u+x /wait-for-it.sh
 
+COPY --from=yarn /oada/ /oada/
+# TODO: Don't have both source and built code in image?
 COPY --from=build /oada/ /oada/
 #COPY . /oada/
 

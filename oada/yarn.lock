@@ -1244,9 +1244,7 @@ __metadata:
     ksuid: ^2.0.0
     lodash: ^4.17.20
     oada-error: ^1.1.1
-    ts-node: ^9.1.0
     type-is: ^1.6.18
-    typescript: ^4.1.5
     uuid: ^8.3.2
     well-known-json: ^0.2.0
     ws: ^7.4.0
@@ -1710,6 +1708,13 @@ __metadata:
   dependencies:
     defer-to-connect: ^1.0.1
   checksum: a46ec854231194dd1ab924a5ea0d8f0afa2b7133754a3def099cc5749e34802d8668a7d7ee3583327048354b9dc621113843d8546387e06ff57e6763cbb558d9
+  languageName: node
+  linkType: hard
+
+"@tsconfig/node12@npm:^1.0.7":
+  version: 1.0.7
+  resolution: "@tsconfig/node12@npm:1.0.7"
+  checksum: 82b0352f66bb84afcf4fe4d771d25dcdc2fbfd0dcd6c5efe475830e0df6806d687bdde3aba52d5c4d2d4dfee252093ed5cfc27a3fc47dc389a3f4fb0ea323390
   languageName: node
   linkType: hard
 
@@ -9407,6 +9412,7 @@ fsevents@~2.3.1:
   resolution: "oada@workspace:."
   dependencies:
     "@oada/client": ^2.2.1
+    "@tsconfig/node12": ^1.0.7
     "@types/bluebird": ^3.5.29
     "@types/debug": ^4.1.5
     "@types/json-pointer": ^1.0.30
@@ -12815,7 +12821,7 @@ resolve@1.15.1:
   languageName: node
   linkType: hard
 
-"ts-node@npm:^9.0.0, ts-node@npm:^9.1.0":
+"ts-node@npm:^9.0.0":
   version: 9.1.1
   resolution: "ts-node@npm:9.1.1"
   dependencies:
@@ -12957,16 +12963,6 @@ typescript@^4.0.5:
   languageName: node
   linkType: hard
 
-typescript@^4.1.5:
-  version: 4.1.5
-  resolution: "typescript@npm:4.1.5"
-  bin:
-    tsc: bin/tsc
-    tsserver: bin/tsserver
-  checksum: 29157c84426ac94ce97aac836264f303a26bd9fb30865650229e3406a36ca2e89735ef4b8878075ba1b95fa4d3ff9810057b64888700c28e20b4034a6db4da83
-  languageName: node
-  linkType: hard
-
 "typescript@patch:typescript@^4.0.5#builtin<compat/typescript>":
   version: 4.1.3
   resolution: "typescript@patch:typescript@npm%3A4.1.3#builtin<compat/typescript>::version=4.1.3&hash=cc6730"
@@ -12974,16 +12970,6 @@ typescript@^4.1.5:
     tsc: bin/tsc
     tsserver: bin/tsserver
   checksum: 017af992148346e671d5b83b041773825888e9c94db8d2b9472cdbb6d6f0ee85927817473121524d319f8be6ffe5a6904d27ff6ef21356d2274fcadd52e17938
-  languageName: node
-  linkType: hard
-
-"typescript@patch:typescript@^4.1.5#builtin<compat/typescript>":
-  version: 4.1.5
-  resolution: "typescript@patch:typescript@npm%3A4.1.5#builtin<compat/typescript>::version=4.1.5&hash=cc6730"
-  bin:
-    tsc: bin/tsc
-    tsserver: bin/tsserver
-  checksum: 58cc7786be0f8485c124944883b1384287532e4867ec37f1fb5cb2811dbc10f7a9decccad89097f924043285f3515bfd8223c61dbb4f88af00b2d8dc2ef73207
   languageName: node
   linkType: hard
 
