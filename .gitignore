@@ -10,6 +10,9 @@ package.lock
 *.log
 .DS_Store
 
+# local env file
+.env
+
 # Ignore act stuff?
 .actrc
 act/
