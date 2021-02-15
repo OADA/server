@@ -7,7 +7,7 @@
     "test": "test"
   },
   "scripts": {
-    "start": "node server.js",
+    "start": "node -r pino-debug server.js",
     "test": "mocha test/index.js"
   },
   "author": "",
@@ -19,6 +19,7 @@
     "bluebird": "^3.5.0",
     "debug": "^4.1.1",
     "lodash": "^4.17.4",
-    "moment": "^2.18.1"
+    "moment": "^2.18.1",
+    "pino-debug": "^2.0.0"
   }
 }

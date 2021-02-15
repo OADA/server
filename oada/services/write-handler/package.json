@@ -5,7 +5,7 @@
   "main": "server.js",
   "scripts": {
     "test": "DEBUG=\"${DEBUG},*write-handler#test*\" NODE_TLS_REJECT_UNAUTHORIZED=0 mocha",
-    "start": "node --expose-gc write_handler.js"
+    "start": "node --expose-gc -r pino-debug write_handler.js"
   },
   "repository": {
     "type": "git",
@@ -27,6 +27,7 @@
     "lodash": "^4.17.15",
     "oada-error": "^1.1.1",
     "object-assign-deep": "^0.4.0",
+    "pino-debug": "^2.0.0",
     "timed-cache": "^1.1.0"
   }
 }

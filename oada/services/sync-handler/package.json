@@ -4,7 +4,7 @@
   "description": "",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js",
+    "start": "node -r pino-debug server.js",
     "test": "mocha"
   },
   "repository": {
@@ -23,6 +23,7 @@
     "@oada/lib-kafka": "^1.0.0",
     "axios": "^0.21.0",
     "bluebird": "^3.5.0",
-    "debug": "^4.1.1"
+    "debug": "^4.1.1",
+    "pino-debug": "^2.0.0"
   }
 }

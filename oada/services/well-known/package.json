@@ -4,7 +4,7 @@
   "description": "Microservice for serving well-known at an OADA cloud.  Plays nicely with oada-ref-auth-js.",
   "main": "index.js",
   "scripts": {
-    "start": "node index.js",
+    "start": "node -r pino-debug index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -31,6 +31,7 @@
     "express-promise": "^0.4.0",
     "lodash": "^4.17.4",
     "oada-error": "^1.1.1",
+    "pino-debug": "^2.0.0",
     "request": "^2.81.0"
   }
 }

@@ -2,11 +2,11 @@
   "name": "@oada/http-handler",
   "version": "1.0.0",
   "description": "",
-  "main": "server.js",
+  "main": "dist/server.js",
   "scripts": {
     "test": "mocha",
-    "build": "tsc -b",
-    "start": "CONTAINER_NAME=\"HTTP Handler\" node server.js"
+    "build": "yarn g:tsc",
+    "start": "node --enable-source-maps -r pino-debug dist/server.js"
   },
   "mocha": {
     "require": [
@@ -30,10 +30,6 @@
     "@oada/lib-config": "^0.0.1",
     "@oada/lib-kafka": "^1.0.0",
     "@oada/types": "^1.2.0-beta.5",
-    "@types/debug": "^4.1.5",
-    "@types/jsonpointer": "^4.0.0",
-    "@types/node": "^14.11.2",
-    "@types/ws": "^7.2.3",
     "axios": "^0.21.0",
     "bluebird": "^3.5.0",
     "body-parser": "^1.17.1",
@@ -47,9 +43,15 @@
     "ksuid": "^2.0.0",
     "lodash": "^4.17.20",
     "oada-error": "^1.1.1",
+    "pino-debug": "^2.0.0",
     "type-is": "^1.6.18",
     "uuid": "^8.3.2",
     "well-known-json": "^0.2.0",
     "ws": "^7.4.0"
+  },
+  "devDependencies": {
+    "@types/debug": "^4.1.5",
+    "@types/node": "^14.14.28",
+    "@types/ws": "^7.4.0"
   }
 }

@@ -5,6 +5,10 @@
     "services/**",
     "libs/**"
   ],
+  "scripts": {
+    "g:tsc": "cd $INIT_CWD && tsc -b",
+    "g:pretty": "pino-pretty"
+  },
   "devDependencies": {
     "@oada/client": "^2.2.1",
     "@tsconfig/node12": "^1.0.7",
@@ -31,12 +35,14 @@
     "node-mocks-http": "^1.10.1",
     "nodemon": "^2.0.4",
     "patch-package": "^6.2.2",
-    "pino-pretty": "^4.0.0",
     "postinstall-prepare": "^1.0.1",
     "prettier": "^2.2.1",
     "prettier-standard": "^16.1.0",
     "supertest": "^6.1.1",
     "ts-node": "^9.0.0",
     "typescript": "^4.0.5"
+  },
+  "dependencies": {
+    "pino-pretty": "^4.5.0"
   }
 }

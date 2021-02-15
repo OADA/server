@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "mocha test/token-lookup.js",
-    "start": "node index.js"
+    "start": "node -r pino-debug index.js"
   },
   "author": "",
   "license": "ISC",
@@ -15,6 +15,7 @@
     "@oada/lib-kafka": "^1.0.0",
     "bluebird": "^3.5.0",
     "debug": "^4.3.1",
+    "pino-debug": "^2.0.0",
     "randomstring": "^1.1.5"
   }
 }

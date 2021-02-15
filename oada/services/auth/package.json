@@ -19,7 +19,7 @@
     "lint": "jshint --reporter node_modules/jshint-stylish .",
     "style": "jscs .",
     "clean": "rm -rf test/oada-compliance && rm -rf coverage",
-    "start": "node index.js",
+    "start": "node -r pino-debug index.js",
     "init": "node init.js"
   },
   "mocha": {
@@ -67,6 +67,7 @@
     "passport-local": "^1.0.0",
     "passport-oauth2-client-password": "~0.1.2",
     "pem-jwk": "^2.0.0",
+    "pino-debug": "^2.0.0",
     "rsa-pem-to-jwk": "^1.1.3",
     "urijs": "^1.15.2",
     "uuid": "^8.3.2"

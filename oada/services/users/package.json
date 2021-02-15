@@ -5,7 +5,7 @@
   "author": "Alex Layton <alex@layton.in>",
   "license": "ISC",
   "scripts": {
-    "start": "node server.js"
+    "start": "node -r pino-debug server.js"
   },
   "dependencies": {
     "@oada/lib-arangodb": "^0.0.2",
@@ -14,6 +14,7 @@
     "bluebird": "^3.5.0",
     "debug": "^4.1.1",
     "ksuid": "^2.0.0",
-    "lodash": "^4.17.15"
+    "lodash": "^4.17.15",
+    "pino-debug": "^2.0.0"
   }
 }
