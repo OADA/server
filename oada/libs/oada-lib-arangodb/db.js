@@ -2,8 +2,6 @@
 
 var Promise = require('bluebird');
 const arangojs = require('arangojs');
-const debug = require('debug');
-const warn = debug('arangodb#resources:warn');
 
 const config = require('./config');
 const db = arangojs({

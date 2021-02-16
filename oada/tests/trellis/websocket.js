@@ -21,15 +21,15 @@ function websocket(url) {
     messages = [];
   }
 
-  return new Promise((resolve, reject) => {
-    socket.onopen = function (event) {
+  return new Promise((resolve, _reject) => {
+    socket.onopen = function () {
       connected = true;
       sendMessages();
       resolve(socket);
     };
     socket.on('open', socket.onopen);
 
-    socket.onclose = function (event) {};
+    socket.onclose = function () {};
     socket.on('close', socket.onclose);
     socket.onmessage = function (event) {
       var response = JSON.parse(event.data);

@@ -15,12 +15,8 @@
 
 'use strict';
 
-const _ = require('lodash');
 const expect = require('chai').expect;
 const Promise = require('bluebird');
-const config = require('../config');
-const debug = require('debug');
-const trace = debug('trace:rev-graph-update#test');
 
 // DO NOT include ../ because we are testing externally.  Including here will cause admin copy of it
 // to receive some of the kafka responses.
@@ -107,6 +103,6 @@ async function cleanup() {
     await con
       .get({ path: `/${id}` })
       .then(async () => con.delete({ path: `/${id}` })) // delete it
-      .catch((e) => {}); // do nothing, didn't exist
+      .catch(() => {}); // do nothing, didn't exist
   });
 }

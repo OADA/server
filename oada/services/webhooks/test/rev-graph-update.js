@@ -15,10 +15,7 @@
 
 'use strict';
 
-const _ = require('lodash');
 const expect = require('chai').expect;
-const Promise = require('bluebird');
-const bcrypt = require('bcryptjs');
 const randomstring = require('randomstring');
 const kf = require('@oada/lib-kafka');
 const oadaLib = require('@oada/lib-arangodb');

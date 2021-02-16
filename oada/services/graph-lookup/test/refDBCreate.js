@@ -1,19 +1,13 @@
 'use strict';
 let arangojs = require('arangojs');
 let Database = arangojs.Database;
-let aql = arangojs.aql;
 //keysData - DATE,DEPARTMENT,LAST NAME,FIRST,PUID,STATUS,SUPERVISOR,BUILDING,ROOM NUMBER,KEY NUMBER,KEY IDENTIFIER
-let keysData = require('./keysData/keys-data.json');
+//let keysData = require('./keysData/keys-data.json');
 //roomsData - Bldg,Room,ShareNumber,%,Area,Department Using,Department Assigned,Sta,Room Type,Description,Internal Note
-let smasData = require('./smas-data/json/smas-data.json');
-let smasRoomTypesWithPeople = ['MEDIA PROD', 'NONCLAS LAB', 'OFFICE'];
-let _ = require('lodash');
+//let smasData = require('./smas-data/json/smas-data.json');
+//let smasRoomTypesWithPeople = ['MEDIA PROD', 'NONCLAS LAB', 'OFFICE'];
 let fs = require('fs');
-const path = require('path');
 let Promise = require('bluebird').Promise;
-let isDeveloping = process.env.NODE_ENV !== 'production';
-let thePort = isDeveloping ? 3000 : process.env.PORT;
-let contentBase = path.resolve(__dirname, '../build');
 let server_addr = process.env.ARANGODB_SERVER
   ? process.env.ARANGODB_SERVER
   : 'http://localhost:8529';
@@ -21,7 +15,7 @@ let db = new Database(server_addr);
 
 /* ////// Person Object Example ////////////////
 {
-  _id: 'people/54083', 
+  _id: 'people/54083',
   name: 'Jim Krogmeier' // or 'Krogmeier', 'J. Krogmeier', Currently duplicates are created for each variant
   department: 'ECE'
   keys: ['134t55'],
@@ -302,7 +296,7 @@ function convertDeptName(name) {
 //Each row corresponds to a room share: 1 share, 1 row; 2 shares for one room, 2 rows in the file.
 function getSmasRooms(data) {
   let rooms = {};
-  return Promise.each(data, function (row, i) {
+  return Promise.each(data, function (row) {
     let name = row['Bldg'] + ' ' + row['Room'];
     rooms[name] = rooms[name] || {
       building: row['Bldg'],
@@ -364,7 +358,7 @@ function parsePersonsFromSmasDescription(description) {
 
 function getSmasPeople(smasData, smasRoomTypesWithPeople) {
   let smasPersons = {};
-  return Promise.each(smasData, function (row, i) {
+  return Promise.each(smasData, function (row) {
     // People entries should only be found in specific types of rooms
     if (smasRoomTypesWithPeople.indexOf(row['Room Type']) >= 0) {
       let persons = parsePersonsFromSmasDescription(row['Description']);
@@ -386,7 +380,7 @@ function getSmasPeople(smasData, smasRoomTypesWithPeople) {
 // Use the keys data to find and add people to the database (each row has a keyholder and possibly their supervisor);
 function getKeysDataPeople(keysData) {
   let keysPeople = {};
-  return Promise.each(keysData, function (row, i) {
+  return Promise.each(keysData, function (row) {
     //Parse out the keyholder as a person
     let keyholder = (
       row['FIRST'].trim() +
@@ -435,7 +429,7 @@ function findSmasRoomPersonEdges(
   roomPersonEdges,
   smasData
 ) {
-  return Promise.each(smasData, function (row, i) {
+  return Promise.each(smasData, function (row) {
     let smasRoom = { name: row['Bldg'] + ' ' + row['Room'] };
     let smasPersons = parsePersonsFromSmasDescription(row['Description']);
     return Promise.each(smasPersons, function (person) {
@@ -494,7 +488,7 @@ function findKeysDataRoomPersonEdges(
   roomKeyholderEdges,
   keysData
 ) {
-  return Promise.each(keysData, function (row, i) {
+  return Promise.each(keysData, function (row) {
     let room = { name: row['BUILDING'] + ' ' + row['ROOM NUMBER'] };
     let keyholder = { name: row['FIRST'] + ' ' + row['LAST NAME'] };
     return roomCollection.byExample(room).then(function (roomCursor) {
@@ -571,7 +565,7 @@ function findFloorplanRoomEdges(
   floorplanRoomEdges,
   smasData
 ) {
-  return Promise.each(smasData, function (row, i) {
+  return Promise.each(smasData, function (row) {
     let smasRoom = { name: row['Bldg'] + ' ' + row['Room'] };
     let smasFloorplan = { name: row['Bldg'] + ' ' + row['Room'].charAt(0) };
     return roomCollection.byExample(smasRoom).then(function (roomCursor) {
@@ -623,7 +617,7 @@ function findSupervisorEdges(
   supervisorPersonEdges,
   keysData
 ) {
-  return Promise.each(keysData, function (row, i) {
+  return Promise.each(keysData, function (row) {
     let keyholder = { name: row['FIRST'] + ' ' + row['LAST NAME'] };
     if (row['SUPERVISOR'] && row['SUPERVISOR'].trim().length > 0) {
       let supervisor = row['SUPERVISOR'].trim();

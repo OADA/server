@@ -73,7 +73,7 @@ module.exports = function (_server, config) {
     authorize: [
       // If the redirecting domain sets the "domain_hint", save it in the session so that the login page
       // can fill it in as the default choice:
-      function (req, res, next) {
+      function (req, _res, next) {
         debug('oauth2#authorize: checking for domain_hint');
         if (req && req.query && req.query.domain_hint) {
           req.session.domain_hint = req.query.domain_hint;
@@ -109,7 +109,7 @@ module.exports = function (_server, config) {
         });
       }),
       function (req, res) {
-        oadaLookup.trustedCDP(function (err, pl) {
+        oadaLookup.trustedCDP(function () {
           // Load the login info for this domain from the public directory:
           const domain_config =
             domainConfigs[req.hostname] || domainConfigs.localhost;
@@ -142,7 +142,7 @@ module.exports = function (_server, config) {
       server.errorHandler({ mode: 'indirect' }),
     ],
     decision: [
-      function (req, res, next) {
+      function (_req, _res, next) {
         debug('oauth2#decision: Received decision POST from form');
         next();
       },
@@ -178,7 +178,7 @@ module.exports = function (_server, config) {
       server.errorHandler({ mode: 'indirect' }),
     ],
     token: [
-      function (req, res, next) {
+      function (req, _res, next) {
         // have to keep req.hostname in res to hack around oauth2orize so that issuer can be checked in openidconnect
         debug('oauth2#token: setting client_secret = client_assertion');
         // todo: hack to use passport-oauth2-client-password
@@ -187,7 +187,7 @@ module.exports = function (_server, config) {
         return next();
       },
       passport.authenticate(['oauth2-client-password'], { session: false }),
-      function (req, res, next) {
+      function (req, _res, next) {
         if (!req.user) {
           debug(
             'oauth2#token: there is no req.user after passport.authenticate should have put the client there.'

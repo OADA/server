@@ -15,9 +15,6 @@
 
 'use strict';
 
-var bcrypt = require('bcryptjs');
-
-const config = require('../../config');
 const { users } = require('@oada/lib-arangodb');
 const trace = require('debug')('arango:user:trace');
 

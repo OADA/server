@@ -2,8 +2,6 @@
 
 const debug = require('debug');
 const info = debug('arangodb#resources:info');
-const trace = debug('arangodb#resources:trace');
-const error = debug('arangodb#resources:error');
 const config = require('../config');
 const db = require('../db.js');
 const aql = require('arangojs').aql;
@@ -139,6 +137,7 @@ function hashPw(pw) {
 
 module.exports = {
   findById,
+  exists,
   findByUsername,
   findByUsernamePassword,
   findByOIDCUsername,

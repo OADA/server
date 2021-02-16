@@ -108,13 +108,12 @@ var addRocksData = function addRockData() {
             rocksResource._meta._id
           );
 
-          var rocksResourceGnode;
           var c = Promise.all([a, b]).spread(function (
             aNode,
             rocksResourceGnode
           ) {
             //Create 'rocks-index' gNode
-            var d = createGraphNode(
+            createGraphNode(
               rocksResource._key,
               false,
               '/rocks-index',

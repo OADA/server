@@ -105,7 +105,7 @@ responder.on('request', function handleReq(req) {
       }
       causechain.push(req.resource_id); // Add this resource to the set of "causing" resources to prevent cycles
 
-      p.forEach(function (item, idx) {
+      p.forEach(function (item) {
         const childrev = typeof req._rev === 'number' ? req._rev : 0; // delete has null rev
 
         // Do not update parent if it was already the cause of a rev update on this chain (prevent cycles)

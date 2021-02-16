@@ -1,11 +1,7 @@
 const config = require('./config');
 process.env.DEBUG = process.env.DEBUG || 'info:farmhack*';
 const debug = require('debug');
-const trace = debug('trace:farmhack#init');
 const info = debug('info:farmhack#init');
-const Database = require('arangojs').Database;
-const _ = require('lodash');
-const users = require('./libs/users.js');
 const Promise = require('bluebird');
 
 // Can't use db.js's db because we're creating the actual database

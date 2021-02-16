@@ -13,37 +13,19 @@
  */
 
 describe('Components should be restarted after being killed', () => {
-  const config = require('../config');
   // config.set('isTest', true);
-  const path = require('path');
 
   const debug = require('debug');
   const trace = debug('tests:trace');
   const info = debug('tests:info');
   const error = debug('tests:error');
-  const debugMark = ' => ';
 
   const expect = require('chai').expect;
-  const axios = require('axios');
   const Promise = require('bluebird');
-  const validator = require('validator');
 
   const exec = require('node-exec-promise').exec;
 
   const REQUIRED_CONTAINER_NAMES = [
-    'arangodb',
-    'auth',
-    'graph-lookup',
-    'http-handler',
-    'hitman',
-    'proxy',
-    'rev-graph-update',
-    'startup',
-    'token-lookup',
-    'well-known',
-    'write-handler',
-  ];
-  const TO_Kill_CONTAINER_NAMES = [
     'arangodb',
     'auth',
     'graph-lookup',

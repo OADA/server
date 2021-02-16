@@ -55,7 +55,6 @@
     "jsonwebtoken": "^8.5.1",
     "jwt-bearer-client-auth": "^1.0.0",
     "lodash": "^4.17.11",
-    "moment": "^2.18.1",
     "mongojs": "^3.1.0",
     "morgan": "^1.6.1",
     "oada-error": "^1.1.1",

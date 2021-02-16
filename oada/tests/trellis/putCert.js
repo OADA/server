@@ -1,6 +1,4 @@
 const debug = require('debug');
-const error = debug('oada-srvc-tests:trellis:putCert:error');
-const info = debug('oada-srvc-tests:trellis:putCert:info');
 const trace = debug('oada-srvc-tests:trellis:putCert:trace');
 
 let axios = require('axios');
@@ -24,9 +22,6 @@ describe(`A client shouldn't exist before adding one`, () => {
     return oadaLib.init.run();
   });
 
-  let clientId;
-  let text = 'Grower Gary';
-
   it(`GET on bookmarks/trellisfw/clients/ should return an empty resource`, () => {
     return axios({
       method: 'GET',
@@ -45,9 +40,6 @@ describe(`A client shouldn't exist before adding one`, () => {
 });
 
 describe(`The auditor should begin with no certifications resource`, () => {
-  let clientId;
-  let text = 'Grower Gary';
-
   it(`GET on bookmarks/trellisfw/certifications/ should not exist`, () => {
     return axios({
       method: 'GET',
@@ -238,7 +230,7 @@ describe('Adding read permission', function () {
             expect(response.status).to.equal(200);
             expect(response.data).to.include.keys(certsResourceId);
           })
-          .then((response) => {
+          .then(() => {
             return axios({
               method: 'PUT',
               url: baseUrl + '/shares/' + certsResourceId,

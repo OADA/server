@@ -1,10 +1,8 @@
 'use strict';
 let arangojs = require('arangojs');
 let Database = arangojs.Database;
-let aql = arangojs.aql;
 let Promise = require('bluebird');
 let debug = require('debug')('graph-lookup:admin:createDb');
-let ADD_SAMPLE_DATA = process.env.ADD_SAMPLE_DATA;
 let config = require('../config.js');
 let serverAddr = config.get('arango:connectionString');
 let dbname = 'graph-lookup-test';

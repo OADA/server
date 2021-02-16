@@ -15,9 +15,7 @@
 
 'use strict';
 
-const info = require('debug')('@oada/lib-kafka:info');
 const trace = require('debug')('@oada/lib-kafka:trace');
-const warn = require('debug')('@oada/lib-kafka:warn');
 
 const { Base, CONNECT, DATA } = require('./base');
 const Responder = require('./Responder');

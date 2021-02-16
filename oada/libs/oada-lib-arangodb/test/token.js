@@ -16,9 +16,7 @@
 'use strict';
 
 const expect = require('chai').expect;
-const Promise = require('bluebird');
 const oadaLib = require('..');
-const config = require('../config');
 
 // TODO: Would be nice to just expose these examples on oadaLib itself --- feel
 // like we will want them for all of the microservice tests

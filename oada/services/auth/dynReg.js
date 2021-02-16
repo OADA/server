@@ -15,7 +15,6 @@
 'use strict';
 
 const _ = require('lodash');
-var keys = require('./keys');
 var oadacerts = require('@oada/oada-certs');
 var Promise = require('bluebird');
 var clients = Promise.promisifyAll(require('./db/models/client'));

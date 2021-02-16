@@ -1,9 +1,5 @@
 'use strict';
-const moment = require('moment');
-const _ = require('lodash');
 const expect = require('chai').expect;
-const Promise = require('bluebird');
-const debug = require('debug');
 const config = require('../config');
 config.set('isTest', true);
 const init = require('../init');

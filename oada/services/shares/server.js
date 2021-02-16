@@ -17,14 +17,11 @@
 
 const debug = require('debug');
 const trace = debug('shares:trace');
-const info = debug('shares:info');
-const error = debug('shares:error');
 
 const Promise = require('bluebird');
 const Responder = require('@oada/lib-kafka').Responder;
 const oadaLib = require('@oada/lib-arangodb');
 const config = require('./config');
-const axios = require('axios');
 
 //---------------------------------------------------------
 // Kafka intializations:

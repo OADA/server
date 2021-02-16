@@ -34,7 +34,7 @@ ensureClient('token-lookup', topicnames).then((client) => {
   /*
   new kf.Client(
     config.get('zookeeper:host'),
-   	'token-lookup' 
+    'token-lookup'
   );
   */
   trace('We have a kafka client, now make producer/consumer');

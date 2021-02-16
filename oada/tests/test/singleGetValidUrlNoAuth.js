@@ -22,9 +22,6 @@ describe('GET (No Authentication with Valid URL)', () => {
   // For debugging: Pass axios to the imported 'axios-debug' function.
   // require('axios-debug')(axios);
 
-  const Promise = require('bluebird');
-  const validator = require('validator');
-
   // To test the token lookup, we need a dummy data base. Note that isTest has
   // been set to true in package.json so that oadalib will populate the database
   // according to exmpledocs for us.
@@ -41,9 +38,7 @@ describe('GET (No Authentication with Valid URL)', () => {
       path.win32.basename(__filename) +
       ')'
   );
-  const FOO_INVALID_TOKEN = 'fooInvalidToken-tests';
 
-  const tokenToUse = FOO_INVALID_TOKEN;
   // For debugging.
   const VALID_GET_REQ_URL = '/resources/default:resources_bookmarks_123';
   //const VALID_GET_REQ_URL = '/bookmarks/rocks/rocks-index/90j2klfdjss';
@@ -58,8 +53,6 @@ describe('GET (No Authentication with Valid URL)', () => {
     http_get_error_response = null;
 
   before((done) => {
-    const token = tokenToUse;
-
     let axiosInst = axios.create();
     // // Embed the token for all HTTP request.
     // let axiosInst = axios.create({

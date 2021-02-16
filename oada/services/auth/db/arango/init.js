@@ -35,7 +35,7 @@ module.exports = (config) => {
   // Start the show: Figure out if the database exists: if not, make it
   return db
     .get()
-    .then((info) => db.listDatabases())
+    .then(() => db.listDatabases())
     .then((dbs) => {
       dbs = _.filter(dbs, (d) => d === dbname);
       if (dbs.length > 0) return debug('database ' + dbname + ' exists');

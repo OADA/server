@@ -15,17 +15,13 @@
 
 'use strict';
 
-const _ = require('lodash');
 const expect = require('chai').expect;
-const Promise = require('bluebird');
-const bcrypt = require('bcryptjs');
 const randomstring = require('randomstring');
 const kf = require('@oada/lib-kafka');
 const oadaLib = require('@oada/lib-arangodb');
 const config = require('../config');
 const debug = require('debug');
 const trace = debug('trace:permissions-handler#test');
-const permissionsHandler = require('../');
 
 const requester = new kf.Requester(
   config.get('kafka:topics:httpResponse'),

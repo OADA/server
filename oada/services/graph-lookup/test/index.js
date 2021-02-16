@@ -1,9 +1,6 @@
 'use strict';
-const moment = require('moment');
-const _ = require('lodash');
 const expect = require('chai').expect;
 const Promise = require('bluebird');
-const debug = require('debug');
 const kf = require('kafka-node');
 const config = require('../config');
 config.set('isTest', true);
@@ -18,20 +15,9 @@ let rockResourceId = 'default:resources_rock_123';
 let rockMetaId = 'default:meta_rock_123';
 let rockPathLeft = '';
 
-let rocksIndexUrl =
-  '/resources/default:resources_bookmarks_123/rocks/rocks-index';
-let rocksIndexResourceId = 'default:resources_rocks_123';
-let rocksIndexMetaId = 'default:meta_rocks_123';
-let rocksIndexPathLeft = '/rocks-index';
-
-let rockPickedUrl =
-  '/resources/default:resources_bookmarks_123/rocks/rocks-index/90j2klfdjss/picked_up';
-let rockPickedPathLeft = '/picked_up';
-
 let producer;
 let consumer;
 
-let prodTopic = config.get('kafka:testProducerTopic');
 let consTopic = config.get('kafka:testConsumerTopic');
 
 describe('graph-lookup service', () => {
@@ -44,7 +30,6 @@ describe('graph-lookup service', () => {
         let client = Promise.promisifyAll(
           new kf.Client('zookeeper:2181', 'graph-lookup')
         );
-        let offset = Promise.promisifyAll(new kf.Offset(client));
 
         // Create a dummy consumer of http-response messages
         let consOptions = { autoCommit: true };

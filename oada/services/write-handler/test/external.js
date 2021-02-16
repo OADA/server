@@ -18,7 +18,6 @@
 const _ = require('lodash');
 const expect = require('chai').expect;
 const Promise = require('bluebird');
-const config = require('../config');
 const debug = require('debug');
 const trace = debug('trace:write-handler#test');
 
@@ -94,6 +93,6 @@ async function cleanup() {
     await con
       .get({ path: `/${id}` })
       .then(async () => con.delete({ path: `/${id}` })) // delete it
-      .catch((e) => {}); // do nothing, didn't exist
+      .catch(() => {}); // do nothing, didn't exist
   });
 }

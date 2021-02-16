@@ -214,7 +214,7 @@ function issueTokenFromCode(client, c, redirectUri, done) {
       return done(new TokenError('Code expired', 'invalid_request'));
     }
     if (!code.matchesClientId(client.clientId)) {
-      code.redeem(function (err, code) {
+      code.redeem(function (err) {
         if (err) {
           return done(err);
         }
@@ -228,7 +228,7 @@ function issueTokenFromCode(client, c, redirectUri, done) {
       });
     }
     if (!code.matchesRedirectUri(redirectUri)) {
-      code.redeem(function (err, code) {
+      code.redeem(function (err) {
         if (err) {
           return done(err);
         }
@@ -247,7 +247,7 @@ function issueTokenFromCode(client, c, redirectUri, done) {
         return done(err);
       }
 
-      createToken(code.scope, code.user, code.clientId, function (err, token) {
+      createToken(code.scope, code.user, code.clientId, function (_err, token) {
         var extras = {
           expires_in: token.expiresIn,
         };

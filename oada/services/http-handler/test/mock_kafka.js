@@ -12,7 +12,7 @@ before(function mockKafka() {
       this.on = function (ev, cb) {
         return ev === 'ready' && setTimeout(cb);
       };
-      this.createTopics = function (topics, foo, cb) {
+      this.createTopics = function (_topics, _foo, cb) {
         setTimeout(cb);
       };
       this.send = function mockSend(objs, cb) {
@@ -25,7 +25,7 @@ before(function mockKafka() {
       };
     },
 
-    ConsumerGroup: function MockConsumerGroup(opts, topics) {
+    ConsumerGroup: function MockConsumerGroup(_opts, topics) {
       this.on = function (ev, cb) {
         switch (ev) {
           case 'message':

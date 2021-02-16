@@ -1,10 +1,7 @@
 const debug = require('debug');
-const error = debug('oada-srvc-tests:trellis:websocketAbcAudits:error');
-const info = debug('oada-srvc-tests:trellis:websocketAbcAudits:info');
 const trace = debug('oada-srvc-tests:trellis:websocketAbcAudits:trace');
 
 let templateAudit = require('./GlobalGAP_FullAudit.js');
-let axios = require('axios');
 let expect = require('chai').expect;
 let config = require('../config.js');
 config.set('isTest', true);
@@ -21,7 +18,6 @@ let randCert = require('fpad-rand-cert');
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 
 let socket;
-let userid;
 let certsResourceId;
 let certsResourceIdTwo;
 let clientId;
@@ -274,7 +270,7 @@ describe('Adding read permission', function () {
             expect(response.status).to.equal(200);
             expect(response.data).to.include.keys(certsResourceId);
           })
-          .then((response) => {
+          .then(() => {
             return socket
               .http({
                 method: 'PUT',

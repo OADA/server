@@ -18,8 +18,6 @@ describe('GET (Valid Token with Valid URL)', () => {
 
   const expect = require('chai').expect;
   const axios = require('axios');
-  const Promise = require('bluebird');
-  const validator = require('validator');
 
   // To test the token lookup, we need a dummy data base. Note that isTest has
   // been set to true in package.json so that oadalib will populate the database

@@ -16,23 +16,12 @@
 'use strict';
 
 const expect = require('chai').expect;
-const Promise = require('bluebird');
 const oadaLib = require('..');
-const config = require('../config');
-
-// TODO: Would be nice to just expose these examples on oadaLib itself --- feel
-// like we will want them for all of the microservice tests
-const exampleEdges = require('../libs/exampledocs/edges.js');
-const exampleResources = require('../libs/exampledocs/resources.js');
-const exampleGraphNodes = require('../libs/exampledocs/graphNodes.js');
 
 describe('resources lib', () => {
   before(() => oadaLib.init.run());
 
   it('should find parents based on resource id', () => {
-    const edge = exampleEdges[2];
-    const graphNode = exampleGraphNodes[2];
-
     return oadaLib.resources
       .getParents('/resources:default:resources_rock_123')
       .then((p) => {

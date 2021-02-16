@@ -16,7 +16,7 @@ const db = new arango.Database({
   promise: Promise,
   url: config.get('arangodb:connectionString'),
 });
-const cleanup = init.cleanup; // set this to an empty function if you don't want db to be deleted
+//const cleanup = init.cleanup; // set this to an empty function if you don't want db to be deleted
 
 describe('init', () => {
   it('should drop test database if it already exists', () => {

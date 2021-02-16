@@ -15,18 +15,13 @@
 
 'use strict';
 
-const _ = require('lodash');
 const expect = require('chai').expect;
-const Promise = require('bluebird');
-const bcrypt = require('bcryptjs');
 const randomstring = require('randomstring');
 const kf = require('@oada/lib-kafka');
 const oadaLib = require('@oada/lib-arangodb');
 const config = require('../config');
 const debug = require('debug');
 const trace = debug('trace:shares#test');
-const shares = require('../');
-const axios = require('axios');
 
 const requester = new kf.Requester(
   config.get('kafka:topics:writeRequest'),

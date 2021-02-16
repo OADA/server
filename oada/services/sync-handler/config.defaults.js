@@ -14,9 +14,6 @@
  */
 'use strict';
 
-var path = require('path');
-var fs = require('fs');
-
 module.exports = {
   // By default, this checks for NODE_ENV===production
   // to determine if is production.

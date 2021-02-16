@@ -1,16 +1,12 @@
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0'; // tests run inside docker and all certs are self-signed
 
 describe('rev-graph-updates should be batched', async () => {
-  const config = require('../config');
   const debug = require('debug');
   const trace = debug('tests:trace');
-  const info = debug('tests:info');
   const error = debug('tests:error');
 
-  const expect = require('chai').expect;
   const axiosLib = require('axios');
   const Promise = require('bluebird');
-  const validator = require('validator');
 
   const axios = axiosLib.create({
     headers: {

@@ -63,8 +63,6 @@ describe('Create a Rocks-Index Res for an Existing Rock Res Using PUT', () => {
     http_get_response_after = null,
     http_get_error_response_after = null;
 
-  let resultedRocksIdx = null;
-
   let http_get_ref_rock_res = null,
     http_get_ref_rock_err = null;
   let http_get_indexed_rock_res = null,

@@ -17,7 +17,6 @@
 
 const debug = require('debug');
 const trace = debug('users:trace');
-const info = debug('users:info');
 const warn = debug('users:warn');
 const error = debug('users:error');
 var Promise = require('bluebird');

@@ -4,7 +4,6 @@ const config = require('../config');
 const db = require('../db');
 const aql = require('arangojs').aql;
 const util = require('../util');
-const debug = require('debug')('@oada/lib-arangodb:codes');
 
 const users = require('./users.js');
 

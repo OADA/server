@@ -1,6 +1,5 @@
 'use strict';
 
-const OADAError = require('oada-error').OADAError;
 const Promise = require('bluebird');
 const { resources, putBodies, changes } = require('@oada/lib-arangodb');
 const { Responder } = require('@oada/lib-kafka');
@@ -8,14 +7,13 @@ const pointer = require('json-pointer');
 const debug = require('debug');
 const error = debug('write-handler:error');
 const info = debug('write-handler:info');
-const warn = debug('write-handler:warn');
 const trace = debug('write-handler:trace');
 const Cache = require('timed-cache');
 const objectAssignDeep = require('object-assign-deep');
 
 let counter = 0;
 
-var config = require('./config');
+const config = require('./config');
 
 var responder = new Responder({
   consumeTopic: config.get('kafka:topics:writeRequest'),
@@ -53,7 +51,7 @@ responder.on('request', (req, ...rest) => {
   return p;
 });
 
-function handleReq(req, msg) {
+function handleReq(req) {
   req.source = req.source || '';
   req.resourceExists = req.resourceExists ? req.resourceExists : false; // Fixed bug if this is undefined
   var id = req['resource_id'].replace(/^\//, '');
@@ -70,7 +68,6 @@ function handleReq(req, msg) {
     }
     return req.body;
   });
-  let existingResourceInfo = {};
   trace('getBody', Date.now() / 1000 - getB);
 
   trace(`PUTing to "${req['path_leftover']}" in "${id}"`);
@@ -117,8 +114,7 @@ function handleReq(req, msg) {
           trace('Delete path = ', path);
           // TODO: This is gross
           let ppath = Array.from(path);
-          method = (id, obj, checkLinks) =>
-            resources.deletePartialResource(id, ppath, obj);
+          method = (id, obj) => resources.deletePartialResource(id, ppath, obj);
           trace(
             `Setting method = deletePartialResource(${id}, ${ppath}, ${obj})`
           );

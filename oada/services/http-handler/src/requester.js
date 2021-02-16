@@ -2,7 +2,7 @@
 
 const config = require('./config');
 
-const Requester = require('@oada/lib-kafka').Requester;
+const { Requester } = require('@oada/lib-kafka');
 
 // TODO: Is it better to have one requester per topic?
 var kafkaReq = new Requester(

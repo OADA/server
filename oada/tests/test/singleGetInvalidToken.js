@@ -21,9 +21,6 @@ describe('GET (Invalid Token with Valid URL)', () => {
   // For debugging: Pass axios to the imported 'axios-debug' function.
   // require('axios-debug')(axios);
 
-  const Promise = require('bluebird');
-  const validator = require('validator');
-
   // To test the token lookup, we need a dummy data base. Note that isTest has
   // been set to true in package.json so that oadalib will populate the database
   // according to exmpledocs for us.

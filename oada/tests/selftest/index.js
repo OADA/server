@@ -5,12 +5,6 @@
     - A simple self test (for express, axios and chai).
  */
 
-const debug = require('debug');
-const trace = debug('tests:trace');
-const info = debug('tests:info');
-const error = debug('tests:error');
-const debugMark = ' => ';
-
 const expect = require('chai').expect;
 const axios = require('axios');
 const Promise = require('bluebird');

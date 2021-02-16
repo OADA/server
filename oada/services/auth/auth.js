@@ -24,10 +24,7 @@ var AuthorizationError = require('oauth2orize').AuthorizationError;
 
 var URI = require('urijs');
 
-var oadaLookup = require('@oada/oada-lookup');
 var jwtBearerClientAuth = require('jwt-bearer-client-auth');
-
-var config = require('./config');
 
 var clients = require('./db/models/client');
 var users = require('./db/models/user');
@@ -38,20 +35,19 @@ var tokens = require('./db/models/token');
 passport.use(
   new LocalStrategy.Strategy(function (username, password, done) {
     trace('Looking up username ' + username + ' in local strategy');
-    return users.findByUsernamePassword(
-      username,
-      password,
-      function (err, user) {
-        if (err) {
-          return done(err);
-        }
-        if (!user) {
-          return done(null, false);
-        }
-
-        return done(null, user);
+    return users.findByUsernamePassword(username, password, function (
+      err,
+      user
+    ) {
+      if (err) {
+        return done(err);
       }
-    );
+      if (!user) {
+        return done(null, false);
+      }
+
+      return done(null, user);
+    });
   })
 );
 

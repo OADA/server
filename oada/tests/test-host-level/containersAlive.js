@@ -11,20 +11,15 @@
  */
 
 describe('Required Docker containers', () => {
-  const config = require('../config');
   // config.set('isTest', true);
-  const path = require('path');
 
   const debug = require('debug');
   const trace = debug('tests:trace');
   const info = debug('tests:info');
   const error = debug('tests:error');
-  const debugMark = ' => ';
 
   const expect = require('chai').expect;
-  const axios = require('axios');
   const Promise = require('bluebird');
-  const validator = require('validator');
 
   const exec = require('node-exec-promise').exec;
 

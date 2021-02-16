@@ -20,9 +20,6 @@ const util = require('util');
 const ksuid = require('ksuid');
 const Bluebird = require('bluebird');
 
-const info = require('debug')('@oada/lib-kafka:info');
-const warn = require('debug')('@oada/lib-kafka:warn');
-
 const {
     Base,
     topicTimeout,
@@ -97,7 +94,7 @@ module.exports = class Requester extends Base {
         // TODO: Handle partitions?
         request['resp_partition'] = 0;
 
-        this.request[id] = (e, res) => emitter.emit('response', res);
+        this.request[id] = (_e, res) => emitter.emit('response', res);
         emitter.close = () =>
             Bluebird.try(() => {
                 // Send cancel message to other end

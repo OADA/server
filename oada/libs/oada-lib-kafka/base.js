@@ -23,7 +23,6 @@ const ksuid = require('ksuid');
 const kf = require('node-rdkafka');
 const config = require('./config');
 const info = require('debug')('@oada/lib-kafka:info');
-const warn = require('debug')('@oada/lib-kafka:warn');
 const error = require('debug')('@oada/lib-kafka:error');
 
 const REQ_ID_KEY = 'connection_id';
@@ -83,7 +82,7 @@ class Base extends EventEmitter {
 
         this.consumer.on('error', (...args) => super.emit('error', ...args));
         this.producer.on('error', (...args) => super.emit('error', ...args));
-        this.producer.on('delivery-report', function (err, report) {
+        this.producer.on('delivery-report', function (err, _report) {
             if (err) error('!!!!!!!!!!!!!!!!!!!!!!!', err);
         });
 

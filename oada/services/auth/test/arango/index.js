@@ -1,10 +1,5 @@
-const Database = require('arangojs').Database;
-const config = require('@oada/lib-config')(require('../../config.defaults.js'));
-const moment = require('moment');
 const _ = require('lodash');
 const expect = require('chai').expect;
-const Promise = require('bluebird');
-const bcrypt = require('bcryptjs');
 const oadaLib = require('@oada/lib-arangodb');
 const libs = {
   users: require('../../db/arango/users'),
@@ -20,9 +15,6 @@ const codedocs = oadaLib.examples('codes');
 
 // Tests for the arangodb driver:
 
-let db = oadaLib.arango;
-let cols = config.get('arango:collections');
-let colnames;
 let frankid = userdocs[0]._id;
 
 describe('arango driver', () => {

@@ -36,7 +36,7 @@ Promise.try(function () {
 
   //-----------------------------------------------------------------
   // Log all requests before anything else gets them for debugging:
-  app.use(function (req, res, next) {
+  app.use(function (req, _res, next) {
     log.info('Received request: ' + req.method + ' ' + req.url);
     //log.trace('req.headers = ', req.headers);
     //log.trace('req.body = ', req.body);
@@ -75,7 +75,7 @@ Promise.try(function () {
 
   //---------------------------------------------------------------------------------
   // Retrieve /.well-known/ from sub-services, replacing domains and paths as needed
-  app.use(function (req, res, done) {
+  app.use(function (req, _res, done) {
     // parse out the '/.well-known' part of the URL, like
     // '/.well-known/oada-configuration' or '/.well-known/openid-configuration'
     const whichdoc = req.url.replace(/^.*(\/.well-known\/.*$)/, '$1'); // /.well-known/oada-configuration
@@ -139,7 +139,7 @@ Promise.try(function () {
 
   //--------------------------------------------------
   // Default handler for top-level routes not found:
-  app.use(function (req, res) {
+  app.use(function (req, _res) {
     throw new oada_error.OADAError(
       'Route not found: ' + req.url,
       oada_error.codes.NOT_FOUND
