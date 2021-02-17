@@ -125,7 +125,7 @@ jobs:
         if: ${{ needs.setup.outputs.release }}
         uses: booxmedialtd/ws-action-parse-semver@v1
         with:
-          input_string: ${{ need.setup.output.version }}
+          input_string: ${{ needs.setup.output.version }}
           #version_extractor_regex: '\/v(.*)$'
 
       - name: Prepare Tags
