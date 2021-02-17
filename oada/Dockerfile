@@ -49,10 +49,14 @@ RUN chmod u+x /entrypoint.sh
 COPY ./utils/wait-for-it.sh /wait-for-it.sh
 RUN chmod u+x /wait-for-it.sh
 
+# Copy in service code
 COPY --from=yarn /oada/ /oada/
 # TODO: Don't have both source and built code in image?
 COPY --from=build /oada/ /oada/
 #COPY . /oada/
+
+# Copy in config file?
+COPY ./oada-srvc-docker-config.js /oada-srvc-docker-config.js
 
 ARG OADA_SERVICE
 ENV OADA_SERVICE=${OADA_SERVICE}

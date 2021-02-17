@@ -167,6 +167,7 @@ services:
   # swag with configs for auth, well-known, and http-handler
   proxy:
     build: ./support/proxy
+    image: oada/support-proxy:${OADA_VERSION-build}
     container_name: proxy
     cap_add:
       - NET_ADMIN

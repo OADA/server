@@ -9,7 +9,7 @@ services:
       - kafka_net
       - arango_net
     volumes:
-      - ./oada-srvc-docker-config.js:/oada-srvc-docker-config.js
+      - ./oada-srvc-docker-config.js:/oada-srvc-docker-config.js # for debug?
     environment:
       - NODE_ENV=${NODE_ENV-development}
       - DEBUG=${DEBUG-*}
