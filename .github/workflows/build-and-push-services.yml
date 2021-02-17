@@ -200,7 +200,7 @@ jobs:
       - name: Set up yq
         uses: chrisdickinson/setup-yq@latest
         with:
-          yq-version: 4.5.1
+          yq-version: v4.5.1
 
       - name: Cache docker layers
         if: ${{ !env.ACT }} # Awaiting ACT version after 0.2.17 for this feature
