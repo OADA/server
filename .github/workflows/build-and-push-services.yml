@@ -124,9 +124,8 @@ jobs:
         run: |
           DOCKER_IMAGE=oada/${{ matrix.service }}
 
-          TAGS="${DOCKER_IMAGE}:${{ needs.setup.outputs.major }}.${{ needs.setup.outputs.major }}.${{ needs.setup.outputs.patch }}"
-
           if [[ "${{ needs.setup.outputs.release }}" ]]; then
+            TAGS="${DOCKER_IMAGE}:${{ needs.setup.outputs.major }}.${{ needs.setup.outputs.major }}.${{ needs.setup.outputs.patch }}"
             if [[ "${{ needs.setup.outputs.prerelease }}" ]]; then
               T="${DOCKER_IMAGE}:${{ needs.setup.outputs.major }}.${{ needs.setup.outputs.major }}.${{ needs.setup.outputs.patch }}-${{ needs.setup.outputs.prerelease }}"
               TAGS="$TAGS,$T"
@@ -140,6 +139,8 @@ jobs:
               TAGS="$TAGS,${DOCKER_IMAGE}:${{ needs.setup.outputs.major }}"
               TAGS="$TAGS,${DOCKER_IMAGE}:${{ needs.setup.outputs.major }}.${{ needs.setup.outputs.major }}"
             fi
+          else
+            TAGS="${DOCKER_IMAGE}:${{ needs.setup.outputs.version }}"
           fi
 
           if [ "${{ github.event_name }}" = "push" ]; then

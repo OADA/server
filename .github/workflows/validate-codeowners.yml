@@ -3,10 +3,10 @@ name: Validate Codeowners file
 on:
   push:
     tags_ignore:
-      - **
+      - '**'
   pull_request:
     tags_ignore:
-      - **
+      - '**'
 
 jobs:
   validate-codeowners:
