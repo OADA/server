@@ -11,7 +11,7 @@ package.lock
 .DS_Store
 
 # local env file
-.env
+/.env
 
 # Ignore act stuff?
 .actrc

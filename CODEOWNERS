@@ -44,6 +44,8 @@ oada/services/write-handler @awlayton
 # Yaguang wrote the tests
 oada/tests @YaguangZhang
 
+# Alex made the release nonsense
+release @awlayton
 
 # Andrew intially created all the files in .github with some additions by Aaron
 .github            @abalmos
