@@ -70,7 +70,7 @@ jobs:
 
       - name: Parse Semver
         id: semver
-        if: ${{ steps.ref.outputs.release == true }}
+        if: ${{ steps.ref.outputs.release }}
         uses: booxmedialtd/ws-action-parse-semver@v1
         with:
           input_string: ${{ steps.ref.outputs.version }}
@@ -189,7 +189,7 @@ jobs:
       - setup
       - build-and-push-services
 
-    if: ${{ needs.setup.outputs.release == true }}
+    if: ${{ needs.setup.outputs.release }}
 
     runs-on: ubuntu-latest
 
