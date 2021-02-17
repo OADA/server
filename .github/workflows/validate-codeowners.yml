@@ -2,7 +2,9 @@ name: Validate Codeowners file
 
 on:
   push:
+    branches:
   pull_request:
+    branches:
 
 jobs:
   validate-codeowners:
