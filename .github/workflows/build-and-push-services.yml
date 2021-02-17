@@ -195,6 +195,15 @@ jobs:
         with:
           yq-version: v4.5.1
 
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v1
+
+      - name: Set up Docker Buildx
+        id: buildx
+        uses: docker/setup-buildx-action@v1
+        with:
+          version: latest
+
       - name: Cache docker layers
         if: ${{ !env.ACT }} # Awaiting ACT version after 0.2.17 for this feature
         uses: actions/cache@v2.1.4
@@ -236,7 +245,7 @@ jobs:
           release_name: Release ${{ needs.setup.outputs.version }}
           # Make draft and wait for person to release it?
           draft: true
-          prerelease: ${{ needs.setup.outputs.prerelease }}
+          prerelease: ${{ !!needs.setup.outputs.prerelease }}
 
       - name: Upload Release Compose File
         id: upload-release-asset
