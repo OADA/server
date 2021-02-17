@@ -124,23 +124,16 @@ jobs:
         run: |
           DOCKER_IMAGE=oada/${{ matrix.service }}
 
+          TAGS="${DOCKER_IMAGE}:${{ needs.setup.outputs.version }}"
           if [[ "${{ needs.setup.outputs.release }}" ]]; then
-            TAGS="${DOCKER_IMAGE}:${{ needs.setup.outputs.major }}.${{ needs.setup.outputs.major }}.${{ needs.setup.outputs.patch }}"
             if [[ "${{ needs.setup.outputs.prerelease }}" ]]; then
-              T="${DOCKER_IMAGE}:${{ needs.setup.outputs.major }}.${{ needs.setup.outputs.major }}.${{ needs.setup.outputs.patch }}-${{ needs.setup.outputs.prerelease }}"
-              TAGS="$TAGS,$T"
+              TAGS="${DOCKER_IMAGE}:${{ needs.setup.outputs.major }}.${{ needs.setup.outputs.major }}.${{ needs.setup.outputs.patch }}-${{ needs.setup.outputs.prerelease }}"
               # TODO: Keep old prerelease builds?
-              #if [[ "${{ needs.setup.outputs.build }}" ]]; then
-              #  T="$T-${{ needs.setup.outputs.build }}"
-              #  TAGS="$TAGS,$T"
-              #fi
             else
               TAGS="$TAGS,${DOCKER_IMAGE}:latest"
               TAGS="$TAGS,${DOCKER_IMAGE}:${{ needs.setup.outputs.major }}"
               TAGS="$TAGS,${DOCKER_IMAGE}:${{ needs.setup.outputs.major }}.${{ needs.setup.outputs.major }}"
             fi
-          else
-            TAGS="${DOCKER_IMAGE}:${{ needs.setup.outputs.version }}"
           fi
 
           if [ "${{ github.event_name }}" = "push" ]; then
@@ -222,7 +215,8 @@ jobs:
       - name: Get Release Compose File
         id: release
         run: |
-          OADA_VERSION=${{ needs.setup.outputs.version }}
+          # Use commit of release as version??
+          OADA_VERSION="sha-${GITHUB_SHA::8}"
 
           RELEASE=docker-compose.release.yml
 
