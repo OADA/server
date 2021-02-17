@@ -127,11 +127,11 @@ jobs:
 
           TAGS="${DOCKER_IMAGE}:${VERSION}"
 
-          if [[ ${{ needs.setup.outputs.release }} ]]; then
-            if [[ ${{ needs.setup.outputs.prerelease }} ]]; then
+          if [[ "${{ needs.setup.outputs.release }}" ]]; then
+            if [[ "${{ needs.setup.outputs.prerelease }}" ]]; then
               T="${DOCKER_IMAGE}:${{ needs.setup.outputs.major }}.${{ needs.setup.outputs.major }}.${{ needs.setup.outputs.patch }}-${{ needs.setup.outputs.prerelease }}"
               TAGS="$TAGS,$T"
-              if [[ ${{ needs.setup.outputs.build }} ]]; then
+              if [[ "${{ needs.setup.outputs.build }}" ]]; then
                 T="$T+${{ needs.setup.outputs.build }}"
                 TAGS="$TAGS,$T"
               fi
