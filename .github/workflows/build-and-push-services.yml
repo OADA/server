@@ -222,7 +222,7 @@ jobs:
       - name: Get Release Compose File
         id: release
         run: |
-          OADA_VERSION=${{ needs.setup.version }}
+          OADA_VERSION=${{ needs.setup.outputs.version }}
 
           RELEASE=docker-compose.release.yml
 
