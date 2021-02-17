@@ -125,7 +125,7 @@ jobs:
         run: |
           DOCKER_IMAGE=oada/${{ matrix.service }}
 
-          TAGS="${DOCKER_IMAGE}:${VERSION}"
+          TAGS="${DOCKER_IMAGE}:${{ needs.setup.outputs.version }}"
 
           if [[ ${{ needs.setup.outputs.release }} = true ]]; then
             if [[ "${{ needs.setup.outputs.prerelease }}" ]]; then
