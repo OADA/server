@@ -2,9 +2,11 @@ name: Validate Codeowners file
 
 on:
   push:
-    branches:
+    tags_ignore:
+      - **
   pull_request:
-    branches:
+    tags_ignore:
+      - **
 
 jobs:
   validate-codeowners:

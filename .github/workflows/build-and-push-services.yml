@@ -124,7 +124,7 @@ jobs:
         run: |
           DOCKER_IMAGE=oada/${{ matrix.service }}
 
-          TAGS="${DOCKER_IMAGE}:${{ needs.setup.outputs.version }}"
+          TAGS="${DOCKER_IMAGE}:${{ needs.setup.outputs.major }}.${{ needs.setup.outputs.major }}.${{ needs.setup.outputs.patch }}"
 
           if [[ "${{ needs.setup.outputs.release }}" ]]; then
             if [[ "${{ needs.setup.outputs.prerelease }}" ]]; then
@@ -139,7 +139,6 @@ jobs:
               TAGS="$TAGS,${DOCKER_IMAGE}:latest"
               TAGS="$TAGS,${DOCKER_IMAGE}:${{ needs.setup.outputs.major }}"
               TAGS="$TAGS,${DOCKER_IMAGE}:${{ needs.setup.outputs.major }}.${{ needs.setup.outputs.major }}"
-              TAGS="$TAGS,${DOCKER_IMAGE}:${{ needs.setup.outputs.major }}.${{ needs.setup.outputs.major }}.${{ needs.setup.outputs.patch }}"
             fi
           fi
 

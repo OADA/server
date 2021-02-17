@@ -3,9 +3,11 @@ name: Check OADA Dockerfiles with Snyk
 
 on:
   push:
-    branches:
+    tags_ignore:
+      - **
   pull_request:
-    branches:
+    tags_ignore:
+      - **
   schedule:
     - cron: '25 20 * * 4'
 
