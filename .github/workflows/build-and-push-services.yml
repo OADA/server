@@ -227,7 +227,9 @@ jobs:
           RELEASE=docker-compose.release.yml
 
           # Use commit of release as version??
-          OADA_VERSION="sha-${GITHUB_SHA::8}" ./release/make.sh | tee $RELEASE
+          OADA_VERSION="sha-${GITHUB_SHA::8}" \
+            RELEASE_VERSION="${{ needs.setup.outputs.version }}" \
+            ./release/make.sh | tee $RELEASE
 
           echo ::set-output name=composefile::$RELEASE
 

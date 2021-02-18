@@ -3,9 +3,13 @@
 
 # Find directory where this file is
 SCRIPT=$(readlink -f "$0")
-SCRIPTPATH=$(dirname "$SCRIPT")
+SCRIPTPATH=$(dirname "${SCRIPT}")
 
-OVERRIDES=$SCRIPTPATH/docker-compose.override.yml
+OVERRIDES=${SCRIPTPATH}/docker-compose.override.yml
+
+if [ -z "${RELEASE_VERSION}" ]; then
+    RELEASE_VERSION=${OADA_VERSION}
+fi
 
 # Pull desired version of images
 docker-compose pull
@@ -15,7 +19,7 @@ yq eval '. | ["#", headComment] | join(" ")' $OVERRIDES
 echo
 
 # Add comment with version?
-echo "# OADA release ${OADA_VERSION} compose file ($(date))\n"
+echo "# OADA release ${RELEASE_VERSION} compose file ($(date))\n"
 
 # Load config, clean anything potentially not fit for release, merge overrides
 docker-compose --env-file=$SCRIPTPATH/.env config --resolve-image-digests | {
@@ -34,7 +38,7 @@ docker-compose --env-file=$SCRIPTPATH/.env config --resolve-image-digests | {
     # Merge in release settings
     yq eval-all \
         '{"x-release": .x-release} * select(fi == 0) * select(fi == 1)' \
-        - $OVERRIDES
+        - ${OVERRIDES}
 } | {
     # Explode anchors
     # They are technically valid yaml but they were giving me issues
