@@ -1,16 +1,10 @@
 #!/usr/bin/env node
 
-const config = require('@oada/lib-config')(
-  require('/oada-srvc-docker-config.js')
-);
-
 const argv = require('minimist')(process.argv.slice(2));
 const _ = require('lodash');
-const Promise = require('bluebird');
-const promptly = require('promptly');
 const chalk = require('chalk');
 
-const { users, authorizations } = require('/code/libs/@oada/lib-arangodb');
+const { authorizations } = require('@oada/lib-arangodb');
 
 // Add useradd:trace to enable tracing
 if (!process.env.DEBUG) {
@@ -18,7 +12,6 @@ if (!process.env.DEBUG) {
 }
 
 const debug = require('debug');
-const error = debug('extendToken:error');
 const trace = debug('extendToken:trace');
 const info = debug('extendToken:info');
 

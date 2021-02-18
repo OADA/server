@@ -7,14 +7,20 @@
   "scripts": {
     "start": "node -r pino-debug server.js"
   },
+  "bin": {
+    "add": "./useradd.js"
+  },
   "dependencies": {
     "@oada/lib-arangodb": "^0.0.2",
     "@oada/lib-config": "^0.0.1",
     "@oada/lib-kafka": "^1.0.0",
     "bluebird": "^3.5.0",
+    "chalk": "^4.1.0",
     "debug": "^4.1.1",
     "ksuid": "^2.0.0",
     "lodash": "^4.17.15",
-    "pino-debug": "^2.0.0"
+    "minimist": "^1.2.5",
+    "pino-debug": "^2.0.0",
+    "promptly": "^3.2.0"
   }
 }

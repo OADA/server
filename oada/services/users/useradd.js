@@ -5,13 +5,10 @@ const config = require('@oada/lib-config')(
 );
 
 const argv = require('minimist')(process.argv.slice(2));
-const _ = require('lodash');
-const uuid = require('uuid');
-const Promise = require('bluebird');
 const promptly = require('promptly');
 const chalk = require('chalk');
 
-const { users, authorizations } = require('@oada/lib-arangodb');
+const { users } = require('@oada/lib-arangodb');
 const Requester = require('@oada/lib-kafka').Requester;
 
 // Add useradd:trace to enable tracing

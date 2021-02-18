@@ -63,5 +63,6 @@ ENV OADA_SERVICE=${OADA_SERVICE}
 
 WORKDIR /oada/services/${OADA_SERVICE}
 
-CMD /entrypoint.sh
+ENTRYPOINT ["/bin/sh", "/entrypoint.sh"]
+CMD ["start", "--config=/oada-srvc-docker-config.js"]
 

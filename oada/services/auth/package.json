@@ -2,6 +2,9 @@
   "name": "@oada/auth",
   "version": "0.0.4",
   "description": "Reference implementation of OADA Authentication and Authorization server.",
+  "bin": {
+    "extendToken": "./extendToken.js"
+  },
   "main": "index.js",
   "repository": {
     "type": "git",
@@ -45,6 +48,7 @@
     "bcryptjs": "^2.4.3",
     "bluebird": "^3.5.1",
     "body-parser": "^1.13.2",
+    "chalk": "^4.1.0",
     "connect-arango": "github:antioxidanz/connect-arango",
     "connect-ensure-login": "^0.1.1",
     "cors": "^2.7.1",
@@ -55,6 +59,7 @@
     "jsonwebtoken": "^8.5.1",
     "jwt-bearer-client-auth": "^1.0.0",
     "lodash": "^4.17.11",
+    "minimist": "^1.2.5",
     "mongojs": "^3.1.0",
     "morgan": "^1.6.1",
     "oada-error": "^1.1.1",
