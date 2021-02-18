@@ -12,6 +12,8 @@ package.lock
 
 # local env file
 /.env
+# local override file
+/docker-compose.override.yml
 
 # Ignore act stuff?
 .actrc

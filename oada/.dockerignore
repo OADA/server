@@ -4,6 +4,14 @@
 # Don't copy in git history?
 **/.git*
 
+# Don't copy tests into images?
+**/test/**
+**/tests/**
+**/__test__/**
+**/__tests__/**
+**/*.spec.*
+**/*.test.*
+
 **/*.log
 **/.DS_Store
 
