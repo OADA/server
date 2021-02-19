@@ -186,7 +186,9 @@ services:
     restart: unless-stopped
 
   kafka:
-    image: wurstmeister/kafka
+    # Is 2.4 less squirrelly?
+    #image: wurstmeister/kafka:2.12-2.4.1
+    image: wurstmeister/kafka:2.13-2.7.0
     depends_on:
       - zookeeper
     expose: # expose only internally, not on host
