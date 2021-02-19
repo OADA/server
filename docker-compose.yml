@@ -7,7 +7,6 @@ services:
     build:
       args:
         OADA_SERVICE: startup
-    container_name: startup
     depends_on:
       - zookeeper
       - kafka
@@ -26,7 +25,6 @@ services:
     build:
       args:
         OADA_SERVICE: auth
-    container_name: auth
     depends_on:
       - startup
     networks:
@@ -44,7 +42,6 @@ services:
     build:
       args:
         OADA_SERVICE: http-handler
-    container_name: http-handler
     depends_on:
       - startup
     networks:
@@ -62,7 +59,6 @@ services:
     build:
       args:
         OADA_SERVICE: sync-handler
-    container_name: sync-handler
     depends_on:
       - startup
       - proxy
@@ -79,7 +75,6 @@ services:
     build:
       args:
         OADA_SERVICE: write-handler
-    container_name: write-handler
     depends_on:
       - startup
 
@@ -91,7 +86,6 @@ services:
     build:
       args:
         OADA_SERVICE: users
-    container_name: users
     depends_on:
       - startup
 
@@ -103,7 +97,6 @@ services:
     build:
       args:
         OADA_SERVICE: rev-graph-update
-    container_name: rev-graph-update
     depends_on:
       - startup
 
@@ -115,7 +108,6 @@ services:
     build:
       args:
         OADA_SERVICE: well-known
-    container_name: well-known
     depends_on:
       - startup
     networks:
@@ -131,7 +123,6 @@ services:
     build:
       args:
         OADA_SERVICE: webhooks
-    container_name: webhooks
     depends_on:
       - startup
       - proxy
@@ -148,7 +139,6 @@ services:
     build:
       args:
         OADA_SERVICE: permissions-handler
-    container_name: permissions-handler
     depends_on:
       - startup
 
@@ -160,7 +150,6 @@ services:
     build:
       args:
         OADA_SERVICE: shares
-    container_name: shares
     depends_on:
       - startup
 
@@ -168,7 +157,6 @@ services:
   proxy:
     build: ./support/proxy
     image: oada/support-proxy:${OADA_VERSION-build}
-    container_name: proxy
     cap_add:
       - NET_ADMIN
     networks:
@@ -222,7 +210,6 @@ services:
   # Arango is the main backend where core data and graph is stored
   arangodb:
     image: arangodb:3.7.8
-    container_name: arangodb
     restart: unless-stopped
     networks:
       - arango_net
