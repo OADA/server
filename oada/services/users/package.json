@@ -5,7 +5,7 @@
   "author": "Alex Layton <alex@layton.in>",
   "license": "ISC",
   "scripts": {
-    "start": "node -r pino-debug server.js"
+    "start": "node -r @oada/pino-debug server.js"
   },
   "bin": {
     "add": "./useradd.js"
@@ -14,13 +14,13 @@
     "@oada/lib-arangodb": "^0.0.2",
     "@oada/lib-config": "^0.0.1",
     "@oada/lib-kafka": "^1.0.0",
+    "@oada/pino-debug": "workspace:libs/oada-pino-debug",
     "bluebird": "^3.7.2",
     "chalk": "^4.1.0",
     "debug": "^4.3.2",
     "ksuid": "^2.0.0",
     "lodash": "^4.17.20",
     "minimist": "^1.2.5",
-    "pino-debug": "^2.0.0",
     "promptly": "^3.2.0"
   }
 }

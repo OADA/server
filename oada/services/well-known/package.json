@@ -4,7 +4,7 @@
   "description": "Microservice for serving well-known at an OADA cloud.  Plays nicely with oada-ref-auth-js.",
   "main": "index.js",
   "scripts": {
-    "start": "node -r pino-debug index.js",
+    "start": "node -r @oada/pino-debug index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -23,6 +23,7 @@
   "homepage": "https://github.com/oada/oada-srvc-well-known#readme",
   "dependencies": {
     "@oada/lib-config": "^0.0.1",
+    "@oada/pino-debug": "workspace:libs/oada-pino-debug",
     "@oada/well-known-json": "^1.0.1",
     "bluebird": "^3.7.2",
     "cors": "^2.8.5",
@@ -31,7 +32,6 @@
     "express-promise": "^0.4.0",
     "lodash": "^4.17.20",
     "oada-error": "^1.1.1",
-    "pino-debug": "^2.0.0",
     "request": "^2.88.2"
   }
 }

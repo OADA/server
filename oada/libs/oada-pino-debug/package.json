@@ -1,0 +1,28 @@
+{
+  "name": "@oada/pino-debug",
+  "version": "1.0.0",
+  "description": "OADA pino-debug wrapper",
+  "main": "dist/index.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/OADA/@oada/pino-debug.git"
+  },
+  "scripts": {
+    "build": "yarn g:tsc",
+    "start": "node --enable-source-maps -r pino-debug dist/server.js"
+  },
+  "author": "Alex Layton <alex@layton.in>",
+  "license": "ISC",
+  "dependencies": {
+    "pino": "^6.11.1",
+    "pino-debug": "^2.0.0"
+  },
+  "devDependencies": {
+    "@types/debug": "^4.1.5",
+    "@types/node": "^14.14.30",
+    "@types/pino": "^6.3.6"
+  },
+  "peerDependencies": {
+    "debug": "*"
+  }
+}

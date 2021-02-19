@@ -4,7 +4,7 @@
   "description": "Handles startup of services for docker in OADA docker implementation.",
   "main": "index.js",
   "scripts": {
-    "start": "node -r pino-debug index.js",
+    "start": "node -r @oada/pino-debug index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -24,8 +24,8 @@
   "homepage": "https://github.com/oada/oada-srvc-startup#readme",
   "dependencies": {
     "@oada/lib-arangodb": "^0.0.2",
+    "@oada/pino-debug": "workspace:libs/oada-pino-debug",
     "debug": "^4.3.2",
-    "express": "^4.17.1",
-    "pino-debug": "^2.0.0"
+    "express": "^4.17.1"
   }
 }
