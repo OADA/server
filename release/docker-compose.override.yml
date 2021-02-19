@@ -16,7 +16,7 @@ x-release:
   environment: &env
     NODE_ENV: ${NODE_ENV-production}
     DEBUG: ${DEBUG-*:error,*:warn,*:info}
-    PINO_TRANSPORT: ${PINO_TRANSPORT-yarn g:pretty --colorize}
+    PINO_TRANSPORT: ${PINO_TRANSPORT-yarn g:pretty -clt}
     DOMAIN:
     NODE_TLS_REJECT_UNAUTHORIZED:
 
