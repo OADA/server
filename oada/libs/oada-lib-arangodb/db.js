@@ -1,12 +1,11 @@
 'use strict';
 
-var Promise = require('bluebird');
-const arangojs = require('arangojs');
+var Bluebird = require('bluebird');
+const { Database } = require('arangojs');
 
 const config = require('./config');
-const db = arangojs({
+const db = new Database({
   url: config.get('arangodb:connectionString'),
-  promise: Promise,
 });
 
 if (config.get('isTest')) {
@@ -26,7 +25,7 @@ let query = db.query;
 db.query = function (...args) {
   let tries = 0;
   function tryquery() {
-    return Promise.resolve(query.apply(db, args)).catch(
+    return Bluebird.resolve(query.apply(db, args)).catch(
       DeadlockError,
       (err) => {
         if (++tries >= deadlockRetries) {

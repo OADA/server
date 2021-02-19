@@ -62,14 +62,14 @@ RUN yarn workspaces focus --all --production
 # Allow for workspaces to have build step (e.g., for TypeScript)
 FROM packages as build
 
-# Install all dependencies for build
-RUN yarn install
+# Install _all_ dependencies for build
+RUN yarn install --immutable
 
 # Copy in actual code
 COPY . /oada/
 
 # Run again to be safe?
-RUN yarn install
+RUN yarn install --immutable
 
 # Build and then remove yarn stuff??
 RUN yarn workspaces foreach run build; rm -rf .yarn .pnp.*

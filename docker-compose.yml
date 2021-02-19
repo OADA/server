@@ -221,7 +221,7 @@ services:
 
   # Arango is the main backend where core data and graph is stored
   arangodb:
-    image: arangodb:3.4.0
+    image: arangodb:3.7.8
     container_name: arangodb
     restart: unless-stopped
     networks:
@@ -236,6 +236,7 @@ services:
       - ARANGO_NO_AUTH=1
       - ARANGO_STORAGE_ENGINE=rocksdb
       - ARANGO_STATISTICS=0
+    #command: ['arangod', '--server.statistics', 'true', '--database.auto-upgrade', 'true']
     command: ['arangod', '--server.statistics', 'true']
 
   # zookeeper and kafka entries are based on:

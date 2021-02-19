@@ -9,11 +9,10 @@ const trace = debug('arango:init:trace');
 const info = debug('arango:init:info');
 const _ = require('lodash');
 const users = require('./libs/users.js');
-var Promise = require('bluebird');
+const Bluebird = require('bluebird');
 
 // Can't use db.js's db because we're creating the actual database
 const db = require('arangojs')({
-  promise: Promise,
   url: config.get('arangodb:connectionString'),
 });
 db.useDatabase('_system');
@@ -38,8 +37,7 @@ module.exports = {
     //---------------------------------------------------------------------
     // Start the show: Figure out if the database exists
     return (
-      db
-        .listDatabases()
+      Bluebird.resolve(db.listDatabases())
         .then((dbs) => {
           dbs = _.filter(dbs, (d) => d === dbname);
           if (dbs.length > 0) {
@@ -79,7 +77,7 @@ module.exports = {
         })
         .then((dbcols) => {
           trace('Found collections, looking for the ones we need');
-          return Promise.each(colsarr, (c) => {
+          return Bluebird.each(colsarr, (c) => {
             if (_.find(dbcols, (d) => d.name === c.name)) {
               return trace('Collection ' + c.name + ' exists');
             }
@@ -113,7 +111,7 @@ module.exports = {
               .indexes()
               .then((dbindexes) => {
                 // for each index in this collection, check and create
-                return Promise.map(c.indexes, (ci) => {
+                return Bluebird.map(c.indexes, (ci) => {
                   const indexname = typeof ci === 'string' ? ci : ci.name;
                   const unique = typeof ci === 'string' ? true : ci.unique;
                   const sparse = typeof ci === 'string' ? true : ci.sparse;
@@ -162,7 +160,7 @@ module.exports = {
               ? colinfo.ensureDefaults
               : ensureDefaults;
 
-          return Promise.map(data, (doc) => {
+          return Bluebird.map(data, (doc) => {
             if (!doc || !doc._id) {
               trace('WARNING: doc is undefined for collection ' + colinfo.name);
             }

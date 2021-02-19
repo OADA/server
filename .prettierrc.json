@@ -1,4 +1,7 @@
 {
   "singleQuote": true,
-  "quoteProps": "consistent"
+  "quoteProps": "consistent",
+  "overrides": [
+    { "files": ".yarnrc.yml", "options": { "singleQuote": false } }
+  ]
 }

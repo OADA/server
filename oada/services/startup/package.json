@@ -24,8 +24,8 @@
   "homepage": "https://github.com/oada/oada-srvc-startup#readme",
   "dependencies": {
     "@oada/lib-arangodb": "^0.0.2",
-    "debug": "^4.1.1",
-    "express": "^4.15.2",
+    "debug": "^4.3.2",
+    "express": "^4.17.1",
     "pino-debug": "^2.0.0"
   }
 }

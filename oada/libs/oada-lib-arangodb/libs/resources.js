@@ -5,8 +5,8 @@ const debug = require('debug');
 const info = debug('arangodb#resources:info');
 const trace = debug('arangodb#resources:trace');
 const _ = require('lodash');
-global.Promise = require('bluebird');
-const aql = require('arangojs').aqlQuery;
+const Bluebird = require('bluebird');
+const { aql } = require('arangojs');
 const pointer = require('json-pointer');
 const config = require('../config');
 const util = require('../util');
@@ -22,7 +22,7 @@ const edges = db.collection(config.get('arangodb:collections:edges:name'));
 const MAX_DEPTH = 100; // TODO: Is this good?
 
 async function lookupFromUrl(url, userId) {
-  var user = await users.findById(userId);
+  const user = await users.findById(userId);
   if (!user) throw 'No User Found for given userId';
   if (/^\/bookmarks/.test(url)) {
     url = url.replace(/^\/bookmarks/, '/' + user.bookmarks._id);
@@ -30,19 +30,18 @@ async function lookupFromUrl(url, userId) {
   if (/^\/shares/.test(url)) {
     url = url.replace(/^\/shares/, '/' + user.shares._id);
   }
-  return Promise.try(() => {
-    //    trace(userId);
-    let pieces = pointer.parse(url);
-    // resources/123 => graphNodes/resources:123
-    var startNode = graphNodes.name + '/' + pieces[0] + ':' + pieces[1];
-    let id = pieces.splice(0, 2);
-    // Create a filter for each segment of the url
-    const filters = pieces
-      .map((urlPiece, i) => {
-        return `FILTER p.edges[${i}].name == '${urlPiece}' || p.edges[${i}].name == null`;
-      })
-      .join(' ');
-    let query = `
+  //    trace(userId);
+  const pieces = pointer.parse(url);
+  // resources/123 => graphNodes/resources:123
+  const startNode = graphNodes.name + '/' + pieces[0] + ':' + pieces[1];
+  const id = pieces.splice(0, 2);
+  // Create a filter for each segment of the url
+  const filters = pieces
+    .map((urlPiece, i) => {
+      return `FILTER p.edges[${i}].name == '${urlPiece}' || p.edges[${i}].name == null`;
+    })
+    .join(' ');
+  const query = `
       WITH ${edges.name}, ${graphNodes.name}
       LET path = LAST(
         FOR v, e, p IN 0..${pieces.length}
@@ -65,132 +64,130 @@ async function lookupFromUrl(url, userId) {
       LET rev = DOCUMENT(LAST(path.vertices).resource_id)._oada_rev
       RETURN MERGE(path, {permissions, rev, type})
     `;
-    trace('Query', query);
-    return db
-      .query({ query })
-      .call('next')
-      .then((result) => {
-        let resource_id = pointer.compile(id.concat(pieces)).replace(/^\//, ''); // Get rid of leading slash from json pointer
+  trace('Query: %s', query);
+  return db
+    .query({ query, bindVars: {} })
+    .call('next')
+    .then((result) => {
+      let resource_id = pointer.compile(id.concat(pieces)).replace(/^\//, ''); // Get rid of leading slash from json pointer
 
-        let rev = result.rev;
-        let type = result.type;
-        let resourceExists = true;
+      let rev = result.rev;
+      let type = result.type;
+      let resourceExists = true;
 
-        let path_leftover = '';
-        let from = { resource_id: '', path_leftover: '' };
+      let path_leftover = '';
+      let from = { resource_id: '', path_leftover: '' };
 
-        if (!result) {
-          trace('1 return resource id', resource_id);
-          return {
-            resource_id,
-            path_leftover,
-            from,
-            permissions: {},
-            rev,
-            type,
-          };
-        }
-
-        // Walk up and find the graph and return furthest known permissions (and
-        // type)
-        let permissions = { owner: null, read: null, write: null, type: null };
-        result.permissions.reverse().some((p) => {
-          if (p) {
-            if (permissions.read === null) {
-              permissions.read = p.read;
-            }
-            if (permissions.write === null) {
-              permissions.write = p.write;
-            }
-            if (permissions.owner === null) {
-              permissions.owner = p.owner;
-            }
-            if (permissions.type === null) {
-              permissions.type = p.type;
-            }
-            if (
-              permissions.read !== null &&
-              permissions.write !== null &&
-              permissions.owner !== null &&
-              permissions.type !== null
-            ) {
-              return true;
-            }
-          }
-        });
-        type = permissions.type;
-
-        // Check for a traversal that did not finish (aka not found)
-        if (result.vertices[0] === null) {
-          trace('graph-lookup traversal did not finish');
-          trace('2 return resource id', resource_id);
-
-          return {
-            resource_id,
-            path_leftover,
-            from,
-            permissions,
-            rev,
-            type,
-            resourceExists: false,
-          };
-          // A dangling edge indicates uncreated resource; return graph lookup
-          // starting at this uncreated resource
-        } else if (!result.vertices[result.vertices.length - 1]) {
-          let lastEdge = result.edges[result.edges.length - 1]._to;
-          path_leftover = '';
-          resource_id =
-            'resources/' + lastEdge.split('graphNodes/resources:')[1];
-          trace('graph-lookup traversal uncreated resource', resource_id);
-          rev = 0;
-          from = result.vertices[result.vertices.length - 2];
-          let edge = result.edges[result.edges.length - 1];
-          from = {
-            resource_id: from ? from['resource_id'] : '',
-            path_leftover:
-              ((from && from['path']) || '') + (edge ? '/' + edge.name : ''),
-          };
-          resourceExists = false;
-        } else {
-          resource_id =
-            result.vertices[result.vertices.length - 1]['resource_id'];
-          trace('graph-lookup traversal found resource', resource_id);
-          from = result.vertices[result.vertices.length - 2];
-          let edge = result.edges[result.edges.length - 1];
-          // If the desired url has more pieces than the longest path, the
-          // pathLeftover is the extra pieces
-          if (result.vertices.length - 1 < pieces.length) {
-            let revVertices = _.reverse(_.cloneDeep(result.vertices));
-            let lastResource =
-              result.vertices.length -
-              1 -
-              _.findIndex(revVertices, 'is_resource');
-            // Slice a negative value to take the last n pieces of the array
-            path_leftover = pointer.compile(
-              pieces.slice(lastResource - pieces.length)
-            );
-          } else {
-            path_leftover =
-              result.vertices[result.vertices.length - 1].path || '';
-          }
-          from = {
-            resource_id: from ? from['resource_id'] : '',
-            path_leftover:
-              ((from && from['path']) || '') + (edge ? '/' + edge.name : ''),
-          };
-        }
-
+      if (!result) {
+        trace('1 return resource id', resource_id);
         return {
-          type,
-          rev,
           resource_id,
           path_leftover,
-          permissions,
           from,
-          resourceExists,
+          permissions: {},
+          rev,
+          type,
         };
+      }
+
+      // Walk up and find the graph and return furthest known permissions (and
+      // type)
+      let permissions = { owner: null, read: null, write: null, type: null };
+      result.permissions.reverse().some((p) => {
+        if (p) {
+          if (permissions.read === null) {
+            permissions.read = p.read;
+          }
+          if (permissions.write === null) {
+            permissions.write = p.write;
+          }
+          if (permissions.owner === null) {
+            permissions.owner = p.owner;
+          }
+          if (permissions.type === null) {
+            permissions.type = p.type;
+          }
+          if (
+            permissions.read !== null &&
+            permissions.write !== null &&
+            permissions.owner !== null &&
+            permissions.type !== null
+          ) {
+            return true;
+          }
+        }
       });
-  });
+      type = permissions.type;
+
+      // Check for a traversal that did not finish (aka not found)
+      if (result.vertices[0] === null) {
+        trace('graph-lookup traversal did not finish');
+        trace('2 return resource id', resource_id);
+
+        return {
+          resource_id,
+          path_leftover,
+          from,
+          permissions,
+          rev,
+          type,
+          resourceExists: false,
+        };
+        // A dangling edge indicates uncreated resource; return graph lookup
+        // starting at this uncreated resource
+      } else if (!result.vertices[result.vertices.length - 1]) {
+        let lastEdge = result.edges[result.edges.length - 1]._to;
+        path_leftover = '';
+        resource_id = 'resources/' + lastEdge.split('graphNodes/resources:')[1];
+        trace('graph-lookup traversal uncreated resource', resource_id);
+        rev = 0;
+        from = result.vertices[result.vertices.length - 2];
+        let edge = result.edges[result.edges.length - 1];
+        from = {
+          resource_id: from ? from['resource_id'] : '',
+          path_leftover:
+            ((from && from['path']) || '') + (edge ? '/' + edge.name : ''),
+        };
+        resourceExists = false;
+      } else {
+        resource_id =
+          result.vertices[result.vertices.length - 1]['resource_id'];
+        trace('graph-lookup traversal found resource', resource_id);
+        from = result.vertices[result.vertices.length - 2];
+        let edge = result.edges[result.edges.length - 1];
+        // If the desired url has more pieces than the longest path, the
+        // pathLeftover is the extra pieces
+        if (result.vertices.length - 1 < pieces.length) {
+          let revVertices = _.reverse(_.cloneDeep(result.vertices));
+          let lastResource =
+            result.vertices.length -
+            1 -
+            _.findIndex(revVertices, 'is_resource');
+          // Slice a negative value to take the last n pieces of the array
+          path_leftover = pointer.compile(
+            pieces.slice(lastResource - pieces.length)
+          );
+        } else {
+          path_leftover =
+            result.vertices[result.vertices.length - 1].path || '';
+        }
+        from = {
+          resource_id: from ? from['resource_id'] : '',
+          path_leftover:
+            ((from && from['path']) || '') + (edge ? '/' + edge.name : ''),
+        };
+      }
+
+      return {
+        type,
+        rev,
+        resource_id,
+        path_leftover,
+        permissions,
+        from,
+        resourceExists,
+      };
+    });
 }
 
 function getResource(id, path) {
@@ -211,8 +208,8 @@ function getResource(id, path) {
 
   const returnPath = parts.reduce((p, _, i) => p.concat(`[@v${i}]`), '');
 
-  return db
-    .query({
+  return Bluebird.resolve(
+    db.query({
       query: `
       WITH ${resources.name}
       FOR r IN @@collection
@@ -220,6 +217,7 @@ function getResource(id, path) {
         RETURN r${returnPath}`,
       bindVars,
     })
+  )
     .then((result) => result.next())
     .then(util.sanitizeResult)
     .catch(
@@ -232,8 +230,8 @@ function getResource(id, path) {
 }
 
 function getResourceOwnerIdRev(id) {
-  return db
-    .query({
+  return Bluebird.resolve(
+    db.query({
       query: `
       WITH ${resources.name}
       FOR r IN @@collection
@@ -249,6 +247,7 @@ function getResourceOwnerIdRev(id) {
         '@collection': resources.name,
       }, // bind id to @id
     })
+  )
     .then((result) => result.next())
     .then((obj) => {
       trace('getResourceOwnerIdRev(' + id + '): result = ', obj);
@@ -264,8 +263,8 @@ function getResourceOwnerIdRev(id) {
 }
 
 function getParents(id) {
-  return db
-    .query(
+  return Bluebird.resolve(
+    db.query(
       aql`
     WITH ${edges}, ${graphNodes}, ${resources}
     FOR v, e IN 0..1
@@ -279,6 +278,7 @@ function getParents(id) {
         contentType: res._type
       }`
     )
+  )
     .call('all')
     .catch(
       {
@@ -460,7 +460,7 @@ function putResource(id, obj, checkLinks = true) {
 function forLinks(res, cb, path) {
   path = path || [];
 
-  return Promise.map(Object.keys(res), (key) => {
+  return Bluebird.map(Object.keys(res), (key) => {
     if (res[key] && res[key].hasOwnProperty('_id') && key !== '_meta') {
       // If it has _id and is not _meta, treat as a link
       return cb(res[key], path.concat(key));
@@ -559,6 +559,7 @@ async function deletePartialResource(id, path, doc = {}) {
 
         RETURN {has, rev: res._oada_rev}
       `,
+      bindVars: {},
     })
     .call('next');
   if (hasObj.has) {

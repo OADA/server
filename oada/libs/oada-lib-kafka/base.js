@@ -107,7 +107,7 @@ class Base extends EventEmitter {
                 info(`${this.group}'s producer ready`);
                 // Health loop to keep the broker alive.
                 setInterval(() => {
-                    var value = new Buffer(produceTopic + 'is alive.');
+                    var value = Buffer.from(produceTopic + 'is alive.');
                     //TODO: other health messages here
                     this.producer.produce(
                         'health',

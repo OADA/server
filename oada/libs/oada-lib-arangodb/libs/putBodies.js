@@ -1,5 +1,7 @@
 'use strict';
 
+const Bluebird = require('bluebird');
+
 const config = require('../config');
 const db = require('../db');
 
@@ -10,15 +12,15 @@ const collection = db.collection(
 // Give string of JSON rather than object
 function savePutBody(body) {
   // the _id comes back in the response to save
-  return collection.save(`{"body":${body}}`);
+  return Bluebird.resolve(collection.save(`{"body":${body}}`));
 }
 
 function getPutBody(id) {
-  return collection.document(id).get('body');
+  return Bluebird.resolve(collection.document(id)).get('body');
 }
 
 function removePutBody(id) {
-  return collection.remove(id);
+  return Bluebird.resolve(collection.remove(id));
 }
 
 module.exports = {

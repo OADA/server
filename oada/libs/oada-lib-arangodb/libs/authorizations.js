@@ -3,7 +3,7 @@
 const config = require('../config');
 const db = require('../db');
 const _ = require('lodash');
-const aql = require('arangojs').aql;
+const { aql } = require('arangojs');
 const util = require('../util');
 const debug = require('debug');
 const trace = debug('@oada/lib-arangodb#authorizations:trace');

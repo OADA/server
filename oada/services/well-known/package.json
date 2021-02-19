@@ -24,14 +24,14 @@
   "dependencies": {
     "@oada/lib-config": "^0.0.1",
     "@oada/well-known-json": "^1.0.1",
-    "bluebird": "^3.5.0",
-    "cors": "^2.8.3",
-    "debug": "^4.1.1",
-    "express": "^4.15.2",
+    "bluebird": "^3.7.2",
+    "cors": "^2.8.5",
+    "debug": "^4.3.2",
+    "express": "^4.17.1",
     "express-promise": "^0.4.0",
-    "lodash": "^4.17.4",
+    "lodash": "^4.17.20",
     "oada-error": "^1.1.1",
     "pino-debug": "^2.0.0",
-    "request": "^2.81.0"
+    "request": "^2.88.2"
   }
 }

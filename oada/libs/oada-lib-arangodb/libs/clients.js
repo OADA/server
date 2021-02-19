@@ -2,7 +2,7 @@
 
 const config = require('../config');
 const db = require('../db');
-const aql = require('arangojs').aql;
+const { aql } = require('arangojs');
 const util = require('../util');
 
 function findById(id) {

@@ -21,12 +21,12 @@
     "@oada/lib-arangodb": "^0.0.2",
     "@oada/lib-config": "^0.0.1",
     "@oada/lib-kafka": "^1.0.0",
-    "bluebird": "^3.5.0",
-    "debug": "^4.1.1",
-    "json-pointer": "^0.6.0",
-    "lodash": "^4.17.15",
+    "bluebird": "^3.7.2",
+    "debug": "^4.3.2",
+    "json-pointer": "^0.6.1",
+    "lodash": "^4.17.20",
     "object-assign-deep": "^0.4.0",
     "pino-debug": "^2.0.0",
-    "timed-cache": "^1.1.0"
+    "timed-cache": "^1.1.4"
   }
 }

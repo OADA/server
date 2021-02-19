@@ -3,7 +3,7 @@
 const db = require('../db');
 const debug = require('debug');
 const trace = debug('arangodb#remoteResources:trace');
-const aql = require('arangojs').aqlQuery;
+const { aql } = require('arangojs');
 const config = require('../config');
 
 const remoteResources = db.collection(

@@ -4,9 +4,9 @@ const debug = require('debug');
 const info = debug('arangodb#resources:info');
 const config = require('../config');
 const db = require('../db.js');
-const aql = require('arangojs').aql;
+const { aql } = require('arangojs');
 const bcrypt = require('bcryptjs');
-var Promise = require('bluebird');
+const Bluebird = require('bluebird');
 const util = require('../util');
 const users = db.collection(config.get('arangodb:collections:users:name'));
 const flatten = require('flat');
@@ -31,24 +31,24 @@ const flatten = require('flat');
 */
 
 function findById(id) {
-  return users
-    .document(id)
+  return Bluebird.resolve(users.document(id))
     .then(util.sanitizeResult)
     .catch({ code: 404 }, () => null);
 }
 
 function exists(id) {
-  return users.documentExists(id);
+  return Bluebird.resolve(users.documentExists(id));
 }
 
 function findByUsername(username) {
-  return db
-    .query(
+  return Bluebird.resolve(
+    db.query(
       aql`
       FOR u IN ${users}
       FILTER u.username == ${username}
       RETURN u`
     )
+  )
     .call('next')
     .then((user) => {
       if (!user) {
@@ -60,14 +60,15 @@ function findByUsername(username) {
 }
 
 function findByOIDCUsername(oidcusername, oidcdomain) {
-  return db
-    .query(
+  return Bluebird.resolve(
+    db.query(
       aql`
     FOR u IN ${users}
     FILTER u.oidc.username == ${oidcusername}
     FILTER u.oidc.iss == ${oidcdomain}
     RETURN u`
     )
+  )
     .call('next')
     .then((user) => {
       if (!user) {
@@ -81,14 +82,15 @@ function findByOIDCUsername(oidcusername, oidcdomain) {
 // expects idtoken to be at least
 // { sub: "fkj2o", iss: "https://localhost/example" }
 function findByOIDCToken(idtoken) {
-  return db
-    .query(
+  return Bluebird.resolve(
+    db.query(
       aql`
     FOR u IN ${users}
     FILTER u.oidc.sub == ${idtoken.sub}
     FILTER u.oidc.iss == ${idtoken.iss}
     RETURN u`
     )
+  )
     .call('next')
     .then((user) => {
       if (!user) {
@@ -109,7 +111,7 @@ function findByUsernamePassword(username, password) {
 }
 
 function create(u) {
-  return Promise.try(() => {
+  return Bluebird.try(() => {
     info('create user was called with data', u);
     if (u.password) u.password = hashPw(u.password);
     // Throws if username already exists
@@ -119,12 +121,14 @@ function create(u) {
 
 // Use this with care because it will completely remove that user document.
 function remove(u) {
-  return users.remove(u);
+  return Bluebird.resolve(users.remove(u));
 }
 
 function update(u) {
-  if (u.password) u.password = hashPw(u.password);
-  return users.update(u._id, u, { returnNew: true });
+  return Bluebird.try(() => {
+    if (u.password) u.password = hashPw(u.password);
+    return users.update(u._id, u, { returnNew: true });
+  });
 }
 
 function like(u) {

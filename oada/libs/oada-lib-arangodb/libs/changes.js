@@ -3,11 +3,13 @@
 const db = require('../db');
 const debug = require('debug');
 const trace = debug('arangodb#resources:trace');
-var Promise = require('bluebird');
-const aql = require('arangojs').aqlQuery;
+const { aql } = require('arangojs');
 const pointer = require('json-pointer');
 const config = require('../config');
 const changes = db.collection(config.get('arangodb:collections:changes:name'));
+const changeEdges = db.collection(
+  config.get('arangodb:collections:changeEdges:name')
+);
 
 const MAX_DEPTH = 100;
 
@@ -130,13 +132,8 @@ function getChangeArray(resourceId, changeRev) {
       RETURN p`
     )
     .then(async (cursor) => {
-      let changeDoc = []; // array of changes
       // iterate over the graph
-      await cursor.every((doc) => {
-        changeDoc.push(toChangeObj(doc)); // convert to change object
-        return true;
-      });
-      return changeDoc;
+      return cursor.map((doc) => toChangeObj(doc)); // convert to change object
     });
 }
 
