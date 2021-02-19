@@ -6,6 +6,7 @@
 const config = require('./config');
 const debug = require('debug');
 const trace = debug('arango:init:trace');
+const error = debug('arango:init:error');
 const info = debug('arango:init:info');
 const _ = require('lodash');
 const users = require('./libs/users.js');
@@ -27,9 +28,8 @@ module.exports = {
   run: () => {
     const ensureDefaults = config.get('arangodb:ensureDefaults');
     trace(
-      'ensureDefaults = ',
-      ensureDefaults,
-      "==> false means it will delete default doc._id's from all collections if they exist, " +
+      `ensureDefaults = ${ensureDefaults}` +
+        "==> false means it will delete default doc._id's from all collections if they exist, " +
         'and true means it will add them if they do not exist'
     );
 
@@ -47,8 +47,8 @@ module.exports = {
               config.get('isTest')
             ) {
               trace(
-                'isProduction is false and process.env.RESETDATABASE is "yes"',
-                'dropping database and recreating'
+                'isProduction is false and process.env.RESETDATABASE is "yes"' +
+                  'dropping database and recreating'
               );
               db.useDatabase('_system');
               return db
@@ -57,8 +57,9 @@ module.exports = {
             }
             info(
               'isProduction is ' + config.get('isProduction'),
-              'and process.env.RESETDATABASE is ' + process.env.RESETDATABASE,
-              'not dropping database.'
+              'and process.env.RESETDATABASE is ' +
+                process.env.RESETDATABASE +
+                'not dropping database.'
             );
             // otherwise, not test so don't drop database
             return trace('database ' + dbname + ' exists');
@@ -83,8 +84,7 @@ module.exports = {
             }
             if (c.edgeCollection) {
               return db
-                .edgeCollection(c.name)
-                .create()
+                .createEdgeCollection(c.name)
                 .then(() =>
                   trace('Edge collection ' + c.name + ' has been created')
                 );
@@ -92,12 +92,9 @@ module.exports = {
               if (!c.createOptions) {
                 c.createOptions = {};
               }
-              return db
-                .collection(c.name)
-                .create(c.createOptions)
-                .then(() => {
-                  trace('Document collection ' + c.name + ' has been created');
-                });
+              return db.createCollection(c.name, c.createOptions).then(() => {
+                trace('Document collection ' + c.name + ' has been created');
+              });
             }
           });
         })
@@ -126,20 +123,32 @@ module.exports = {
                     return;
                   }
                   // Otherwise, create the index
-                  if (c.edgeCollection) {
-                    return db
-                      .edgeCollection(c.name)
-                      .createHashIndex(indexname, { unique, sparse })
-                      .tap(() =>
-                        trace('Created ' + indexname + ' index on ' + c.name)
-                      );
+                  trace('Creating ' + indexname + ' index on ' + c.name);
+                  const fields = Array.isArray(indexname)
+                    ? indexname
+                    : [indexname];
+                  if (c.collection) {
+                    return Bluebird.resolve(
+                      db.collection(c.name).ensureIndex({
+                        type: 'hash',
+                        fields,
+                        unique,
+                        sparse,
+                      })
+                    ).tap(() =>
+                      trace('Created ' + indexname + ' index on ' + c.name)
+                    );
                   } else {
-                    return db
-                      .collection(c.name)
-                      .createHashIndex(indexname, { unique, sparse })
-                      .tap(() =>
-                        trace('Created ' + indexname + ' index on ' + c.name)
-                      );
+                    return Bluebird.resolve(
+                      db.collection(c.name).ensureIndex({
+                        type: 'hash',
+                        fields,
+                        unique,
+                        sparse,
+                      })
+                    ).tap(() =>
+                      trace('Created ' + indexname + ' index on ' + c.name)
+                    );
                   }
                 });
               })
@@ -235,21 +244,20 @@ module.exports = {
                     doc._key +
                     ' does not exist in collection ' +
                     colname +
-                    ', and ensureDefaults is falsey, ' +
                     'so there is nothing else to do for this one.'
                 );
                 return;
               });
           });
         })
-        .catch((err) => {
+        .tapCatch((err) => {
           if (err && err.response) {
-            info(
-              'ERROR: something went wrong.  err.body = ',
+            error(
+              'ERROR: something went wrong. err.body = %O',
               err.response.body
             );
           } else {
-            info('ERROR: something went wrong.  err = ', err);
+            error('ERROR: something went wrong. err.body = %O', err);
           }
         })
     );
