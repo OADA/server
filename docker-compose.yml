@@ -217,7 +217,7 @@ services:
       - arango_net
     volumes:
       - arangodb_data:/var/lib/arangodb3
-      - arangodb_data:/var/lib/arangodb3-apps
+      - arangodb_apps_data:/var/lib/arangodb3-apps
     expose: # expose only internally, not on host
       - '8529'
     environment:
