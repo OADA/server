@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 const argv = require('minimist')(process.argv.slice(2));
-const _ = require('lodash');
+const cloneDeep = require('clone-deep');
 const chalk = require('chalk');
 
 const { authorizations } = require('@oada/lib-arangodb');
@@ -38,7 +38,7 @@ const info = debug('extendToken:info');
   const auth = await authorizations.findByToken(token);
   trace('Found auth, it is ', auth);
 
-  const update = _.cloneDeep(auth);
+  const update = cloneDeep(auth);
   update.expiresIn = expiresIn;
   if (createTime) {
     update.createTime = createTime;

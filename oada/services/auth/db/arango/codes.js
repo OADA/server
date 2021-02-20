@@ -15,9 +15,9 @@
 
 'use strict';
 
-var _ = require('lodash');
-var trace = require('debug')('arango:codes:trace');
-var oadaLib = require('@oada/lib-arangodb');
+const cloneDeep = require('clone-deep');
+const trace = require('debug')('arango:codes:trace');
+const oadaLib = require('@oada/lib-arangodb');
 
 function findByCode(code, cb) {
   trace('findByCode: searching for code ', code);
@@ -35,7 +35,7 @@ function findByCode(code, cb) {
 }
 
 function save(in_code, cb) {
-  var code = _.cloneDeep(in_code);
+  var code = cloneDeep(in_code);
   Object.assign(code, { _id: code.id, id: undefined });
   // Link user
   code.user = { _id: null };

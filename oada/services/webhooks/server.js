@@ -19,8 +19,8 @@ const debug = require('debug');
 const trace = debug('webhooks:trace');
 const error = debug('webhooks:error');
 
-var Promise = require('bluebird');
-const _ = require('lodash');
+const Bluebird = require('bluebird');
+const omit = require('object.omit');
 const Responder = require('@oada/lib-kafka').Responder;
 const oadaLib = require('@oada/lib-arangodb');
 const config = require('./config');
@@ -54,7 +54,7 @@ responder.on('request', function handleReq(req) {
     .getResource(req.resource_id, '/_meta')
     .then((meta) => {
       if (meta && meta._syncs) {
-        return Promise.map(Object.keys(meta._syncs), (sync) => {
+        return Bluebird.map(Object.keys(meta._syncs), (sync) => {
           var url = meta._syncs[sync].url;
           if (process.env.NODE_ENV !== 'production') {
             /*
@@ -69,11 +69,15 @@ responder.on('request', function handleReq(req) {
             if (change.delete) {
               //Handle delete _changes
               var deletePath = [];
-              var toDelete = _.omit(change.delete, ['_meta', '_rev']);
-              if (_.keys(toDelete).length == 0) return;
+              var toDelete = omit(change.delete, ['_meta', '_rev']);
+              if (Object.keys(toDelete).length == 0) return;
               trace('Sending oada-put to: ' + url);
-              while (_.isObject(toDelete) && _.keys(toDelete).length > 0) {
-                let key = _.keys(toDelete)[0];
+              while (
+                toDelete &&
+                typeof toDelete === 'object' &&
+                Object.keys(toDelete).length > 0
+              ) {
+                let key = Object.keys(toDelete)[0];
                 deletePath.push(key);
                 toDelete = toDelete[key];
               }
@@ -89,7 +93,7 @@ responder.on('request', function handleReq(req) {
               //Handle merge _changes
               //If change is only to _id, _rev, _meta, or _type, don't do put
               if (
-                _.keys(_.omit(body, ['_id', '_rev', '_meta', '_type']))
+                Object.keys(omit(body, ['_id', '_rev', '_meta', '_type']))
                   .length == 0
               )
                 return;

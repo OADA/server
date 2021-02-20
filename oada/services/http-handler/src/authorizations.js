@@ -3,7 +3,7 @@
 const Promise = require('bluebird');
 const express = require('express');
 const { v4: uuid } = require('uuid');
-const _ = require('lodash');
+const cloneDeep = require('clone-deep');
 
 const debug = require('debug');
 const trace = debug('http-handler#authorizations:trace');
@@ -117,7 +117,7 @@ router.post('/', function (req, res, next) {
   })
     .then((result) => {
       if (!result) return null;
-      const ret = _.cloneDeep(result);
+      const ret = cloneDeep(result);
       if (ret._rev) delete ret._rev;
       if (ret.user && ret.user._id) ret.user = { _id: ret.user._id };
       res.set('content-location', `/${ret._id}`);

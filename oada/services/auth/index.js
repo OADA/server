@@ -22,7 +22,6 @@ process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 global.isLibrary = !(require.main === module);
 
 const util = require('util');
-const _ = require('lodash');
 const fs = require('fs');
 const { trace, info, error } = require('debug-logger')('auth#index');
 const config = require('./config');
@@ -32,7 +31,7 @@ const pfx = config.get('auth:endpointsPrefix');
 if (typeof pfx === 'string') {
   trace('Adding supplied prefix ' + pfx + ' to all endpoints');
   const endpoints = config.get('auth:endpoints');
-  _.mapValues(endpoints, (v, k) => {
+  Object.entries(endpoints).map((k, v) => {
     config.set('auth:endpoints:' + k, pfx + v);
   });
 }
@@ -59,27 +58,17 @@ const oadaidclient = require('@oada/oada-id-client').middleware;
 // Load all the domain configs at startup
 const ddir = config.get('domainsDir');
 trace('using domainsDir = ', ddir);
-const domainConfigs = _.keyBy(
-  _.reduce(
-    fs.readdirSync(ddir),
-    (acc, dirname) => {
-      if (dirname.startsWith('.') == false) {
-        try {
-          acc[dirname] = require(ddir + '/' + dirname + '/config');
-        } catch (e) {
-          error(
-            'ERROR: could not read config for domain ',
-            dirname,
-            ', skipping'
-          );
-        }
-      }
-      return acc;
-    },
-    {}
-  ),
-  'domain'
-);
+const domainConfigs = fs.readdirSync(ddir).reduce((acc, dirname) => {
+  if (dirname.startsWith('.') == false) {
+    try {
+      const config = require(ddir + '/' + dirname + '/config');
+      acc[config.domain] = config;
+    } catch (e) {
+      error('ERROR: could not read config for domain ', dirname, ', skipping');
+    }
+  }
+  return acc;
+}, {});
 
 module.exports = function (conf) {
   // TODO: This require config is very hacky. Reconsider.
@@ -414,7 +403,7 @@ module.exports = function (conf) {
     else app.use(express.static(path.join(__dirname, 'public')));
 
     // Statically serve all the domains-enabled/*/auth-www folders:
-    _.each(domainConfigs, (_cfg, domain) => {
+    Object.keys(domainConfigs).forEach((domain) => {
       const ondisk = config.get('domainsDir') + '/' + domain + '/auth-www';
       const webpath = config.get('auth:endpointsPrefix') + '/domains/' + domain;
       trace(

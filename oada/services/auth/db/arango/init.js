@@ -5,7 +5,6 @@
 
 const debug = require('debug')('arango/init');
 const Database = require('arangojs').Database;
-const _ = require('lodash');
 const Promise = (global.Promise = require('bluebird'));
 const bcrypt = require('bcryptjs');
 
@@ -18,9 +17,9 @@ module.exports = (config) => {
   const db = new Database(config.get('arango:connectionString'));
   const dbname = config.get('arango:database');
   const cols = config.get('arango:collections');
-  const colnames = _.values(cols);
+  const colnames = Object.values(cols);
   // Get users, hash passwords in case we need to save:
-  const defaultusers = _.map(config.get('arango:defaultusers'), (u) => {
+  const defaultusers = config.get('arango:defaultusers').map((u) => {
     u.password = bcrypt.hashSync(u.password, config.get('server:passwordSalt'));
     return u;
   });
@@ -37,7 +36,7 @@ module.exports = (config) => {
     .get()
     .then(() => db.listDatabases())
     .then((dbs) => {
-      dbs = _.filter(dbs, (d) => d === dbname);
+      dbs = dbs.filter((d) => d === dbname);
       if (dbs.length > 0) return debug('database ' + dbname + ' exists');
       debug('database ' + dbname + ' does not exist.  Creating...');
       return db
@@ -53,7 +52,7 @@ module.exports = (config) => {
     })
     .then((dbcols) => {
       return Promise.each(colnames, (c) => {
-        if (_.find(dbcols, (d) => d.name === c)) {
+        if (dbcols.find((d) => d.name === c)) {
           return debug('Collection ' + c + ' exists');
         }
         return db
@@ -70,9 +69,8 @@ module.exports = (config) => {
     .map((dbindexes, i) => {
       // dbindexes looks like [ { fields: [ 'token' ], sparse: true, unique: true },... ]
       const index = indexes[i]; // { collection: 'tokens', index: 'index' }
-      const hasindex = _.find(
-        dbindexes,
-        (i) => _.includes(i.fields, index.index) && i.sparse && i.unique
+      const hasindex = dbindexes.find(
+        (i) => i.fields.includes(index.index) && i.sparse && i.unique
       );
       if (hasindex)
         return debug(

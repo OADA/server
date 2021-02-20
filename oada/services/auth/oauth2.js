@@ -14,32 +14,31 @@
  */
 'use strict';
 
-var URI = require('urijs');
-var login = require('connect-ensure-login');
-var oauth2orize = require('oauth2orize');
-var AuthorizationError = require('oauth2orize').AuthorizationError;
-var passport = require('passport');
-var debug = require('debug')('oauth2:trace');
-var _ = require('lodash');
-var fs = require('fs');
+const URI = require('urijs');
+const login = require('connect-ensure-login');
+const oauth2orize = require('oauth2orize');
+const { AuthorizationError } = require('oauth2orize');
+const passport = require('passport');
+const debug = require('debug')('oauth2:trace');
+const fs = require('fs');
 
-var oadaLookup = require('@oada/oada-lookup');
+const oadaLookup = require('@oada/oada-lookup');
 
-var utils = require('./utils');
-var clients = require('./db/models/client');
+const utils = require('./utils');
+const clients = require('./db/models/client');
 
 var server;
 module.exports = function (_server, config) {
   //-----------------------------------------------------------------------
   // Load all the domain configs at startup
   const ddir = config.get('domainsDir');
-  const domainConfigs = _.keyBy(
-    _.map(fs.readdirSync(ddir), (dirname) => {
-      if (dirname.startsWith('.') == false)
-        return require(ddir + '/' + dirname + '/config');
-    }),
-    'domain'
-  );
+  const domainConfigs = fs.readdirSync(ddir).reduce((acc, dirname) => {
+    if (dirname.startsWith('.') == false) {
+      const config = require(ddir + '/' + dirname + '/config');
+      acc[config.domain] = config;
+    }
+    return acc;
+  }, {});
 
   server = _server;
 
@@ -59,8 +58,8 @@ module.exports = function (_server, config) {
     if (scopes.length === 1 && scopes[0] === 'openid') return true;
     if (
       scopes.length === 2 &&
-      _.includes(scopes, 'openid') &&
-      _.includes(scopes, 'profile')
+      scopes.includes('openid') &&
+      scopes.includes('profile')
     )
       return true;
     return false;

@@ -21,7 +21,7 @@ const warn = debug('users:warn');
 const error = debug('users:error');
 var Promise = require('bluebird');
 const ksuid = require('ksuid');
-const _ = require('lodash');
+const cloneDeep = require('clone-deep');
 
 const { ResponderRequester } = require('@oada/lib-kafka');
 const { users } = require('@oada/lib-arangodb');
@@ -48,7 +48,7 @@ module.exports = function stopResp() {
 };
 
 function createNewUser(req) {
-  const u = _.cloneDeep(req.user);
+  const u = cloneDeep(req.user);
   u._id = 'users/' + req.userid;
   u._key = req.userid;
   return users
@@ -107,9 +107,9 @@ responder.on('request', async function handleReq(req) {
     );
     // While this could fit in permissions_handler, since users are not really resources (i.e. no graph),
     // we'll add a check here that the user has oada.admin.user:write or oada.admin.user:all scope
-    const authorization = _.cloneDeep(req.authorization) || {};
-    const tokenscope = _.isArray(authorization.scope)
-      ? _.join(authorization.scope, ' ')
+    const authorization = cloneDeep(req.authorization) || {};
+    const tokenscope = Array.isArray(authorization.scope)
+      ? authorization.scope.join(' ')
       : authorization.scope || ''; // force to space-separated string
     if (
       !tokenscope.match(/oada.admin.user:write/) &&
@@ -162,7 +162,7 @@ responder.on('request', async function handleReq(req) {
         'We did not create a new user, so we are now updating user id ',
         cur_user._id
       );
-      const u = _.cloneDeep(req.user); // Get the "update" merge body
+      const u = cloneDeep(req.user); // Get the "update" merge body
       u._id = cur_user._id; // Add the correct _id (overwrite any incorrect one)
       cur_user = await users.update(u);
     }

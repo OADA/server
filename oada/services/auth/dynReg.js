@@ -14,19 +14,18 @@
  */
 'use strict';
 
-const _ = require('lodash');
-var oadacerts = require('@oada/oada-certs');
-var Promise = require('bluebird');
-var clients = Promise.promisifyAll(require('./db/models/client'));
-var config = require('./config');
-var debug = require('debug');
+const oadacerts = require('@oada/oada-certs');
+const Bluebird = require('bluebird');
+const clients = Bluebird.promisifyAll(require('./db/models/client'));
+const config = require('./config');
+const debug = require('debug');
 
 const error = debug('oada-ref-auth#dynReg:error');
 const info = debug('oada-ref-auth#dynReg:info');
 const trace = debug('oada-ref-auth#dynReg:trace');
 
 function dynReg(req, res) {
-  return Promise.try(function () {
+  return Bluebird.try(function () {
     if (!req.body || !req.body.software_statement) {
       info(
         'request body does not have software_statement key.  Did you remember content-type=application/json?  Body = ',
@@ -82,12 +81,12 @@ function dynReg(req, res) {
         // If scopes is listed in the body, check them to make sure they are in the software_statement, then
         // replace the signed ones with the subset given in the body
         if (req.body.scopes && typeof scopes === 'string') {
-          const possiblescopes = _.split(clientcert.scopes || '', ' ');
-          const subsetscopes = _.split(req.body.scopes);
-          const finalscopes = _.filter(subsetscopes, (s) =>
-            _.find(possiblescopes, s)
+          const possiblescopes = (clientcert.scopes || '').split(' ');
+          const subsetscopes = req.body.scopes.split();
+          const finalscopes = subsetscopes.filter((s) =>
+            possiblescopes.find(s)
           );
-          clientcert.scopes = _.join(finalscopes, ' ');
+          clientcert.scopes = finalscopes.join(' ');
         }
 
         //------------------------------------------

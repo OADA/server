@@ -2,7 +2,7 @@
 
 const config = require('../config');
 const db = require('../db');
-const _ = require('lodash');
+const cloneDeep = require('clone-deep');
 const { aql } = require('arangojs');
 const util = require('../util');
 const debug = require('debug');
@@ -69,7 +69,7 @@ function findByUser(user) {
 }
 
 function save(token) {
-  const t = _.cloneDeep(token);
+  const t = cloneDeep(token);
   if (t.user) t.user = { _id: t.user._id }; // make sure nothing but id is in user info
   // Have to get rid of illegal document handle _id
   if (t._id) {

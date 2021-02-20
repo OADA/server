@@ -9,7 +9,7 @@ const info = debug('http-handler:info');
 const warn = debug('http-handler:warn');
 const error = debug('http-handler:error');
 const ksuid = require('ksuid');
-const _ = require('lodash');
+const cloneDeep = require('clone-deep');
 const { OADAError, middleware } = require('oada-error');
 
 const config = require('./config');
@@ -22,7 +22,7 @@ const { users } = require('@oada/lib-arangodb');
 
 function sanitizeDbResult(user) {
   if (!user) return null;
-  const u = _.cloneDeep(user);
+  const u = cloneDeep(user);
   if (u._rev) delete u._rev;
   if (u.password) delete u.password;
   return u;
@@ -101,8 +101,7 @@ router.get('/username-index/:uname', function (req, res) {
     'username-index: Checking token scope, req.authorization.scope = ',
     req.authorization ? req.authorization.scope : null
   );
-  const havetokenscope = _.find(
-    req.authorization.scope,
+  const havetokenscope = req.authorization.scope.find(
     (s) => s === 'oada.admin.user:read' || s === 'oada.admin.user:all'
   );
   if (!havetokenscope) {
@@ -118,9 +117,8 @@ router.get('/username-index/:uname', function (req, res) {
   // Check user's scope
   trace('username-index: Checking user scope, req.user = ', req.user);
   const haveuserscope =
-    _.isArray(req.user.scope) &&
-    _.find(
-      req.user.scope,
+    Array.isArray(req.user.scope) &&
+    req.user.scope.find(
       (s) => s === 'oada.admin.user:read' || s === 'oada.admin.user:all'
     );
   if (!haveuserscope) {
@@ -179,7 +177,7 @@ router.get('/:id', function (req, res) {
   return users.findById(req.params.id).then((response) => {
     // Copy and get rid of password field
     // eslint-disable-next-line no-unused-vars
-    let user = _.cloneDeep(response);
+    let user = cloneDeep(response);
     if (!user) {
       return res.status(404).end();
     }

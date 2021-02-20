@@ -8,7 +8,7 @@ const debug = require('debug');
 const trace = debug('arango:init:trace');
 const error = debug('arango:init:error');
 const info = debug('arango:init:info');
-const _ = require('lodash');
+const equal = require('deep-equal');
 const users = require('./libs/users.js');
 const Bluebird = require('bluebird');
 
@@ -22,7 +22,7 @@ db.useDatabase('_system');
 // First setup some shorter variable names:
 const dbname = config.get('arangodb:database');
 const cols = config.get('arangodb:collections');
-const colsarr = _.values(cols);
+const colsarr = Object.values(cols);
 
 module.exports = {
   run: () => {
@@ -39,7 +39,7 @@ module.exports = {
     return (
       Bluebird.resolve(db.listDatabases())
         .then((dbs) => {
-          dbs = _.filter(dbs, (d) => d === dbname);
+          dbs = dbs.filter((d) => d === dbname);
           if (dbs.length > 0) {
             if (
               (!config.get('isProduction') &&
@@ -79,7 +79,7 @@ module.exports = {
         .then((dbcols) => {
           trace('Found collections, looking for the ones we need');
           return Bluebird.each(colsarr, (c) => {
-            if (_.find(dbcols, (d) => d.name === c.name)) {
+            if (dbcols.find((d) => d.name === c.name)) {
               return trace('Collection ' + c.name + ' exists');
             }
             if (c.edgeCollection) {
@@ -112,11 +112,7 @@ module.exports = {
                   const indexname = typeof ci === 'string' ? ci : ci.name;
                   const unique = typeof ci === 'string' ? true : ci.unique;
                   const sparse = typeof ci === 'string' ? true : ci.sparse;
-                  if (
-                    _.find(dbindexes, (dbi) =>
-                      _.isEqual(dbi.fields, [indexname])
-                    )
-                  ) {
+                  if (dbindexes.find((dbi) => equal(dbi.fields, [indexname]))) {
                     trace(
                       'Index ' + indexname + ' exists on collection ' + c.name
                     );
@@ -156,7 +152,7 @@ module.exports = {
           //----------------------------------------------------------------------
           // Finally, import default data if they want some:
         )
-        .then(() => _.keys(config.get('arangodb:collections')))
+        .then(() => Object.keys(config.get('arangodb:collections')))
         .map((colname) => {
           const colinfo = config.get('arangodb:collections')[colname];
           if (typeof colinfo.defaults !== 'string') {

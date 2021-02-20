@@ -6,7 +6,6 @@ const axios = require('axios');
 const express = require('express');
 const bodyParser = require('body-parser');
 const pointer = require('json-pointer');
-const _ = require('lodash');
 const typeis = require('type-is');
 const { pipeline } = require('stream');
 const pipelineAsync = require('bluebird').promisify(pipeline);
@@ -57,7 +56,7 @@ router.use(function graphHandler(req, res, next) {
       res.set('Content-Location', req.baseUrl + req.url);
       // TODO: Just use express parameters rather than graph thing?
       req.oadaGraph = resp;
-      req.resourceExists = _.clone(resp.resourceExists);
+      req.resourceExists = Object.assign({}, resp.resourceExists);
     })
     .asCallback(next);
 });

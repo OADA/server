@@ -23,7 +23,6 @@ const trace = debug('permissions-handler:trace');
 
 const { Responder } = require('@oada/lib-kafka');
 const config = require('./config');
-const _ = require('lodash');
 
 //---------------------------------------------------------
 // Kafka intializations:
@@ -40,15 +39,16 @@ module.exports = function stopResp() {
 const scopeTypes = require('./scopes/builtin');
 trace('Parsed builtin scopes, they are: ', scopeTypes);
 // Augment scopeTypes by merging in anything in /scopes/additional-scopes
-const additionalScopesFiles = _.filter(
-  fs.readdirSync('./scopes/additional-scopes'),
-  (f) => !f.match(/^\./) // remove hidden files
-);
-_.each(additionalScopesFiles, (af) => {
+const additionalScopesFiles = fs
+  .readdirSync('./scopes/additional-scopes')
+  .filter(
+    (f) => !f.match(/^\./) // remove hidden files
+  );
+additionalScopesFiles.forEach((af) => {
   try {
     trace('Trying to add additional scope ' + af);
     const newscope = require('./scopes/additional-scopes/' + af);
-    _.each(_.keys(newscope), (k) => {
+    Object.keys(newscope).forEach((k) => {
       trace('Setting scopeTypes[' + k + '] to new scope ', newscope[k]);
       scopeTypes[k] = newscope[k]; // overwrite entire scope, or create new if doesn't exist
     });

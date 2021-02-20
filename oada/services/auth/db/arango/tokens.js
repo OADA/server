@@ -15,9 +15,9 @@
 
 'use strict';
 
-var _ = require('lodash');
-var trace = require('debug')('arango:token:trace');
-var oadaLib = require('@oada/lib-arangodb');
+const cloneDeep = require('clone-deep');
+const trace = require('debug')('arango:token:trace');
+const oadaLib = require('@oada/lib-arangodb');
 
 function findByToken(token, cb) {
   trace('findByToken: searching for token ', token);
@@ -36,7 +36,7 @@ function findByToken(token, cb) {
 }
 
 function save(token, cb) {
-  token = _.cloneDeep(token);
+  token = cloneDeep(token);
   Object.assign(token, { _id: token.id, id: undefined });
   // Link user
   token.user = { _id: token.user._id };

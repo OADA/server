@@ -32,9 +32,10 @@
     "arangojs": "^7.2.0",
     "bcryptjs": "^2.4.3",
     "bluebird": "^3.7.2",
+    "clone-deep": "^4.0.1",
     "debug": "^4.3.2",
+    "deep-equal": "^2.0.5",
     "flat": "^5.0.2",
-    "json-pointer": "^0.6.1",
-    "lodash": "^4.17.20"
+    "json-pointer": "^0.6.1"
   }
 }

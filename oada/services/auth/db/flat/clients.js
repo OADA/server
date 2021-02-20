@@ -14,19 +14,19 @@
  */
 'use strict';
 
-var _ = require('lodash');
-var clients = require('./clients.json');
+const cloneDeep = require('clone-deep');
+const clients = require('./clients.json');
 
 function findById(id, cb) {
   if (clients[id]) {
-    cb(null, _.cloneDeep(clients[id]));
+    cb(null, cloneDeep(clients[id]));
   } else {
     cb(null);
   }
 }
 
 function save(client, cb) {
-  clients[client.clientId] = _.cloneDeep(client);
+  clients[client.clientId] = cloneDeep(client);
 
   findById(client.clientId, cb);
 }

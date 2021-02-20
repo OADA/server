@@ -10,7 +10,6 @@ const debuglib = require('debug');
 const Promise = require('bluebird');
 const express = require('express');
 const express_promise = require('express-promise');
-const _ = require('lodash');
 const cors = require('cors');
 const well_known_json = require('@oada/well-known-json');
 const oada_error = require('oada-error');
@@ -81,7 +80,7 @@ Promise.try(function () {
     const whichdoc = req.url.replace(/^.*(\/.well-known\/.*$)/, '$1'); // /.well-known/oada-configuration
     const resource = whichdoc.replace(/^\/.well-known\/(.*)$/, '$1'); // oada-configuration
     const subservices = config.get('wellKnown:mergeSubServices');
-    if (_.isArray(subservices)) {
+    if (Array.isArray(subservices)) {
       return Promise.map(subservices, function (s) {
         // If this subservice doesn't support this resource (oada-configuration vs. openid-configuration), move on...
         if (s.resource !== resource) {
@@ -114,7 +113,7 @@ Promise.try(function () {
             // URL's instead of the proxy's name.  Replace the subservice name with "./" so
             // this top-level wkj handler will replace properly:
             const pfx = s.addPrefix || '';
-            const body = _.mapValues(result.body, function (val) {
+            const body = Object.values(result.body).map(function (val) {
               if (typeof val !== 'string') return val;
               return val.replace(/^https?:\/\/[^\/]+\//, './' + pfx);
             });

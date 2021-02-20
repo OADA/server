@@ -14,12 +14,12 @@
  */
 'use strict';
 
-var _ = require('lodash');
-var users = require('./users.json');
+const cloneDeep = require('clone-deep');
+const users = require('./users.json');
 
 function findByUsername(username, cb) {
   if (users[username]) {
-    return cb(null, _.cloneDeep(users[username]));
+    return cb(null, cloneDeep(users[username]));
   }
 
   return cb(null, false);
@@ -27,7 +27,7 @@ function findByUsername(username, cb) {
 
 function findByUsernamePassword(username, password, cb) {
   if (users[username] && users[username].password === password) {
-    return cb(null, _.cloneDeep(users[username]));
+    return cb(null, cloneDeep(users[username]));
   }
 
   return cb(null, false);

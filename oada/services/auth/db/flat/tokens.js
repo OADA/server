@@ -14,11 +14,11 @@
  */
 'use strict';
 
-var _ = require('lodash');
-var tokens = require('./tokens.json');
+const cloneDeep = require('clone-deep');
+const tokens = require('./tokens.json');
 
 function findByToken(token, cb) {
-  cb(null, _.cloneDeep(tokens[token]));
+  cb(null, cloneDeep(tokens[token]));
 }
 
 function save(token, cb) {

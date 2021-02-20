@@ -4,7 +4,7 @@ const db = require('../db');
 const debug = require('debug');
 const info = debug('arangodb#resources:info');
 const trace = debug('arangodb#resources:trace');
-const _ = require('lodash');
+const cloneDeep = require('clone-deep');
 const Bluebird = require('bluebird');
 const { aql } = require('arangojs');
 const pointer = require('json-pointer');
@@ -158,11 +158,11 @@ async function lookupFromUrl(url, userId) {
         // If the desired url has more pieces than the longest path, the
         // pathLeftover is the extra pieces
         if (result.vertices.length - 1 < pieces.length) {
-          let revVertices = _.reverse(_.cloneDeep(result.vertices));
+          let revVertices = cloneDeep(result.vertices).reverse();
           let lastResource =
             result.vertices.length -
             1 -
-            _.findIndex(revVertices, 'is_resource');
+            revVertices.findIndex((v) => v === 'is_resource');
           // Slice a negative value to take the last n pieces of the array
           path_leftover = pointer.compile(
             pieces.slice(lastResource - pieces.length)

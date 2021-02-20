@@ -21,7 +21,6 @@ const info = debug('rev-graph-update:info');
 const warn = debug('rev-graph-update:warn');
 const error = debug('rev-graph-update:error');
 
-const _ = require('lodash');
 const Promise = require('bluebird');
 const { ReResponder, Requester } = require('@oada/lib-kafka');
 const oadaLib = require('@oada/lib-arangodb');
@@ -95,7 +94,7 @@ responder.on('request', function handleReq(req) {
       if (req.causechain) {
         try {
           causechain = JSON.parse(req.causechain);
-          if (!_.isArray(causechain)) causechain = []; // in case req.causechain was an empty string
+          if (!Array.isArray(causechain)) causechain = []; // in case req.causechain was an empty string
         } catch (e) {
           warn(
             'WARNING: failed to JSON.parse req.causechain.  It is: ',
@@ -109,7 +108,7 @@ responder.on('request', function handleReq(req) {
         const childrev = typeof req._rev === 'number' ? req._rev : 0; // delete has null rev
 
         // Do not update parent if it was already the cause of a rev update on this chain (prevent cycles)
-        if (_.includes(causechain, item.resource_id)) {
+        if (causechain.includes(item.resource_id)) {
           info(
             'Parent ' +
               item.resource_id +
