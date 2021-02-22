@@ -185,30 +185,6 @@ services:
       - '${BIND:-0.0.0.0}:${PORT_HTTP:-80}:80'
     restart: unless-stopped
 
-  kafka:
-    # Is 2.4 less squirrelly?
-    #image: wurstmeister/kafka:2.12-2.4.1
-    image: wurstmeister/kafka:2.13-2.7.0
-    depends_on:
-      - zookeeper
-    expose: # expose only internally, not on host
-      - '9092'
-    restart: unless-stopped
-    hostname: kafka
-    networks:
-      - kafka_net
-    environment:
-      KAFKA_ADVERTISED_HOST_NAME: 'kafka' # NOTE: this only allows services inside this docker network
-      KAFKA_ADVERTISED_PORT: '9092' # to connect to kafka.  Set to machine's IP if you want external.
-      KAFKA_ZOOKEEPER_CONNECT: 'zookeeper:2181'
-      KAFKA_AUTO_CREATE_TOPICS_ENABLE: 'true'
-      KAFKA_HEAP_OPTS: '-Xmx1g -Xms512M'
-      KAFKA_BROKER_ID: 1
-      JMX_PORT: 9999
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-      - kafka_data:/var/lib/kafka
-
   # Arango is the main backend where core data and graph is stored
   arangodb:
     image: arangodb:3.7.8
@@ -228,17 +204,38 @@ services:
     #command: ['arangod', '--server.statistics', 'true', '--database.auto-upgrade', 'true']
     command: ['arangod', '--server.statistics', 'true']
 
-  # zookeeper and kafka entries are based on:
-  # from https://github.com/wurstmeister/kafka-docker/blob/master/docker-compose.yml
+  kafka:
+    image: bitnami/kafka:2.7.0
+    depends_on:
+      - zookeeper
+    expose: # expose only internally, not on host
+      - '9092'
+    restart: unless-stopped
+    hostname: kafka
+    networks:
+      - kafka_net
+    environment:
+      - KAFKA_CFG_ZOOKEEPER_CONNECT=zookeeper:2181
+      # TODO: Create certs for kafka?
+      # Not sure it matters since it is only exposed internally.
+      - ALLOW_PLAINTEXT_LISTENER=yes
+      - KAFKA_HEAP_OPTS=-Xmx1g -Xms512M
+      - JMX_PORT=9999
+    volumes:
+      # - /var/run/docker.sock:/var/run/docker.sock
+      - kafka_data:/bitnami/kafka
+
   zookeeper:
-    image: wurstmeister/zookeeper
+    image: bitnami/zookeeper:3.6.2
     restart: unless-stopped
     networks:
       - kafka_net
     expose: # expose only internally, not on host
       - '2181'
+    environment:
+      - ALLOW_ANONYMOUS_LOGIN=yes
     volumes:
-      - zookeeper_data:/var/lib/zookeeper
+      - zookeeper_data:/bitnami/zookeeper
 
 volumes:
   arangodb_data:

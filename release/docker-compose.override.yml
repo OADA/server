@@ -106,20 +106,10 @@ services:
       - '${BIND:-0.0.0.0}:${PORT_HTTPS:-443}:443'
       - '${BIND:-0.0.0.0}:${PORT_HTTP:-80}:80'
 
-  kafka:
-    environment:
-      KAFKA_ADVERTISED_HOST_NAME: 'kafka'
-      KAFKA_ADVERTISED_PORT: '9092'
-      KAFKA_ZOOKEEPER_CONNECT: 'zookeeper:2181'
-      KAFKA_AUTO_CREATE_TOPICS_ENABLE: 'true'
-      KAFKA_HEAP_OPTS: '-Xmx1g -Xms512M'
-      KAFKA_BROKER_ID: 1
-      JMX_PORT: 9999
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-      - kafka_data:/var/lib/kafka
-
   # Arango is the main backend where core data and graph are stored
+  #
+  # You could use an external arango instance instead.
+  # The services just need hostname `arango` to resolve to arango instance(s)
   arangodb:
     volumes:
       - arangodb_data:/var/lib/arangodb3
@@ -131,11 +121,25 @@ services:
       - ARANGO_STATISTICS=0
     command: ['arangod']
 
-  # zookeeper and kafka entries are based on:
-  # from https://github.com/wurstmeister/kafka-docker/blob/master/docker-compose.yml
-  zookeeper:
+  # You could use an external kafka instance instead.
+  # The services just need hostname `kafka` to resolve to arango instance(s)
+  kafka:
+    environment:
+      - KAFKA_CFG_ZOOKEEPER_CONNECT=zookeeper:2181
+      - ALLOW_PLAINTEXT_LISTENER=yes
+      - KAFKA_HEAP_OPTS=-Xmx1g -Xms512M
+      - JMX_PORT=9999
     volumes:
-      - zookeeper_data:/var/lib/zookeeper
+      #- /var/run/docker.sock:/var/run/docker.sock
+      - kafka_data:/bitnami/kafka
+
+  # Used by kafka service.
+  # Should probably disable if using external kafka.
+  zookeeper:
+    environment:
+      - ALLOW_ANONYMOUS_LOGIN=yes
+    volumes:
+      - zookeeper_data:/bitnami/zookeeper
 
 volumes:
   arangodb_data:
