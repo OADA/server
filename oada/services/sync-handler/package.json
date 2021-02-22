@@ -24,6 +24,6 @@
     "@oada/pino-debug": "workspace:libs/oada-pino-debug",
     "axios": "^0.21.1",
     "bluebird": "^3.7.2",
-    "debug": "^4.3.2"
+    "debug": "^4.3.1"
   }
 }

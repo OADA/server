@@ -23,7 +23,7 @@
     "@oada/lib-kafka": "^1.0.0",
     "@oada/pino-debug": "workspace:libs/oada-pino-debug",
     "bluebird": "^3.7.2",
-    "debug": "^4.3.2",
+    "debug": "^4.3.1",
     "json-pointer": "^0.6.1",
     "object-assign-deep": "^0.4.0",
     "timed-cache": "^1.1.4"
