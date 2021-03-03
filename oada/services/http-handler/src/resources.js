@@ -1,6 +1,6 @@
 'use strict';
 
-global.Promise = require('bluebird');
+const Bluebird = require('bluebird');
 const ksuid = require('ksuid');
 const axios = require('axios');
 const express = require('express');
@@ -8,7 +8,7 @@ const bodyParser = require('body-parser');
 const pointer = require('json-pointer');
 const typeis = require('type-is');
 const { pipeline } = require('stream');
-const pipelineAsync = require('bluebird').promisify(pipeline);
+const pipelineAsync = Bluebird.promisify(pipeline);
 const cacache = require('cacache');
 
 const info = require('debug')('http-handler:resources:info');
@@ -16,17 +16,17 @@ const warn = require('debug')('http-handler:resources:warn');
 const error = require('debug')('http-handler:resources:error');
 const trace = require('debug')('http-handler:resources:trace');
 
-const resources = require('@oada/lib-arangodb').resources;
-const changes = require('@oada/lib-arangodb').changes;
-const putBodies = require('@oada/lib-arangodb').putBodies;
-const OADAError = require('oada-error').OADAError;
+const { resources } = require('@oada/lib-arangodb');
+const { changes } = require('@oada/lib-arangodb');
+const { putBodies } = require('@oada/lib-arangodb');
+const { OADAError } = require('oada-error');
 
 const config = require('./config');
 const CACHE_PATH = config.get('storage:binary:cacache');
 
-var requester = require('./requester');
+const requester = require('./requester');
 
-var router = express.Router();
+const router = express.Router();
 
 // Turn POSTs into PUTs at random id
 router.post('/*?', function postResource(req, res, next) {
@@ -40,11 +40,11 @@ router.post('/*?', function postResource(req, res, next) {
 });
 
 router.use(function graphHandler(req, res, next) {
-  Promise.resolve(
+  Bluebird.resolve(
     resources.lookupFromUrl('/resources' + req.url, req.user.user_id)
   )
     .then(function handleGraphRes(resp) {
-      trace('GRAPH LOOKUP RESULT', resp);
+      trace('GRAPH LOOKUP RESULT %O', resp);
       if (resp['resource_id']) {
         // Rewire URL to resource found by graph
         let url = `${resp['resource_id']}${resp['path_leftover']}`;
@@ -56,7 +56,7 @@ router.use(function graphHandler(req, res, next) {
       res.set('Content-Location', req.baseUrl + req.url);
       // TODO: Just use express parameters rather than graph thing?
       req.oadaGraph = resp;
-      req.resourceExists = Object.assign({}, resp.resourceExists);
+      req.resourceExists = resp.resourceExists;
     })
     .asCallback(next);
 });
@@ -201,7 +201,7 @@ router.get('/*', async function getChanges(req, res, next) {
     } else if (/^\/_meta\/_changes\/.*?/.test(req.oadaGraph.path_leftover)) {
       let rev = req.oadaGraph.path_leftover.split('/')[3];
       let ch = await changes.getChangeArray(req.oadaGraph.resource_id, rev);
-      trace('CHANGE', ch);
+      trace('CHANGE %O', ch);
       return res.json(ch);
     } else {
       return next();
@@ -228,8 +228,8 @@ router.get('/*', async function getResource(req, res, next) {
       req.oadaGraph['path_leftover']
     );
 
-    return Promise.join(doc, function returnDoc(doc) {
-      trace('DOC IS', doc);
+    return Bluebird.join(doc, function returnDoc(doc) {
+      trace('DOC IS %O', doc);
       // TODO: Allow null values in OADA?
       if (doc === undefined || doc === null) {
         error('Resource not found');
@@ -341,7 +341,7 @@ router.put('/*', async function ensureTypeTreeExists (req, res, next) {
         let parentId = req.oadaGraph.resource_id.replace(/^\//, '')
         let parentPath = ''
         let parentRev = rev
-        return Promise.each(pieces, async function (piece, i) {
+        return Bluebird.each(pieces, async function (piece, i) {
             let nextPiece = pointer.has(subTree, '/' + piece)
                 ? '/' + piece
                 : pointer.has(subTree, '/*')
@@ -468,8 +468,8 @@ router.put('/*', async function putResource(req, res, next) {
     .get('_id')
 
     .then((bodyid) => {
-      trace('RESOURCE EXISTS', req.oadaGraph);
-      trace('RESOURCE EXISTS', req.resourceExists);
+      trace('RESOURCE EXISTS %O', req.oadaGraph);
+      trace('RESOURCE EXISTS %O', req.resourceExists);
       let ignoreLinks =
         (req.get('x-oada-ignore-links') || '').toLowerCase() == 'true';
       return requester.send(
@@ -518,7 +518,8 @@ router.put('/*', async function putResource(req, res, next) {
       return (
         res
           .set('X-OADA-Rev', resp['_rev'])
-          //.redirect(204, req.baseUrl + req.url) // TODO: What is the right thing to return here?
+          // TODO: What is the right thing to return here?
+          //.redirect(204, req.baseUrl + req.url)
           .end()
       );
     })
@@ -544,7 +545,9 @@ router.delete('/*', function deleteLink(req, res, next) {
     let path = req.oadaGraph.from['path_leftover'];
     req.url = '/' + id.replace(/^\/?resources\//, '') + path;
     req.oadaGraph = req.oadaGraph.from;
-    req.resourceExists = true; // parent resource DOES exist, but linked resource may or may not have existed
+    // parent resource DOES exist,
+    // but linked resource may or may not have existed
+    req.resourceExists = true;
   }
 
   next();
@@ -704,7 +707,7 @@ let trees = {
 function replaceLinks(obj) {
   let ret = Array.isArray(obj) ? [] : {};
   if (!obj) return obj; // no defined objriptors for this level
-  return Promise.map(Object.keys(obj || {}), (key) => {
+  return Bluebird.map(Object.keys(obj || {}), (key) => {
     if (key === '*') {
       // Don't put *s into oada. Ignore them
       return;
@@ -740,7 +743,7 @@ async function getFromStarredTree(path, tree) {
   let pieces = pointer.parse(path);
   let subTree = tree;
   let starPath = '';
-  return Promise.each(pieces, (piece, i) => {
+  return Bluebird.each(pieces, (piece, i) => {
     let nextPiece = pointer.has(tree, starPath + '/*') ? '/*' : '/' + piece;
     starPath += nextPiece;
     subTree = pointer.get(tree, starPath);
