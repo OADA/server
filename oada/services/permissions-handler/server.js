@@ -37,7 +37,7 @@ module.exports = function stopResp() {
 };
 
 const scopeTypes = require('./scopes/builtin');
-trace('Parsed builtin scopes, they are: ', scopeTypes);
+trace('Parsed builtin scopes, they are: %O', scopeTypes);
 // Augment scopeTypes by merging in anything in /scopes/additional-scopes
 const additionalScopesFiles = fs
   .readdirSync('./scopes/additional-scopes')
@@ -54,7 +54,7 @@ additionalScopesFiles.forEach((af) => {
     });
   } catch (e) {
     warn(
-      'FAILED to require(scopes/additional-scopes/' + af + ': error was ',
+      'FAILED to require(scopes/additional-scopes/' + af + ': error was %O',
       e
     );
   }
@@ -81,9 +81,9 @@ responder.on('request', function handleReq(req) {
   trace('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~');
   trace('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~');
   trace('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~');
-  trace('inside permissions handler', req.oadaGraph.resource_id);
+  trace('inside permissions handler %s', req.oadaGraph.resource_id);
   //    return oadaLib.resources.getResource(req.oadaGraph.resource_id, '').then((resource) => {
-  trace('request is:', req);
+  trace('request is: %O', req);
   //        trace('Resource is', req.oadaGraph.resource_id, resource);
   //Check scopes
   if (process.env.IGNORE_SCOPE === 'yes') {
@@ -100,21 +100,21 @@ responder.on('request', function handleReq(req) {
         warn('Unsupported scope type "' + type + '"');
         return false;
       }
-      trace('User scope:', type);
+      trace('User scope: %s', type);
       let contentType = req.oadaGraph.permissions
         ? req.oadaGraph.permissions.type
         : undefined;
       //let contentType = req.requestType === 'put' ? req.contentType : (resource ? resource._type : undefined);
       //trace('contentType = ', 'is put:', req.requestType === 'put', 'req.contentType:', req.contentType, 'resource:', resource);
       trace(
-        'Does user have scope?',
-        'resulting contentType:',
-        contentType,
-        'typeis check:',
-        typeis.is(contentType, scopeTypes[type])
+        'Does user have scope?' +
+          'resulting contentType:' +
+          contentType +
+          'typeis check:' +
+          typeis.is(contentType, scopeTypes[type])
       );
-      trace('Does user have read scope?', scopePerm(perm, 'read'));
-      trace('TYPEIS aaa', typeis.is(contentType, scopeTypes[type]));
+      trace('Does user have read scope? %s', scopePerm(perm, 'read'));
+      trace('TYPEIS aaa %s', typeis.is(contentType, scopeTypes[type]));
       return (
         typeis.is(contentType, scopeTypes[type]) && scopePerm(perm, 'read')
       );
@@ -131,15 +131,19 @@ responder.on('request', function handleReq(req) {
         return false;
       }
       //let contentType = req.requestType === 'put' ? req.contentType : (resource ? resource._type : undefined);
-      trace('contentType is', req.contentType);
+      trace('contentType is %s', req.contentType);
       let contentType = req.oadaGraph.permissions
         ? req.oadaGraph.permissions.type
         : undefined;
       if (req.contentType) contentType = req.contentType;
-      trace('Does user have write scope?', scopePerm(perm, 'write'));
-      trace('contentType is2', contentType);
-      trace('write typeis', type, typeis.is(contentType, scopeTypes[type]));
-      trace('scope types', scopeTypes[type]);
+      trace('Does user have write scope? %s', scopePerm(perm, 'write'));
+      trace('contentType is2 %s', contentType);
+      trace(
+        'write typeis %s %s',
+        type,
+        typeis.is(contentType, scopeTypes[type])
+      );
+      trace('scope types %O', scopeTypes[type]);
       return (
         typeis.is(contentType, scopeTypes[type]) && scopePerm(perm, 'write')
       );
@@ -147,7 +151,7 @@ responder.on('request', function handleReq(req) {
   }
   //Check permissions. 1. Check if owner.
   // First check if we're putting to resources
-  trace('resource exists', req.oadaGraph.resourceExists);
+  trace('resource exists %s', req.oadaGraph.resourceExists);
   if (
     req.oadaGraph.permissions &&
     req.oadaGraph.permissions.owner &&
@@ -170,7 +174,7 @@ responder.on('request', function handleReq(req) {
   } else {
     response.permissions = req.oadaGraph.permissions;
   }
-  trace('END RESULT', response);
+  trace('END RESULT %O', response);
   return response;
   //});
 });

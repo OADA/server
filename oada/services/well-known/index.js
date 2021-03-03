@@ -7,16 +7,16 @@
 // latest well-known documents.
 
 const debuglib = require('debug');
-const Promise = require('bluebird');
+const Bluebird = require('bluebird');
 const express = require('express');
 const express_promise = require('express-promise');
 const cors = require('cors');
 const well_known_json = require('@oada/well-known-json');
 const oada_error = require('oada-error');
 const config = require('./config');
-const request = Promise.promisify(require('request'));
+const request = Bluebird.promisify(require('request'));
 
-Promise.try(function () {
+Bluebird.try(function () {
   // Setup the loggers:
   const log = {
     error: debuglib('well-known:error'),
@@ -26,7 +26,7 @@ Promise.try(function () {
 
   log.info('-------------------------------------------------------------');
   log.info('Starting server for ./well-known/oada-configuration...');
-  log.info('config.get(wellKnown) = ', config.get('wellKnown'));
+  log.info('config.get(wellKnown) = %O', config.get('wellKnown'));
 
   // Setup express:
   const app = express();
@@ -81,26 +81,30 @@ Promise.try(function () {
     const resource = whichdoc.replace(/^\/.well-known\/(.*)$/, '$1'); // oada-configuration
     const subservices = config.get('wellKnown:mergeSubServices');
     if (Array.isArray(subservices)) {
-      return Promise.map(subservices, function (s) {
+      return Bluebird.map(subservices, function (s) {
         // If this subservice doesn't support this resource (oada-configuration vs. openid-configuration), move on...
         if (s.resource !== resource) {
           log.trace(
-            'Requested resource ' + resource + ', but this subservice entry (',
-            s,
-            ') is not for that resource.  Skipping...'
+            'Requested resource ' +
+              resource +
+              ', but this subservice entry (' +
+              s +
+              ') is not for that resource.  Skipping...'
           );
           return;
         } else {
           log.trace(
-            'Resource (' + resource + ') matches subservice entry (',
-            s,
-            '), retrieving'
+            'Resource (' +
+              resource +
+              ') matches subservice entry (' +
+              s +
+              '), retrieving'
           );
         }
 
         // Request this resource from the subservice:
         const url = s.base + whichdoc;
-        log.trace('Requesting subservice url: ' + url);
+        log.trace('Requesting subservice url: %s', url);
         return request({ url: url, json: true })
           .then(function (result) {
             if (!result || result.statusCode !== 200) {
@@ -122,7 +126,7 @@ Promise.try(function () {
             // If failed to return, or json didn't parse:
           })
           .catch(function (err) {
-            log.info('The subservice URL ' + url + ' failed. err = ', err);
+            log.info('The subservice URL ' + url + ' failed. err = %O', err);
           });
 
         // No matter whether we throw or not, let request continue:
@@ -158,9 +162,8 @@ Promise.try(function () {
     var s = https.createServer(config.get('wellKnown:server:certs'), app);
     s.listen(app.get('port'), function () {
       log.info(
-        'OADA Well-Known service started on port ' +
-          app.get('port') +
-          ' [https]'
+        'OADA Well-Known service started on port %d [https]',
+        app.get('port')
       );
     });
 
@@ -168,7 +171,7 @@ Promise.try(function () {
     // Otherwise, just plain-old HTTP server
   } else {
     app.listen(app.get('port'), function () {
-      log.info('OADA Test Server started on port ' + app.get('port'));
+      log.info('OADA Test Server started on port %d', app.get('port'));
     });
   }
 });

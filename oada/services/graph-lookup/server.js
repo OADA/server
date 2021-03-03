@@ -25,7 +25,7 @@ responder.on('request', function handleReq(req) {
     .then((result) => {
       var end = new Date().getTime();
       info(`Finished arango lookup for url ${req.url} +${end - start}ms`);
-      trace(`lookup for url ${req.url} returned:`, result);
+      trace(`lookup for url ${req.url} returned: %O`, result);
       result.connection_id = req.connection_id;
       return result;
     })

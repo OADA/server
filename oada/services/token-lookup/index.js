@@ -21,7 +21,7 @@ const info = debug('token-lookup:info');
 const error = debug('token-lookup:error');
 
 // const kf = require('kafka-node');
-const Responder = require('@oada/lib-kafka').Responder;
+const { Responder } = require('@oada/lib-kafka');
 const oadaLib = require('@oada/lib-arangodb');
 const config = require('./config');
 
@@ -35,7 +35,7 @@ process.on('SIGINT', () => {
 });
 
 process.on('uncaughtException', (a) => {
-  info('uncaughtException: ', a);
+  info('uncaughtException: %O', a);
   process.exit(99);
 });
 
@@ -57,7 +57,7 @@ responder.on('request', function handleReq(req) {
     typeof req.resp_partition === 'undefined' ||
     typeof req.connection_id === 'undefined'
   ) {
-    error('Invalid token_request for request: ' + JSON.stringify(req));
+    error('Invalid token_request for request: %o', req);
     return {};
   }
 
@@ -109,7 +109,7 @@ responder.on('request', function handleReq(req) {
       }
 
       msg.token_exists = true;
-      trace('received authorization, _id = ', t._id);
+      trace('received authorization, _id = %s', t._id);
       msg.doc.authorizationid = t._id;
       msg.doc.client_id = t.clientId;
       msg.doc.user_id = t.user._id || msg.doc.user_id;

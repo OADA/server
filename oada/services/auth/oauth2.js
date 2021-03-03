@@ -12,6 +12,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 'use strict';
 
 const URI = require('urijs');
@@ -101,7 +102,7 @@ module.exports = function (_server, config) {
           debug(
             'oauth2#authorize: redirect_uri from URL (' +
               redirectURI +
-              ') does not match any on client cert: ',
+              ') does not match any on client cert: %O',
             client.redirect_uris
           );
           return done(null, false);
@@ -161,12 +162,12 @@ module.exports = function (_server, config) {
         }
 
         debug(
-          'decision: allow = ',
-          req.allow,
-          ', scope = ',
-          req.body.scope,
-          ', nonce = ',
-          req.oauth2.req.nonce
+          'decision: allow = ' +
+            req.allow +
+            ', scope = ' +
+            req.body.scope +
+            ', nonce = ' +
+            req.oauth2.req.nonce
         );
         done(null, {
           allow: req.allow,

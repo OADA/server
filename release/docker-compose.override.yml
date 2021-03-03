@@ -16,7 +16,7 @@ x-release:
   environment: &env
     NODE_ENV: ${NODE_ENV-production}
     DEBUG: ${DEBUG-*:error,*:warn,*:info}
-    PINO_TRANSPORT: ${PINO_TRANSPORT-yarn g:pretty -clt}
+    PINO_TRANSPORT: ${PINO_TRANSPORT-yarn g:pretty -clti pid,hostname}
     DOMAIN:
     NODE_TLS_REJECT_UNAUTHORIZED:
 
@@ -48,7 +48,7 @@ services:
 
   users:
     environment:
-        <<: *env
+      <<: *env
 
   rev-graph-update:
     environment:
@@ -82,10 +82,10 @@ services:
   #   all other OADA requestes -> http-handler
   proxy:
     #volumes:
-      # To disable fetching SSL certs (e.g. to serve localhost)
-      # Generate your own fullchain.pem and privkey.pem
-      # put them into /config/keys/letsencrypt (see below)
-      #- /path/to/certs:/config/keys/letsencrypt:ro
+    #  To disable fetching SSL certs (e.g. to serve localhost)
+    #  Generate your own fullchain.pem and privkey.pem
+    #  put them into /config/keys/letsencrypt (see below)
+    #  - /path/to/certs:/config/keys/letsencrypt:ro
     environment:
       - PUID=1000
       - PGID=1000

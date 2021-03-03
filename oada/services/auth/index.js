@@ -57,14 +57,14 @@ const oadaidclient = require('@oada/oada-id-client').middleware;
 //-----------------------------------------------------------------------
 // Load all the domain configs at startup
 const ddir = config.get('domainsDir');
-trace('using domainsDir = ', ddir);
+trace('using domainsDir = %s', ddir);
 const domainConfigs = fs.readdirSync(ddir).reduce((acc, dirname) => {
   if (dirname.startsWith('.') == false) {
     try {
       const config = require(ddir + '/' + dirname + '/config');
       acc[config.domain] = config;
     } catch (e) {
-      error('ERROR: could not read config for domain ', dirname, ', skipping');
+      error('ERROR: could not read config for domain %s, skipping', dirname);
     }
   }
   return acc;
@@ -199,7 +199,7 @@ module.exports = function (conf) {
           config.get('auth:endpoints:login') +
           ': setting X-Frame-Options=SAMEORIGIN before rendering login'
       );
-      trace('login endpoint: Session = ', req.session);
+      trace('login endpoint: Session = %O', req.session);
       res.header('X-Frame-Options', 'SAMEORIGIN');
       const iserror = !!req.query.error || req.session.errormsg;
       let errormsg = req.session.errormsg || 'Login failed.';
@@ -251,47 +251,46 @@ module.exports = function (conf) {
 
     //-----------------------------------------------------------------
     // Handle the POST from clicking the "login with OADA/trellisfw" button
-    app.post(config.get('auth:endpoints:loginConnect'), function (
-      req,
-      res,
-      next
-    ) {
-      // First, get domain entered in the posted form
-      // and strip protocol if they used it
-      let dest_domain = req.body && req.body.dest_domain;
-      if (dest_domain) dest_domain = dest_domain.replace(/^https?:\/\//);
-      req.body.dest_domain = dest_domain;
-      info(
-        config.get('auth:endpoints:loginConnect') +
-          ': OpenIDConnect request to redirect from domain ' +
-          req.hostname +
-          ' to domain ' +
+    app.post(
+      config.get('auth:endpoints:loginConnect'),
+      function (req, res, next) {
+        // First, get domain entered in the posted form
+        // and strip protocol if they used it
+        let dest_domain = req.body && req.body.dest_domain;
+        if (dest_domain) dest_domain = dest_domain.replace(/^https?:\/\//);
+        req.body.dest_domain = dest_domain;
+        info(
+          config.get('auth:endpoints:loginConnect') +
+            ': OpenIDConnect request to redirect from domain ' +
+            req.hostname +
+            ' to domain ' +
+            dest_domain
+        );
+
+        // Next, get the info for the id client middleware based on main domain:
+        const domain_config =
+          domainConfigs[req.hostname] || domainConfigs.localhost;
+        const options = {
+          metadata: domain_config.software_statement,
+          redirect:
+            'https://' +
+            req.hostname +
+            // the config already has the pfx added
+            config.get('auth:endpoints:redirectConnect'),
+          scope: 'openid profile',
+          prompt: 'consent',
+          privateKey: domain_config.keys.private,
+        };
+
+        // And call the middleware directly so we can use closure variables:
+        trace(
+          config.get('auth:endpoints:loginConnect') +
+            ': calling getIDToken for dest_domain = %s',
           dest_domain
-      );
-
-      // Next, get the info for the id client middleware based on main domain:
-      const domain_config =
-        domainConfigs[req.hostname] || domainConfigs.localhost;
-      const options = {
-        metadata: domain_config.software_statement,
-        redirect:
-          'https://' +
-          req.hostname +
-          // the config already has the pfx added
-          config.get('auth:endpoints:redirectConnect'),
-        scope: 'openid profile',
-        prompt: 'consent',
-        privateKey: domain_config.keys.private,
-      };
-
-      // And call the middleware directly so we can use closure variables:
-      trace(
-        config.get('auth:endpoints:loginConnect') +
-          ': calling getIDToken for dest_domain = ',
-        dest_domain
-      );
-      return oadaidclient.getIDToken(dest_domain, options)(req, res, next);
-    });
+        );
+        return oadaidclient.getIDToken(dest_domain, options)(req, res, next);
+      }
+    );
 
     //-----------------------------------------------------
     // Handle the redirect for openid connect login:
@@ -325,7 +324,7 @@ module.exports = function (conf) {
           config.get('auth:endpoints:redirectConnect') +
             ', req.hostname = ' +
             req.hostname +
-            ': token is: ',
+            ': token is: %O',
           idToken
         );
         try {
@@ -357,7 +356,7 @@ module.exports = function (conf) {
                 ' from ' +
                 idToken.iss;
               info(
-                'Failed OIDC login: user not found.  Redirecting to ',
+                'Failed OIDC login: user not found.  Redirecting to %s',
                 req.session.returnTo
               );
               return res.redirect(req.session.returnTo);
@@ -437,12 +436,13 @@ module.exports = function (conf) {
     require('./oidc')(server);
 
     app.options(config.get('auth:endpoints:certs'), require('cors')());
-    app.get(config.get('auth:endpoints:certs'), require('cors')(), function (
-      _req,
-      res
-    ) {
-      res.json(keys.jwks);
-    });
+    app.get(
+      config.get('auth:endpoints:certs'),
+      require('cors')(),
+      function (_req, res) {
+        res.json(keys.jwks);
+      }
+    );
 
     app.options(config.get('auth:endpoints:userinfo'), require('cors')());
     app.get(

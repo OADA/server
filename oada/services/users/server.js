@@ -19,7 +19,6 @@ const debug = require('debug');
 const trace = debug('users:trace');
 const warn = debug('users:warn');
 const error = debug('users:error');
-var Promise = require('bluebird');
 const ksuid = require('ksuid');
 const cloneDeep = require('clone-deep');
 
@@ -100,9 +99,9 @@ function createNewUser(req) {
 responder.on('request', async function handleReq(req) {
   try {
     // TODO: Sanitize?
-    trace('REQUEST: req.user = ', req.user, ', userid = ', req.userid);
+    trace('REQUEST: req.user = %O, userid = %s', req.user, req.userid);
     trace(
-      'REQUEST: req.authorization.scope = ',
+      'REQUEST: req.authorization.scope = %s',
       req.authorization ? req.authorization.scope : null
     );
     // While this could fit in permissions_handler, since users are not really resources (i.e. no graph),
@@ -126,10 +125,10 @@ responder.on('request', async function handleReq(req) {
     // First, check if the ID exists already:
     let cur_user = null;
     if (req.userid) {
-      trace('Checking if user id ', req.userid, ' exists.');
+      trace('Checking if user id %s exists.', req.userid);
       cur_user = await users.findById(req.userid, { graceful: true });
     }
-    trace('Result of search for user with id ', req.userid, ': ', cur_user);
+    trace('Result of search for user with id %s: %O', req.userid, cur_user);
 
     // Make one if it doesn't exist already:
     let created_a_new_user = false;
@@ -141,14 +140,14 @@ responder.on('request', async function handleReq(req) {
         if (err && err.errorNum === users.UniqueConstraintError.errorNum) {
           created_a_new_user = false;
           trace(
-            'Tried to create user, but it already existed (same username).  Returning as if we had created it.  User object was: ',
+            'Tried to create user, but it already existed (same username).  Returning as if we had created it.  User object was: %O',
             req.user
           );
           cur_user = (await users.like({ username: req.user.username }))[0];
-          trace('existing user found as: ', cur_user);
+          trace('existing user found as: %O', cur_user);
         } else {
           error(
-            'FAILED: unknown error occurred when creating new user.  Error was: ',
+            'FAILED: unknown error occurred when creating new user. Error was: %O',
             err
           );
           throw err;
@@ -159,7 +158,7 @@ responder.on('request', async function handleReq(req) {
     // Now we know the user exists and has bookmarks/shares.  Now update/merge it with the requested data
     if (!created_a_new_user) {
       trace(
-        'We did not create a new user, so we are now updating user id ',
+        'We did not create a new user, so we are now updating user id %s',
         cur_user._id
       );
       const u = cloneDeep(req.user); // Get the "update" merge body
@@ -169,7 +168,7 @@ responder.on('request', async function handleReq(req) {
 
     // All done!
     // Respond to the request with success:
-    trace('Finished with update, responding with success, user = ', cur_user);
+    trace('Finished with update, responding with success, user = %O', cur_user);
     return {
       code: 'success',
       new: created_a_new_user,

@@ -15,7 +15,6 @@
     "@oada/lib-config": "^0.0.1",
     "@oada/lib-kafka": "^1.0.0",
     "@oada/pino-debug": "workspace:libs/oada-pino-debug",
-    "bluebird": "^3.7.2",
     "chalk": "^4.1.0",
     "clone-deep": "^4.0.1",
     "debug": "^4.3.1",

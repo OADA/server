@@ -1,4 +1,5 @@
 'use strict';
+
 let arangojs = require('arangojs');
 let Database = arangojs.Database;
 let Promise = require('bluebird');

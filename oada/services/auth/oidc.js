@@ -12,11 +12,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 'use strict';
 
-var oauth2orizeOpenId = require('oauth2orize-openid');
+const oauth2orizeOpenId = require('oauth2orize-openid');
 
-var utils = require('./utils');
+const utils = require('./utils');
 
 module.exports = function (server) {
   server.grant(oauth2orizeOpenId.extensions());

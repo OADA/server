@@ -18,8 +18,8 @@
 const debug = require('debug');
 const trace = debug('shares:trace');
 
-const Promise = require('bluebird');
-const Responder = require('@oada/lib-kafka').Responder;
+const Bluebird = require('bluebird');
+const { Responder } = require('@oada/lib-kafka');
 const oadaLib = require('@oada/lib-arangodb');
 const config = require('./config');
 
@@ -48,13 +48,14 @@ responder.on('request', function handleReq(req) {
       .getChange(req.resource_id, req._rev)
       .then((change) => {
         if (change.type === 'merge' && change.body._meta) {
-          return Promise.map(
+          return Bluebird.map(
             Object.keys(change.body._meta._permissions || {}),
             (id) => {
-              trace('Change made on user: ' + id);
+              trace('Change made on user: %s' + id);
               return oadaLib.users.findById(id).then((user) => {
                 trace(
-                  'making a write request to /shares for user - ' + id,
+                  'making a write request to /shares for user - %s %s',
+                  id,
                   user
                 );
                 return {

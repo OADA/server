@@ -8,7 +8,7 @@
 // it will work as a default script to run on every startup.
 
 const debug = require('debug')('init');
-const Promise = require('bluebird');
+const Bluebird = require('bluebird');
 const config = require('./config');
 
 const init_path = config.get('auth:init');
@@ -18,5 +18,5 @@ const init = require(init_path);
 if (typeof init !== 'function')
   return debug('no intialization function available');
 
-debug('Running init function from ', init_path);
-Promise.try(() => init(config)).then(() => debug('Initialization complete.'));
+debug('Running init function from %s', init_path);
+Bluebird.try(() => init(config)).then(() => debug('Initialization complete.'));

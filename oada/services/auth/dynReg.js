@@ -12,6 +12,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 'use strict';
 
 const oadacerts = require('@oada/oada-certs');
@@ -28,7 +29,7 @@ function dynReg(req, res) {
   return Bluebird.try(function () {
     if (!req.body || !req.body.software_statement) {
       info(
-        'request body does not have software_statement key.  Did you remember content-type=application/json?  Body = ',
+        'request body does not have software_statement key.  Did you remember content-type=application/json?  Body = %O',
         req.body
       );
       res.status(400).json({
@@ -94,7 +95,7 @@ function dynReg(req, res) {
         trace(
           'Saving client ' +
             clientcert.client_name +
-            ' registration, trusted = ',
+            ' registration, trusted = %s',
           trusted
         );
         return clients
@@ -105,13 +106,13 @@ function dynReg(req, res) {
             info(
               'Saved new client ID ' +
                 clientcert.client_id +
-                ' to DB, client_name = ',
+                ' to DB, client_name = %s',
               clientcert.client_name
             );
             res.status(201).json(clientcert);
           })
           .catch(function (err) {
-            error('Failed to save new dynReg client.  err = ', err);
+            error('Failed to save new dynReg client. err = %O', err);
             res.status(400).json({
               error: 'invalid_client_registration',
               error_description:
@@ -124,7 +125,7 @@ function dynReg(req, res) {
       })
       .catch(function (e) {
         error(
-          'Failed to validate client registration, oada-certs threw error: ',
+          'Failed to validate client registration, oada-certs threw error: %O',
           e
         );
         res.status(400).json({

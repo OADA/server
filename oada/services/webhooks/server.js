@@ -21,7 +21,7 @@ const error = debug('webhooks:error');
 
 const Bluebird = require('bluebird');
 const omit = require('object.omit');
-const Responder = require('@oada/lib-kafka').Responder;
+const { Responder } = require('@oada/lib-kafka');
 const oadaLib = require('@oada/lib-arangodb');
 const config = require('./config');
 const axios = process.env.SSL_ALLOW_SELF_SIGNED
@@ -71,7 +71,7 @@ responder.on('request', function handleReq(req) {
               var deletePath = [];
               var toDelete = omit(change.delete, ['_meta', '_rev']);
               if (Object.keys(toDelete).length == 0) return;
-              trace('Sending oada-put to: ' + url);
+              trace('Sending oada-put to: %s', url);
               while (
                 toDelete &&
                 typeof toDelete === 'object' &&
@@ -83,7 +83,7 @@ responder.on('request', function handleReq(req) {
               }
               if (toDelete != null) return;
               let deleteUrl = url + '/' + deletePath.join('/');
-              trace('Deleting: oada-put url changed to:', deleteUrl);
+              trace('Deleting: oada-put url changed to: %s', deleteUrl);
               return axios({
                 method: 'delete',
                 url: deleteUrl,
@@ -97,8 +97,8 @@ responder.on('request', function handleReq(req) {
                   .length == 0
               )
                 return;
-              trace('Sending oada-put to: ' + url);
-              trace('oada-put body: ', body);
+              trace('Sending oada-put to: %s', url);
+              trace('oada-put body: %O', body);
               return axios({
                 method: 'put',
                 url: url,
@@ -107,7 +107,7 @@ responder.on('request', function handleReq(req) {
               });
             }
           }
-          trace('Sending to: ' + url);
+          trace('Sending to: %s', url);
           return axios(meta._syncs[sync]);
         });
       }

@@ -21,7 +21,6 @@ const info = debug('rev-graph-update:info');
 const warn = debug('rev-graph-update:warn');
 const error = debug('rev-graph-update:error');
 
-const Promise = require('bluebird');
 const { ReResponder, Requester } = require('@oada/lib-kafka');
 const oadaLib = require('@oada/lib-arangodb');
 const config = require('./config');
@@ -82,7 +81,7 @@ responder.on('request', function handleReq(req) {
         return undefined;
       }
 
-      trace('the parents are: ', p);
+      trace('the parents are: %O', p);
 
       if (p.some((p) => p['resource_id'] === req['resource_id'])) {
         let err = new Error(`${req['resource_id']} is its own parent!`);
@@ -97,7 +96,7 @@ responder.on('request', function handleReq(req) {
           if (!Array.isArray(causechain)) causechain = []; // in case req.causechain was an empty string
         } catch (e) {
           warn(
-            'WARNING: failed to JSON.parse req.causechain.  It is: ',
+            'WARNING: failed to JSON.parse req.causechain.  It is: %s',
             req.causechain
           );
         }
@@ -121,9 +120,9 @@ responder.on('request', function handleReq(req) {
         if (requests.has(uniqueKey)) {
           // Write request exists in the pending queue. Add change ID to the request.
           info(
-            'Resource ',
-            uniqueKey,
-            ' already queued for changes, adding to queue'
+            'Resource ' +
+              uniqueKey +
+              ' already queued for changes, adding to queue'
           );
           if (req.change_id) {
             requests.get(uniqueKey).from_change_id.push(req.change_id);
@@ -131,10 +130,12 @@ responder.on('request', function handleReq(req) {
           requests.get(uniqueKey).body = req['_rev'];
         } else {
           info(
-            'Writing new child link rev (',
-            childrev,
-            ') to ',
-            item.resource_id + item.path + '/_rev'
+            'Writing new child link rev (' +
+              childrev +
+              ') to ' +
+              item.resource_id +
+              item.path +
+              '/_rev'
           );
           // Create a new write request.
           let msg = {

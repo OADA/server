@@ -12,13 +12,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 'use strict';
 
-var fs = require('fs');
-var path = require('path');
-var rsaPemToJwk = require('rsa-pem-to-jwk');
+const fs = require('fs');
+const path = require('path');
+const rsaPemToJwk = require('rsa-pem-to-jwk');
 
-var config = require('./config');
+const config = require('./config');
 
 /*
  * Loadis in all PEM files at config.keys.signPems to sign IdTokens with. The

@@ -1,7 +1,5 @@
 {
   "singleQuote": true,
   "quoteProps": "consistent",
-  "overrides": [
-    { "files": ".yarnrc.yml", "options": { "singleQuote": false } }
-  ]
+  "overrides": [{ "files": ".yarnrc.yml", "options": { "singleQuote": false } }]
 }

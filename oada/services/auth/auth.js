@@ -12,6 +12,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 'use strict';
 
 var trace = require('debug')('auth#auth:trace');
@@ -35,31 +36,32 @@ var tokens = require('./db/models/token');
 passport.use(
   new LocalStrategy.Strategy(function (username, password, done) {
     trace('Looking up username ' + username + ' in local strategy');
-    return users.findByUsernamePassword(username, password, function (
-      err,
-      user
-    ) {
-      if (err) {
-        return done(err);
-      }
-      if (!user) {
-        return done(null, false);
-      }
+    return users.findByUsernamePassword(
+      username,
+      password,
+      function (err, user) {
+        if (err) {
+          return done(err);
+        }
+        if (!user) {
+          return done(null, false);
+        }
 
-      return done(null, user);
-    });
+        return done(null, user);
+      }
+    );
   })
 );
 
 passport.serializeUser(function (user, done) {
-  trace('serializing user by _id as ', user._id);
+  trace('serializing user by _id as %s', user._id);
   //  done(null, user.username);
   done(null, user._id);
 });
 
 passport.deserializeUser(function (userid, done) {
   //  users.findByUsername(username, function(err, user) {
-  trace('deserializing user by userid: ', userid);
+  trace('deserializing user by userid: %s', userid);
   users.findById(userid, function (err, user) {
     done(err, user);
   });
@@ -72,7 +74,7 @@ passport.use(
       passReqToCallback: true,
     },
     function (req, cId, cSecret, done) {
-      trace('#ClientPassword.Strategy: looking for code ', req.body.code);
+      trace('#ClientPassword.Strategy: looking for code %s', req.body.code);
       codes.findByCode(req.body.code, function (err, code) {
         if (err) {
           info('#ClientPassword.Strategy: code not found');
@@ -83,23 +85,21 @@ passport.use(
 
         if (code.isRedeemed()) {
           info(
-            '#ClientPassword.Strategy: code ',
-            req.body.code,
-            ' is already redeemed'
+            '#ClientPassword.Strategy: code %s is already redeemed',
+            req.body.code
           );
           return done(null, false);
         }
 
         trace(
-          '#ClientPassword.Strategy: found code, searching for clientid from that code: ',
+          '#ClientPassword.Strategy: found code, searching for clientid from that code: %s',
           code.clientId
         );
         clients.findById(code.clientId, function (err, client) {
           if (err) {
             info(
-              '#ClientPassword.Strategy: failed to find client by id ',
+              '#ClientPassword.Strategy: failed to find client by id %s. err = %O',
               code.clientId,
-              '.  err = ',
               err
             );
             return done(err);
@@ -119,7 +119,7 @@ passport.use(
             .toString();
 
           trace(
-            '#ClientPassword.Strategy: verifying jwt, tokenEndpoint = ',
+            '#ClientPassword.Strategy: verifying jwt, tokenEndpoint = %s',
             tokenEndpoint
           );
           jwtBearerClientAuth.verify(
@@ -133,7 +133,7 @@ passport.use(
               // arg6: callback
               if (err) {
                 info(
-                  '#ClientPassword.Strategy: jwtBearerClientAuth.verify returned an error.  err = ',
+                  '#ClientPassword.Strategy: jwtBearerClientAuth.verify returned an error.  err = %O',
                   err
                 );
                 return done(err);

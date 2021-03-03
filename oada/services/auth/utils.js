@@ -12,19 +12,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 'use strict';
 
-var crypto = require('crypto');
+const crypto = require('crypto');
 
-var TokenError = require('oauth2orize').TokenError;
-var jwt = require('jsonwebtoken');
-var objectAssign = require('object-assign');
-var debug = require('debug')('utils:trace');
+const TokenError = require('oauth2orize').TokenError;
+const jwt = require('jsonwebtoken');
+const objectAssign = require('object-assign');
+const debug = require('debug')('utils:trace');
 
-var config = require('./config');
-var tokens = require('./db/models/token');
-var codes = require('./db/models/code');
-var keys = require('./keys');
+const config = require('./config');
+const tokens = require('./db/models/token');
+const codes = require('./db/models/code');
+const keys = require('./keys');
 
 function makeHash(length) {
   return crypto
@@ -42,9 +43,8 @@ function createIdToken(iss, aud, user, nonce, userinfoScope) {
 
   var idToken = config.get('auth:idToken');
   debug(
-    'createIdToken: creating token, kid = ',
+    'createIdToken: creating token, kid = %s, keys.sign = %O',
     idToken.signKid,
-    ', keys.sign = ',
     keys.sign
   );
   var options = {
@@ -88,7 +88,7 @@ function createToken(scope, user, clientId, done) {
     user: user,
     clientId: clientId,
   };
-  debug('createToken: about to save token ', tok);
+  debug('createToken: about to save token %O', tok);
   tokens.save(tok, done);
 }
 
@@ -185,7 +185,7 @@ function issueCode(client, redirectUri, user, ares, done) {
     c.nonce = ares.nonce;
   }
 
-  debug('Saving new code: ', c.code);
+  debug('Saving new code: %s', c.code);
   codes.save(c, function (err, code) {
     if (err) {
       return done(err);
@@ -198,9 +198,8 @@ function issueCode(client, redirectUri, user, ares, done) {
 function issueTokenFromCode(client, c, redirectUri, done) {
   codes.findByCode(c, function (err, code) {
     debug(
-      'issueTokenFromCode: findByCode returned, code = ',
+      'issueTokenFromCode: findByCode returned, code = %O, err = %O',
       code,
-      ', err = ',
       err
     );
     if (err) {

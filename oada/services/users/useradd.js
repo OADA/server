@@ -21,7 +21,7 @@ const info = debug('useradd:info');
 
 async function findUserByUsername(username) {
   const all_users = await users.like({ username });
-  trace('findUserByUsername: Finished users.like, all_users = ', all_users);
+  trace('findUserByUsername: Finished users.like, all_users = %O', all_users);
   return all_users && all_users.length > 0 ? all_users[0] : false;
 }
 
@@ -84,12 +84,12 @@ async function run() {
       },
     });
 
-    trace('Finished kafka.send, have our response = ', response);
+    trace('Finished kafka.send, have our response = %O', response);
     // no need to keep hearing messages
     trace('Disconnecting from kafka');
     await kafkareq.disconnect();
 
-    trace('Checking response.code, response = ', response);
+    trace('Checking response.code, response = %O', response);
     if (response.code !== 'success') {
       error(
         chalk.red(
@@ -102,8 +102,10 @@ async function run() {
     // Now we have a user
     su = response.user;
     info(
-      chalk.green('User ') + chalk.cyan(su._id) + chalk.green(' now exists: '),
-      su && su._id
+      chalk.green('User ') +
+        chalk.cyan(su._id) +
+        chalk.green(' now exists: ') +
+        su && su._id
     );
   } finally {
     process.exit(0);
