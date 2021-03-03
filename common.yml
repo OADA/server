@@ -13,7 +13,7 @@ services:
     environment:
       - NODE_ENV=${NODE_ENV-development}
       - DEBUG=${DEBUG-*}
-      = DEBUG_HIDE_DATE
+      - DEBUG_HIDE_DATE
       - DEBUG_COLORS
       - DEBUG_DEPTH
       - DEBUG_SHOW_HIDDEN
