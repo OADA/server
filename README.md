@@ -25,7 +25,7 @@ see [here](oada/).
 
 Download one of our [releases] and start it using [docker-compose].
 
-```shell-session
+```shell
 $ cd folder/containing/release/docker-compose
 # Will pull the corresponding release images from dockerhub
 $ docker-compose up -d
@@ -36,7 +36,7 @@ $ docker-compose up -d
 If you want to contribute, or do other development type things,
 you can running straight from our code base.
 
-```shell-session
+```shell
 $ git clone https://github.com/OADA/oada-srvc-docker.git
 $ cd oada-srvc-docker
 # Running up the first time will automatically build the docker images
