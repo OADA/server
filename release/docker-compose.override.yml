@@ -16,6 +16,10 @@ x-release:
   environment: &env
     NODE_ENV: ${NODE_ENV-production}
     DEBUG: ${DEBUG-*:error,*:warn,*:info}
+    DEBUG_HIDE_DATE:
+    DEBUG_COLORS:
+    DEBUG_DEPTH:
+    DEBUG_SHOW_HIDDEN:
     PINO_TRANSPORT: ${PINO_TRANSPORT-yarn g:pretty -clti pid,hostname}
     DOMAIN:
     NODE_TLS_REJECT_UNAUTHORIZED:
