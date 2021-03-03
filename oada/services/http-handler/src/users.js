@@ -1,6 +1,5 @@
 'use strict';
 
-const Promise = require('bluebird');
 const express = require('express');
 const bodyParser = require('body-parser');
 const debug = require('debug');
@@ -14,9 +13,9 @@ const { OADAError, middleware } = require('oada-error');
 
 const config = require('./config');
 
-var requester = require('./requester');
+const requester = require('./requester');
 
-var router = express.Router();
+const router = express.Router();
 
 const { users } = require('@oada/lib-arangodb');
 
@@ -67,14 +66,16 @@ function requestUserWrite(req, id) {
 }
 
 router.post('/', function (req, res) {
-  info('Users POST, body = ', req.body);
+  info('Users POST, body = %O', req.body);
   // Note: if the username already exists, the ksuid() below will end up
   // silently discarded and replaced in the response with the real one.
   const newid = ksuid.randomSync().string; // generate a random string for ID
-  if (!req.id) req.id = ksuid.randomSync().string; // generate an ID for this particular request
+  // generate an ID for this particular request
+  if (!req.id) req.id = ksuid.randomSync().string;
   return requestUserWrite(req, newid).then((resp) => {
     // TODO: Better status code choices?
-    const id = resp && resp.user ? resp.user['_key'] : newid; // if db didn't send back a user, it was an update so use id from URL
+    // if db didn't send back a user, it was an update so use id from URL
+    const id = resp && resp.user ? resp.user['_key'] : newid;
     // return res.redirect(201, req.baseUrl + '/' + id)
     res.set('content-location', req.baseUrl + '/' + id);
     return res.status(200).end();
@@ -83,22 +84,24 @@ router.post('/', function (req, res) {
 
 // Update (merge) a user:
 router.put('/:id', function (req, res) {
-  info('Users PUT(id: ', req.params.id, '), body = ', req.body);
-  if (!req.id) req.id = ksuid.randomSync().string; // generate an ID for this particular request
+  info('Users PUT(id: ' + req.params.id + '), body = %O', req.body);
+  // generate an ID for this particular request
+  if (!req.id) req.id = ksuid.randomSync().string;
   return requestUserWrite(req, req.params.id).then((resp) => {
     // TODO: Better status code choices?
-    const id = resp && resp.user ? resp.user['_key'] : req.params.id; // if db didn't send back a user, it was an update so use id from URL
+    // if db didn't send back a user, it was an update so use id from URL
+    const id = resp && resp.user ? resp.user['_key'] : req.params.id;
     // return res.redirect(201, req.baseUrl + '/' + id)
     res.set('content-location', req.baseUrl + '/' + id);
     return res.status(200).end();
   });
 });
 
-// Lookup a username, limited only to tokens and users with oada.admin.user scope
+// Lookup a username, limited to tokens and users with oada.admin.user scope
 router.get('/username-index/:uname', function (req, res) {
   // Check token scope
   trace(
-    'username-index: Checking token scope, req.authorization.scope = ',
+    'username-index: Checking token scope, req.authorization.scope = %s',
     req.authorization ? req.authorization.scope : null
   );
   const havetokenscope = req.authorization.scope.find(
@@ -115,7 +118,7 @@ router.get('/username-index/:uname', function (req, res) {
   }
 
   // Check user's scope
-  trace('username-index: Checking user scope, req.user = ', req.user);
+  trace('username-index: Checking user scope, req.user = %O', req.user);
   const haveuserscope =
     Array.isArray(req.user.scope) &&
     req.user.scope.find(
@@ -154,9 +157,9 @@ router.get('/username-index/:uname', function (req, res) {
     })
     .catch((e) => {
       error(
-        'FAILED to find user in DB for username-index, username = ',
-        req.params.uname,
-        '.  Error was: ',
+        'FAILED to find user in DB for username-index, username = ' +
+          req.params.uname +
+          '.  Error was: %O',
         e
       );
       res.status(500).send('Internal Error: ', e.toString());

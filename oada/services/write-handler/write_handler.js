@@ -1,6 +1,6 @@
 'use strict';
 
-const Promise = require('bluebird');
+const Bluebird = require('bluebird');
 const { resources, putBodies, changes } = require('@oada/lib-arangodb');
 const { Responder } = require('@oada/lib-kafka');
 const pointer = require('json-pointer');
@@ -15,15 +15,15 @@ let counter = 0;
 
 const config = require('./config');
 
-var responder = new Responder({
+const responder = new Responder({
   consumeTopic: config.get('kafka:topics:writeRequest'),
   produceTopic: config.get('kafka:topics:httpResponse'),
   group: 'write-handlers',
 });
 
 // Only run one write at a time?
-let locks = {}; // Per-resource write locks/queues
-let cache = new Cache({ defaultTtl: 60 * 1000 });
+const locks = {}; // Per-resource write locks/queues
+const cache = new Cache({ defaultTtl: 60 * 1000 });
 responder.on('request', (req, ...rest) => {
   if (counter++ > 500) {
     counter = 0;
@@ -31,7 +31,7 @@ responder.on('request', (req, ...rest) => {
   }
   let id;
   id = req['resource_id'].replace(/^\//, '');
-  let p = locks[id] || Promise.resolve();
+  let p = locks[id] || Bluebird.resolve();
   var pTime = Date.now() / 1000;
   // Run once last write finishes (whether it worked or not)
   p = p
@@ -45,7 +45,7 @@ responder.on('request', (req, ...rest) => {
       }
     })
     .tap(() => {
-      trace('handleReq', Date.now() / 1000 - pTime);
+      trace('handleReq %d', Date.now() / 1000 - pTime);
     });
   locks[id] = p;
   return p;
@@ -58,17 +58,17 @@ function handleReq(req) {
 
   // Get body and check permission in parallel
   var getB = Date.now() / 1000;
-  info('Handling', id);
-  var body = Promise.try(function getBody() {
+  info('Handling %s', id);
+  var body = Bluebird.try(function getBody() {
     var pb = Date.now() / 1000;
     if (req.bodyid) {
       return putBodies
         .getPutBody(req.bodyid)
-        .tap(() => trace('getPutBody', Date.now() / 1000 - pb));
+        .tap(() => trace('getPutBody %d', Date.now() / 1000 - pb));
     }
     return req.body;
   });
-  trace('getBody', Date.now() / 1000 - getB);
+  trace('getBody %d', Date.now() / 1000 - getB);
 
   trace(`PUTing to "${req['path_leftover']}" in "${id}"`);
 
@@ -76,8 +76,8 @@ function handleReq(req) {
   var beforeUpsert = Date.now() / 1000;
   var upsert = body
     .then(async function doUpsert(body) {
-      trace('FIRST BODY', body);
-      trace('doUpsert', Date.now() / 1000 - beforeUpsert);
+      trace('FIRST BODY %O', body);
+      trace('doUpsert %d', Date.now() / 1000 - beforeUpsert);
       if (req['if-match']) {
         let rev = await resources.getResource(req['resource_id'], '_rev');
         if (parseInt(req['if-match']) !== rev) {
@@ -98,7 +98,7 @@ function handleReq(req) {
           throw new Error('rev mismatch');
         }
       }
-      trace('cacheRev', Date.now() / 1000 - beforeCacheRev);
+      trace('cacheRev %d', Date.now() / 1000 - beforeCacheRev);
 
       var beforeDeletePartial = Date.now() / 1000;
       var path = pointer.parse(
@@ -111,7 +111,7 @@ function handleReq(req) {
       if (body === undefined) {
         trace('Body is undefined, doing delete');
         if (path.length > 0) {
-          trace('Delete path = ', path);
+          trace('Delete path = %s', path);
           // TODO: This is gross
           let ppath = Array.from(path);
           method = (id, obj) => resources.deletePartialResource(id, ppath, obj);
@@ -128,7 +128,10 @@ function handleReq(req) {
           return resources
             .deleteResource(id)
             .tap(() =>
-              trace('deleteResource', Date.now() / 1000 - beforeDeletePartial)
+              trace(
+                'deleteResource %d',
+                Date.now() / 1000 - beforeDeletePartial
+              )
             );
         }
       }
@@ -138,17 +141,16 @@ function handleReq(req) {
       // TODO: Sanitize keys?
 
       trace(
-        req.resource_id +
-          ': Checking if resource exists (req.resourceExists = ',
-        req.resourceExists,
-        ')'
+        '%s: Checking if resource exists (req.resourceExists = %o)',
+        req.resource_id,
+        req.resourceExists
       );
       if (req.resourceExists === false) {
         trace(
-          'initializing arango: resource_id = ',
-          req.resource_id,
-          ', path_leftover = ',
-          req.path_leftover
+          'initializing arango: resource_id = ' +
+            req.resource_id +
+            ', path_leftover = ' +
+            req.path_leftover
         );
         id = req.resource_id.replace(/^\//, '');
         path = path.slice(2);
@@ -166,16 +168,16 @@ function handleReq(req) {
             },
           },
         };
-        trace('Intializing resource with ', obj);
+        trace('Intializing resource with %O', obj);
       }
 
       // Create object to recursively merge into the resource
-      trace('Recursively merging path into arango object, path = ', path);
+      trace(`Recursively merging path into arango object, path = ${path}`);
       if (path.length > 0) {
         let o = obj;
         let endk = path.pop();
         path.forEach((k) => {
-          trace('Adding path for key ', k);
+          trace(`Adding path for key ${k}`);
           if (!(k in o)) {
             // TODO: Support arrays better?
             o[k] = {};
@@ -186,9 +188,9 @@ function handleReq(req) {
       } else {
         obj = objectAssignDeep(obj, body);
       }
-      trace('Setting body on arango object to ', obj);
+      trace('Setting body on arango object to %O', obj);
 
-      trace('recursive merge', Date.now() / 1000 - ts);
+      trace('recursive merge %d', Date.now() / 1000 - ts);
 
       // Update meta
       var meta = {
@@ -219,7 +221,7 @@ function handleReq(req) {
       // Compute new change
       var beforeChange = Date.now() / 1000;
       let children = req['from_change_id'] || [];
-      trace('Putting change, "change" = ', obj);
+      trace('Putting change, "change" = %O', obj);
       let changeId = await changes.putChange({
         change: obj,
         resId: id,
@@ -230,7 +232,7 @@ function handleReq(req) {
         userId: req['user_id'],
         authorizationId: req['authorizationid'],
       });
-      trace('change_id', Date.now() / 1000 - beforeChange);
+      trace('change_id %d', Date.now() / 1000 - beforeChange);
       var beforeMethod = Date.now() / 1000;
       pointer.set(obj, '/_meta/_changes', {
         _id: id + '/_meta/_changes',
@@ -240,16 +242,16 @@ function handleReq(req) {
       // Update rev of meta?
       obj['_meta']['_rev'] = rev;
 
-      return Promise.resolve(method(id, obj, !req.ignoreLinks))
+      return Bluebird.resolve(method(id, obj, !req.ignoreLinks))
         .then((orev) => ({ rev, orev, changeId }))
-        .tap(() => trace('method', Date.now() / 1000 - beforeMethod));
+        .tap(() => trace('method %d', Date.now() / 1000 - beforeMethod));
     })
     .then(function respond({ rev, orev, changeId }) {
-      trace('upsert then', Date.now() / 1000 - beforeUpsert);
+      trace('upsert then %d', Date.now() / 1000 - beforeUpsert);
       var beforeCachePut = Date.now() / 1000;
       // Put the new rev into the cache
       cache.put(id, rev);
-      trace('cache.put', Date.now() / 1000 - beforeCachePut);
+      trace('cache.put %d', Date.now() / 1000 - beforeCachePut);
 
       const res = {
         msgtype: 'write-response',
@@ -289,7 +291,7 @@ function handleReq(req) {
 
   var beforeCleanUp = Date.now() / 1000;
   var cleanup = body.then(() => {
-    trace('cleanup', Date.now() / 1000 - beforeCleanUp);
+    trace('cleanup %d', Date.now() / 1000 - beforeCleanUp);
     var beforeRPB = Date.now() / 1000;
     // Remove putBody, if there was one
     // const result = req.bodyid && putBodies.removePutBody(req.bodyid);
@@ -297,11 +299,11 @@ function handleReq(req) {
       req.bodyid &&
       putBodies
         .removePutBody(req.bodyid)
-        .tap(() => trace('remove Put Body', Date.now() / 1000 - beforeRPB))
+        .tap(() => trace('remove Put Body %d', Date.now() / 1000 - beforeRPB))
     );
   });
   var beforeJoin = Date.now() / 1000;
-  return Promise.join(upsert, cleanup, (resp) => resp).tap(() =>
-    trace('join', Date.now() / 1000 - beforeJoin)
+  return Bluebird.join(upsert, cleanup, (resp) => resp).tap(() =>
+    trace('join %d', Date.now() / 1000 - beforeJoin)
   );
 }

@@ -21,7 +21,7 @@ const trace = debug('sync-handler:trace');
 const warn = debug('sync-handler:warn');
 const error = debug('sync-handler:error');
 
-const Promise = require('bluebird');
+const Bluebird = require('bluebird');
 const URL = require('url');
 const { Responder } = require('@oada/lib-kafka');
 const { resources, remoteResources } = require('@oada/lib-arangodb');
@@ -51,13 +51,13 @@ responder.on('request', async function handleReq(req) {
     return;
   }
 
-  let id = req['resource_id'];
+  const id = req['resource_id'];
   trace(`Saw change for resource ${id}`);
 
   //let rev = req['_rev'];
-  let orev = req['_orev'];
+  const orev = req['_orev'];
   // TODO: Add AQL query for just syncs and newest change?
-  let syncs = await resources
+  const syncs = await resources
     .getResource(id, `/_meta/${META_KEY}`)
     .then((syncs) => syncs || {})
     .then(Object.entries)
@@ -70,33 +70,33 @@ responder.on('request', async function handleReq(req) {
   }
   trace(`Processing syncs for resource ${id}`);
 
-  let desc = resources
+  const desc = resources
     .getNewDescendants(id, orev)
-    .tap((desc) => trace(`New descendants for ${id}`, desc));
+    .tap((desc) => trace(`New descendants for ${id}: %O`, desc));
   // TODO: Figure out just what changed
-  let changes = await desc
+  const changes = await desc
     .filter((d) => d.changed)
-    .map((d) => ({ [d.id]: resources.getResource(d.id) }))
+    .map(({ id }) => ({ [id]: resources.getResource(id) }))
     .reduce((a, b) => Object.assign(a, b));
 
   // TODO: Probably should not be keeping the tokens under _meta...
-  let puts = Promise.map(syncs, async ([key, { url, domain, token }]) => {
+  const puts = Bluebird.map(syncs, async ([key, { url, domain, token }]) => {
     info(`Running sync ${key} for resource ${id}`);
-    trace(`Sync ${key}`, { url, domain, token });
+    trace(`Sync ${key}: %O`, { url, domain, token });
     // Need separate changes map for each sync since they run concurently
     let lchanges = Object.assign({}, changes); // Shallow copy
 
     if (process.env.NODE_ENV !== 'production') {
       /*
-                If running in dev environment localhost should
-                be directed to the proxy server
-            */
+       * If running in dev environment,
+       * localhost should be directed to the proxy server
+       */
       // eslint-disable-next-line no-param-reassign
       domain = domain.replace('localhost', 'proxy');
     }
 
     // TODO: Cache this?
-    let apiroot = Promise.resolve(
+    let apiroot = Bluebird.resolve(
       axios({
         method: 'get',
         url: `https://${domain}/.well-known/oada-configuration`,
@@ -120,7 +120,7 @@ responder.on('request', async function handleReq(req) {
 
         let url = `${await apiroot}resources/`;
         // Create any missing remote IDs
-        let loc = await Promise.resolve(
+        let loc = await Bluebird.resolve(
           axios({
             method: 'post',
             data: {},
@@ -153,10 +153,14 @@ responder.on('request', async function handleReq(req) {
         await remoteResources
           .addRemoteId(newrids, domain)
           .tapCatch(remoteResources.UniqueConstraintError, () => {
-            error('Unique constraint error for remoteId', newrids, domain);
+            error(
+              'Unique constraint error for remoteId %O %O',
+              newrids,
+              domain
+            );
           });
 
-        trace(`Created remote ID for ${id} at ${domain}`, newrids);
+        trace(`Created remote ID for ${id} at ${domain}: %O`, newrids);
       });
 
     rids = (await rids).filter(({ rid }) => rid).concat(await newrids);
@@ -164,7 +168,7 @@ responder.on('request', async function handleReq(req) {
     let idmapping = rids
       .map(({ id, rid }) => ({ [id]: rid }))
       .reduce((a, b) => ({ ...a, ...b }), {});
-    let docs = Promise.map(rids, async ({ id, rid }) => {
+    let docs = Bluebird.map(rids, async ({ id, rid }) => {
       let change = await lchanges[id];
       if (!change) {
         return Promise.resolve();
@@ -209,7 +213,7 @@ responder.on('request', async function handleReq(req) {
       });
 
       // TODO: Support DELETE
-      let put = axios({
+      const put = axios({
         method: 'put',
         url: `${await apiroot}${rid}`,
         data: body,
@@ -221,7 +225,7 @@ responder.on('request', async function handleReq(req) {
       await put;
 
       trace(
-        `Finished PUTing change for ${id} to ${rid} at ${domain}`,
+        `Finished PUTing change for ${id} to ${rid} at ${domain}: %O`,
         await put
       );
       return put;

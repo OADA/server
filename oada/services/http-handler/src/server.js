@@ -1,13 +1,13 @@
 'use strict';
 
-var Promise = require('bluebird');
+const Bluebird = require('bluebird');
 const express = require('express');
 const expressPromise = require('express-promise');
 const ksuid = require('ksuid');
 const cors = require('cors');
 const wellKnownJson = require('well-known-json');
 const oadaError = require('oada-error');
-const OADAError = oadaError.OADAError;
+const { OADAError } = oadaError;
 
 const info = require('debug')('http-handler:server:info');
 const warn = require('debug')('http-handler:server:warn');
@@ -35,7 +35,7 @@ app.get('*', (req, res, next) => {
 app.get('/favicon.ico', (req, res) => res.end());
 
 function start() {
-  return Promise.fromCallback(function (done) {
+  return Bluebird.fromCallback(function (done) {
     info('Starting server...');
     server.listen(config.get('server:port'), done);
   }).tap(() => {
@@ -48,8 +48,8 @@ app.use(expressPromise());
 // Log all requests before anything else gets them for debugging:
 app.use(function (req, res, next) {
   trace('Received request: ' + req.method + ' ' + req.url);
-  trace('req.headers = ', req.headers);
-  trace('req.body = ', req.body);
+  trace('req.headers = %O' + req.headers);
+  trace('req.body = %O', req.body);
   next();
 });
 // Turn on CORS for all domains, allow the necessary headers
