@@ -12,17 +12,15 @@ oada/.dockerignore @awalyton
 
 docker-compose.yml @abalmos @awlayton
 common.yml @abalmos
-mutagen-compose.yml @awlayton
 
-scripts @aultac
-
-# Ault made the nginx stuff
-support/proxy @aultac
+# Alex made swag based proxy
+support/proxy @awlayton
 
 oada/Dockerfile @abalmos @awlayton
 oada/lerna.json @awlayton
 
 oada/libs/oada-lib-kafka @awlayton
+oada/libs/oada-pino-debug @awlayton
 #oada/libs/oada-lib-arangodb
 oada/libs/oada-lib-config @aultac
 
