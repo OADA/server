@@ -69,17 +69,17 @@ async function lookupFromUrl(url, userId) {
     .query({ query, bindVars: {} })
     .call('next')
     .then((result) => {
-      let resource_id = pointer.compile(id.concat(pieces)).replace(/^\//, ''); // Get rid of leading slash from json pointer
+      // Get rid of leading slash from json pointer
+      let resource_id = pointer.compile(id.concat(pieces)).replace(/^\//, '');
 
-      let rev = result.rev;
-      let type = result.type;
+      let { rev, type } = result;
       let resourceExists = true;
 
       let path_leftover = '';
       let from = { resource_id: '', path_leftover: '' };
 
       if (!result) {
-        trace('1 return resource id', resource_id);
+        trace('1 return resource id %s', resource_id);
         return {
           resource_id,
           path_leftover,
@@ -122,7 +122,7 @@ async function lookupFromUrl(url, userId) {
       // Check for a traversal that did not finish (aka not found)
       if (result.vertices[0] === null) {
         trace('graph-lookup traversal did not finish');
-        trace('2 return resource id', resource_id);
+        trace('2 return resource id %s', resource_id);
 
         return {
           resource_id,
@@ -139,7 +139,7 @@ async function lookupFromUrl(url, userId) {
         let lastEdge = result.edges[result.edges.length - 1]._to;
         path_leftover = '';
         resource_id = 'resources/' + lastEdge.split('graphNodes/resources:')[1];
-        trace('graph-lookup traversal uncreated resource', resource_id);
+        trace('graph-lookup traversal uncreated resource %s', resource_id);
         rev = 0;
         from = result.vertices[result.vertices.length - 2];
         let edge = result.edges[result.edges.length - 1];
@@ -152,7 +152,7 @@ async function lookupFromUrl(url, userId) {
       } else {
         resource_id =
           result.vertices[result.vertices.length - 1]['resource_id'];
-        trace('graph-lookup traversal found resource', resource_id);
+        trace('graph-lookup traversal found resource %s', resource_id);
         from = result.vertices[result.vertices.length - 2];
         let edge = result.edges[result.edges.length - 1];
         // If the desired url has more pieces than the longest path, the
@@ -162,7 +162,7 @@ async function lookupFromUrl(url, userId) {
           let lastResource =
             result.vertices.length -
             1 -
-            revVertices.findIndex((v) => v === 'is_resource');
+            revVertices.findIndex((v) => v.is_resource);
           // Slice a negative value to take the last n pieces of the array
           path_leftover = pointer.compile(
             pieces.slice(lastResource - pieces.length)
