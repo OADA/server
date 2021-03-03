@@ -20,7 +20,7 @@
   "dependencies": {
     "@oada/lib-config": "^0.0.1",
     "bluebird": "^3.7.2",
-    "debug": "^4.3.1",
+    "debug": "^4.3.2",
     "ksuid": "^2.0.0",
     "node-rdkafka": "^2.10.1",
     "uuid": "^8.3.2"
