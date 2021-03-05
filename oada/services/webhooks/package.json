@@ -13,7 +13,7 @@
     "@oada/lib-arangodb": "^0.0.2",
     "@oada/lib-config": "^0.0.1",
     "@oada/lib-kafka": "^1.0.0",
-    "@oada/pino-debug": "workspace:libs/oada-pino-debug",
+    "@oada/pino-debug": "^1.0.0",
     "axios": "^0.21.1",
     "bluebird": "^3.7.2",
     "debug": "^4.3.2",

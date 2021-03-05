@@ -1,11 +1,4 @@
 node_modules
-services-available/*
-!services-available/.gitkeep
-services-enabled/*
-!services-enabled/.gitkeep
-domains-enabled/*
-!domains-enabled/localhost
-!domains-enabled/localhost/**
 package.lock
 *.log
 .DS_Store

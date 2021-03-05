@@ -43,7 +43,7 @@
     "@oada/oada-certs": "^3.1.8",
     "@oada/oada-id-client": "^1.0.10",
     "@oada/oada-lookup": "^1.0.0",
-    "@oada/pino-debug": "workspace:libs/oada-pino-debug",
+    "@oada/pino-debug": "^1.0.0",
     "@oada/well-known-json": "^1.0.1",
     "arangojs": "^7.2.0",
     "axios": "^0.21.1",
