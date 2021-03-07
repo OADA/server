@@ -4,7 +4,7 @@
   "description": "",
   "main": "server.js",
   "scripts": {
-    "start": "node -r @oada/pino-debug server.js",
+    "start": "forever -c \"node -r @oada/pino-debug\" server.js",
     "test": "DEBUG=* mocha test/permissions-handler.js"
   },
   "author": "",
@@ -14,6 +14,7 @@
     "@oada/lib-kafka": "^1.0.0",
     "@oada/pino-debug": "^1.0.0",
     "debug": "^4.3.2",
+    "forever": "^3.0.4",
     "randomstring": "^1.1.5",
     "type-is": "^1.6.18"
   },

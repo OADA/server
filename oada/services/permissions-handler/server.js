@@ -20,6 +20,14 @@ const fs = require('fs');
 const typeis = require('type-is');
 const warn = debug('permissions-handler:warn');
 const trace = debug('permissions-handler:trace');
+const error = debug('permissions-handler:error');
+
+process.on('uncaughtException', function(err) {
+  console.error((new Date).toUTCString() + ' uncaughtException:', err.message)
+  console.error(err.stack)
+  console.error('Killing node process pid ', process.pid);
+  process.kill(process.pid)
+});
 
 const { Responder } = require('@oada/lib-kafka');
 const config = require('./config');
@@ -88,6 +96,10 @@ responder.on('request', function handleReq(req) {
     responder.scopes = { read: true, write: true };
   } else {
     // Check for read permission
+    if (!req.scope || !req.scope.some) {
+      error('ERROR: scope is not an array: ', req.scope);
+      req.scope = [];
+    }
     response.scopes.read = req.scope.some(function chkScope(scope) {
       const [type, perm] = scope.split(':');
 
