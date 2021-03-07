@@ -1,5 +1,3 @@
-#!/usr/bin/env node
-
 const config = require('@oada/lib-config')(
   require('/oada-srvc-docker-config.js')
 );
@@ -28,7 +26,7 @@ async function findUserByUsername(username) {
 // The main event:
 async function run() {
   try {
-    if (argv.h || argv.help || Object.keys(argv).length <= 1) {
+    if (argv.h || argv.help) {
       console.log(
         chalk.yellow(
           'useradd [-u username] [-p password] [-d domain.com] [ -a (if you want user to have admin priviledges to create other users)]'
