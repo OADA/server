@@ -25,8 +25,19 @@ see [here](oada/).
 
 Download one of our [releases] and start it using [docker-compose].
 
+Using `oadadeploy` script:
+```shellSession
+$ cd where/you/want/oada
+$ curl -OfsSL https://raw.githubusercontent.com/oada/oadadeploy/master/oadadeploy && chmod u+x oadadeploy
+$ oadadeploy init -y
+$ oadadeploy domain add <your_domain>
+$ oadadeploy up
+```
+
+Or, manually:
 ```shellSession
 $ cd folder/containing/release/docker-compose
+$ # Create your domain files and certificates and mount properly in docker-compose.override.yml
 $ # Will pull the corresponding release images from dockerhub
 $ DOMAIN=yourdomain.com docker-compose up -d
 ```
