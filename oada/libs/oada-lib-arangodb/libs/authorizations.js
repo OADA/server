@@ -1,14 +1,16 @@
 'use strict';
 
-const config = require('../config');
-const db = require('../db');
-const cloneDeep = require('clone-deep');
 const { aql } = require('arangojs');
-const util = require('../util');
+const cloneDeep = require('clone-deep');
 const debug = require('debug');
-const trace = debug('@oada/lib-arangodb#authorizations:trace');
+const Bluebird = require('bluebird');
 
+const db = require('../db');
+const util = require('../util');
 const users = require('./users.js');
+const config = require('../config');
+
+const trace = debug('@oada/lib-arangodb#authorizations:trace');
 
 const authorizations = db.collection(
   config.get('arangodb:collections:authorizations:name')
@@ -20,8 +22,7 @@ function findById(id) {
       aql`
       FOR t IN ${authorizations}
         FILTER t._key == ${id}
-        RETURN UNSET(t, '_key')
-    `
+        RETURN UNSET(t, '_key')`
     )
     .call('next');
 }
@@ -31,8 +32,8 @@ function findByToken(token) {
     .query(
       aql`
       FOR t IN ${authorizations}
-      FILTER t.token == ${token}
-      RETURN t`
+        FILTER t.token == ${token}
+        RETURN t`
     )
     .call('next')
     .then((t) => {
@@ -44,9 +45,9 @@ function findByToken(token) {
       //t._id = t._key;
 
       trace(
-        'Found authorization by token (' +
-          t +
-          '), filling out user from users collection by user._id'
+        'Found authorization by token (%s),' +
+          ' filling out user from users collection by user._id',
+        t
       );
       return users.findById(t.user._id).then((user) => {
         t.user = user;
@@ -94,11 +95,12 @@ function remove(a) {
   return authorizations.remove(a);
 }
 
+// Wrap with Bluebird to try to not break old code
 module.exports = {
-  findById,
-  findByToken,
-  findByUser,
-  save,
-  revoke,
-  remove, // use with care!
+  findById: Bluebird.method(findById),
+  findByToken: Bluebird.method(findByToken),
+  findByUser: Bluebird.method(findByUser),
+  save: Bluebird.method(save),
+  revoke: Bluebird.method(revoke),
+  remove: Bluebird.method(remove), // use with care!
 };

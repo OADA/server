@@ -1,5 +1,7 @@
 'use strict';
 
+const Bluebird = require('bluebird');
+
 const config = require('../config');
 const db = require('../db');
 const { aql } = require('arangojs');
@@ -30,7 +32,8 @@ function save(client) {
     .then(() => findById(client.clientId));
 }
 
+// Wrap with Bluebird to try to not break old code
 module.exports = {
-  findById,
-  save,
+  findById: Bluebird.method(findById),
+  save: Bluebird.method(save),
 };
