@@ -3,14 +3,16 @@
 
 'use strict';
 
-const config = require('./config');
+const Bluebird = require('bluebird');
 const debug = require('debug');
+const equal = require('deep-equal');
+
+const config = require('./config');
+const users = require('./libs/users.js');
+
 const trace = debug('arango:init:trace');
 const error = debug('arango:init:error');
 const info = debug('arango:init:info');
-const equal = require('deep-equal');
-const users = require('./libs/users.js');
-const Bluebird = require('bluebird');
 
 // Can't use db.js's db because we're creating the actual database
 const db = require('arangojs')({
@@ -197,7 +199,8 @@ module.exports = {
                     ' exists on collection ' +
                     colname +
                     ', and ensureDefaults is falsy, ' +
-                    'so we are DELETING THIS DOCUMENT FROM THE DATABASE!  Before deleting, its value in the database was: ',
+                    'so we are DELETING THIS DOCUMENT FROM THE DATABASE! ' +
+                    'Before deleting, its value in the database was: ',
                   JSON.stringify(dbdoc, false, '  ')
                 );
                 return db

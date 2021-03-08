@@ -77,7 +77,7 @@ function save(token) {
     t._key = t._id.replace(/^authorizations\//, '');
     delete t._id;
   }
-  trace('save: Replacing/Inserting token ', t);
+  trace('save: Replacing/Inserting token %s', t);
   // overwrite will replace the given token if it already exists
   return authorizations
     .save(t, { overwrite: true })

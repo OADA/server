@@ -1,10 +1,12 @@
 'use strict';
 
-const db = require('../db');
-const debug = require('debug');
-const trace = debug('arangodb#remoteResources:trace');
 const { aql } = require('arangojs');
+const debug = require('debug');
+
+const db = require('../db');
 const config = require('../config');
+
+const trace = debug('arangodb#remoteResources:trace');
 
 const remoteResources = db.collection(
   config.get('arangodb:collections:remoteResources:name')
@@ -31,13 +33,13 @@ function getRemoteId(id, domain) {
     `
     )
     .call('all')
-    .tap((rids) => trace('Found:', rids));
+    .tap((rids) => trace('Found: %O', rids));
 }
 
 function addRemoteId(rid, domain) {
   let rids = Array.isArray(rid) ? rid : [rid];
 
-  trace('Adding remote IDs:', rids);
+  trace('Adding remote IDs: %O', rids);
   return db.query(aql`
         FOR rid IN ${rids}
             INSERT {

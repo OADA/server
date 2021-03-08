@@ -1,15 +1,18 @@
 'use strict';
 
-const debug = require('debug');
-const info = debug('arangodb#resources:info');
-const config = require('../config');
-const db = require('../db.js');
 const { aql } = require('arangojs');
-const bcrypt = require('bcryptjs');
 const Bluebird = require('bluebird');
-const util = require('../util');
-const users = db.collection(config.get('arangodb:collections:users:name'));
+const debug = require('debug');
+const bcrypt = require('bcryptjs');
 const flatten = require('flat');
+
+const db = require('../db.js');
+const config = require('../config');
+const util = require('../util');
+
+const info = debug('arangodb#resources:info');
+
+const users = db.collection(config.get('arangodb:collections:users:name'));
 
 /*
   user {
@@ -112,7 +115,7 @@ function findByUsernamePassword(username, password) {
 
 function create(u) {
   return Bluebird.try(() => {
-    info('create user was called with data', u);
+    info('create user was called with data %O', u);
     if (u.password) u.password = hashPw(u.password);
     // Throws if username already exists
     return users.save(u, { returnNew: true }).then((r) => r.new || r);

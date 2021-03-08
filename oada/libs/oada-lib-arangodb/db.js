@@ -1,6 +1,6 @@
 'use strict';
 
-var Bluebird = require('bluebird');
+const Bluebird = require('bluebird');
 const { Database } = require('arangojs');
 
 const config = require('./config');
@@ -21,7 +21,7 @@ const DeadlockError = {
   name: 'ArangoError',
   errorNum: 29,
 };
-let query = db.query;
+const query = db.query;
 db.query = function (...args) {
   let tries = 0;
   function tryquery() {

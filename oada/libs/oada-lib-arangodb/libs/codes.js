@@ -1,8 +1,9 @@
 'use strict';
 
+const { aql } = require('arangojs');
+
 const config = require('../config');
 const db = require('../db');
-const { aql } = require('arangojs');
 const util = require('../util');
 
 const users = require('./users.js');

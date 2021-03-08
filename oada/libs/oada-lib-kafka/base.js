@@ -16,11 +16,12 @@
 'use strict';
 
 const process = require('process');
-
 const EventEmitter = require('events');
-var Promise = require('bluebird');
+
+const Bluebird = require('bluebird');
 const ksuid = require('ksuid');
 const kf = require('node-rdkafka');
+
 const config = require('./config');
 const info = require('debug')('@oada/lib-kafka:info');
 const error = require('debug')('@oada/lib-kafka:error');
@@ -34,6 +35,7 @@ const rdkafkaOpts = Object.assign(config.get('kafka:librdkafka'), {
 
 const CONNECT = Symbol('kafka-lib-connect');
 const DATA = Symbol('kafa-lib-data');
+
 const pollInterval = 500;
 const healthInterval = 5 * 60 * 1000;
 
@@ -83,7 +85,7 @@ class Base extends EventEmitter {
         this.consumer.on('error', (...args) => super.emit('error', ...args));
         this.producer.on('error', (...args) => super.emit('error', ...args));
         this.producer.on('delivery-report', function (err, _report) {
-            if (err) error('!!!!!!!!!!!!!!!!!!!!!!!', err);
+            if (err) error('!!!!!!!!!!!!!!!!!!!!!!! %O', err);
         });
 
         this.consumer.on('event.error', (...args) =>
@@ -93,13 +95,13 @@ class Base extends EventEmitter {
             super.emit('error', ...args)
         );
 
-        let consumerReady = Promise.fromCallback((done) => {
+        const consumerReady = Bluebird.fromCallback((done) => {
             this.consumer.on('ready', () => {
                 info(`${this.group}'s consumer ready`);
                 done();
             });
         });
-        let producerReady = Promise.fromCallback((done) => {
+        const producerReady = Bluebird.fromCallback((done) => {
             this.producer.on('ready', () => {
                 this.producer.setPollInterval(
                     config.get('kafka:producer:pollInterval') || pollInterval
@@ -119,7 +121,7 @@ class Base extends EventEmitter {
                 done();
             });
         });
-        this.ready = Promise.join(consumerReady, producerReady);
+        this.ready = Bluebird.join(consumerReady, producerReady);
 
         super.on('error', die);
     }
@@ -135,7 +137,7 @@ class Base extends EventEmitter {
     async [CONNECT]() {
         // Assume all messages are JSON
         this.consumer.on('data', ({ value, ...data }) => {
-            let resp = JSON.parse(value);
+            const resp = JSON.parse(value);
             super.emit(DATA, resp, data);
         });
 
@@ -143,7 +145,7 @@ class Base extends EventEmitter {
         this.producer.connect();
         await this.ready;
 
-        let topics = Array.isArray(this.consumeTopic)
+        const topics = Array.isArray(this.consumeTopic)
             ? this.consumeTopic
             : [this.consumeTopic];
         this.consumer.subscribe(topics);
@@ -154,12 +156,12 @@ class Base extends EventEmitter {
 
     async produce({ mesg, topic, part = null }) {
         // Assume all messages are JSON
-        let payload = JSON.stringify({
+        const payload = JSON.stringify({
             time: Date.now(),
             group: this.group,
             ...mesg,
         });
-        let value = Buffer.from(payload);
+        const value = Buffer.from(payload);
 
         await this.ready;
 
@@ -167,14 +169,14 @@ class Base extends EventEmitter {
     }
 
     disconnect() {
-        let dcons = Promise.fromCallback((done) => {
+        const dcons = Bluebird.fromCallback((done) => {
             this.consumer.disconnect(() => done());
         });
-        let dprod = Promise.fromCallback((done) => {
+        const dprod = Bluebird.fromCallback((done) => {
             this.producer.disconnect(() => done());
         });
 
-        return Promise.join(dcons, dprod);
+        return Bluebird.join(dcons, dprod);
     }
 }
 

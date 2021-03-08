@@ -1,11 +1,14 @@
 'use strict';
 
-const db = require('../db');
-const debug = require('debug');
-const trace = debug('arangodb#resources:trace');
 const { aql } = require('arangojs');
 const pointer = require('json-pointer');
+const debug = require('debug');
+
+const db = require('../db');
 const config = require('../config');
+
+const trace = debug('arangodb#resources:trace');
+
 const changes = db.collection(config.get('arangodb:collections:changes:name'));
 const changeEdges = db.collection(
   config.get('arangodb:collections:changeEdges:name')
@@ -148,7 +151,7 @@ function toChangeObj(arangoPathObj) {
   let body = arangoPathObj.vertices[nVertices - 1].body;
   let resource_id = arangoPathObj.vertices[nVertices - 1].resource_id;
   // return change object
-  trace('toChangeObj: returning change object with body ', body);
+  trace('toChangeObj: returning change object with body %O', body);
   return {
     resource_id,
     path,
@@ -191,7 +194,7 @@ function putChange({
     throw new Error('children must be an array.');
   }
   let number = parseInt(rev, 10);
-  trace('putChange: inserting change with body ', change);
+  trace('putChange: inserting change with body %O', change);
   return db
     .query(
       aql`

@@ -16,6 +16,7 @@
 'use strict';
 
 const util = require('util');
+
 const ksuid = require('ksuid');
 const Bluebird = require('bluebird');
 

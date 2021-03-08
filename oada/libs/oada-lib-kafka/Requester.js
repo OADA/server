@@ -15,8 +15,9 @@
 
 'use strict';
 
-const EventEmitter = require('events');
 const util = require('util');
+const EventEmitter = require('events');
+
 const ksuid = require('ksuid');
 const Bluebird = require('bluebird');
 

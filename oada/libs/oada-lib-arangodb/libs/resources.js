@@ -1,16 +1,19 @@
 'use strict';
 
-const db = require('../db');
-const debug = require('debug');
-const info = debug('arangodb#resources:info');
-const trace = debug('arangodb#resources:trace');
-const cloneDeep = require('clone-deep');
 const Bluebird = require('bluebird');
 const { aql } = require('arangojs');
+const debug = require('debug');
+const cloneDeep = require('clone-deep');
 const pointer = require('json-pointer');
+
+const db = require('../db');
 const config = require('../config');
 const util = require('../util');
 const users = require('./users');
+
+const info = debug('arangodb#resources:info');
+const trace = debug('arangodb#resources:trace');
+
 const resources = db.collection(
   config.get('arangodb:collections:resources:name')
 );
@@ -250,7 +253,7 @@ function getResourceOwnerIdRev(id) {
   )
     .then((result) => result.next())
     .then((obj) => {
-      trace('getResourceOwnerIdRev(' + id + '): result = ', obj);
+      trace('getResourceOwnerIdRev(%s): result = %O', id, obj);
       return obj;
     })
     .catch(
@@ -357,7 +360,7 @@ function putResource(id, obj, checkLinks = true) {
   return (checkLinks ? addLinks(obj) : Promise.resolve([])).then(
     function docUpsert(links) {
       info(`Upserting resource ${obj._key}`);
-      trace(`Upserting links: ${JSON.stringify(links, null, 2)}`);
+      trace('Upserting links: %O', links);
 
       // TODO: Should it check that graphNodes exist but are wrong?
       var q;
