@@ -73,7 +73,7 @@ COPY . /oada/
 RUN yarn install --immutable
 
 # Build and then remove yarn stuff??
-RUN yarn workspaces foreach run build; rm -rf .yarn .pnp.*
+RUN yarn workspaces foreach run build && rm -rf .yarn .pnp.*
 
 FROM install
 
