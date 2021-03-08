@@ -953,7 +953,6 @@ __metadata:
     connect-ensure-login: ^0.1.1
     cors: ^2.8.5
     debug: ^4.3.2
-    debug-logger: ^0.4.1
     express: ^4.17.1
     express-session: ^1.17.1
     jsonwebtoken: ^8.5.1
@@ -3200,16 +3199,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"debug-logger@npm:^0.4.1":
-  version: 0.4.1
-  resolution: "debug-logger@npm:0.4.1"
-  dependencies:
-    debug: ^2.1.0
-  checksum: 140225c8d7cb62e1b132aaa2c185d3b70dd0a669f09fe2183f9c18ca4b1ee184da450e65e41da6e332a1db2d395bcf91de9a1e4440b09a617c27baa61cddfa4a
-  languageName: node
-  linkType: hard
-
-"debug@npm:2.6.9, debug@npm:2.x.x, debug@npm:^2.0.0, debug@npm:^2.1.0, debug@npm:^2.2.0, debug@npm:^2.3.3, debug@npm:^2.6.8, debug@npm:^2.6.9":
+"debug@npm:2.6.9, debug@npm:2.x.x, debug@npm:^2.0.0, debug@npm:^2.2.0, debug@npm:^2.3.3, debug@npm:^2.6.8, debug@npm:^2.6.9":
   version: 2.6.9
   resolution: "debug@npm:2.6.9"
   dependencies:

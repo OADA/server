@@ -23,19 +23,26 @@ global.isLibrary = !(require.main === module);
 
 const util = require('util');
 const fs = require('fs');
-const { trace, info, error } = require('debug-logger')('auth#index');
+
+const debug = require('debug');
+
 const config = require('./config');
+
+const info = debug('auth#index:info');
+const error = debug('auth#index:error');
+const trace = debug('auth#index:trace');
+
 // If there is an endpointsPrefix, update all the endpoints to include the
 // prefix before doing anything else
 const pfx = config.get('auth:endpointsPrefix');
 if (typeof pfx === 'string') {
-  trace('Adding supplied prefix ' + pfx + ' to all endpoints');
+  trace('Adding supplied prefix %s to all endpoints', pfx);
   const endpoints = config.get('auth:endpoints');
-  Object.entries(endpoints).map((k, v) => {
+  for (const [k, v] of Object.entries(endpoints)) {
     config.set('auth:endpoints:' + k, pfx + v);
-  });
+  }
 }
-trace('Using config = ', config.get('auth'));
+trace('Using config = %O', config.get('auth'));
 
 const path = require('path');
 const https = require('https');
@@ -49,10 +56,10 @@ const oauth2orize = require('oauth2orize');
 const URI = require('urijs');
 const axios = require('axios');
 
-const oadaError = require('oada-error').middleware;
+const { middleware: oadaError } = require('oada-error');
 
 // Use the oada-id-client for the openidconnect code flow:
-const oadaidclient = require('@oada/oada-id-client').middleware;
+const { middleware: oadaidclient } = require('@oada/oada-id-client');
 
 //-----------------------------------------------------------------------
 // Load all the domain configs at startup
