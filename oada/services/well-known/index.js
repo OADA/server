@@ -36,7 +36,7 @@ Bluebird.try(function () {
   //-----------------------------------------------------------------
   // Log all requests before anything else gets them for debugging:
   app.use(function (req, _res, next) {
-    log.info('Received request: ' + req.method + ' ' + req.url);
+    log.info('Received request: %s %s', req.method, req.url);
     //log.trace('req.headers = ', req.headers);
     //log.trace('req.body = ', req.body);
     next();
@@ -72,39 +72,42 @@ Bluebird.try(function () {
     config.get('wellKnown:openid-configuration')
   );
 
-  //---------------------------------------------------------------------------------
-  // Retrieve /.well-known/ from sub-services, replacing domains and paths as needed
+  //------------------------------------------
+  // Retrieve /.well-known/ from sub-services,
+  // replacing domains and paths as needed
   app.use(function (req, _res, done) {
     // parse out the '/.well-known' part of the URL, like
     // '/.well-known/oada-configuration' or '/.well-known/openid-configuration'
-    const whichdoc = req.url.replace(/^.*(\/.well-known\/.*$)/, '$1'); // /.well-known/oada-configuration
-    const resource = whichdoc.replace(/^\/.well-known\/(.*)$/, '$1'); // oada-configuration
+    //
+    // /.well-known/oada-configuration
+    const whichdoc = req.url.replace(/^.*(\/.well-known\/.*$)/, '$1');
+    // oada-configuration
+    const resource = whichdoc.replace(/^\/.well-known\/(.*)$/, '$1');
     const subservices = config.get('wellKnown:mergeSubServices');
     if (Array.isArray(subservices)) {
       return Bluebird.map(subservices, function (s) {
-        // If this subservice doesn't support this resource (oada-configuration vs. openid-configuration), move on...
+        // If this subservice doesn't support this resource
+        // (oada-configuration vs. openid-configuration), move on...
         if (s.resource !== resource) {
           log.trace(
-            'Requested resource ' +
-              resource +
-              ', but this subservice entry (' +
-              s +
-              ') is not for that resource.  Skipping...'
+            'Requested resource %s, ' +
+              'but this subservice entry (%o) is not for that resource.' +
+              'Skipping...',
+            resource,
+            s
           );
           return;
         } else {
           log.trace(
-            'Resource (' +
-              resource +
-              ') matches subservice entry (' +
-              s +
-              '), retrieving'
+            'Resource (%s) matches subservice entry (%o), retrieving',
+            resource,
+            s
           );
         }
 
         // Request this resource from the subservice:
         const url = s.base + whichdoc;
-        log.trace('Requesting subservice url: %s', url);
+        log.trace('Requesting subservice URL: %s', url);
         return request({ url: url, json: true })
           .then(function (result) {
             if (!result || result.statusCode !== 200) {
@@ -113,20 +116,26 @@ Bluebird.try(function () {
             }
 
             log.info('Merging ' + whichdoc + ' for subservice ' + s.base);
-            // the wkj handler library unfortunately puts the servername for the sub-service on the
-            // URL's instead of the proxy's name.  Replace the subservice name with "./" so
-            // this top-level wkj handler will replace properly:
+            // the wkj handler library puts the servername for the sub-service
+            // on the URLs instead of the proxy's name.
+            // Replace the subservice name with "./"
+            // so this top-level wkj handler will replace properly:
             const pfx = s.addPrefix || '';
-            const body = Object.values(result.body).map(function (val) {
-              if (typeof val !== 'string') return val;
-              return val.replace(/^https?:\/\/[^\/]+\//, './' + pfx);
-            });
+            const body = {};
+            for (const [key, val] of Object.entries(result.body)) {
+              if (typeof val !== 'string') {
+                body[key] = val;
+              } else {
+                body[key] = val.replace(/^https?:\/\/[^\/]+\//, './' + pfx);
+              }
+            }
             well_known_handler.addResource(s.resource, body);
+            log.trace('Merged into %s: %O', whichdoc, body);
 
             // If failed to return, or json didn't parse:
           })
           .catch(function (err) {
-            log.info('The subservice URL ' + url + ' failed. err = %O', err);
+            log.info('The subservice URL %s failed. err = %O', url, err);
           });
 
         // No matter whether we throw or not, let request continue:
@@ -159,7 +168,7 @@ Bluebird.try(function () {
   // In oada-srvc-docker, the proxy provides the https for us,
   // but this service could also have its own certs and run https
   if (config.get('wellKnown:server:protocol') === 'https://') {
-    var s = https.createServer(config.get('wellKnown:server:certs'), app);
+    const s = https.createServer(config.get('wellKnown:server:certs'), app);
     s.listen(app.get('port'), function () {
       log.info(
         'OADA Well-Known service started on port %d [https]',
@@ -171,7 +180,7 @@ Bluebird.try(function () {
     // Otherwise, just plain-old HTTP server
   } else {
     app.listen(app.get('port'), function () {
-      log.info('OADA Test Server started on port %d', app.get('port'));
+      log.info('OADA well-known server started on port %d', app.get('port'));
     });
   }
 });
