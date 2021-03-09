@@ -98,5 +98,8 @@ CMD ["start", "--config=/oada-srvc-docker-config.js"]
 ARG OADA_SERVICE
 ENV OADA_SERVICE=${OADA_SERVICE}
 
+# Do not run services as root
+USER node
+
 WORKDIR /oada/services/${OADA_SERVICE}
 
