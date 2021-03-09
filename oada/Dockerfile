@@ -4,12 +4,13 @@ WORKDIR /oada
 
 # node-rdkafka requires these things to be installed:
 RUN apt-get update -y && apt-get install -y --no-install-recommends \
-    zlibc \
+    ca-certificates \
     libc6 \
     liblz4-1 \
     libsasl2-2 \
     libssl1.1 \
-    ca-certificates \
+    tini \
+    zlibc \
   && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 FROM install AS packages
@@ -92,7 +93,9 @@ COPY --from=build /oada/ /oada/
 # Copy in config file?
 COPY ./oada-srvc-docker-config.js /oada-srvc-docker-config.js
 
-ENTRYPOINT ["/bin/sh", "/entrypoint.sh"]
+# Launch entrypoint with tini
+ENTRYPOINT ["/usr/bin/tini", "--", "/entrypoint.sh"]
+# Run start script of package
 CMD ["start", "--config=/oada-srvc-docker-config.js"]
 
 ARG OADA_SERVICE
