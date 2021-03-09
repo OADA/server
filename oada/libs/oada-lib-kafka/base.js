@@ -123,7 +123,16 @@ class Base extends EventEmitter {
         });
         this.ready = Bluebird.join(consumerReady, producerReady);
 
+        // Error handling stuff?
         super.on('error', die);
+        // see: https://github.com/Blizzard/node-rdkafka/issues/222
+        // says fixed, but seems to still be an issue for us.
+        process.on('uncaughtExceptionMonitor', () => {
+            error('Disconnect kafka clients due to uncaught exception');
+            // Disconnect kafka clients on uncaught exception
+            this.consumer.disconnect();
+            this.producer.disconnect();
+        });
     }
 
     on(event, listener) {
