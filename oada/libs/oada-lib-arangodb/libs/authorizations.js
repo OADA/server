@@ -45,7 +45,7 @@ function findByToken(token) {
       //t._id = t._key;
 
       trace(
-        'Found authorization by token (%s),' +
+        'Found authorization by token (%O),' +
           ' filling out user from users collection by user._id',
         t
       );

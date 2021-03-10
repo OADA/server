@@ -1,9 +1,11 @@
 const debug = require('debug');
+
+const oadaLib = require('@oada/lib-arangodb');
+
 const trace = debug('token-lookup:trace');
 const info = debug('token-lookup:info');
 const warn = debug('token-lookup:warn');
 const error = debug('token-lookup:error');
-const oadaLib = require('@oada/lib-arangodb');
 
 module.exports = function tokenLookup(req) {
   const res = {
@@ -61,18 +63,16 @@ module.exports = function tokenLookup(req) {
           t.expired = true;
         }
         trace(
-          'token.createTime = ',
+          'token.createTime = %s, t.expiresIn = %s, now = %s',
           t.createTime,
-          ', t.expiresIn = ',
           t.expiresIn,
-          ', now = ',
           now
         );
       }
-      trace('token expired? ', t.expired);
+      trace('token expired? %s', t.expired);
 
       msg.token_exists = true;
-      trace('received authorization, _id = ', t._id);
+      trace('received authorization, _id = %s', t._id);
       msg.doc.authorizationid = t._id;
       msg.doc.client_id = t.clientId;
       msg.doc.user_id = t.user._id || msg.doc.user_id;
