@@ -27,6 +27,11 @@ module.exports = {
 
   domainsDir: '/oada/services/auth/domains', // served by auth for login pages, software statements, keys, etc.
 
+  server: {
+    port: 8080,
+    mode: 'http',
+  },
+
   arangodb: {
     connectionString: 'http://arangodb:8529',
     database: 'oada',
@@ -143,7 +148,7 @@ module.exports = {
       // Replace these in production with things that are actually secret...
       'sessionSecret': '2jp901p3#2#(!)kd9',
       'passwordSalt': '$2a$06$xbh/gQcEgAX5eapjlCgMYO',
-      'port-http': 80,
+      'port-http': 8080,
       'mode': 'http',
       'proxy': 'uniquelocal',
       'domain': domain, // in docker it's port 80 localhost
@@ -167,13 +172,13 @@ module.exports = {
   wellKnown: {
     // forceProtocol: 'https', // use this to force URL's to have https prefix.  Useful when behind a proxy.
     'server': {
-      port: 80,
+      port: 8080,
       mode: 'http',
       domain: domain,
     },
     'mergeSubServices': [
-      { resource: 'oada-configuration', base: 'http://auth' },
-      { resource: 'openid-configuration', base: 'http://auth' },
+      { resource: 'oada-configuration', base: 'http://auth:8080' },
+      { resource: 'openid-configuration', base: 'http://auth:8080' },
     ],
     'oada-configuration': {
       well_known_version: '1.1.0',

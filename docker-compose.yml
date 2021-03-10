@@ -12,7 +12,7 @@ services:
       - kafka
       - arangodb
     expose: # expose only internally, not on host
-      - '80'
+      - '8080'
     environment:
       # set RESETDATABASE to "yes" if you want to drop database on startup and recreate
       - RESETDATABASE=${RESETDATABASE-no}
@@ -30,7 +30,7 @@ services:
     networks:
       - http_net
     expose: # expose only internally, not on host
-      - '80'
+      - '8080'
 
   # http-handler is in charge of maintaining connectiongs to clients and starting
   # the first message for a request into Kafka
@@ -47,7 +47,7 @@ services:
     networks:
       - http_net
     expose: # expose only internally, not on host
-      - '80' # at one time this mapped 34135 from host to local 80 for some reason
+      - '8080'
     environment:
       - IGNORE_SCOPE
 
@@ -113,7 +113,7 @@ services:
     networks:
       - http_net
     expose: # expose only internally, not on host
-      - '80'
+      - '8080'
 
   webhooks:
     extends:

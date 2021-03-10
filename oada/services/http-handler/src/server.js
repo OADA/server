@@ -39,7 +39,7 @@ function start() {
     info('Starting server...');
     server.listen(config.get('server:port'), done);
   }).tap(() => {
-    info('OADA Test Server started on port ' + app.get('port'));
+    info('OADA Server started on port %d', config.get('server:port'));
   });
 }
 // Allow route handlers to return promises:

@@ -13,7 +13,7 @@ arangolib.init.run().then(() => {
     trace('Request received.');
   });
 
-  const server = app.listen(80, function () {
+  const server = app.listen(8080, function () {
     var host = server.address().address;
     var port = server.address().port;
 

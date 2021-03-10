@@ -34,6 +34,8 @@ const error = debug('websockets:error');
 const warn = debug('websockets:warn');
 const trace = debug('websockets:trace');
 
+const port = config.get('server:port');
+
 const emitter = new EventEmitter();
 
 // Make sure we stringify the http request data ourselves
@@ -177,7 +179,7 @@ module.exports = function wsHandler(server: Server) {
       info(`Handling socket req ${msg.requestId}:`, msg.method, msg.path);
 
       const request: HTTPRequest = {
-        baseURL: 'http://127.0.0.1',
+        baseURL: `http://127.0.0.1:${port}`,
         url: msg.path,
         headers: {
           // Pass requestId along to main code for easier tracking
