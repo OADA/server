@@ -130,8 +130,16 @@ class Base extends EventEmitter {
         process.on('uncaughtExceptionMonitor', () => {
             error('Disconnect kafka clients due to uncaught exception');
             // Disconnect kafka clients on uncaught exception
-            this.consumer.disconnect();
-            this.producer.disconnect();
+            try {
+                this.consumer.disconnect();
+            } catch (err) {
+                error(err);
+            }
+            try {
+                this.producer.disconnect();
+            } catch (err) {
+                error(err);
+            }
         });
     }
 
