@@ -6,6 +6,7 @@
     "noUnusedParameters": true,
     "noImplicitThis": true,
     "noImplicitAny": true,
-    "sourceMap": true
+    "sourceMap": true,
+    "declaration": true
   }
 }

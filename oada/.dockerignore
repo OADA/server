@@ -25,6 +25,7 @@
 
 # Built TS etc.
 **/dist
+**/*.tsbuildinfo
 
 # yarn 2 stuff
 .yarn/*
