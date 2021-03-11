@@ -6,6 +6,7 @@ const expressPromise = require('express-promise');
 const ksuid = require('ksuid');
 const cors = require('cors');
 const wellKnownJson = require('well-known-json');
+const helmet = require('helmet');
 const oadaError = require('oada-error');
 const { OADAError } = oadaError;
 
@@ -28,6 +29,8 @@ var users = require('./users');
 require('./websockets')(server);
 
 var requester = require('./requester');
+
+app.use(helmet());
 
 app.get('*', (req, res, next) => {
   next();
