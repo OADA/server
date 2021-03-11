@@ -1,6 +1,6 @@
 import { resolve } from 'path';
 
-import pino from 'pino';
+import _pino, { LoggerOptions } from 'pino';
 import pinoDebug, { Logger, Options } from 'pino-debug';
 
 /**
@@ -22,6 +22,14 @@ export const defaultMap = <const>{
   // Send anything unspecified to debug?
   '*': 'debug',
 };
+
+/**
+ * Get pino, wrapping it with pino-caller when in development environment
+ */
+export function pino(opts: LoggerOptions) {
+  const p = _pino(opts ?? { level: 'trace' });
+  return process.env.NODE_ENV === 'development' ? require('pino-caller')(p) : p;
+}
 
 /**
  * Give use better defaults for pino-debug?

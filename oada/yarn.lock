@@ -1148,6 +1148,7 @@ __metadata:
     "@types/node": ^14.14.31
     "@types/pino": ^6.3.6
     pino: ^6.11.1
+    pino-caller: ^3.1.0
     pino-debug: ^2.0.0
   peerDependencies:
     debug: "*"
@@ -7849,6 +7850,17 @@ fsevents@~2.3.1:
   languageName: node
   linkType: hard
 
+"pino-caller@npm:^3.1.0":
+  version: 3.1.0
+  resolution: "pino-caller@npm:3.1.0"
+  dependencies:
+    source-map-support: ^0.5.13
+  peerDependencies:
+    pino: "*"
+  checksum: a15204e208122a236acac95eb9ec31c239a2cffd7e710e26d8e9f6f807f39d8bc665f245a6e9dff25fb004491ff37b38d628d188496b9bb98a4d7c68c71f8e4a
+  languageName: node
+  linkType: hard
+
 "pino-debug@npm:^2.0.0":
   version: 2.0.0
   resolution: "pino-debug@npm:2.0.0"
@@ -9015,7 +9027,7 @@ resolve@1.1.x:
   languageName: node
   linkType: hard
 
-"source-map-support@npm:^0.5.17":
+"source-map-support@npm:^0.5.13, source-map-support@npm:^0.5.17":
   version: 0.5.19
   resolution: "source-map-support@npm:0.5.19"
   dependencies:

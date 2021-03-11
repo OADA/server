@@ -15,6 +15,7 @@
   "license": "ISC",
   "dependencies": {
     "pino": "^6.11.1",
+    "pino-caller": "^3.1.0",
     "pino-debug": "^2.0.0"
   },
   "devDependencies": {
