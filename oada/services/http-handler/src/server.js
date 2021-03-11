@@ -7,28 +7,30 @@ const ksuid = require('ksuid');
 const cors = require('cors');
 const wellKnownJson = require('well-known-json');
 const helmet = require('helmet');
+const pinoHttp = require('pino-http');
 const oadaError = require('oada-error');
 const { OADAError } = oadaError;
 
-const info = require('debug')('http-handler:server:info');
-const warn = require('debug')('http-handler:server:warn');
-const error = require('debug')('http-handler:server:error');
-const trace = require('debug')('http-handler:server:trace');
+const { pino } = require('@oada/pino-debug');
 
-var config = require('./config');
+const config = require('./config');
 
 /////////////////////////////////////////////////////////////////
 // Setup express:
 const http = require('http');
-var app = express();
-var server = http.createServer(app);
+const app = express();
+const server = http.createServer(app);
 const tokenLookup = require('./tokenLookup');
-var resources = require('./resources');
-var authorizations = require('./authorizations');
-var users = require('./users');
+const resources = require('./resources');
+const authorizations = require('./authorizations');
+const users = require('./users');
 require('./websockets')(server);
 
-var requester = require('./requester');
+const requester = require('./requester');
+
+// Use pino/pino-http for logging
+const logger = pino();
+app.use(pinoHttp({ logger }));
 
 app.use(helmet());
 
@@ -39,22 +41,15 @@ app.get('/favicon.ico', (req, res) => res.end());
 
 function start() {
   return Bluebird.fromCallback(function (done) {
-    info('Starting server...');
+    logger.info('Starting server...');
     server.listen(config.get('server:port'), done);
   }).tap(() => {
-    info('OADA Server started on port %d', config.get('server:port'));
+    logger.info('OADA Server started on port %d', config.get('server:port'));
   });
 }
 // Allow route handlers to return promises:
 app.use(expressPromise());
 
-// Log all requests before anything else gets them for debugging:
-app.use(function (req, res, next) {
-  trace('Received request: ' + req.method + ' ' + req.url);
-  trace('req.headers = %O' + req.headers);
-  trace('req.body = %O', req.body);
-  next();
-});
 // Turn on CORS for all domains, allow the necessary headers
 app.use(
   cors({
@@ -84,7 +79,7 @@ app.use(function requestId(req, res, next) {
   }
   res.set('X-Request-ID', req.id);
 
-  res.on('finish', () => trace(`finished request ${req.id}`));
+  res.on('finish', () => req.log.trace(`finished request ${req.id}`));
   next();
 });
 
@@ -103,11 +98,11 @@ app.use(function tokenHandler(req, res, next) {
   })
     .tap(function checkTok(tok) {
       if (!tok['token_exists']) {
-        info('Token does not exist');
+        req.log.info('Token does not exist');
         throw new OADAError('Unauthorized', 401);
       }
       if (tok.doc.expired) {
-        info('Token expired');
+        req.log.info('Token expired');
         throw new OADAError('Unauthorized', 401);
       }
     })
@@ -157,10 +152,6 @@ app.use(function (req) {
     oadaError.codes.NOT_FOUND
   );
 });
-
-///////////////////////////////////////////////////
-// Use OADA middleware to catch errors and respond
-app.use(oadaError.middleware(error));
 
 if (require.main === module) {
   start();

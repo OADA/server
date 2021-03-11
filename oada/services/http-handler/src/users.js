@@ -2,14 +2,9 @@
 
 const express = require('express');
 const bodyParser = require('body-parser');
-const debug = require('debug');
-const trace = debug('http-handler:trace');
-const info = debug('http-handler:info');
-const warn = debug('http-handler:warn');
-const error = debug('http-handler:error');
 const ksuid = require('ksuid');
 const cloneDeep = require('clone-deep');
-const { OADAError, middleware } = require('oada-error');
+const { OADAError } = require('oada-error');
 
 const config = require('./config');
 
@@ -66,7 +61,7 @@ function requestUserWrite(req, id) {
 }
 
 router.post('/', function (req, res) {
-  info('Users POST, body = %O', req.body);
+  req.log.info('Users POST, body = %O', req.body);
   // Note: if the username already exists, the ksuid() below will end up
   // silently discarded and replaced in the response with the real one.
   const newid = ksuid.randomSync().string; // generate a random string for ID
@@ -84,7 +79,7 @@ router.post('/', function (req, res) {
 
 // Update (merge) a user:
 router.put('/:id', function (req, res) {
-  info('Users PUT(id: ' + req.params.id + '), body = %O', req.body);
+  req.log.info('Users PUT(id: ' + req.params.id + '), body = %O', req.body);
   // generate an ID for this particular request
   if (!req.id) req.id = ksuid.randomSync().string;
   return requestUserWrite(req, req.params.id).then((resp) => {
@@ -100,7 +95,7 @@ router.put('/:id', function (req, res) {
 // Lookup a username, limited to tokens and users with oada.admin.user scope
 router.get('/username-index/:uname', function (req, res) {
   // Check token scope
-  trace(
+  req.log.trace(
     'username-index: Checking token scope, req.authorization.scope = %s',
     req.authorization ? req.authorization.scope : null
   );
@@ -108,7 +103,7 @@ router.get('/username-index/:uname', function (req, res) {
     (s) => s === 'oada.admin.user:read' || s === 'oada.admin.user:all'
   );
   if (!havetokenscope) {
-    warn(
+    req.log.warn(
       'WARNING: attempt to lookup user by username (username-index), but token does not have oada.admin.user:read or oada.admin.user:all scope!'
     );
     throw new OADAError(
@@ -118,14 +113,14 @@ router.get('/username-index/:uname', function (req, res) {
   }
 
   // Check user's scope
-  trace('username-index: Checking user scope, req.user = %O', req.user);
+  req.log.trace('username-index: Checking user scope, req.user = %O', req.user);
   const haveuserscope =
     Array.isArray(req.user.scope) &&
     req.user.scope.find(
       (s) => s === 'oada.admin.user:read' || s === 'oada.admin.user:all'
     );
   if (!haveuserscope) {
-    warn(
+    req.log.warn(
       'WARNING: attempt to lookup user by username (username-index), but USER does not have oada.admin.user:read or oada.admin.user:all scope!'
     );
     throw new OADAError(
@@ -139,7 +134,7 @@ router.get('/username-index/:uname', function (req, res) {
     .then((u) => {
       u = sanitizeDbResult(u);
       if (!u) {
-        info(
+        req.log.info(
           `#username-index: 404: username ${req.params.uname} does not exist`
         );
         res
@@ -147,7 +142,9 @@ router.get('/username-index/:uname', function (req, res) {
           .send('Username ' + req.params.uname + ' does not exist.');
         return res.end();
       }
-      info(`#username-index: found user, returning info for userid ${u._id}`);
+      req.log.info(
+        `#username-index: found user, returning info for userid ${u._id}`
+      );
       res
         .set('content-location', `/${u._id}`)
         .set('content-type', 'application/vnd.oada.user.1+json')
@@ -156,7 +153,7 @@ router.get('/username-index/:uname', function (req, res) {
       return res.end();
     })
     .catch((e) => {
-      error(
+      req.log.error(
         'FAILED to find user in DB for username-index, username = ' +
           req.params.uname +
           '.  Error was: %O',
@@ -190,6 +187,5 @@ router.get('/:id', function (req, res) {
     return res.json(user);
   });
 });
-//router.use(middleware(error))
 
 module.exports = router;

@@ -11,11 +11,6 @@ const { pipeline } = require('stream');
 const pipelineAsync = Bluebird.promisify(pipeline);
 const cacache = require('cacache');
 
-const info = require('debug')('http-handler:resources:info');
-const warn = require('debug')('http-handler:resources:warn');
-const error = require('debug')('http-handler:resources:error');
-const trace = require('debug')('http-handler:resources:trace');
-
 const { resources } = require('@oada/lib-arangodb');
 const { changes } = require('@oada/lib-arangodb');
 const { putBodies } = require('@oada/lib-arangodb');
@@ -44,12 +39,12 @@ router.use(function graphHandler(req, res, next) {
     resources.lookupFromUrl('/resources' + req.url, req.user.user_id)
   )
     .then(function handleGraphRes(resp) {
-      trace('GRAPH LOOKUP RESULT %O', resp);
+      req.log.trace('GRAPH LOOKUP RESULT %O', resp);
       if (resp['resource_id']) {
         // Rewire URL to resource found by graph
-        let url = `${resp['resource_id']}${resp['path_leftover']}`;
+        const url = `${resp['resource_id']}${resp['path_leftover']}`;
         // log
-        info(`Graph lookup: ${req.url} => ${url}`);
+        req.log.info(`Graph lookup: ${req.url} => ${url}`);
         // Remove "/resources" from id
         req.url = url.replace(/^\/?resources\//, '/');
       }
@@ -80,7 +75,7 @@ router.delete('/*', function checkScope(req, res, next) {
         // PUTing non-existant resource
         return;
       } else if (!response.permissions.owner && !response.permissions.write) {
-        warn(
+        req.log.warn(
           req.user['user_id'] +
             ' tried to GET resource without proper permissions'
         );
@@ -120,7 +115,7 @@ router.put('/*', function checkScope(req, res, next) {
         // PUTing non-existant resource
         return;
       } else if (!response.permissions.owner && !response.permissions.write) {
-        warn(
+        req.log.warn(
           req.user['user_id'] +
             ' tried to GET resource without proper permissions'
         );
@@ -155,7 +150,7 @@ router.get('/*', function checkScope(req, res, next) {
       config.get('kafka:topics:permissionsRequest')
     )
     .then(function handlePermissionsRequest(response) {
-      trace('permissions response: %o', response);
+      req.log.trace('permissions response: %o', response);
       if (!response.permissions.owner && !response.permissions.read) {
         warn(
           req.user['user_id'] +
@@ -201,7 +196,7 @@ router.get('/*', async function getChanges(req, res, next) {
     } else if (/^\/_meta\/_changes\/.*?/.test(req.oadaGraph.path_leftover)) {
       let rev = req.oadaGraph.path_leftover.split('/')[3];
       let ch = await changes.getChangeArray(req.oadaGraph.resource_id, rev);
-      trace('CHANGE %O', ch);
+      req.log.trace('CHANGE %O', ch);
       return res.json(ch);
     } else {
       return next();
@@ -229,13 +224,13 @@ router.get('/*', async function getResource(req, res, next) {
     );
 
     return Bluebird.join(doc, function returnDoc(doc) {
-      trace('DOC IS %O', doc);
+      req.log.trace('DOC IS %O', doc);
       // TODO: Allow null values in OADA?
       if (doc === undefined || doc === null) {
-        error('Resource not found');
+        req.log.error('Resource not found');
         throw new OADAError('Not Found', 404);
       } else {
-        info(
+        req.log.info(
           `Resource: ${req.oadaGraph.resource_id}, Rev: ${req.oadaGraph.rev}`
         );
       }
@@ -245,7 +240,7 @@ router.get('/*', async function getResource(req, res, next) {
   } else {
     // get binary
     if (req.oadaGraph['path_leftover']) {
-      trace(req.oadaGraph['path_leftover']);
+      req.log.trace(req.oadaGraph['path_leftover']);
       throw new OADAError('Path Leftover on Binary GEt');
     }
 
@@ -323,7 +318,7 @@ router.put(
 );
 
 router.put('/*', async function putResource(req, res, next) {
-  trace(`Saving PUT body for request ${req.id}`);
+  req.log.trace(`Saving PUT body for request ${req.id}`);
 
   if (
     req.header('content-type') &&
@@ -338,12 +333,12 @@ router.put('/*', async function putResource(req, res, next) {
 
   return putBodies
     .savePutBody(req.body)
-    .tap(() => trace(`PUT body saved for request ${req.id}`))
+    .tap(() => req.log.trace(`PUT body saved for request ${req.id}`))
     .get('_id')
 
     .then((bodyid) => {
-      trace('RESOURCE EXISTS %O', req.oadaGraph);
-      trace('RESOURCE EXISTS %O', req.resourceExists);
+      req.log.trace('RESOURCE EXISTS %O', req.oadaGraph);
+      req.log.trace('RESOURCE EXISTS %O', req.resourceExists);
       let ignoreLinks =
         (req.get('x-oada-ignore-links') || '').toLowerCase() == 'true';
       return requester.send(
@@ -367,7 +362,7 @@ router.put('/*', async function putResource(req, res, next) {
       );
     })
     .tap(function checkWrite(resp) {
-      trace(`Recieved write response for request ${req.id}`);
+      req.log.trace(`Recieved write response for request ${req.id}`);
       switch (resp.code) {
         case 'success':
           return;
@@ -428,7 +423,7 @@ router.delete('/*', function deleteLink(req, res, next) {
 });
 
 router.delete('/*', function deleteResource(req, res, next) {
-  trace(`Sending DELETE request for request ${req.id}`);
+  req.log.trace(`Sending DELETE request for request ${req.id}`);
   return requester
     .send(
       {
@@ -449,7 +444,7 @@ router.delete('/*', function deleteResource(req, res, next) {
       config.get('kafka:topics:writeRequest')
     )
     .tap(function checkDelete(resp) {
-      trace(`Recieved delete response for request ${req.id}`);
+      req.log.trace(`Recieved delete response for request ${req.id}`);
       switch (resp.code) {
         case 'success':
           return;

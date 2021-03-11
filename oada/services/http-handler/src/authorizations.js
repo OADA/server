@@ -5,18 +5,14 @@ const express = require('express');
 const { v4: uuid } = require('uuid');
 const cloneDeep = require('clone-deep');
 
-const debug = require('debug');
-const trace = debug('http-handler#authorizations:trace');
-const info = debug('http-handler#authorizations:info');
-
 const { authorizations, clients } = require('@oada/lib-arangodb');
 const { OADAError } = require('oada-error');
 
 const router = express.Router(); // eslint-disable-line new-cap
 
-function addClientToAuth(auth) {
+function addClientToAuth(req, auth) {
   if (auth && auth.clientId) {
-    trace('GET /%s: authorization has a client, retrieving', auth._id);
+    req.log.trace('GET /%s: authorization has a client, retrieving', auth._id);
     return clients
       .findById(auth.clientId)
       .then((client) => {
@@ -24,11 +20,11 @@ function addClientToAuth(auth) {
         return auth;
       })
       .catch((err) => {
-        debug.error('ERROR: authorization clientId not found in DB');
+        req.log.error('ERROR: authorization clientId not found in DB');
         throw err;
       });
   } else {
-    trace('GET /%s: authorization DOES NOT have a clientId', auth._id);
+    req.log.trace('GET /%s: authorization DOES NOT have a clientId', auth._id);
     return auth;
   }
 }
@@ -41,7 +37,7 @@ router.get('/', function (req, res, next) {
     .reduce(async (o, i) => {
       const k = i['_id'].replace(/^authorizations\//, '');
       // returns either a promise or the same auth object
-      i = await addClientToAuth(i);
+      i = await addClientToAuth(req, i);
       o[k] = i;
       return o;
     }, {})
@@ -65,7 +61,7 @@ router.get('/:authId', function (req, res, next) {
       // Get the full client out of the DB to send out with this auth document
       // That way anybody listing authorizations can print the name, etc. of the client
     })
-    .then(addClientToAuth)
+    .then((auth) => addClientToAuth(req, auth))
     .then(res.json)
     .catch(next);
 });
@@ -108,7 +104,7 @@ router.post('/', function (req, res, next) {
       }
 
       // otherwise, token has admin scope so allow it (check user too?)
-      info(
+      req.log.info(
         'Posted authorization for a different user, but token has admin.user scope so we are allowing it'
       );
     }
