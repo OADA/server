@@ -99,7 +99,7 @@ function remove(a) {
 module.exports = {
   findById: Bluebird.method(findById),
   findByToken: Bluebird.method(findByToken),
-  findByUser: Bluebird.method(findByUser),
+  findByUser: findByUser,
   save: Bluebird.method(save),
   revoke: Bluebird.method(revoke),
   remove: Bluebird.method(remove), // use with care!

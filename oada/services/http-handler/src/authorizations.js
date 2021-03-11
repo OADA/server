@@ -1,6 +1,6 @@
 'use strict';
 
-const Promise = require('bluebird');
+const Bluebird = require('bluebird');
 const express = require('express');
 const { v4: uuid } = require('uuid');
 const cloneDeep = require('clone-deep');
@@ -12,11 +12,11 @@ const info = debug('http-handler#authorizations:info');
 const { authorizations, clients } = require('@oada/lib-arangodb');
 const { OADAError } = require('oada-error');
 
-var router = express.Router(); // eslint-disable-line new-cap
+const router = express.Router(); // eslint-disable-line new-cap
 
 function addClientToAuth(auth) {
   if (auth && auth.clientId) {
-    trace('GET /' + auth._id + ': authorization has a client, retrieving');
+    trace('GET /%s: authorization has a client, retrieving', auth._id);
     return clients
       .findById(auth.clientId)
       .then((client) => {
@@ -28,7 +28,7 @@ function addClientToAuth(auth) {
         throw err;
       });
   } else {
-    trace('GET /' + auth._id + ': authorization DOES NOT have a clientId');
+    trace('GET /%s: authorization DOES NOT have a clientId', auth._id);
     return auth;
   }
 }
@@ -38,9 +38,10 @@ function addClientToAuth(auth) {
 router.get('/', function (req, res, next) {
   return authorizations
     .findByUser(req.user['user_id'])
-    .reduce((o, i) => {
-      let k = i['_id'].replace(/^authorizations\//, '');
-      i = addClientToAuth(i); // returns either a promise or the same auth object
+    .reduce(async (o, i) => {
+      const k = i['_id'].replace(/^authorizations\//, '');
+      // returns either a promise or the same auth object
+      i = await addClientToAuth(i);
       o[k] = i;
       return o;
     }, {})
@@ -79,7 +80,7 @@ router.post(
 );
 router.post('/', function (req, res, next) {
   // TODO: Most of this could be done inside an Arango query...
-  return Promise.try(() => {
+  return Bluebird.try(() => {
     // TODO: Check scope of current token
     let auth = Object.assign(
       {
@@ -99,8 +100,7 @@ router.post('/', function (req, res, next) {
     // Don't allow making tokens for other users unless admin.user
     if (auth.user['_id'] !== req.user['user_id']) {
       if (
-        !_.find(
-          req.user.scope,
+        !req.user.scope.find(
           (s) => s === 'oada.admin.user:all' || 'oada.admin.user:write'
         )
       ) {
