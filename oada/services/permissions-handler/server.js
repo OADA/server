@@ -49,14 +49,11 @@ additionalScopesFiles.forEach((af) => {
     trace('Trying to add additional scope ' + af);
     const newscope = require('./scopes/additional-scopes/' + af);
     Object.keys(newscope).forEach((k) => {
-      trace('Setting scopeTypes[' + k + '] to new scope ', newscope[k]);
+      trace('Setting scopeTypes[%s] to new scope %s', k, newscope[k]);
       scopeTypes[k] = newscope[k]; // overwrite entire scope, or create new if doesn't exist
     });
   } catch (e) {
-    warn(
-      'FAILED to require(scopes/additional-scopes/' + af + ': error was %O',
-      e
-    );
+    warn('FAILED to require(scopes/additional-scopes/%s: error was %O', af, e);
   }
 });
 
@@ -92,12 +89,10 @@ responder.on('request', function handleReq(req) {
   } else {
     // Check for read permission
     response.scopes.read = req.scope.some(function chkScope(scope) {
-      var type;
-      var perm;
-      [type, perm] = scope.split(':');
+      const [type, perm] = scope.split(':');
 
       if (!scopeTypes[type]) {
-        warn('Unsupported scope type "' + type + '"');
+        warn('Unsupported scope type "%s"', type);
         return false;
       }
       trace('User scope: %s', type);
@@ -107,11 +102,9 @@ responder.on('request', function handleReq(req) {
       //let contentType = req.requestType === 'put' ? req.contentType : (resource ? resource._type : undefined);
       //trace('contentType = ', 'is put:', req.requestType === 'put', 'req.contentType:', req.contentType, 'resource:', resource);
       trace(
-        'Does user have scope?' +
-          'resulting contentType:' +
-          contentType +
-          'typeis check:' +
-          typeis.is(contentType, scopeTypes[type])
+        'Does user have scope? resulting contentType: %s typeis check: %s',
+        contentType,
+        typeis.is(contentType, scopeTypes[type])
       );
       trace('Does user have read scope? %s', scopePerm(perm, 'read'));
       trace('TYPEIS aaa %s', typeis.is(contentType, scopeTypes[type]));
@@ -122,12 +115,10 @@ responder.on('request', function handleReq(req) {
 
     // Check for write permission
     response.scopes.write = req.scope.some(function chkScope(scope) {
-      var type;
-      var perm;
-      [type, perm] = scope.split(':');
+      const [type, perm] = scope.split(':');
 
       if (!scopeTypes[type]) {
-        warn('Unsupported scope type "' + type + '"');
+        warn('Unsupported scope type "%s"', type);
         return false;
       }
       //let contentType = req.requestType === 'put' ? req.contentType : (resource ? resource._type : undefined);

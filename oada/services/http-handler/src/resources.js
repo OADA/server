@@ -241,11 +241,11 @@ router.get('/*', async function getResource(req, res, next) {
     // get binary
     if (req.oadaGraph['path_leftover']) {
       req.log.trace(req.oadaGraph['path_leftover']);
-      throw new OADAError('Path Leftover on Binary GEt');
+      throw new OADAError('Path Leftover on Binary GET');
     }
 
     // Look up file size before streaming
-    let { integrity, size } = await cacache.get.info(
+    const { integrity, size } = await cacache.get.info(
       CACHE_PATH,
       req.oadaGraph['resource_id']
     );
