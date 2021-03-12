@@ -32,6 +32,13 @@ module.exports = {
     mode: 'http',
   },
 
+  storage: {
+    binary: {
+      // TODO: Where should this live??
+      cacache: '/oada/binary',
+    },
+  },
+
   arangodb: {
     connectionString: 'http://arangodb:8529',
     database: 'oada',

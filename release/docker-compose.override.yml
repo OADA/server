@@ -40,6 +40,9 @@ services:
     environment:
       <<: *env
       IGNORE_SCOPE:
+    volumes:
+      # Storage for non-JSON resources
+      - binary_data:/oada/binary
 
   sync-handler:
     environment:

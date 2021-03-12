@@ -50,6 +50,9 @@ services:
       - '8080'
     environment:
       - IGNORE_SCOPE
+    volumes:
+      # Storage for non-JSON resources
+      - binary_data:/oada/binary
 
   sync-handler:
     extends:
@@ -239,6 +242,7 @@ services:
 
 volumes:
   arangodb_data:
+  binary_data:
   arangodb_apps_data:
   kafka_data:
   zookeeper_data:

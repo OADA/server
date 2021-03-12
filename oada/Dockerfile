@@ -96,6 +96,10 @@ COPY --from=yarn /oada/ /oada/
 # TODO: Don't have both source and built code in image?
 COPY --from=build /oada/ /oada/
 
+# Add volume for Binary data and chown to node?
+RUN mkdir -p /oada/binary && chown node:node /oada/binary
+VOLUME /oada/binary
+
 # Do not run services as root
 USER node
 
