@@ -151,6 +151,7 @@ services:
 volumes:
   arangodb_data:
   arangodb_apps_data:
+  binary_data:
   kafka_data:
   zookeeper_data:
 
