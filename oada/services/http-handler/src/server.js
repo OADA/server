@@ -153,6 +153,10 @@ app.use(function (req) {
   );
 });
 
+///////////////////////////////////////////////////
+// Use OADA middleware to catch errors and respond
+app.use(oadaError.middleware());
+
 if (require.main === module) {
   start();
 }
