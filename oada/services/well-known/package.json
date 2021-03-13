@@ -30,7 +30,11 @@
     "debug": "^4.3.2",
     "express": "^4.17.1",
     "express-promise": "^0.4.0",
+    "helmet": "^4.4.1",
     "oada-error": "^1.1.1",
     "request": "^2.88.2"
+  },
+  "devDependencies": {
+    "@types/helmet": "^4"
   }
 }

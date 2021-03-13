@@ -10,6 +10,7 @@ const debuglib = require('debug');
 const Bluebird = require('bluebird');
 const express = require('express');
 const express_promise = require('express-promise');
+const helmet = require('helmet');
 const cors = require('cors');
 const well_known_json = require('@oada/well-known-json');
 const oada_error = require('oada-error');
@@ -32,6 +33,8 @@ Bluebird.try(function () {
   const app = express();
   // Allow route handlers to return promises:
   app.use(express_promise());
+
+  app.use(helmet());
 
   //-----------------------------------------------------------------
   // Log all requests before anything else gets them for debugging:

@@ -49,6 +49,7 @@ const https = require('https');
 const express = require('express');
 const session = require('express-session');
 const ArangoSessionStore = require('connect-arango')(session);
+const helmet = require('helmet');
 const bodyParser = require('body-parser');
 const passport = require('passport');
 const morgan = require('morgan');
@@ -109,7 +110,9 @@ module.exports = function (conf) {
   const keys = require('./keys');
   const utils = require('./utils');
   require('./auth');
-  var app = express();
+  const app = express();
+
+  app.use(helmet());
 
   var wkj = config.get('auth:wkj')
     ? config.get('auth:wkj')
