@@ -16,6 +16,7 @@ x-release:
   environment: &env
     NODE_ENV: ${NODE_ENV-production}
     DEBUG: ${DEBUG-*:error,*:warn,*:info}
+    PINO_LEVEL:
     DEBUG_HIDE_DATE:
     DEBUG_COLORS:
     DEBUG_DEPTH:

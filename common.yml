@@ -13,6 +13,7 @@ services:
     environment:
       - NODE_ENV=${NODE_ENV-development}
       - DEBUG=${DEBUG-*}
+      - PINO_LEVEL
       - DEBUG_HIDE_DATE
       - DEBUG_COLORS
       - DEBUG_DEPTH

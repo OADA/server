@@ -2,6 +2,7 @@ import { resolve } from 'path';
 
 import _pino, { LoggerOptions } from 'pino';
 import pinoDebug, { Logger, Options } from 'pino-debug';
+import debug from 'debug';
 
 /**
  * Default mappings of debug namespaces to pino levels
@@ -24,10 +25,34 @@ export const defaultMap = <const>{
 };
 
 /**
+ * Get current logging level based on PINO_LEVEL or DEBUG env vars
+ */
+export function logLevel(): string {
+  // Allow specifying a level via env
+  if (process.env.PINO_LEVEL) {
+    return process.env.PINO_LEVEL;
+  }
+
+  // Guess level based on OADA debug namespaces (e.g., *:info -> info log level)
+  const levels = Object.entries(_pino.levels.values).sort(
+    // ensure levels are sorted by value
+    ([_1, v1], [_2, v2]) => v1 - v2
+  );
+  for (const [label] of levels) {
+    if (debug.enabled(`:${label}`)) {
+      return label;
+    }
+  }
+
+  // Assume silent
+  return 'silent';
+}
+
+/**
  * Get pino, wrapping it with pino-caller when in development environment
  */
-export function pino(opts: LoggerOptions) {
-  const p = _pino(opts ?? { level: 'trace' });
+export function pino({ level = logLevel(), ...opts }: LoggerOptions = {}) {
+  const p = _pino({ level, ...opts });
   return process.env.NODE_ENV === 'development' ? require('pino-caller')(p) : p;
 }
 
@@ -35,8 +60,7 @@ export function pino(opts: LoggerOptions) {
  * Give use better defaults for pino-debug?
  */
 export default function oadaDebug(
-  // Turn on all the log levels by default
-  logger: Logger = pino({ level: 'trace' }),
+  logger: Logger = pino(),
   {
     // Turn off auto so only things enabled in DEBUG var get logged
     auto = false,

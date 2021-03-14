@@ -29,7 +29,7 @@ require('./websockets')(server);
 const requester = require('./requester');
 
 // Use pino/pino-http for logging
-const logger = pino();
+const logger = pino({ name: 'http-handler' });
 app.use(pinoHttp({ logger }));
 
 app.use(helmet());

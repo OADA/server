@@ -152,7 +152,7 @@ router.get('/*', function checkScope(req, res, next) {
     .then(function handlePermissionsRequest(response) {
       req.log.trace('permissions response: %o', response);
       if (!response.permissions.owner && !response.permissions.read) {
-        warn(
+        req.log.warn(
           req.user['user_id'] +
             ' tried to GET resource without proper permissions'
         );
