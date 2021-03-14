@@ -14,6 +14,8 @@ const helmet = require('helmet');
 const cors = require('cors');
 const well_known_json = require('@oada/well-known-json');
 const oada_error = require('oada-error');
+const { middleware: formats } = require('@oada/formats-server');
+
 const config = require('./config');
 const request = Bluebird.promisify(require('request'));
 
@@ -54,13 +56,18 @@ Bluebird.try(function () {
   );
   app.options('*', cors());
 
+  // TODO: Less gross fix for Content-Types?
+  app.get('/.well-known/oada-configuration', [
+    (_, res, next) => {
+      res.type('application/vnd.oada.oada-configuration.1+json');
+      next();
+    },
+    formats(),
+  ]);
+
   //---------------------------------------------------
   // Configure the top-level OADA well-known handler middleware
-  const options = {
-    headers: {
-      'content-type': 'application/vnd.oada.oada-configuration.1+json',
-    },
-  };
+  const options = {};
   if (config.get('wellKnown:forceProtocol')) {
     // set to 'https' to force to https.  Useful when behind another proxy.
     options.forceProtocol = config.get('wellKnown:forceProtocol');
