@@ -26,6 +26,7 @@
   },
   "homepage": "https://github.com/OADA/oada-srvc-http-handler#readme",
   "dependencies": {
+    "@oada/formats-server": "^1.4.1",
     "@oada/lib-arangodb": "^0.0.2",
     "@oada/lib-config": "^0.0.1",
     "@oada/lib-kafka": "^1.0.0",

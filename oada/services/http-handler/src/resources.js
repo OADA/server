@@ -10,6 +10,7 @@ const typeis = require('type-is');
 const { pipeline } = require('stream');
 const pipelineAsync = Bluebird.promisify(pipeline);
 const cacache = require('cacache');
+const { middleware: formats } = require('@oada/formats-server');
 
 const { resources } = require('@oada/lib-arangodb');
 const { changes } = require('@oada/lib-arangodb');
@@ -206,13 +207,18 @@ router.get('/*', async function getChanges(req, res, next) {
   }
 });
 
+router.get('/*', async function getHeaders(req, res, next) {
+  res.set('Content-Type', req.oadaGraph.type);
+  res.set('X-OADA-Rev', req.oadaGraph.rev);
+  next();
+});
+
+router.get('/*', formats());
+
 router.get('/*', async function getResource(req, res, next) {
   // TODO: Should it not get the whole meta document?
   // TODO: Make getResource accept an array of paths and return an array of
   //       results. I think we can do that in one arango query
-
-  res.set('Content-Type', req.oadaGraph.type);
-  res.set('X-OADA-Rev', req.oadaGraph.rev);
 
   if (
     typeis.is(req.oadaGraph['type'], ['json', '+json']) ||

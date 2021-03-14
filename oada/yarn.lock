@@ -995,6 +995,27 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@oada/formats-server@npm:^1.4.1":
+  version: 1.4.1
+  resolution: "@oada/formats-server@npm:1.4.1"
+  dependencies:
+    "@oada/media-types": ^1.4.1
+    content-type: ^1.0.4
+  peerDependencies:
+    "@oada/formats": ^1.3.0
+    "@types/express": 4
+    fastify: 3
+  peerDependenciesMeta:
+    "@oada/formats":
+      optional: true
+    "@types/express":
+      optional: true
+    fastify:
+      optional: true
+  checksum: 01c3d7aeb5c050f790a4ebfea328488016d6af96d32f07b05697085d756e32dd5a92f15dc408674f24181d1b0eaad47592b5c89770e63640de0754dbd03deac4
+  languageName: node
+  linkType: hard
+
 "@oada/graph-lookup@workspace:services/graph-lookup":
   version: 0.0.0-use.local
   resolution: "@oada/graph-lookup@workspace:services/graph-lookup"
@@ -1012,6 +1033,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@oada/http-handler@workspace:services/http-handler"
   dependencies:
+    "@oada/formats-server": ^1.4.1
     "@oada/lib-arangodb": ^0.0.2
     "@oada/lib-config": ^0.0.1
     "@oada/lib-kafka": ^1.0.0
@@ -1081,6 +1103,16 @@ __metadata:
     uuid: ^8.3.2
   languageName: unknown
   linkType: soft
+
+"@oada/media-types@npm:^1.4.1":
+  version: 1.4.1
+  resolution: "@oada/media-types@npm:1.4.1"
+  dependencies:
+    "@types/content-type": ^1.1.3
+    content-type: ^1.0.4
+  checksum: 435d7cc504350621fb0425ece540a4053d285b77ef38c9b189d46cdb63a0634314053e8e25737d86530d982af8d224207c54f80014255ae711dbdc193b8eb3b7
+  languageName: node
+  linkType: hard
 
 "@oada/oada-certs@npm:^3.1.6, @oada/oada-certs@npm:^3.1.8":
   version: 3.1.8
@@ -1228,13 +1260,13 @@ __metadata:
   linkType: soft
 
 "@oada/types@npm:^1.2.0, @oada/types@npm:^1.3.0":
-  version: 1.3.0
-  resolution: "@oada/types@npm:1.3.0"
+  version: 1.4.1
+  resolution: "@oada/types@npm:1.4.1"
   dependencies:
     ajv: ^7.0.3
     ajv-formats: ^1.5.1
     ajv-formats-draft2019: ^1.4.3
-  checksum: e71770e13a6d6f8d5531bbf4b55ce7e9a710f4b11ac1a73a1073b020d87009a2ade748d1b6c8125948ded7a1ad70d6c29b95246f33c2f9783184340b223b1e52
+  checksum: 917d1bc5d3d9b2a86fba9fbfc7c8e472c886701594efb92d8b4f65ce8d387f1f6939ea100c8d5c3d77b50656e424c21482e37a974f8daa83610c390bdcc8cb5f
   languageName: node
   linkType: hard
 
@@ -1477,6 +1509,13 @@ __metadata:
   version: 3.5.33
   resolution: "@types/bluebird@npm:3.5.33"
   checksum: 45f7adeec6e656501f5b2127d5cc1538d3ae497d06bfa00d8d7f51eb2aa482267b3b4868ac1c75fc84acfad86d2c0d4de8af535cf725156f222d679df9694aff
+  languageName: node
+  linkType: hard
+
+"@types/content-type@npm:^1.1.3":
+  version: 1.1.3
+  resolution: "@types/content-type@npm:1.1.3"
+  checksum: 5cb99767267d4470523baaacebacb6fdcae1b91f169d1c905da394e57a8dc46da5507672e14f9781a4614fde124fe259b3ba873b56f9338bcdbaa77be0058bc1
   languageName: node
   linkType: hard
 
@@ -2969,7 +3008,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"content-type@npm:~1.0.4":
+"content-type@npm:^1.0.4, content-type@npm:~1.0.4":
   version: 1.0.4
   resolution: "content-type@npm:1.0.4"
   checksum: ff6e19cbf281c23d5608723a6dc60ac97e2280bd4d21602511283112321e6c1555895e395555e367672b54a0f1585276284b7c3c8be313aca73902ac2f2609fd
