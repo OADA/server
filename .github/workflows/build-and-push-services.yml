@@ -116,7 +116,9 @@ jobs:
         id: cache
         with:
           path: /tmp/.buildx-cache
-          key: ${{ runner.os }}-buildx-${{ matrix.service }}-${{ github.sha }}
+          #key: ${{ runner.os }}-buildx-${{ matrix.service }}-${{ github.sha }}
+          # Don't separate cache by service etc.
+          key: ${{ runner.os }}-buildx
           restore-keys: |
             ${{ runner.os }}-buildx-${{ matrix.service }}
             ${{ runner.os }}-buildx-
