@@ -508,19 +508,21 @@ module.exports = function (conf) {
 };
 
 if (require.main === module) {
-  var app = module.exports();
-  var server1, server2;
+  const app = module.exports();
   // Note: now we listen on both http and https by default.  https is only
   // for debugging trying to use localhost or 127.0.0.1, since that will resolve
   // inside the container itself instead of as the overall host.
-  //  if (config.get('auth:server:mode') === 'http') {
-  var server1 = app.listen(config.get('auth:server:port-http'), function () {
-    info('Listening HTTP on port %d', server1.address().port);
-  });
-  //  } else {
-  var server2 = https.createServer(config.get('auth:certs'), app);
-  server2.listen(config.get('auth:server:port-https'), function () {
-    info('Listening HTTPS on port %d', server2.address().port);
-  });
-  //  }
+  if (config.get('auth:server:mode') === 'http') {
+    const server1 = app.listen(
+      config.get('auth:server:port-http'),
+      function () {
+        info('Listening HTTP on port %d', server1.address().port);
+      }
+    );
+  } else {
+    const server2 = https.createServer(config.get('auth:certs'), app);
+    server2.listen(config.get('auth:server:port-https'), function () {
+      info('Listening HTTPS on port %d', server2.address().port);
+    });
+  }
 }
