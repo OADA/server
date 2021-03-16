@@ -79,6 +79,8 @@ jobs:
     needs: setup
 
     strategy:
+      # Only run one build at a time to fix layer reuse?
+      max-parallel: 1
       matrix:
         service: ${{ fromJson(needs.setup.outputs.services) }}
         context:
