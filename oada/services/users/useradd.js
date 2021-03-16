@@ -1,5 +1,3 @@
-#!/usr/bin/env node
-
 const config = require('@oada/lib-config')(
   require('/oada-srvc-docker-config.js')
 );

@@ -3,7 +3,7 @@
   "version": "0.0.4",
   "description": "Reference implementation of OADA Authentication and Authorization server.",
   "bin": {
-    "extendToken": "./extendToken.js"
+    "token": "./token.js"
   },
   "main": "index.js",
   "repository": {

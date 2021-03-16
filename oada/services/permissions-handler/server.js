@@ -20,6 +20,7 @@ const fs = require('fs');
 const typeis = require('type-is');
 const warn = debug('permissions-handler:warn');
 const trace = debug('permissions-handler:trace');
+const error = debug('permissions-handler:error');
 
 const { Responder } = require('@oada/lib-kafka');
 const config = require('./config');
@@ -88,6 +89,10 @@ responder.on('request', function handleReq(req) {
     responder.scopes = { read: true, write: true };
   } else {
     // Check for read permission
+    if (!Array.isArray(req.scope)) {
+      error('ERROR: scope is not an array: %O', req.scope);
+      req.scope = [];
+    }
     response.scopes.read = req.scope.some(function chkScope(scope) {
       const [type, perm] = scope.split(':');
 

@@ -43,7 +43,14 @@ $ # Running up the first time will automatically build the docker images
 $ DOMAIN=yourdomain.com docker-compose up -d
 ```
 
-Note that this is __not__ recommended for production use.
+Note that running from the git is __not__ recommended for production use.
+
+### Using `oadadeploy`
+
+If you need to migrate an oada v2 instance,
+or are making a new installation but for some reason
+are averse to managing you own configuration,
+see [`oadadeploy`].
 
 ## Configuration
 
@@ -70,3 +77,4 @@ Additionally, there are various environment variables available:
 [zookeeper]: https://zookeeper.apache.org
 [override file]: https://docs.docker.com/compose/extends/#understanding-multiple-compose-files
 [debug]: https://www.npmjs.com/package/debug#usage
+[`oadadeploy`]: https://github.com/OADA/oadadeploy
