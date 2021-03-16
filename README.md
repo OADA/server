@@ -17,7 +17,7 @@ for the micro-services to use.
 
 For information on
 the various micro-services comprising this reference implementation,
-see [here](oada/).
+see [the `oada` folder](oada/).
 
 ## Installing
 
@@ -34,7 +34,7 @@ DOMAIN=yourdomain.com docker-compose up -d
 ### Running from the git
 
 If you want to contribute, or do other development type things,
-you can running straight from our code base.
+you can run the server straight from this code base.
 
 ```shell
 git clone https://github.com/OADA/oada-srvc-docker.git
@@ -47,7 +47,7 @@ Note that running from the git is __not__ recommended for production use.
 
 ### Using `oadadeploy`
 
-If you need to migrate an oada v2 instance,
+If you need to migrate an OADA v2 instance,
 or are making a new installation but for some reason
 are averse to managing you own configuration,
 see [`oadadeploy`].
@@ -70,7 +70,7 @@ Some important ones are:
   (e.g., `oada.mydomain.org,oada.myotherdomain.net`)
 - DEBUG: set the namespace(s) enabled in [debug]
   (e.g., `*:info,*:error,*:warn`)
-  
+
 Rather than trying to always remembering to set your environment variables,
 you probably want to use a [.env file] for things like `DOMAIN`.
 
