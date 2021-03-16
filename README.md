@@ -25,10 +25,10 @@ see [here](oada/).
 
 Download one of our [releases] and start it using [docker-compose].
 
-```shellSession
-$ cd folder/containing/release/docker-compose
-$ # Will pull the corresponding release images from dockerhub
-$ DOMAIN=yourdomain.com docker-compose up -d
+```shell
+cd folder/containing/release/docker-compose
+# Will pull the corresponding release images from dockerhub
+DOMAIN=yourdomain.com docker-compose up -d
 ```
 
 ### Running from the git
@@ -36,11 +36,11 @@ $ DOMAIN=yourdomain.com docker-compose up -d
 If you want to contribute, or do other development type things,
 you can running straight from our code base.
 
-```shellSession
-$ git clone https://github.com/OADA/oada-srvc-docker.git
-$ cd oada-srvc-docker
-$ # Running up the first time will automatically build the docker images
-$ DOMAIN=yourdomain.com docker-compose up -d
+```shell
+git clone https://github.com/OADA/oada-srvc-docker.git
+cd oada-srvc-docker
+# Running up the first time will automatically build the docker images
+DOMAIN=yourdomain.com docker-compose up -d
 ```
 
 Note that running from the git is __not__ recommended for production use.
@@ -60,7 +60,9 @@ in the same directory as the `docker-compose.yml` file.
 Any settings in this [override file] will be merged with ours
 when running docker-compose.
 
-Additionally, there are various environment variables available:
+### Environment variables
+Additionally, there are various configuration environment variables available.
+Some important ones are:
 
 - DOMAIN: set to the domain name of your API server
   (e.g., `oada.mydomain.net`)
@@ -68,10 +70,14 @@ Additionally, there are various environment variables available:
   (e.g., `oada.mydomain.org,oada.myotherdomain.net`)
 - DEBUG: set the namespace(s) enabled in [debug]
   (e.g., `*:info,*:error,*:warn`)
+  
+Rather than trying to always remembering to set your environment variables,
+you probably want to use a [.env file] for things like `DOMAIN`.
 
 [releases]: https://github.com/OADA/oada-srvc-docker/releases
 
 [docker-compose]: https://docs.docker.com/compose/
+[.env file]: https://docs.docker.com/compose/environment-variables/#substitute-environment-variables-in-compose-files
 [arangodb]: https://www.arangodb.com
 [kafka]: https://kafka.apache.org
 [zookeeper]: https://zookeeper.apache.org
