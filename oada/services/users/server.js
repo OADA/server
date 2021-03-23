@@ -48,8 +48,10 @@ module.exports = function stopResp() {
 
 function createNewUser(req) {
   const u = cloneDeep(req.user);
-  u._id = 'users/' + req.userid;
-  u._key = req.userid;
+  if (req.userid) {
+    u._id = req.userid.match(/^users/) ? req.userid : 'users/' + req.userid;
+    u._key = req.userid.match(/^users/) ? req.userid.replace(/^users\//,'') : req.userid;
+  }
   return users
     .create(u)
     .then((user) => {
