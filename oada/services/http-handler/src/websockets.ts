@@ -2,7 +2,7 @@ import { strict as assert } from 'assert';
 
 import debug from 'debug';
 
-import * as jsonpointer from 'jsonpointer';
+import jsonpointer from 'jsonpointer';
 
 import { OADAError } from 'oada-error';
 
@@ -397,6 +397,7 @@ type WriteResponse = {
   resource_id: string;
   path_leftover: string;
   _rev: number;
+  _orev: number;
 };
 function checkReq(req: KafkaRequest): req is WriteResponse {
   return req.msgtype === 'write-response' && req.code === 'success';

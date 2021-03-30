@@ -1239,6 +1239,9 @@ __metadata:
     "@oada/lib-config": ^0.0.1
     "@oada/lib-kafka": ^1.0.0
     "@oada/pino-debug": ^1.0.0
+    "@types/bluebird": ^3.5.33
+    "@types/debug": ^4.1.5
+    "@types/node": ^14.14.36
     axios: ^0.21.1
     bluebird: ^3.7.2
     debug: ^4.3.2
@@ -1579,6 +1582,13 @@ __metadata:
   version: 14.14.34
   resolution: "@types/node@npm:14.14.34"
   checksum: 74db0d80ad997c3ca2597abe1c63c85e87c32e06b4e8c8392a24a11ad00a4567b293a72bbdf49ace201150b420a943609181771cab034cef10fe65272d452718
+  languageName: node
+  linkType: hard
+
+"@types/node@npm:^14.14.36":
+  version: 14.14.36
+  resolution: "@types/node@npm:14.14.36"
+  checksum: 9eff5863af3ddf3dfd0964ce7da85e663df2c05d091412b8c97d069e61b00760fa4ce788442733bdf07ad69ce408088c0bef2fa81b5cfdca54d31117618385f3
   languageName: node
   linkType: hard
 
@@ -6751,7 +6761,7 @@ fsevents@~2.3.1:
     "@types/debug": ^4.1.5
     "@types/json-pointer": ^1.0.30
     "@types/nconf": ^0.10.0
-    "@types/node": ^14.14.31
+    "@types/node": ^14.14.36
     "@types/node-fetch": ^2.5.8
     axios-debug: 0.0.4
     babel-register: ^6.26.0

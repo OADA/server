@@ -12,9 +12,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-'use strict';
 
-module.exports = {
+export default <const>{
   // By default, this checks for NODE_ENV===production
   // to determine if is production.
   // set to true to use the production database name

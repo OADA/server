@@ -3,10 +3,19 @@ import type { EventEmitter } from 'events'
 
 declare class Base extends EventEmitter {}
 
-interface KafkaRequest {
+interface KafkaBase {
     msgtype: string;
     code: string;
 }
+
+interface WriteResponse extends KafkaBase {
+    msgtype: 'write-response';
+    resource_id: string;
+    path_leftover: string;
+    _orev: number;
+}
+
+type KafkaRequest = WriteResponse;
 
 type ConstructorOpts = {
     consumeTopic: string;
@@ -17,7 +26,9 @@ type ConstructorOpts = {
      */
     opts?: { [key: string]: any };
 };
+
 export class Responder extends Base {
     constructor(opts: ConstructorOpts);
-    on(event: 'request', cb: (reg: KafkaRequest) => any): this;
+    on(event: 'request', cb: (reg: KafkaRequest | WriteResponse) => any): this;
+    disconnect(): Promise<void>;
 }

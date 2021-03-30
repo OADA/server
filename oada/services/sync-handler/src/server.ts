@@ -13,20 +13,18 @@
  * limitations under the License.
  */
 
-'use strict';
+import debug from 'debug';
+import Bluebird from 'bluebird';
+import URL from 'url';
+import { Responder } from '@oada/lib-kafka';
+import { resources, remoteResources } from '@oada/lib-arangodb';
+import config from './config';
+import axios from 'axios';
 
-const debug = require('debug');
 const info = debug('sync-handler:info');
 const trace = debug('sync-handler:trace');
 const warn = debug('sync-handler:warn');
 const error = debug('sync-handler:error');
-
-const Bluebird = require('bluebird');
-const URL = require('url');
-const { Responder } = require('@oada/lib-kafka');
-const { resources, remoteResources } = require('@oada/lib-arangodb');
-const config = require('./config');
-const axios = require('axios');
 
 // TODO: Where to store the syncs?
 // I feel like putting webhooks in _syncs was a poor choice
@@ -52,15 +50,17 @@ responder.on('request', async function handleReq(req) {
   }
 
   const id = req['resource_id'];
-  trace(`Saw change for resource ${id}`);
+  trace('Saw change for resource %s', id);
 
   //let rev = req['_rev'];
   const orev = req['_orev'];
   // TODO: Add AQL query for just syncs and newest change?
-  const syncs = await resources
-    .getResource(id, `/_meta/${META_KEY}`)
-    .then((syncs) => syncs || {})
-    .then(Object.entries)
+  const syncs = (
+    await resources
+      .getResource(id, `/_meta/${META_KEY}`)
+      .then((syncs) => syncs || {})
+      .then(Object.entries)
+  )
     // Ignore sync entries that aren't objects
     .filter((sync) => sync[1] && typeof sync[1] === 'object');
 
@@ -68,23 +68,22 @@ responder.on('request', async function handleReq(req) {
     // Nothing for us to do
     return;
   }
-  trace(`Processing syncs for resource ${id}`);
+  trace('Processing syncs for resource %s', id);
 
-  const desc = resources
-    .getNewDescendants(id, orev)
-    .tap((desc) => trace(`New descendants for ${id}: %O`, desc));
+  const desc = await resources.getNewDescendants(id, orev);
+  trace('New descendants for %s: %O', id, desc);
   // TODO: Figure out just what changed
-  const changes = await desc
+  const changes = desc
     .filter((d) => d.changed)
     .map(({ id }) => ({ [id]: resources.getResource(id) }))
     .reduce((a, b) => Object.assign(a, b));
 
   // TODO: Probably should not be keeping the tokens under _meta...
   const puts = Bluebird.map(syncs, async ([key, { url, domain, token }]) => {
-    info(`Running sync ${key} for resource ${id}`);
-    trace(`Sync ${key}: %O`, { url, domain, token });
+    info('Running sync %s for resource %s', key, id);
+    trace('Sync %s: %O', key, { url, domain, token });
     // Need separate changes map for each sync since they run concurently
-    let lchanges = Object.assign({}, changes); // Shallow copy
+    const lchanges = Object.assign({}, changes); // Shallow copy
 
     if (process.env.NODE_ENV !== 'production') {
       /*
@@ -96,7 +95,7 @@ responder.on('request', async function handleReq(req) {
     }
 
     // TODO: Cache this?
-    let apiroot = Bluebird.resolve(
+    const apiroot = Bluebird.resolve(
       axios({
         method: 'get',
         url: `https://${domain}/.well-known/oada-configuration`,
@@ -107,79 +106,71 @@ responder.on('request', async function handleReq(req) {
       .then((s) => s.replace(/\/?$/, '/'));
 
     // Ensure each local resource has a corresponding remote one
-    let ids = await desc.map((d) => d.id);
-    let rids = remoteResources
-      .getRemoteId(ids, domain)
+    const ids = desc.map((d) => d.id);
+    let rids = (await remoteResources.getRemoteId(ids, domain))
       // Map the top resource to supplied URL
       .map((rid) => (rid.id === id ? { id, rid: url } : rid));
     // Create missing rids
-    let newrids = rids
-      .filter(({ rid }) => !rid)
-      .map(async ({ id }) => {
-        trace(`Creating remote ID for ${id} at ${domain}`);
+    const newrids = await Bluebird.map(
+      rids.filter(({ rid }) => !rid),
+      async ({ id }) => {
+        trace('Creating remote ID for %s at %s', id, domain);
 
-        let url = `${await apiroot}resources/`;
+        const url = `${await apiroot}resources/`;
         // Create any missing remote IDs
-        let loc = await Bluebird.resolve(
-          axios({
-            method: 'post',
-            data: {},
-            headers: {
-              authorization: token,
-            },
-            url,
-          })
-        )
-          .get('headers')
-          .get('location');
+        const {
+          headers: { location: loc },
+        } = axios({
+          method: 'post',
+          data: {},
+          headers: {
+            authorization: token,
+          },
+          url,
+        }) as any;
 
         // TODO: Less gross way of create new remote resources?
         lchanges[id] = resources.getResource(id);
 
         // Parse resource ID from Location header
-        let newid = URL.resolve(url, loc).replace(url, 'resources/');
+        const newid = URL.resolve(url, loc).replace(url, 'resources/');
         return {
           rid: newid,
           id: id,
         };
-      })
-      .tap(async (newrids) => {
-        // Add all remote IDs at once
-        if (newrids.length === 0) {
-          return;
-        }
+      }
+    );
+    // Add all remote IDs at once
+    if (newrids.length === 0) {
+      return;
+    }
 
-        // Record new remote ID
-        await remoteResources
-          .addRemoteId(newrids, domain)
-          .tapCatch(remoteResources.UniqueConstraintError, () => {
-            error(
-              'Unique constraint error for remoteId %O %O',
-              newrids,
-              domain
-            );
-          });
+    // Record new remote ID
+    await Bluebird.resolve(
+      remoteResources.addRemoteId(newrids, domain)
+    ).tapCatch(remoteResources.UniqueConstraintError, () => {
+      error('Unique constraint error for remoteId %O %O', newrids, domain);
+    });
 
-        trace(`Created remote ID for ${id} at ${domain}: %O`, newrids);
-      });
+    trace('Created remote ID for %s at %s: %O', id, domain, newrids);
 
-    rids = (await rids).filter(({ rid }) => rid).concat(await newrids);
+    rids = rids.filter(({ rid }) => rid).concat(newrids);
     // Create mapping of IDs here to IDs there
-    let idmapping = rids
+    const idmapping = rids
       .map(({ id, rid }) => ({ [id]: rid }))
       .reduce((a, b) => ({ ...a, ...b }), {});
-    let docs = Bluebird.map(rids, async ({ id, rid }) => {
-      let change = await lchanges[id];
+    const docs = Bluebird.map(rids, async ({ id, rid }) => {
+      const change = await lchanges[id];
       if (!change) {
         return Promise.resolve();
       }
 
-      trace(`PUTing change for ${id} to ${rid} at ${domain}`);
+      trace('PUTing change for %s to %s at %s', id, rid, domain);
 
-      let type = change['_meta']['_type'];
+      const type = change['_meta']['_type'];
 
       // Fix links etc.
-      let body = JSON.stringify(change, function (k, v) {
+      const body = JSON.stringify(change, function (k, v) {
         /* eslint-disable no-invalid-this */
         switch (k) {
           case '_meta': // Don't send resources's _meta
@@ -203,7 +194,7 @@ responder.on('request', async function handleReq(req) {
             if (idmapping[v]) {
               return idmapping[v];
             }
-            warn(`Could not resolve link to ${v} at ${domain}`);
+            warn('Could not resolve link to %s at %s', v, domain);
             // TODO: What to do in this case?
             return '';
           default:
@@ -225,7 +216,10 @@ responder.on('request', async function handleReq(req) {
       await put;
 
       trace(
-        `Finished PUTing change for ${id} to ${rid} at ${domain}: %O`,
+        'Finished PUTing change for %s to %s at %s: %O',
+        id,
+        rid,
+        domain,
         await put
       );
       return put;
