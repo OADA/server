@@ -17,7 +17,7 @@
     "@oada/pino-debug": "^1.0.0",
     "chalk": "^4.1.0",
     "clone-deep": "^4.0.1",
-    "debug": "^4.3.2",
+    "debug": "^4.3.1",
     "ksuid": "^2.0.0",
     "minimist": "^1.2.5",
     "promptly": "^3.2.0"

@@ -25,7 +25,7 @@
   "dependencies": {
     "@oada/lib-arangodb": "^0.0.2",
     "@oada/pino-debug": "^1.0.0",
-    "debug": "^4.3.2",
+    "debug": "^4.3.1",
     "express": "^4.17.1"
   }
 }
