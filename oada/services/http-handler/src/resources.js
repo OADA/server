@@ -326,10 +326,8 @@ router.put(
 router.put('/*', async function putResource(req, res, next) {
   req.log.trace(`Saving PUT body for request ${req.id}`);
 
-  if (
-    req.header('content-type') &&
-    !req.header('content-type').match(/[\/|+]json$/)
-  ) {
+  if (!req.is(['json', '+json'])) {
+    // Use binary stuff if not a JSON request
     await pipelineAsync(
       req,
       cacache.put.stream(CACHE_PATH, req.oadaGraph.resource_id)
