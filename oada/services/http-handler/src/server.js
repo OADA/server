@@ -91,11 +91,13 @@ app.use(function sanitizeUrl(req, res, next) {
 });
 
 app.use(function tokenHandler(req, res, next) {
-  return tokenLookup({
-    connection_id: req.id,
-    domain: req.get('host'),
-    token: req.get('authorization'),
-  })
+  return Bluebird.resolve(
+    tokenLookup({
+      connection_id: req.id,
+      domain: req.get('host'),
+      token: req.get('authorization'),
+    })
+  )
     .tap(function checkTok(tok) {
       if (!tok['token_exists']) {
         req.log.info('Token does not exist');
