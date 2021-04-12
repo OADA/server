@@ -53,7 +53,12 @@ app.use(expressPromise());
 // Turn on CORS for all domains, allow the necessary headers
 app.use(
   cors({
-    exposedHeaders: ['x-oada-rev', 'location', 'content-location'],
+    exposedHeaders: [
+      'x-oada-rev',
+      'x-oada-path-leftover',
+      'location',
+      'content-location',
+    ],
   })
 );
 app.options('*', cors());

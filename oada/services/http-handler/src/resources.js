@@ -175,6 +175,19 @@ router.get('/*', function checkScope(req, res, next) {
     .asCallback(next);
 });
 
+/**
+ * Return "path leftover" in a header if token/scope passes
+ */
+router.all('/*', async function pathLeftover(req, res, next) {
+  try {
+    // TODO: Better header name?
+    res.set('X-OADA-Path-Leftover', req.oadaGraph['path_leftover']);
+    return next();
+  } catch (err) {
+    return next(err);
+  }
+});
+
 // Handle request for /_meta/_changes
 router.get('/*', async function getChanges(req, res, next) {
   try {
@@ -203,7 +216,7 @@ router.get('/*', async function getChanges(req, res, next) {
       return next();
     }
   } catch (e) {
-    next(e);
+    return next(e);
   }
 });
 
