@@ -60,7 +60,19 @@ COPY . /oada/
 RUN yarn install --immutable
 
 # Build and then remove yarn stuff??
-RUN yarn workspaces foreach run build && rm -rf .yarn .pnp.*
+RUN yarn workspaces foreach run build && rm -rfv .yarn .pnp.*
+
+FROM node:$NODE_VER AS code
+
+# Copy in service code and production dependencies
+COPY --from=yarn /oada/ /oada/
+# Copy in built code
+COPY --from=build /oada/ /oada/
+
+# Remove uncompiled code (e.g. TS files, C/C++ of librdkafka)?
+RUN find /oada -name src | xargs rm -rfv \
+    && rm -rfv /oada/.yarn/unplugged/node-rdkafka-*/node_modules/node-rdkafka/deps
+
 
 # Assemble "production" image
 FROM node:$NODE_VER-slim AS production
@@ -90,11 +102,8 @@ ENTRYPOINT ["/usr/bin/tini", "--", "/entrypoint.sh"]
 # Run start script of package
 CMD ["start", "--config=/oada-srvc-docker-config.js"]
 
-# Copy in service code and production dependencies
-COPY --from=yarn /oada/ /oada/
-# Copy in built code
-# TODO: Don't have both source and built code in image?
-COPY --from=build /oada/ /oada/
+# Copy in the code
+COPY --from=code /oada/ /oada/
 
 # Add volume for Binary data and chown to node?
 RUN mkdir -p /oada/binary && chown node:node /oada/binary
