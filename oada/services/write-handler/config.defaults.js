@@ -2,7 +2,7 @@
 
 module.exports = {
   kafka: {
-    broker: 'zookeeper:2181',
+    broker: 'kafka:9092',
     topics: {
       writeRequest: 'write_request',
       httpResponse: 'http_response',

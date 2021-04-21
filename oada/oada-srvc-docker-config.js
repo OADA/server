@@ -120,6 +120,7 @@ module.exports = {
     },
   },
   kafka: {
+    broker: 'kafka:9092',
     topics: {
       tokenRequest: 'token_request',
       graphRequest: 'graph_request',
@@ -130,9 +131,6 @@ module.exports = {
       httpResponse: 'http_response',
       websocketsRequest: 'websockets_request',
     },
-  },
-  zookeeper: {
-    host: 'zookeeper:2181',
   },
   auth: {
     // Prefix should match nginx proxy's prefix for the auth service

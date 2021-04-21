@@ -21,7 +21,7 @@ module.exports = {
         producer: {
             pollInterval: 500, // ms
         },
-        broker: 'kafka',
+        broker: 'kafka:9092',
         // https://github.com/edenhill/librdkafka/blob/master/CONFIGURATION.md
         librdkafka: {
             'enable.auto.commit': false,

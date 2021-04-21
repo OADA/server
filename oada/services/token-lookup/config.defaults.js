@@ -30,7 +30,4 @@ module.exports = {
     },
     groupId: 'token-lookup',
   },
-  zookeeper: {
-    host: 'zookeeper:2181',
-  },
 };

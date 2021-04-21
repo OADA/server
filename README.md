@@ -10,7 +10,7 @@ The repository and releases come with configurations for easily running
 with [docker-compose].
 
 You can also theoretically run all the parts without docker or [docker-compose],
-but you will need [arangodb], [kafka], and [zookeeper] running
+but you will need [arangodb] and either [redpanda] or [kafka]
 for the micro-services to use.
 
 ## OADA micro-services
@@ -79,8 +79,8 @@ you probably want to use a [.env file] for things like `DOMAIN`.
 [docker-compose]: https://docs.docker.com/compose/
 [.env file]: https://docs.docker.com/compose/environment-variables/#substitute-environment-variables-in-compose-files
 [arangodb]: https://www.arangodb.com
+[redpanda]: https://vectorized.io/redpanda
 [kafka]: https://kafka.apache.org
-[zookeeper]: https://zookeeper.apache.org
 [override file]: https://docs.docker.com/compose/extends/#understanding-multiple-compose-files
 [debug]: https://www.npmjs.com/package/debug#usage
 [`oadadeploy`]: https://github.com/OADA/oadadeploy

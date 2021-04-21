@@ -130,31 +130,20 @@ services:
     command: ['arangod']
 
   # You could use an external kafka instance instead.
-  # The services just need hostname `kafka` to resolve to arango instance(s)
+  # The services just need hostname `kafka`
+  # to resolve to redpanda/kafka instance(s)
   kafka:
     environment:
-      - KAFKA_CFG_ZOOKEEPER_CONNECT=zookeeper:2181
       - ALLOW_PLAINTEXT_LISTENER=yes
-      - KAFKA_HEAP_OPTS=-Xmx1g -Xms512M
-      - JMX_PORT=9999
     volumes:
       #- /var/run/docker.sock:/var/run/docker.sock
-      - kafka_data:/bitnami/kafka
-
-  # Used by kafka service.
-  # Should probably disable if using external kafka.
-  zookeeper:
-    environment:
-      - ALLOW_ANONYMOUS_LOGIN=yes
-    volumes:
-      - zookeeper_data:/bitnami/zookeeper
+      - redpanda_data:/var/lib/redpanda/data
 
 volumes:
   arangodb_data:
   arangodb_apps_data:
   binary_data:
-  kafka_data:
-  zookeeper_data:
+  redpanda_data:
 
 # Set up Mutagen forwards
 # Only take effect if using `mutagen compose` rather than `docker-compose`
@@ -167,6 +156,3 @@ x-mutagen:
     kafka:
       source: 'tcp:localhost:9092'
       destination: 'network://kafka_net:tcp:kafka:9092'
-    zookeeper:
-      source: 'tcp:localhost:2181'
-      destination: 'network://kafka_net:tcp:zookeeper:2181'

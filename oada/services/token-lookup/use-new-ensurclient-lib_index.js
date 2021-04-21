@@ -42,7 +42,7 @@ ensureClient('token-lookup', topicnames).then((client) => {
   let producer = new kf.Producer(client, { partitionerType: 0 });
   const consumer = new kf.ConsumerGroup(
     {
-      host: config.get('zookeeper:host'),
+      host: config.get('kafka:broker'),
       groupId: 'token-lookup',
       fromOffset: 'latest',
     },

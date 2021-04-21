@@ -28,7 +28,7 @@ describe('graph-lookup service', () => {
       .then(() => graphLookupService.start())
       .then(() => {
         let client = Promise.promisifyAll(
-          new kf.Client('zookeeper:2181', 'graph-lookup')
+          new kf.Client('kafka:9092', 'graph-lookup')
         );
 
         // Create a dummy consumer of http-response messages
