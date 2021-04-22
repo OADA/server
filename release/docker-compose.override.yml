@@ -138,12 +138,14 @@ services:
     volumes:
       #- /var/run/docker.sock:/var/run/docker.sock
       - redpanda_data:/var/lib/redpanda/data
+      - redpanda_config:/etc/redpanda/
 
 volumes:
   arangodb_data:
   arangodb_apps_data:
   binary_data:
   redpanda_data:
+  redpanda_config:
 
 # Set up Mutagen forwards
 # Only take effect if using `mutagen compose` rather than `docker-compose`

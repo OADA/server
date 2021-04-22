@@ -215,8 +215,10 @@ services:
       - kafka_net
     volumes:
       - redpanda_data:/var/lib/redpanda/data
+      - redpanda_config:/etc/redpanda/
     entrypoint:
       - /usr/bin/rpk
+    command:
       - redpanda
       - start
       - --smp
@@ -224,20 +226,28 @@ services:
       - --reserve-memory
       - 0M
       - --overprovisioned
-      - --node-id
-      - '0'
       - --kafka-addr
       - PLAINTEXT://0.0.0.0:9092
+      - --rpc-addr
+      - 0.0.0.0:33145
+      - --node-id
+      - '0'
       - --advertise-kafka-addr
       - PLAINTEXT://kafka:9092
-    ports:
-      - 9092:9092
+    expose:
+      # Kafka API port
+      - '9092'
+      # Internal RPC port
+      - '33145'
+      # Prometheus/HTTP Admin port
+      - '9644'
 
 volumes:
   arangodb_data:
   arangodb_apps_data:
   binary_data:
   redpanda_data:
+  redpanda_config:
 
 networks:
   arango_net:
