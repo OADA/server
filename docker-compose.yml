@@ -133,17 +133,6 @@ services:
     environment:
       - SSL_ALLOW_SELF_SIGNED=1
 
-  permissions-handler:
-    extends:
-      file: common.yml
-      service: oada-uservice
-    image: oada/permissions-handler:${OADA_VERSION-build}
-    build:
-      args:
-        OADA_SERVICE: permissions-handler
-    depends_on:
-      - startup
-
   shares:
     extends:
       file: common.yml

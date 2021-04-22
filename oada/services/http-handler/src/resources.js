@@ -22,6 +22,9 @@ const CACHE_PATH = config.get('storage:binary:cacache');
 
 const requester = require('./requester');
 
+// Call permissions handler directly rather than via kafka?
+const { handleReq: permissionsRequest } = require('@oada/permissions-handler');
+
 const router = express.Router();
 
 // Turn POSTs into PUTs at random id
@@ -58,8 +61,8 @@ router.use(function graphHandler(req, res, next) {
 });
 
 router.delete('/*', function checkScope(req, res, next) {
-  requester
-    .send(
+  Bluebrid.resolve(
+    permissionsRequest(
       {
         connection_id: req.id,
         domain: req.get('host'),
@@ -71,6 +74,7 @@ router.delete('/*', function checkScope(req, res, next) {
       },
       config.get('kafka:topics:permissionsRequest')
     )
+  )
     .then(function handlePermissionsRequest(response) {
       if (!req.oadaGraph['resource_id']) {
         // PUTing non-existant resource
@@ -98,8 +102,8 @@ router.delete('/*', function checkScope(req, res, next) {
 });
 
 router.put('/*', function checkScope(req, res, next) {
-  requester
-    .send(
+  Bluebird.resolve(
+    permissionsRequest(
       {
         connection_id: req.id,
         domain: req.get('host'),
@@ -111,6 +115,7 @@ router.put('/*', function checkScope(req, res, next) {
       },
       config.get('kafka:topics:permissionsRequest')
     )
+  )
     .then(function handlePermissionsRequest(response) {
       if (!req.oadaGraph['resource_id']) {
         // PUTing non-existant resource
@@ -138,8 +143,8 @@ router.put('/*', function checkScope(req, res, next) {
 });
 
 router.get('/*', function checkScope(req, res, next) {
-  requester
-    .send(
+  Bluebird.resolve(
+    permissionsRequest(
       {
         connection_id: req.id,
         domain: req.get('host'),
@@ -150,6 +155,7 @@ router.get('/*', function checkScope(req, res, next) {
       },
       config.get('kafka:topics:permissionsRequest')
     )
+  )
     .then(function handlePermissionsRequest(response) {
       req.log.trace('permissions response: %o', response);
       if (!response.permissions.owner && !response.permissions.read) {

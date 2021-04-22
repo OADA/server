@@ -70,10 +70,6 @@ services:
     environment:
       <<: *env
 
-  permissions-handler:
-    environment:
-      <<: *env
-
   shares:
     environment:
       <<: *env

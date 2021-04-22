@@ -15,33 +15,38 @@
 
 'use strict';
 
-const debug = require('debug');
 const fs = require('fs');
+const { join } = require('path');
+
+const debug = require('debug');
 const typeis = require('type-is');
+
+const { Responder } = require('@oada/lib-kafka');
+
 const warn = debug('permissions-handler:warn');
 const trace = debug('permissions-handler:trace');
 const error = debug('permissions-handler:error');
 
-const { Responder } = require('@oada/lib-kafka');
 const config = require('./config');
-
-//---------------------------------------------------------
-// Kafka intializations:
-const responder = new Responder(
-  config.get('kafka:topics:permissionsRequest'),
-  config.get('kafka:topics:httpResponse'),
-  'permissions-handler'
-);
-
-module.exports = function stopResp() {
-  return responder.disconnect();
-};
-
 const scopeTypes = require('./scopes/builtin');
+
+// Listen on Kafka if we are running this file
+if (require.main === module) {
+  //---------------------------------------------------------
+  // Kafka intializations:
+  const responder = new Responder(
+    config.get('kafka:topics:permissionsRequest'),
+    config.get('kafka:topics:httpResponse'),
+    'permissions-handler'
+  );
+
+  responder.on('request', handleReq);
+}
+
 trace('Parsed builtin scopes, they are: %O', scopeTypes);
 // Augment scopeTypes by merging in anything in /scopes/additional-scopes
 const additionalScopesFiles = fs
-  .readdirSync('./scopes/additional-scopes')
+  .readdirSync(join(__dirname, './scopes/additional-scopes'))
   .filter(
     (f) => !f.match(/^\./) // remove hidden files
   );
@@ -62,7 +67,7 @@ function scopePerm(perm, has) {
   return perm === has || perm === 'all';
 }
 
-responder.on('request', function handleReq(req) {
+function handleReq(req) {
   let response = {
     scopes: {
       read: false,
@@ -86,7 +91,7 @@ responder.on('request', function handleReq(req) {
   //Check scopes
   if (process.env.IGNORE_SCOPE === 'yes') {
     trace('IGNORE_SCOPE environment variable is true');
-    responder.scopes = { read: true, write: true };
+    response.scopes = { read: true, write: true };
   } else {
     // Check for read permission
     if (!Array.isArray(req.scope)) {
@@ -173,4 +178,6 @@ responder.on('request', function handleReq(req) {
   trace('END RESULT %O', response);
   return response;
   //});
-});
+}
+
+module.exports = { handleReq };
