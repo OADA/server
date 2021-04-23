@@ -70,7 +70,7 @@ function handleReq(req) {
   });
   trace('getBody %d', Date.now() / 1000 - getB);
 
-  trace(`PUTing to "${req['path_leftover']}" in "${id}"`);
+  trace(`PUTing to "%s" in "%s"`, req['path_leftover'], id);
 
   var changeType;
   var beforeUpsert = Date.now() / 1000;
@@ -79,13 +79,21 @@ function handleReq(req) {
       trace('FIRST BODY %O', body);
       trace('doUpsert %d', Date.now() / 1000 - beforeUpsert);
       if (req['if-match']) {
-        let rev = await resources.getResource(req['resource_id'], '_rev');
-        if (parseInt(req['if-match']) !== rev) {
-          error('------------THROWING------------');
+        const rev = await resources.getResource(req['resource_id'], '_rev');
+        if (req['if-match'] !== rev) {
           error(rev);
           error(req['if-match']);
           error(req);
           throw new Error('if-match failed');
+        }
+      }
+      if (req['if-none-match']) {
+        const rev = await resources.getResource(req['resource_id'], '_rev');
+        if (req['if-none-match'].includes(rev)) {
+          error(rev);
+          error(req['if-none-match']);
+          error(req);
+          throw new Error('if-none-match failed');
         }
       }
       var beforeCacheRev = Date.now() / 1000;

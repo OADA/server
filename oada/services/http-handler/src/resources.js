@@ -230,8 +230,16 @@ router.get('/*', async function getHeaders(req, res, next) {
   res.set('Content-Type', req.oadaGraph.type);
   res.set('X-OADA-Rev', req.oadaGraph.rev);
   res.set('ETag', `"${req.oadaGraph.rev}"`);
+  next();
+});
 
-  // Check preconditions before actually getting the body
+router.get('/*', formats());
+
+/**
+ * Check preconditions before actually getting the body
+ */
+router.get('/*', function preconditions(req, res, next) {
+  /** @type string | undefined */
   const ifmatch = req.get('if-match');
   if (ifmatch) {
     const rev = parseETag(ifmatch);
@@ -246,10 +254,24 @@ router.get('/*', async function getHeaders(req, res, next) {
     }
   }
 
+  /** @type string | undefined */
+  const ifnonematch = req.get('if-none-match');
+  if (ifnonematch) {
+    const revs = ifnonematch.split(',').map(parseETag);
+    if (revs.includes(req.oadaGraph.rev)) {
+      return next(
+        new OADAError(
+          'Precondition Failed',
+          412,
+          'If-None-Match header contains current resource _rev'
+        )
+      );
+    }
+  }
+
+  // All preconditions passed
   next();
 });
-
-router.get('/*', formats());
 
 router.get('/*', async function getResource(req, res, next) {
   // TODO: Should it not get the whole meta document?
@@ -398,7 +420,10 @@ router.put('/*', async function putResource(req, res, next) {
       req.log.trace('RESOURCE EXISTS %O', req.resourceExists);
       let ignoreLinks =
         (req.get('x-oada-ignore-links') || '').toLowerCase() == 'true';
+      /** @type string | undefined */
       const ifmatch = req.get('if-match');
+      /** @type string | undefined */
+      const ifnonematch = req.get('if-none-match');
       return requester.send(
         {
           'connection_id': req.id,
@@ -414,6 +439,7 @@ router.put('/*', async function putResource(req, res, next) {
           'contentType': req.get('content-type'),
           'bodyid': bodyid,
           'if-match': ifmatch && parseETag(ifmatch),
+          'if-none-match': ifnonematch?.split(',').map(parseETag),
           ignoreLinks,
         },
         config.get('kafka:topics:writeRequest')
@@ -434,6 +460,14 @@ router.put('/*', async function putResource(req, res, next) {
               'Precondition Failed',
               412,
               'If-Match header does not match current resource _rev'
+            )
+          );
+        case 'if-none-match failed':
+          return Promise.reject(
+            new OADAError(
+              'Precondition Failed',
+              412,
+              'If-None-Match header contains current resource _rev'
             )
           );
         default:
@@ -483,7 +517,10 @@ router.delete('/*', function deleteLink(req, res, next) {
 
 router.delete('/*', function deleteResource(req, res, next) {
   req.log.trace(`Sending DELETE request for request ${req.id}`);
+  /** @type string | undefined */
   const ifmatch = req.get('if-match');
+  /** @type string | undefined */
+  const ifnonematch = req.get('if-none-match');
   return requester
     .send(
       {
@@ -498,6 +535,7 @@ router.delete('/*', function deleteResource(req, res, next) {
         'authorizationid': req.user['authorizationid'],
         'client_id': req.user['client_id'],
         'if-match': ifmatch && parseETag(ifmatch),
+        'if-none-match': ifnonematch?.split(',').map(parseETag),
         //'bodyid': bodyid, // No body means delete?
         //body: req.body
       },
@@ -521,6 +559,14 @@ router.delete('/*', function deleteResource(req, res, next) {
               'Precondition Failed',
               412,
               'If-Match header does not match current resource _rev'
+            )
+          );
+        case 'if-none-match failed':
+          return Promise.reject(
+            new OADAError(
+              'Precondition Failed',
+              412,
+              'If-None-Match header contains current resource _rev'
             )
           );
         default:
