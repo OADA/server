@@ -343,6 +343,23 @@ router.put(
   })
 );
 
+/**
+ * Parse the rev out of a resource's ETag
+ *
+ * @param {string} etag
+ * @returns {number} rev
+ */
+function parseETag(etag) {
+  // Parse strong or weak ETags?
+  // e.g., `W/"123"` or `"123"`
+  const r = /(W\/)?"(?<rev>\d*)"/;
+
+  const { rev } = etag.match(r).groups;
+
+  // If parse fails, assume `123` format (for legacy code)
+  return rev ? +rev : +etag;
+}
+
 router.put('/*', async function putResource(req, res, next) {
   req.log.trace(`Saving PUT body for request ${req.id}`);
 
@@ -379,7 +396,7 @@ router.put('/*', async function putResource(req, res, next) {
           'client_id': req.user['client_id'],
           'contentType': req.get('content-type'),
           'bodyid': bodyid,
-          'if-match': req.get('if-match'),
+          'if-match': parseETag(req.get('if-match')),
           ignoreLinks,
         },
         config.get('kafka:topics:writeRequest')
@@ -462,7 +479,7 @@ router.delete('/*', function deleteResource(req, res, next) {
         'user_id': req.user['user_id'],
         'authorizationid': req.user['authorizationid'],
         'client_id': req.user['client_id'],
-        'if-match': req.get('if-match'),
+        'if-match': parseETag(req.get('if-match')),
         //'bodyid': bodyid, // No body means delete?
         //body: req.body
       },
