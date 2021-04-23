@@ -230,6 +230,22 @@ router.get('/*', async function getHeaders(req, res, next) {
   res.set('Content-Type', req.oadaGraph.type);
   res.set('X-OADA-Rev', req.oadaGraph.rev);
   res.set('ETag', `"${req.oadaGraph.rev}"`);
+
+  // Check preconditions before actually getting the body
+  const ifmatch = req.get('if-match');
+  if (ifmatch) {
+    const rev = parseETag(ifmatch);
+    if (rev !== req.oadaGraph.rev) {
+      return next(
+        new OADAError(
+          'Precondition Failed',
+          412,
+          'If-Match header does not match current resource _rev'
+        )
+      );
+    }
+  }
+
   next();
 });
 
@@ -382,6 +398,7 @@ router.put('/*', async function putResource(req, res, next) {
       req.log.trace('RESOURCE EXISTS %O', req.resourceExists);
       let ignoreLinks =
         (req.get('x-oada-ignore-links') || '').toLowerCase() == 'true';
+      const ifmatch = req.get('if-match');
       return requester.send(
         {
           'connection_id': req.id,
@@ -396,7 +413,7 @@ router.put('/*', async function putResource(req, res, next) {
           'client_id': req.user['client_id'],
           'contentType': req.get('content-type'),
           'bodyid': bodyid,
-          'if-match': parseETag(req.get('if-match')),
+          'if-match': ifmatch && parseETag(ifmatch),
           ignoreLinks,
         },
         config.get('kafka:topics:writeRequest')
@@ -466,6 +483,7 @@ router.delete('/*', function deleteLink(req, res, next) {
 
 router.delete('/*', function deleteResource(req, res, next) {
   req.log.trace(`Sending DELETE request for request ${req.id}`);
+  const ifmatch = req.get('if-match');
   return requester
     .send(
       {
@@ -479,7 +497,7 @@ router.delete('/*', function deleteResource(req, res, next) {
         'user_id': req.user['user_id'],
         'authorizationid': req.user['authorizationid'],
         'client_id': req.user['client_id'],
-        'if-match': parseETag(req.get('if-match')),
+        'if-match': ifmatch && parseETag(ifmatch),
         //'bodyid': bodyid, // No body means delete?
         //body: req.body
       },
