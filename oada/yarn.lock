@@ -1101,7 +1101,6 @@ __metadata:
     debug: ^4.3.1
     kafkajs: ^1.15.0
     ksuid: ^2.0.0
-    node-rdkafka: ^2.10.1
     uuid: ^8.3.2
   languageName: unknown
   linkType: soft
@@ -2415,15 +2414,6 @@ __metadata:
   version: 2.2.0
   resolution: "binary-extensions@npm:2.2.0"
   checksum: 0f5f5685f344b035c4f98d06fa288962d262294a1441c1481ac99e895037bde971ebe6e09a4bd8aa18ab2525bfc00b1ad4af71dbf9e933a72e0df6919706a728
-  languageName: node
-  linkType: hard
-
-"bindings@npm:^1.3.1":
-  version: 1.5.0
-  resolution: "bindings@npm:1.5.0"
-  dependencies:
-    file-uri-to-path: 1.0.0
-  checksum: bd623dec58f126eb0c30f04a20da7080f06cdd5af26bf5a91615e70055fbba66c4cec5c88b156e8181c1d822f2392034a40a9121ef3ebc25638dc2163332b12d
   languageName: node
   linkType: hard
 
@@ -3951,13 +3941,6 @@ __metadata:
   version: 12.4.2
   resolution: "file-type@npm:12.4.2"
   checksum: 3f822c6254538948b3d193dcfd208de711b3ceeac33169605b327a9e4bb77e10f6492ecbd20ecf471e854df697ed884a0c9f29ff32120499dbbec765e338b796
-  languageName: node
-  linkType: hard
-
-"file-uri-to-path@npm:1.0.0":
-  version: 1.0.0
-  resolution: "file-uri-to-path@npm:1.0.0"
-  checksum: 5ddb9682f04f6f87b7765b93306206db2f96bc86162487e27639c55fe3ffeed12c30906ef1dedaa5307d7cabbbbdcbfa299b79aaec435de0f17e17ab31bd20b3
   languageName: node
   linkType: hard
 
@@ -6412,15 +6395,6 @@ fsevents@~2.3.1:
   languageName: node
   linkType: hard
 
-"nan@npm:^2.14.0":
-  version: 2.14.2
-  resolution: "nan@npm:2.14.2"
-  dependencies:
-    node-gyp: latest
-  checksum: 36349b2e5df4182aa0d0cc43fcd6cc782ca560a83c2764743d80c14ba5028d0c54041a2f464b8d4cb18a884e04415034a0a764c745e1d5502ea34a5cb6470a39
-  languageName: node
-  linkType: hard
-
 "nanoid@npm:3.1.20":
   version: 3.1.20
   resolution: "nanoid@npm:3.1.20"
@@ -6549,17 +6523,6 @@ fsevents@~2.3.1:
     range-parser: ^1.2.0
     type-is: ^1.6.18
   checksum: 50f3f26e7687b316c6bf342577257f83eb5b9dc8769bc226858e4475804d6a04e320bd762987cce74c5174cda010e112e9d04618ad2c95fd4bd8008f4ec3da0b
-  languageName: node
-  linkType: hard
-
-"node-rdkafka@npm:^2.10.1":
-  version: 2.10.1
-  resolution: "node-rdkafka@npm:2.10.1"
-  dependencies:
-    bindings: ^1.3.1
-    nan: ^2.14.0
-    node-gyp: latest
-  checksum: 481a76337016119502c42eb4fccafc0e9774c061e10c8fe08ea4f06c6e3477bdc0075257b885f23959880422be373c1323d7fc762269f24ad705f88e93afca53
   languageName: node
   linkType: hard
 

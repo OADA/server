@@ -5,14 +5,6 @@ FROM node:$NODE_VER AS packages
 
 WORKDIR /oada
 
-# install things only needed for building
-RUN apt-get update -y && apt-get install -y --no-install-recommends \
-    liblz4-dev \
-    libsasl2-dev \
-    libssl-dev \
-    musl-dev \
-  && apt-get clean && rm -rf /var/lib/apt/lists/*
-
 # Need to list out every package.json we need from monorepo for caching stuff...
 COPY ./yarn.lock ./.yarnrc.yml /oada/
 COPY ./.yarn /oada/.yarn
@@ -70,8 +62,7 @@ COPY --from=yarn /oada/ /oada/
 COPY --from=build /oada/ /oada/
 
 # Remove uncompiled code (e.g. TS files, C/C++ of librdkafka)?
-RUN find /oada -name src | xargs rm -rfv \
-    && rm -rfv /oada/.yarn/unplugged/node-rdkafka-*/node_modules/node-rdkafka/deps
+RUN find /oada -name src | xargs rm -rfv
 
 
 # Assemble "production" image
@@ -81,10 +72,6 @@ WORKDIR /oada
 
 # Install packages needed for running node-rdkafka etc.
 RUN apt-get update -y && apt-get install -y --no-install-recommends \
-    ca-certificates \
-    liblz4-1 \
-    libsasl2-2 \
-    libssl1.1 \
     tini \
   && apt-get clean && rm -rf /var/lib/apt/lists/*
 
