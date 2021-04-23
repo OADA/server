@@ -392,7 +392,7 @@ function parseETag(etag) {
   // e.g., `W/"123"` or `"123"`
   const r = /(W\/)?"(?<rev>\d*)"/;
 
-  const { rev } = etag.match(r).groups;
+  const { rev } = etag.match(r)?.groups ?? {};
 
   // If parse fails, assume `123` format (for legacy code)
   return rev ? +rev : +etag;
