@@ -26,23 +26,23 @@
   },
   "homepage": "https://github.com/OADA/oada-srvc-http-handler#readme",
   "dependencies": {
-    "@oada/formats-server": "^1.4.1",
+    "@oada/formats-server": "^1.5.1",
     "@oada/lib-arangodb": "^0.0.2",
     "@oada/lib-config": "^0.0.1",
     "@oada/lib-kafka": "^1.0.0",
     "@oada/permissions-handler": "workspace:services/permissions-handler",
     "@oada/pino-debug": "^1.0.0",
-    "@oada/types": "^1.4.1",
+    "@oada/types": "^1.5.1",
     "axios": "^0.21.1",
     "bluebird": "^3.7.2",
     "body-parser": "^1.19.0",
     "cacache": "^15.0.6",
     "clone-deep": "^4.0.1",
     "cors": "^2.8.5",
-    "debug": "^4.3.1",
+    "debug": "^4.3.2",
     "express": "^4.17.1",
     "express-promise": "^0.4.0",
-    "helmet": "^4.4.1",
+    "helmet": "^4.5.0",
     "json-pointer": "^0.6.1",
     "jsonpointer": "^4.1.0",
     "ksuid": "^2.0.0",
@@ -51,13 +51,13 @@
     "type-is": "^1.6.18",
     "uuid": "^8.3.2",
     "well-known-json": "^0.2.0",
-    "ws": "^7.4.4"
+    "ws": "^7.4.5"
   },
   "devDependencies": {
     "@types/debug": "^4.1.5",
     "@types/helmet": "^4.0.0",
-    "@types/node": "^14.14.37",
-    "@types/pino-http": "^5.4.0",
-    "@types/ws": "^7.4.0"
+    "@types/node": "^14.14.41",
+    "@types/pino-http": "^5.4.1",
+    "@types/ws": "^7.4.1"
   }
 }
