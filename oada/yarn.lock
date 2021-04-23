@@ -1099,6 +1099,7 @@ __metadata:
     "@oada/lib-config": ^0.0.1
     bluebird: ^3.7.2
     debug: ^4.3.1
+    kafkajs: ^1.15.0
     ksuid: ^2.0.0
     node-rdkafka: ^2.10.1
     uuid: ^8.3.2
@@ -5554,6 +5555,13 @@ fsevents@~2.3.1:
     properties-parser: ^0.3.1
     tmp: 0.0.28
   checksum: bfa77f6a0382b70926d1dbaf059037513c1040a82ca2a795c1e1f9189d735dcf4ff376ec3451c0c359b71152a3b2f646a0b7f1da55a1a1785019b14b353baf52
+  languageName: node
+  linkType: hard
+
+"kafkajs@npm:^1.15.0":
+  version: 1.15.0
+  resolution: "kafkajs@npm:1.15.0"
+  checksum: 0633502e7ea5244aa5a5731d5bf5af834ec92ea2c1659cb61085b9471dc34d5e8cfc991a67d9c2870964bb463a7bfba7d337fda0745600a16ab9353e317b1753
   languageName: node
   linkType: hard
 
