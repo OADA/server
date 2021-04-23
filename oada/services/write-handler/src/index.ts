@@ -221,16 +221,12 @@ export function handleReq(
           changeType = 'delete';
           trace(`Setting changeType = 'delete'`);
         } else {
-          if (!req.resourceExists)
+          if (!req.resourceExists) {
             return { rev: undefined, orev: undefined, changeId: undefined };
+          }
           trace('deleting resource altogether');
-          return Bluebird.resolve(resources.deleteResource(id)).then(() => {
+          return Bluebird.resolve(resources.deleteResource(id)).tap(() => {
             trace('deleteResource %d', Date.now() / 1000 - beforeDeletePartial);
-            return {} as {
-              rev: undefined;
-              orev: undefined;
-              changeId: undefined;
-            };
           });
         }
       }
@@ -344,11 +340,20 @@ export function handleReq(
         .then((orev) => ({ rev, orev, changeId }))
         .tap(() => trace('method %d', Date.now() / 1000 - beforeMethod));
     })
-    .then(function respond({ rev, orev, changeId }) {
+    // @ts-ignore
+    .then(function respond({
+      rev,
+      orev,
+      changeId,
+    }: {
+      rev: number;
+      orev: number;
+      changeId: string;
+    }) {
       trace('upsert then %d', Date.now() / 1000 - beforeUpsert);
       const beforeCachePut = Date.now() / 1000;
       // Put the new rev into the cache
-      cache.put(id, rev!);
+      cache.put(id, rev);
       trace('cache.put %d', Date.now() / 1000 - beforeCachePut);
 
       const res: WriteResponse = {
@@ -356,13 +361,13 @@ export function handleReq(
         code: 'success',
         resource_id: id,
         _rev: typeof rev === 'number' ? rev : 0,
-        _orev: orev!,
+        _orev: orev,
         user_id: req['user_id'],
         authorizationid: req['authorizationid'],
         path_leftover: req['path_leftover'],
         contentType: req['contentType'],
         indexer: req['indexer'],
-        change_id: changeId!,
+        change_id: changeId,
       };
       // causechain comes from rev-graph-update
       if (req.causechain) res.causechain = req.causechain; // pass through causechain if present

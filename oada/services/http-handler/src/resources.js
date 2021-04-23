@@ -61,7 +61,7 @@ router.use(function graphHandler(req, res, next) {
 });
 
 router.delete('/*', function checkScope(req, res, next) {
-  Bluebrid.resolve(
+  Bluebird.resolve(
     permissionsRequest(
       {
         connection_id: req.id,
