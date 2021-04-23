@@ -9,6 +9,36 @@ export module resources {
     id: string,
     rev: number
   ): Promise<{ id: string; changed: boolean }[]>;
+  function putResource(
+    id: string,
+    obj: {},
+    checkLinks: boolean = true
+  ): Promise<number>;
+  function deleteResource(id: string): Promise<number>;
+  function deletePartialResource(
+    id: string,
+    path: string | string[],
+    doc: {} = {}
+  ): Promise<number>;
+
+  // ErrorNum from: https://docs.arangodb.com/2.8/ErrorCodes/
+  const NotFoundError = <const>{
+    name: 'ArangoError',
+    errorNum: 1202,
+  };
+  const UniqueConstraintError = <const>{
+    name: 'ArangoError',
+    errorNum: 1210,
+  };
+}
+
+/**
+ * Module for temporarily storing put bodies in arango
+ */
+export module putBodies {
+  function savePutBody(body: unknown): Promise<void>;
+  function getPutBody(id: string): Promise<unknown>;
+  function removePutBody(id: string): Promise<void>;
 }
 
 /**
@@ -31,4 +61,15 @@ type Change = ChangeV2;
  */
 export module changes {
   function getChangeArray(id: string, rev: number): Promise<Change>;
+  function putChange(change: {
+    change: Change[0]['body'];
+    resId: Change[0]['resource_id'];
+    rev: number;
+    type: Change[0]['type'];
+    children: string[];
+    path: Change[0]['path'];
+    userId: string;
+    authorizationId: string;
+  }): Promise<string>;
+  function getMaxChangeRev(resourceId: string): Promise<number>;
 }

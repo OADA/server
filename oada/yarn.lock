@@ -1274,6 +1274,17 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@oada/types@npm:^1.5.1":
+  version: 1.5.1
+  resolution: "@oada/types@npm:1.5.1"
+  dependencies:
+    ajv: ^7.0.3
+    ajv-formats: ^1.5.1
+    ajv-formats-draft2019: ^1.4.3
+  checksum: 19d6dba5a247d54c3a395d27eb60dfb08c09bc0a8ab786c485b62fd57822a00f8451bcb623bd473343c79d2bc4d7f8e0a4dab293d2404b19e62fb65bacf9a69c
+  languageName: node
+  linkType: hard
+
 "@oada/users@workspace:services/users":
   version: 0.0.0-use.local
   resolution: "@oada/users@workspace:services/users"
@@ -1349,6 +1360,12 @@ __metadata:
     "@oada/lib-config": ^0.0.1
     "@oada/lib-kafka": ^1.0.0
     "@oada/pino-debug": ^1.0.0
+    "@oada/types": ^1.5.1
+    "@types/bluebird": ^3.5.33
+    "@types/debug": ^4.1.5
+    "@types/json-pointer": ^1.0.30
+    "@types/node": ^14.14.41
+    "@types/object-assign-deep": ^0.4.0
     bluebird: ^3.7.2
     debug: ^4.3.1
     json-pointer: ^0.6.1
@@ -1586,10 +1603,24 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/node@npm:^14.14.41":
+  version: 14.14.41
+  resolution: "@types/node@npm:14.14.41"
+  checksum: 37dfb639644c8ee9b9846106834983f590d494b855e74645a4f169ea24199f7559366d25f6e72e83ba940b59eb6370e002bd53963d098d6d9fdf935a37011417
+  languageName: node
+  linkType: hard
+
 "@types/normalize-package-data@npm:^2.4.0":
   version: 2.4.0
   resolution: "@types/normalize-package-data@npm:2.4.0"
   checksum: 6d077e73be7ac6227b678829c7bd765607136cdef537fd4ee7f368d9302a651aea924254d69826663322048436d90d6e7c679c9aa99c4824a687c568aab8ce4f
+  languageName: node
+  linkType: hard
+
+"@types/object-assign-deep@npm:^0.4.0":
+  version: 0.4.0
+  resolution: "@types/object-assign-deep@npm:0.4.0"
+  checksum: d0ebc298cc0ab6eccbefcbba11f18f47798d6b8605bb9e7361cf811ab26283e4af55239b2b531abfb2ec8d6c3d66de060599ef60ae2fa583842d589192b468fb
   languageName: node
   linkType: hard
 

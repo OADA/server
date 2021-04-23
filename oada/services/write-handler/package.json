@@ -2,10 +2,11 @@
   "name": "@oada/write-handler",
   "version": "1.0.0",
   "description": "",
-  "main": "server.js",
+  "main": "dist/index.js",
   "scripts": {
     "test": "DEBUG=\"${DEBUG},*write-handler#test*\" NODE_TLS_REJECT_UNAUTHORIZED=0 mocha",
-    "start": "node --expose-gc -r @oada/pino-debug write_handler.js"
+    "build": "yarn g:tsc",
+    "start": "node --enable-source-maps --expose-gc -r @oada/pino-debug dist/index.js"
   },
   "repository": {
     "type": "git",
@@ -27,5 +28,13 @@
     "json-pointer": "^0.6.1",
     "object-assign-deep": "^0.4.0",
     "timed-cache": "^1.1.4"
+  },
+  "devDependencies": {
+    "@oada/types": "^1.5.1",
+    "@types/bluebird": "^3.5.33",
+    "@types/debug": "^4.1.5",
+    "@types/json-pointer": "^1.0.30",
+    "@types/node": "^14.14.41",
+    "@types/object-assign-deep": "^0.4.0"
   }
 }

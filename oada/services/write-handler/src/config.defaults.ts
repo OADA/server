@@ -1,6 +1,4 @@
-'use strict';
-
-module.exports = {
+export default <const>{
   kafka: {
     broker: 'kafka:9092',
     topics: {
