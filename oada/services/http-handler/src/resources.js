@@ -229,6 +229,7 @@ router.get('/*', async function getChanges(req, res, next) {
 router.get('/*', async function getHeaders(req, res, next) {
   res.set('Content-Type', req.oadaGraph.type);
   res.set('X-OADA-Rev', req.oadaGraph.rev);
+  res.set('ETag', `"${req.oadaGraph.rev}"`);
   next();
 });
 
@@ -410,6 +411,7 @@ router.put('/*', async function putResource(req, res, next) {
       return (
         res
           .set('X-OADA-Rev', resp['_rev'])
+          .set('ETag', `"${resp['_rev']}"`)
           // TODO: What is the right thing to return here?
           //.redirect(204, req.baseUrl + req.url)
           .end()
@@ -492,7 +494,10 @@ router.delete('/*', function deleteResource(req, res, next) {
       }
     })
     .then(function (resp) {
-      return res.set('X-OADA-Rev', resp['_rev']).sendStatus(204);
+      return res
+        .set('X-OADA-Rev', resp['_rev'])
+        .set('ETag', `"${resp['_rev']}"`)
+        .sendStatus(204);
     })
     .catch(next);
 });
