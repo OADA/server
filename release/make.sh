@@ -22,7 +22,11 @@ echo
 echo "# OADA release ${RELEASE_VERSION} compose file ($(date))\n"
 
 # Load config, clean anything potentially not fit for release, merge overrides
-docker-compose --env-file=$SCRIPTPATH/.env config --resolve-image-digests | {
+docker-compose \
+    --env-file=${SCRIPTPATH}/.env \
+    -f ${SCRIPTPATH}/../docker-compose.yml \
+    -f ${OVERRIDES} \
+    config --resolve-image-digests | {
     #  Remove build info
     yq eval 'del(.. | select(has("build")).build)' -
 } | {
