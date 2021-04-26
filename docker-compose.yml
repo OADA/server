@@ -231,18 +231,160 @@ services:
       # Prometheus/HTTP Admin port
       - '9644'
 
+  prometheus:
+    image: prom/prometheus
+    profiles:
+      - dashboard
+      - debug
+    depends_on:
+      - rpk-prometheus-conf
+      - kafka
+    restart: unless-stopped
+    networks:
+      - grafana_net
+      - kafka_net
+    expose:
+      - '9090'
+    #ports:
+    #  - '9090:9090'
+    volumes:
+      - prometheus_data:/prometheus
+      - prometheus_config:/etc/prometheus
+
+  # Generate redpanda config for prometheus
+  # TODO: Better way to do this?
+  rpk-prometheus-conf:
+    extends:
+      service: kafka
+    profiles:
+      - dashboard
+      - debug
+    restart: on-failure
+    volumes:
+      - prometheus_config:/etc/prometheus
+    user: root
+    entrypoint:
+      - '/bin/sh'
+      - -c
+    command:
+      - |
+        echo -n "scrape_configs:" > /etc/prometheus/prometheus.yml &&
+        rpk generate --seed-addr=kafka prometheus-config >> /etc/prometheus/prometheus.yml
+
+  grafana:
+    image: grafana/grafana
+    profiles:
+      - dashboard
+      - debug
+    depends_on:
+      - prometheus
+      - grafana-provision-prometheus
+      - grafana-provision-dashboards
+    restart: unless-stopped
+    networks:
+      - grafana_net
+    ports:
+      - '3000:3000'
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - grafana_prov:/etc/grafana/provisioning
+
+  # Provision a grafana dashboard provider.
+  #
+  # Loads all dashboards in /var/lib/grafana/dashboards
+  #
+  # TODO: Better way to do this?
+  grafana-provision-dashboards:
+    image: grafana/grafana
+    profiles:
+      - dashboard
+      - debug
+    depends_on:
+      - rpk-grafana-dashboard
+    restart: on-failure
+    volumes:
+      - grafana_prov:/etc/grafana/provisioning
+    entrypoint:
+      - '/bin/sh'
+      - -c
+    command:
+      - |
+        echo '
+        apiVersion: 1
+        providers:
+          - name: "dashboard provider"
+            type: file
+            options:
+              path: /var/lib/grafana/dashboards
+              foldersFromFileStructure: true
+        ' > /etc/grafana/provisioning/dashboards/dashboards.yml
+
+  # Provision our prometheus instance as a grafana datasource
+  # TODO: Better way to do this?
+  grafana-provision-prometheus:
+    image: grafana/grafana
+    profiles:
+      - dashboard
+      - debug
+    restart: on-failure
+    volumes:
+      - grafana_prov:/etc/grafana/provisioning
+    entrypoint:
+      - '/bin/sh'
+      - -c
+    command:
+      - |
+        echo '
+        apiVersion: 1
+        deleteDatasources:
+          - name: Prometheus
+        datasources:
+          - name: Prometheus
+            type: prometheus
+            access: proxy
+            url: http://prometheus:9090
+        ' > /etc/grafana/provisioning/datasources/prometheus.yml
+
+  # Generate dashboard for our redpanda with our prometheus instance
+  # TODO: Better way to do this?
+  rpk-grafana-dashboard:
+    extends:
+      service: kafka
+    profiles:
+      - dashboard
+      - debug
+    restart: on-failure
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - grafana_prov:/etc/grafana/provisioning
+    entrypoint:
+      - '/bin/sh'
+      - -c
+    command:
+      - |
+        mkdir -p /var/lib/grafana/dashboards/
+        rpk generate grafana-dashboard \
+          --datasource Prometheus \
+          --prometheus-url kafka:9644/metrics \
+          > /var/lib/grafana/dashboards/redpanda.json
+
 volumes:
   arangodb_data:
   arangodb_apps_data:
   binary_data:
   redpanda_data:
   redpanda_config:
+  prometheus_data:
+  prometheus_config:
+  grafana_data:
+  grafana_prov:
 
 networks:
   arango_net:
   kafka_net:
   http_net:
   startup_net:
+  grafana_net:
 
 # Set up Mutagen forwards
 x-mutagen:
@@ -253,3 +395,9 @@ x-mutagen:
     kafka:
       source: 'tcp:localhost:9092'
       destination: 'network://kafka_net:tcp:kafka:9092'
+    prometheus:
+      source: 'tcp:localhost:9090'
+      destination: 'network://grafana_net:tcp:prometheus:9090'
+    grafana:
+      source: 'tcp:localhost:3000'
+      destination: 'network://grafana_net:tcp:grafana:3000'

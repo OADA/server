@@ -136,12 +136,43 @@ services:
       - redpanda_data:/var/lib/redpanda/data
       - redpanda_config:/etc/redpanda/
 
+  prometheus:
+    volumes:
+      - prometheus_data:/prometheus
+      - prometheus_config:/etc/prometheus
+
+  rpk-prometheus-conf:
+    volumes:
+      - prometheus_config:/etc/prometheus
+
+  grafana:
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - grafana_prov:/etc/grafana/provisioning
+
+  grafana-provision-dashboards:
+    volumes:
+      - grafana_prov:/etc/grafana/provisioning
+
+  grafana-provision-prometheus:
+    volumes:
+      - grafana_prov:/etc/grafana/provisioning
+
+  rpk-grafana-dashboard:
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - grafana_prov:/etc/grafana/provisioning
+
 volumes:
   arangodb_data:
   arangodb_apps_data:
   binary_data:
   redpanda_data:
   redpanda_config:
+  prometheus_data:
+  prometheus_config:
+  grafana_data:
+  grafana_prov:
 
 # Set up Mutagen forwards
 # Only take effect if using `mutagen compose` rather than `docker-compose`
@@ -154,3 +185,9 @@ x-mutagen:
     kafka:
       source: 'tcp:localhost:9092'
       destination: 'network://kafka_net:tcp:kafka:9092'
+    prometheus:
+      source: 'tcp:localhost:9090'
+      destination: 'network://grafana_net:tcp:prometheus:9090'
+    grafana:
+      source: 'tcp:localhost:3000'
+      destination: 'network://grafana_net:tcp:grafana:3000'
