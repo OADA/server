@@ -1,4 +1,4 @@
-ARG NODE_VER=14-buster
+ARG NODE_VER=16-alpine
 
 # Copy in package files and any needed apt packages?
 FROM node:$NODE_VER AS packages
@@ -51,8 +51,9 @@ COPY . /oada/
 # Run again to be safe?
 RUN yarn install --immutable
 
-# Build and then remove yarn stuff??
-RUN yarn workspaces foreach run build && rm -rfv .yarn .pnp.*
+# Build and then remove yarn stuff
+# TODO: Without p it quits after first build... ?
+RUN yarn workspaces foreach -vApi run build -v && rm -rfv .yarn .pnp.*
 
 FROM node:$NODE_VER AS code
 
@@ -66,14 +67,14 @@ RUN find /oada -name src | xargs rm -rfv
 
 
 # Assemble "production" image
-FROM node:$NODE_VER-slim AS production
+FROM node:$NODE_VER AS production
 
 WORKDIR /oada
 
 # Install packages needed for running node-rdkafka etc.
-RUN apt-get update -y && apt-get install -y --no-install-recommends \
-    tini \
-  && apt-get clean && rm -rf /var/lib/apt/lists/*
+RUN apk add --no-cache \
+    bash \
+    tini
 
 COPY ./utils/entrypoint.sh /entrypoint.sh
 RUN chmod u+x /entrypoint.sh
@@ -85,7 +86,7 @@ RUN chmod u+x /wait-for-it.sh
 COPY ./oada-srvc-docker-config.js /oada-srvc-docker-config.js
 
 # Launch entrypoint with tini
-ENTRYPOINT ["/usr/bin/tini", "--", "/entrypoint.sh"]
+ENTRYPOINT ["/sbin/tini", "--", "/entrypoint.sh"]
 # Run start script of package
 CMD ["start", "--config=/oada-srvc-docker-config.js"]
 
