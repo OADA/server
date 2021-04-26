@@ -94,7 +94,7 @@ COPY --from=code /oada/ /oada/
 
 # Add volume for Binary data and chown to node?
 RUN mkdir -p /oada/binary && chown node:node /oada/binary
-VOLUME /oada/binary
+#VOLUME /oada/binary
 
 # Do not run services as root
 USER node
