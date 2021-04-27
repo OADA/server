@@ -93,8 +93,8 @@ class Base extends EventEmitter {
                     await this.consumer.connect();
                     await this.producer.connect();
 
-                    this.consumer.subscribe({ topic: this.consumeTopic });
-                    this.consumer.run({
+                    await this.consumer.subscribe({ topic: this.consumeTopic });
+                    await this.consumer.run({
                         eachMessage: async ({
                             message: { value, ...data },
                         }) => {
