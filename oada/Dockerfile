@@ -53,7 +53,7 @@ RUN yarn install --immutable
 
 # Build and then remove yarn stuff
 # TODO: Without p it quits after first build... ?
-RUN yarn workspaces foreach -vApi run build -v && rm -rfv .yarn .pnp.*
+RUN yarn build -p --verbose && rm -rfv .yarn .pnp.*
 
 FROM node:$NODE_VER AS code
 
