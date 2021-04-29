@@ -205,24 +205,24 @@ services:
     volumes:
       - redpanda_data:/var/lib/redpanda/data
       - redpanda_config:/etc/redpanda/
+    environment:
+      REDPANDA_MODE: ${REDPANDA_MODE-development}
     entrypoint:
-      - /usr/bin/rpk
+      - /bin/sh
+      - -c
+    # Configure then run redpanda?
+    # TODO: Better way to set this?
     command:
-      - redpanda
-      - start
-      - --smp
-      - '1'
-      - --reserve-memory
-      - 0M
-      - --overprovisioned
-      - --kafka-addr
-      - PLAINTEXT://0.0.0.0:9092
-      - --rpc-addr
-      - 0.0.0.0:33145
-      - --node-id
-      - '0'
-      - --advertise-kafka-addr
-      - PLAINTEXT://kafka:9092
+      - |
+        rpk redpanda mode $$REDPANDA_MODE &&
+        rpk redpanda start \
+          --smp '1' \
+          --reserve-memory 0M \
+          --overprovisioned \
+          --kafka-addr PLAINTEXT://0.0.0.0:9092 \
+          --rpc-addr 0.0.0.0:33145 \
+          --node-id '0' \
+          --advertise-kafka-addr PLAINTEXT://kafka:9092
     expose:
       # Kafka API port
       - '9092'

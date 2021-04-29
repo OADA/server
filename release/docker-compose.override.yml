@@ -130,7 +130,7 @@ services:
   # to resolve to redpanda/kafka instance(s)
   kafka:
     environment:
-      - ALLOW_PLAINTEXT_LISTENER=yes
+      REDPANDA_MODE: ${REDPANDA_MODE-production}
     volumes:
       #- /var/run/docker.sock:/var/run/docker.sock
       - redpanda_data:/var/lib/redpanda/data
