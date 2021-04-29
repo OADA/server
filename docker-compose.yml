@@ -8,7 +8,7 @@ services:
       args:
         OADA_SERVICE: startup
     depends_on:
-      - kafka
+      - redpanda
       - arangodb
     expose: # expose only internally, not on host
       - '8080'
@@ -196,12 +196,13 @@ services:
     command: ['arangod', '--server.statistics', 'true']
 
   # Redpanda is API compatible with kafka.
-  # The name is still kafka to not break old code.
-  kafka:
+  redpanda:
     image: vectorized/redpanda:v21.4.13
     restart: unless-stopped
     networks:
-      - kafka_net
+      kafka_net:
+        aliases:
+          - kafka
     volumes:
       - redpanda_data:/var/lib/redpanda/data
       - redpanda_config:/etc/redpanda/
@@ -210,19 +211,28 @@ services:
     entrypoint:
       - /bin/sh
       - -c
-    # Configure then run redpanda?
-    # TODO: Better way to set this?
-    command:
+      # Configure then run redpanda?
+      # TODO: Better way to set this?
       - |
         rpk redpanda mode $$REDPANDA_MODE &&
-        rpk redpanda start \
-          --smp '1' \
-          --reserve-memory 0M \
-          --overprovisioned \
-          --kafka-addr PLAINTEXT://0.0.0.0:9092 \
-          --rpc-addr 0.0.0.0:33145 \
-          --node-id '0' \
-          --advertise-kafka-addr PLAINTEXT://kafka:9092
+        rpk $$@
+      - rpk
+    command:
+      - redpanda
+      - start
+      - --smp
+      - '1'
+      - --reserve-memory
+      - 0M
+      - --overprovisioned
+      - --kafka-addr
+      - PLAINTEXT://kafka:9092
+      - --rpc-addr
+      - 0.0.0.0:33145
+      - --node-id
+      - '0'
+      - --advertise-kafka-addr
+      - PLAINTEXT://kafka:9092
     expose:
       # Kafka API port
       - '9092'
@@ -238,7 +248,7 @@ services:
       - debug
     depends_on:
       - rpk-prometheus-conf
-      - kafka
+      - redpanda
     restart: unless-stopped
     networks:
       - grafana_net
@@ -255,7 +265,7 @@ services:
   # TODO: Better way to do this?
   rpk-prometheus-conf:
     extends:
-      service: kafka
+      service: redpanda
     profiles:
       - dashboard
       - debug
@@ -269,7 +279,7 @@ services:
     command:
       - |
         echo -n "scrape_configs:" > /etc/prometheus/prometheus.yml &&
-        rpk generate --seed-addr=kafka prometheus-config >> /etc/prometheus/prometheus.yml
+        rpk generate --seed-addr=redpanda prometheus-config >> /etc/prometheus/prometheus.yml
 
   grafana:
     image: grafana/grafana
@@ -349,7 +359,7 @@ services:
   # TODO: Better way to do this?
   rpk-grafana-dashboard:
     extends:
-      service: kafka
+      service: redpanda
     profiles:
       - dashboard
       - debug
@@ -365,7 +375,7 @@ services:
         mkdir -p /var/lib/grafana/dashboards/
         rpk generate grafana-dashboard \
           --datasource Prometheus \
-          --prometheus-url kafka:9644/metrics \
+          --prometheus-url redpanda:9644/metrics \
           > /var/lib/grafana/dashboards/redpanda.json
 
 volumes:

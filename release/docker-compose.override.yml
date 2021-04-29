@@ -128,7 +128,7 @@ services:
   # You could use an external kafka instance instead.
   # The services just need hostname `kafka`
   # to resolve to redpanda/kafka instance(s)
-  kafka:
+  redpanda:
     environment:
       REDPANDA_MODE: ${REDPANDA_MODE-production}
     volumes:
