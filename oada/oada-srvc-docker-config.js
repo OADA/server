@@ -40,7 +40,7 @@ module.exports = {
   },
 
   arangodb: {
-    connectionString: 'http://arangodb:8529',
+    connectionString: process.env.ARANGODB_URL || 'http://arangodb:8529',
     database: 'oada',
     // Important: ensureDefaults has the potential to delete particular documents from the database
     // if it is set to false.  This ensures dummy users/tokens don't end up in production.
@@ -120,7 +120,7 @@ module.exports = {
     },
   },
   kafka: {
-    broker: 'kafka:9092',
+    broker: process.env.KAFKA_BROKERS || 'kafka:9092',
     topics: {
       tokenRequest: 'token_request',
       graphRequest: 'graph_request',
