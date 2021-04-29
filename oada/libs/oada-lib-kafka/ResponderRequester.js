@@ -22,15 +22,13 @@ const Responder = require('./Responder');
 const Requester = require('./Requester');
 
 class DummyResponder extends Responder {
-    [CONNECT]() {
-        // eslint-disable-line class-methods-use-this
+    async [CONNECT]() {
         // Don't connect to Kafka
         return undefined;
     }
 }
 class DummyRequester extends Requester {
-    [CONNECT]() {
-        // eslint-disable-line class-methods-use-this
+    async [CONNECT]() {
         // Don't connect to Kafka
         return undefined;
     }
@@ -68,7 +66,7 @@ class ResponderRequester extends Base {
 
         // Mux the consumer between requester and responder
         this.on(DATA, (val, data, ...rest) => {
-            trace('Received data', val);
+            trace('Received data: %o', val);
             if (data.topic === this.requester.consumeTopic) {
                 trace('Muxing data to requester');
                 this.requester.emit(DATA, val, data, ...rest);

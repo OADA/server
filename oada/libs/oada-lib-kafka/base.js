@@ -88,27 +88,31 @@ class Base extends EventEmitter {
         });
 
         this.ready = Bluebird.fromCallback((done) => {
-            this[CONNECT] = async () => {
-                try {
-                    await this.consumer.connect();
-                    await this.producer.connect();
-
-                    await this.consumer.subscribe({ topic: this.consumeTopic });
-                    await this.consumer.run({
-                        eachMessage: async ({
-                            message: { value, ...data },
-                        }) => {
-                            // Assume all messages are JSON
-                            const resp = JSON.parse(value);
-                            super.emit(DATA, resp, data);
-                        },
-                    });
-                } catch (err) {
-                    return done(err);
-                }
-                done();
-            };
+            this.#done = done;
         });
+    }
+    #done;
+    async [CONNECT]() {
+        try {
+            await this.consumer.connect();
+            await this.producer.connect();
+
+            for (const topic of Array.isArray(this.consumeTopic)
+                ? this.consumeTopic
+                : [this.consumeTopic]) {
+                await this.consumer.subscribe({ topic });
+            }
+            await this.consumer.run({
+                eachMessage: async ({ message: { value, ...data } }) => {
+                    // Assume all messages are JSON
+                    const resp = JSON.parse(value);
+                    super.emit(DATA, resp, data);
+                },
+            });
+        } catch (err) {
+            return this.#done(err);
+        }
+        this.#done();
     }
 
     on(event, listener) {

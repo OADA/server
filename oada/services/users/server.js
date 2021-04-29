@@ -13,18 +13,19 @@
  * limitations under the License.
  */
 
-'use strict';
-
 const debug = require('debug');
-const trace = debug('users:trace');
-const warn = debug('users:warn');
-const error = debug('users:error');
 const ksuid = require('ksuid');
 const cloneDeep = require('clone-deep');
 
 const { ResponderRequester } = require('@oada/lib-kafka');
 const { users } = require('@oada/lib-arangodb');
+
 const config = require('./config');
+
+const trace = debug('users:trace');
+const warn = debug('users:warn');
+const error = debug('users:error');
+
 const contentTypes = {
   bookmarks: 'application/vnd.oada.bookmarks.1+json',
   shares: 'application/vnd.oada.shares.1+json',
@@ -50,7 +51,9 @@ function createNewUser(req) {
   const u = cloneDeep(req.user);
   if (req.userid) {
     u._id = req.userid.match(/^users/) ? req.userid : 'users/' + req.userid;
-    u._key = req.userid.match(/^users/) ? req.userid.replace(/^users\//,'') : req.userid;
+    u._key = req.userid.match(/^users/)
+      ? req.userid.replace(/^users\//, '')
+      : req.userid;
   }
   return users
     .create(u)
