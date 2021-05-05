@@ -21,7 +21,6 @@ COPY ./services/rev-graph-update/package.json /oada/services/rev-graph-update/pa
 COPY ./services/shares/package.json /oada/services/shares/package.json
 COPY ./services/startup/package.json /oada/services/startup/package.json
 COPY ./services/sync-handler/package.json /oada/services/sync-handler/package.json
-COPY ./services/token-lookup/package.json /oada/services/token-lookup/package.json
 COPY ./services/users/package.json /oada/services/users/package.json
 COPY ./services/webhooks/package.json /oada/services/webhooks/package.json
 COPY ./services/well-known/package.json /oada/services/well-known/package.json

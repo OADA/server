@@ -32,7 +32,6 @@ oada/services/rev-graph-update @wang701
 #oada/services/shares
 oada/services/startup @aultac
 oada/services/sync-handler @awlayton
-#oada/services/token-lookup
 oada/services/users @aultac
 oada/services/webhooks @awlayton
 oada/services/well-known @awlayton
