@@ -15,7 +15,6 @@ COPY ./libs/oada-lib-config/package.json /oada/libs/oada-lib-config/package.json
 COPY ./libs/oada-lib-kafka/package.json /oada/libs/oada-lib-kafka/package.json
 COPY ./libs/oada-pino-debug/package.json /oada/libs/oada-pino-debug/package.json
 COPY ./services/auth/package.json /oada/services/auth/package.json
-COPY ./services/graph-lookup/package.json /oada/services/graph-lookup/package.json
 COPY ./services/http-handler/package.json /oada/services/http-handler/package.json
 COPY ./services/permissions-handler/package.json /oada/services/permissions-handler/package.json
 COPY ./services/rev-graph-update/package.json /oada/services/rev-graph-update/package.json

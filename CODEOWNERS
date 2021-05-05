@@ -26,7 +26,6 @@ oada/libs/oada-lib-config @aultac
 
 # Service authors?
 oada/services/auth @abalmos
-oada/services/graph-lookup @sanoel
 oada/services/http-handler @awlayton
 #oada/services/permissions-handler
 oada/services/rev-graph-update @wang701
