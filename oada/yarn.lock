@@ -1187,6 +1187,9 @@ __metadata:
     "@oada/lib-config": ^0.0.1
     "@oada/lib-kafka": ^1.0.0
     "@oada/pino-debug": ^1.0.0
+    "@oada/write-handler": "workspace:services/write-handler"
+    "@types/debug": ^4.1.5
+    "@types/node": ^14.14.42
     bluebird: ^3.7.2
     debug: ^4.3.2
     p-queue: ^6.6.2
@@ -1559,9 +1562,9 @@ __metadata:
   linkType: hard
 
 "@types/node@npm:*, @types/node@npm:>=13.13.4, @types/node@npm:^14.14.42":
-  version: 14.14.42
-  resolution: "@types/node@npm:14.14.42"
-  checksum: a9803d904badfd32fd2efe6efc40e5838a44dc0cb8b415762f890308581167a74f5d8f3e4074720d81490aad6a86ad130661cd9ecb79591aad9b5ee41fca7ad2
+  version: 14.14.44
+  resolution: "@types/node@npm:14.14.44"
+  checksum: 5c4db716325fc8a25b5b76b800acf0ff00c8fa1e7cfcb764fc79d79594939488cb9d2a756e188eb8e8a36da51e8e2be1ffe859be901b338779cb0aa12ad73b3a
   languageName: node
   linkType: hard
 

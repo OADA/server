@@ -71,7 +71,7 @@ interface WriteContext {
   /**
    * @todo what is this?
    */
-  causechain?: unknown;
+  causechain?: string;
   /**
    * ID of user performing the write
    */

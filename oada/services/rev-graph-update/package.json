@@ -2,10 +2,11 @@
   "name": "@oada/rev-graph-update",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "dist/index.js",
   "scripts": {
     "test": "DEBUG=\"*rev-graph-update*\" NODE_TLS_REJECT_UNAUTHORIZED=0 mocha",
-    "start": "node -r @oada/pino-debug index.js"
+    "build": "yarn g:tsc",
+    "start": "node -r @oada/pino-debug --enable-source-maps dist/index.js"
   },
   "author": "",
   "license": "ISC",
@@ -19,6 +20,9 @@
     "randomstring": "^1.1.5"
   },
   "devDependencies": {
+    "@oada/write-handler": "workspace:services/write-handler",
+    "@types/debug": "^4.1.5",
+    "@types/node": "^14.14.42",
     "bluebird": "^3.7.2"
   }
 }

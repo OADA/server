@@ -1,6 +1,7 @@
 {
   "extends": "@tsconfig/node14",
   "compilerOptions": {
+    "composite": true,
     "strict": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,

@@ -12,12 +12,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-'use strict';
 
-var path = require('path');
-var fs = require('fs');
-
-module.exports = {
+export default {
   // By default, this checks for NODE_ENV===production
   // to determine if is production.
   // set to true to use the production database name

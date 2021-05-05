@@ -9,6 +9,13 @@ export module resources {
     id: string,
     rev: number
   ): Promise<{ id: string; changed: boolean }[]>;
+  function getParents(
+    id: string
+  ): Promise<Array<{
+    resource_id: string;
+    path: string;
+    contentType: string;
+  }> | null>;
   function putResource(
     id: string,
     obj: {},
