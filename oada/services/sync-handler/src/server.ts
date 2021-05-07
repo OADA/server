@@ -15,7 +15,7 @@
 
 import debug from 'debug';
 import Bluebird from 'bluebird';
-import URL from 'url';
+import { URL } from 'url';
 import { Responder } from '@oada/lib-kafka';
 import { resources, remoteResources } from '@oada/lib-arangodb';
 import config from './config';
@@ -133,7 +133,7 @@ responder.on('request', async function handleReq(req) {
         lchanges[id] = resources.getResource(id);
 
         // Parse resource ID from Location header
-        const newid = URL.resolve(url, loc).replace(url, 'resources/');
+        const newid = new URL(loc, url).toString().replace(url, 'resources/');
         return {
           rid: newid,
           id: id,
@@ -167,7 +167,7 @@ responder.on('request', async function handleReq(req) {
 
       trace('PUTing change for %s to %s at %s', id, rid, domain);
 
-      const type = change['_meta']['_type'];
+      const type = change['_meta']?.['_type'];
 
       // Fix links etc.
       const body = JSON.stringify(change, function (k, v) {

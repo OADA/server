@@ -18,9 +18,10 @@ import SocketRequest, {
 } from '@oada/types/oada/websockets/request';
 import type SocketResponse from '@oada/types/oada/websockets/response';
 import type SocketChange from '@oada/types/oada/websockets/change';
+import type Change from '@oada/types/oada/change/v2';
 
 import { Responder, KafkaRequest } from '@oada/lib-kafka';
-import { resources, changes, Change } from '@oada/lib-arangodb';
+import { resources, changes } from '@oada/lib-arangodb';
 // @ts-ignore
 import config from './config';
 
@@ -296,7 +297,7 @@ module.exports = function wsHandler(server: Server) {
               request.headers['x-oada-rev']
             );
             const rev = await resources.getResource(resourceId, '_rev');
-            const revInt = parseInt(rev);
+            const revInt = parseInt((rev as unknown) as string);
             // If the requested rev is behind by revLimit, simply
             // re-GET the entire resource
             trace('REVS:', resourceId, rev, request.headers['x-oada-rev']);

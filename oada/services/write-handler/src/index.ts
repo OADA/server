@@ -7,8 +7,9 @@ import Cache from 'timed-cache';
 import objectAssignDeep from 'object-assign-deep';
 
 import type { Resource } from '@oada/types/oada/resource';
+import type Change from '@oada/types/oada/change/v2';
 
-import { resources, putBodies, changes, Change } from '@oada/lib-arangodb';
+import { resources, putBodies, changes } from '@oada/lib-arangodb';
 import { Responder, KafkaRequest } from '@oada/lib-kafka';
 
 import config from './config';
@@ -166,7 +167,10 @@ export function handleReq(
       trace('FIRST BODY %O', body);
       trace('doUpsert %d', Date.now() / 1000 - beforeUpsert);
       if (req['if-match']) {
-        const rev = await resources.getResource(req['resource_id'], '_rev');
+        const rev = ((await resources.getResource(
+          req['resource_id'],
+          '_rev'
+        )) as unknown) as number;
         if (req['if-match'] !== rev) {
           error(rev);
           error(req['if-match']);
@@ -175,7 +179,10 @@ export function handleReq(
         }
       }
       if (req['if-none-match']) {
-        const rev = await resources.getResource(req['resource_id'], '_rev');
+        const rev = ((await resources.getResource(
+          req['resource_id'],
+          '_rev'
+        )) as unknown) as number;
         if (req['if-none-match'].includes(rev)) {
           error(rev);
           error(req['if-none-match']);
@@ -186,7 +193,10 @@ export function handleReq(
       const beforeCacheRev = Date.now() / 1000;
       let cacheRev = cache.get(req['resource_id']);
       if (!cacheRev) {
-        cacheRev = await resources.getResource(req['resource_id'], '_rev');
+        cacheRev = ((await resources.getResource(
+          req['resource_id'],
+          '_rev'
+        )) as unknown) as number;
       }
       if (req.rev) {
         if (cacheRev !== req.rev) {
@@ -266,7 +276,7 @@ export function handleReq(
       }
 
       // Create object to recursively merge into the resource
-      trace(`Recursively merging path into arango object, path = ${path}`);
+      trace('Recursively merging path into arango object, path = %o', path);
       if (path.length > 0) {
         let o = obj;
         let endk = path.pop();
@@ -304,7 +314,9 @@ export function handleReq(
         if (changerev && changerev > 1) {
           rev = +changerev + 1;
           trace(
-            `Found old changes (max rev ${changerev}) for new resource, setting initial _rev to ${rev} include them`
+            'Found old changes (max rev %d) for new resource, setting initial _rev to %d include them',
+            changerev,
+            rev
           );
         }
       }

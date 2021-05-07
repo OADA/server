@@ -2,9 +2,10 @@
   "name": "@oada/startup",
   "version": "0.0.1",
   "description": "Handles startup of services for docker in OADA docker implementation.",
-  "main": "index.js",
+  "main": "dist/index.js",
   "scripts": {
-    "start": "node -r @oada/pino-debug index.js",
+    "build": "yarn g:tsc",
+    "start": "node -r @oada/pino-debug --enable-source-maps dist/index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -27,5 +28,10 @@
     "@oada/pino-debug": "^1.0.0",
     "debug": "^4.3.2",
     "express": "^4.17.1"
+  },
+  "devDependencies": {
+    "@types/debug": "^4.1.5",
+    "@types/express": "^4.17.11",
+    "@types/node": "14"
   }
 }

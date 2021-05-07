@@ -410,8 +410,7 @@ router.put('/*', async function putResource(req, res, next) {
     req.body = '{}';
   }
 
-  return putBodies
-    .savePutBody(req.body)
+  return Bluebird.resolve(putBodies.savePutBody(req.body))
     .tap(() => req.log.trace(`PUT body saved for request ${req.id}`))
     .get('_id')
 
@@ -521,8 +520,8 @@ router.delete('/*', function deleteResource(req, res, next) {
   const ifmatch = req.get('if-match');
   /** @type string | undefined */
   const ifnonematch = req.get('if-none-match');
-  return requester
-    .send(
+  return Bluebird.resolve(
+    requester.send(
       {
         'resourceExists': req.resourceExists,
         'connection_id': req.id,
@@ -541,6 +540,7 @@ router.delete('/*', function deleteResource(req, res, next) {
       },
       config.get('kafka:topics:writeRequest')
     )
+  )
     .tap(function checkDelete(resp) {
       req.log.trace(`Recieved delete response for request ${req.id}`);
       switch (resp.code) {
