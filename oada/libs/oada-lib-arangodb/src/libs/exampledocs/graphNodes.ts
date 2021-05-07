@@ -1,11 +1,13 @@
-// NOTE: in the graphNode's, the id of the graph node is supposed to be
-// the same as the resource.  Now that the resource's id is resources/123
-// instead of just 123, we have to make a hack to get it to be predictable
-// because arango won't let us use the '/' in the graphNode's key.
-//
-// Therefore, replace the '/' in the original with a colon.  Now you have
-// the graphNode key for a resource, user, authorization, etc.
-module.exports = [
+/**
+ * NOTE: in the graphNode's, the id of the graph node is supposed to be
+ * the same as the resource.  Now that the resource's id is resources/123
+ * instead of just 123, we have to make a hack to get it to be predictable
+ * because arango won't let us use the '/' in the graphNode's key.
+ *
+ * Therefore, replace the '/' in the original with a colon.  Now you have
+ * the graphNode key for a resource, user, authorization, etc.
+ */
+export default [
   //------------------------------------------------
   // Bookmarks document (for user frank):
   {

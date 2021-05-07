@@ -13,9 +13,7 @@
  * limitations under the License.
  */
 
-'use strict';
-
-module.exports = {
+export default <const>{
   //isProduction: false, // set to true and random database will be created for you
   arangodb: {
     connectionString: 'http://arangodb:8529',

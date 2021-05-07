@@ -1,4 +1,4 @@
-module.exports = [
+export default [
   {
     _id: 'clients/default:clients-123',
     clientId: '3klaxu838akahf38acucaix73@identity.oada-dev.com',

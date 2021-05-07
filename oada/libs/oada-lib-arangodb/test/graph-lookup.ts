@@ -1,54 +1,72 @@
-'use strict';
-const expect = require('chai').expect;
-const config = require('../config');
+/* Copyright 2021 Open Ag Data Alliance
+ *
+ * Licensed under the Apache License, Version 2.0 (the 'License');
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an 'AS IS' BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+import config from '../src/config';
+
 config.set('isTest', true);
-const init = require('../init');
-const lookupFromUrl = require('../libs/resources').lookupFromUrl;
+
+import { expect } from 'chai';
+import * as init from '../src/init';
+import { lookupFromUrl } from '../src/libs/resources';
 
 // library under test:
 
 // Tests for the arangodb driver:
 
-let rockUrl =
+const rockUrl =
   '/resources/default:resources_bookmarks_123/rocks/rocks-index/90j2klfdjss';
-let rockResourceId = 'resources/default:resources_rock_123';
+const rockResourceId = 'resources/default:resources_rock_123';
 
-let rocksIndexUrl =
+const rocksIndexUrl =
   '/resources/default:resources_bookmarks_123/rocks/rocks-index';
-let rocksIndexResourceId = 'resources/default:resources_rocks_123';
-let rocksIndexPathLeft = '/rocks-index';
+const rocksIndexResourceId = 'resources/default:resources_rocks_123';
+const rocksIndexPathLeft = '/rocks-index';
 
-let rockPickedUrl =
+const rockPickedUrl =
   '/resources/default:resources_bookmarks_123/rocks/rocks-index/90j2klfdjss/picked_up';
-let rockPickedPathLeft = '/picked_up';
+const rockPickedPathLeft = '/picked_up';
 
 describe('graph-lookup service', () => {
-  before(() => {
+  before(async () => {
     // Create the test database (with necessary collections and dummy data)
-    return init.run().catch((err) => {
-      console.log(
-        'FAILED to initialize graph-lookup tests by creating database ' + dbname
+    try {
+      await init.run();
+    } catch (err: unknown) {
+      console.error(
+        'FAILED to initialize graph-lookup tests by creating database'
       );
-      console.log('The error = ', err);
-    });
+      console.error('The error = ', err);
+    }
   });
 
   //--------------------------------------------------
   // The tests!
   //--------------------------------------------------
 
-  it('should be able to return the resource id from a url', () => {
+  it('should be able to return the resource id from a url', async () => {
     return lookupFromUrl(rockUrl).then((result) => {
       expect(result.resource_id).to.equal(rockResourceId);
     });
   });
-  it('should also return the leftover path for non-resource URLs', () => {
+  it('should also return the leftover path for non-resource URLs', async () => {
     return lookupFromUrl(rockPickedUrl).then((result) => {
       expect(result.resource_id).to.equal(rockResourceId);
       expect(result.path_leftover).to.equal(rockPickedPathLeft);
     });
   });
-  it('should also return the leftover path for non-resource URLs', () => {
+  it('should also return the leftover path for non-resource URLs', async () => {
     return lookupFromUrl(rocksIndexUrl).then((result) => {
       expect(result.resource_id).to.equal(rocksIndexResourceId);
       expect(result.path_leftover).to.equal(rocksIndexPathLeft);
@@ -58,7 +76,7 @@ describe('graph-lookup service', () => {
   //-------------------------------------------------------
   // After tests are done, get rid of our temp database
   //-------------------------------------------------------
-  after(() => {
+  after(async () => {
     //    db.useDatabase('_system') // arango only lets you drop a database from the _system db
     //   return db.dropDatabase(dbname)
     //   .then(() => { console.log('Successfully cleaned up test database '+dbname) })

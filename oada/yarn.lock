@@ -1060,6 +1060,17 @@ __metadata:
   dependencies:
     "@oada/lib-config": ^0.0.1
     "@oada/types": ^1.5.1
+    "@types/bcryptjs": ^2.4.2
+    "@types/bluebird": ^3.5.34
+    "@types/chai": ^4.2.17
+    "@types/chai-as-promised": ^7.1.3
+    "@types/clone-deep": ^4.0.1
+    "@types/debug": ^4.1.5
+    "@types/deep-equal": ^1.0.1
+    "@types/flat": ^5.0.1
+    "@types/json-pointer": ^1.0.30
+    "@types/lodash": ^4
+    "@types/mocha": ^8.2.2
     arangojs: ^7.5.0
     bcryptjs: ^2.4.3
     bluebird: ^3.7.2
@@ -1068,6 +1079,8 @@ __metadata:
     deep-equal: ^2.0.5
     flat: ^5.0.2
     json-pointer: ^0.6.1
+    lodash: ^4.17.21
+    ts-node: ^9.1.1
   languageName: unknown
   linkType: soft
 
@@ -1217,6 +1230,9 @@ __metadata:
   dependencies:
     "@oada/lib-arangodb": ^0.0.2
     "@oada/pino-debug": ^1.0.0
+    "@types/debug": ^4.1.5
+    "@types/express": ^4.17.11
+    "@types/node": 14
     debug: ^4.3.2
     express: ^4.17.1
   languageName: unknown
@@ -1493,10 +1509,66 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/bcryptjs@npm:^2.4.2":
+  version: 2.4.2
+  resolution: "@types/bcryptjs@npm:2.4.2"
+  checksum: 91013aa8a5e8185137af1fb011de7f794f5bc71400e0aebba2252985a4d0c5eb4c477617c4aa4c20fdb21f05320ac0095eb8b596c004ff5e3315b656e58a0c72
+  languageName: node
+  linkType: hard
+
 "@types/bluebird@npm:^3.5.33":
   version: 3.5.33
   resolution: "@types/bluebird@npm:3.5.33"
   checksum: 45f7adeec6e656501f5b2127d5cc1538d3ae497d06bfa00d8d7f51eb2aa482267b3b4868ac1c75fc84acfad86d2c0d4de8af535cf725156f222d679df9694aff
+  languageName: node
+  linkType: hard
+
+"@types/bluebird@npm:^3.5.34":
+  version: 3.5.34
+  resolution: "@types/bluebird@npm:3.5.34"
+  checksum: 1aa99b94cd373c9eb547476148343faab414b99a2a391b2b368b76e17a327752074ca80b01d5b83e39e5e7a268a49bb4339711c0d347005f7d78764c2892c832
+  languageName: node
+  linkType: hard
+
+"@types/body-parser@npm:*":
+  version: 1.19.0
+  resolution: "@types/body-parser@npm:1.19.0"
+  dependencies:
+    "@types/connect": "*"
+    "@types/node": "*"
+  checksum: 4576f3fde5980c1219cadbc7c523bdb1cefc3713300e18bf47ff37bb9b8176342a1dc7519008311fd8fc11413cf188a83931b9b59051aa1c2f095c1e10459369
+  languageName: node
+  linkType: hard
+
+"@types/chai-as-promised@npm:^7.1.3":
+  version: 7.1.3
+  resolution: "@types/chai-as-promised@npm:7.1.3"
+  dependencies:
+    "@types/chai": "*"
+  checksum: 71f383b20c556bf227b4e117f721fb7d92dcdaeefe7c352b301d59e0eca9dc2c72538c0f2829da62ba06b2c26002a730c5b7137b43aaac76f7c9ff8fdc9847f2
+  languageName: node
+  linkType: hard
+
+"@types/chai@npm:*, @types/chai@npm:^4.2.17":
+  version: 4.2.17
+  resolution: "@types/chai@npm:4.2.17"
+  checksum: a58f77b2b40d19b7e6ae017b318329f05adf4d3bcb45eba208075403a1e5db0ce3cefb46d8ac2dc175f1c067da68b4d122e0f60269f88a2e19b38a011ce38d9d
+  languageName: node
+  linkType: hard
+
+"@types/clone-deep@npm:^4.0.1":
+  version: 4.0.1
+  resolution: "@types/clone-deep@npm:4.0.1"
+  checksum: 2b4054d668c2373d63521a3aa7c074baf2cf43c864e2eb4549a3e51a0c00bce773ec998f526e05c81fb86b70599c591fe59b0e3b39a97ea268944e30e4193889
+  languageName: node
+  linkType: hard
+
+"@types/connect@npm:*":
+  version: 3.4.34
+  resolution: "@types/connect@npm:3.4.34"
+  dependencies:
+    "@types/node": "*"
+  checksum: 6f712a0408ed119a42037bcbc38c12e053d3ffe11337221a3966c9e29a21c8455e331fe2116c426361c0b2c0e44cb3fb1f83594326e42ba34ce4723d726b7d30
   languageName: node
   linkType: hard
 
@@ -1511,6 +1583,43 @@ __metadata:
   version: 4.1.5
   resolution: "@types/debug@npm:4.1.5"
   checksum: 416ad24bc589be0fb8c78bea972aa7d4ffdf6b136239701b1792674463b2dbf8c6707f6055ec484f79ec1f2b528ffef90c87e55df7e4a0f458184cad5bf0cfc8
+  languageName: node
+  linkType: hard
+
+"@types/deep-equal@npm:^1.0.1":
+  version: 1.0.1
+  resolution: "@types/deep-equal@npm:1.0.1"
+  checksum: 3170079180ba0bea25c349d85d9f828a1fc5118c31e985a5d2bfaf6b5e22bb6680c5b71c86107ff928a7fcf01306e3ac9a6d2cccacb677d61937afa557dfc62a
+  languageName: node
+  linkType: hard
+
+"@types/express-serve-static-core@npm:^4.17.18":
+  version: 4.17.19
+  resolution: "@types/express-serve-static-core@npm:4.17.19"
+  dependencies:
+    "@types/node": "*"
+    "@types/qs": "*"
+    "@types/range-parser": "*"
+  checksum: b6c8c357c5d093303c681616b7a80d6a044b47c4161a3459c65e451137832b29a485a8f8708414205f427dade6b4ff5ef799d51715d12f92da3468cf41a2cf06
+  languageName: node
+  linkType: hard
+
+"@types/express@npm:^4.17.11":
+  version: 4.17.11
+  resolution: "@types/express@npm:4.17.11"
+  dependencies:
+    "@types/body-parser": "*"
+    "@types/express-serve-static-core": ^4.17.18
+    "@types/qs": "*"
+    "@types/serve-static": "*"
+  checksum: 2818120a0fd8b7982215864929cdc6cd14942dd44849f93054fe2a90b4233dff67aadc34c73b5937922a02c688b0263d00a4807aa2e59307ac859a1458d73669
+  languageName: node
+  linkType: hard
+
+"@types/flat@npm:^5.0.1":
+  version: 5.0.1
+  resolution: "@types/flat@npm:5.0.1"
+  checksum: 7a7f1011b6720b93b623699f259e65f1d0cc14d0634b55050df7f9e95789f7b4922c149c2cbd8da49251c83724afac2574a4cf304ead65029f165fb3ec69bf0e
   languageName: node
   linkType: hard
 
@@ -1530,6 +1639,20 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/lodash@npm:^4":
+  version: 4.14.168
+  resolution: "@types/lodash@npm:4.14.168"
+  checksum: 9a4e25f89fc035b9f0388f1f7be85e5eff49f9e6db0d93432c9a89fce0916f8a89db4e8290415f7ea02de6b00d3573826378dcb655b7b2d20530a6e8d6dd6fd0
+  languageName: node
+  linkType: hard
+
+"@types/mime@npm:^1":
+  version: 1.3.2
+  resolution: "@types/mime@npm:1.3.2"
+  checksum: c354bc135628c2f4ab64801ca3867c3acbd4050611579c4c9f5bdfecfb70db71bb8540bf8611b4319f5ef44139c5f7c5af81254369add5ed59e7e02ce929b96f
+  languageName: node
+  linkType: hard
+
 "@types/minimatch@npm:^3.0.3":
   version: 3.0.3
   resolution: "@types/minimatch@npm:3.0.3"
@@ -1541,6 +1664,13 @@ __metadata:
   version: 1.2.1
   resolution: "@types/minimist@npm:1.2.1"
   checksum: 3a6f5fe35f1656b34a4ccd5a5db1c38509d8d5b59625865b8c2b997994fcb0cfde0d9af7c5507b95dc5a0a32a22886c189e505cd2e52a7ef36d3c9982f07ed5a
+  languageName: node
+  linkType: hard
+
+"@types/mocha@npm:^8.2.2":
+  version: 8.2.2
+  resolution: "@types/mocha@npm:8.2.2"
+  checksum: 3455211b134b0cfcfc71fee2d4f22a6ac3e313a93bf6c0cd3519c1e85653ffb8c9bb68dcff083b8e9e15b4ea3cb4f50d9916709946c082f072807aeba747575b
   languageName: node
   linkType: hard
 
@@ -1561,7 +1691,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:*, @types/node@npm:>=13.13.4, @types/node@npm:^14.14.42":
+"@types/node@npm:*, @types/node@npm:14, @types/node@npm:>=13.13.4, @types/node@npm:^14.14.42":
   version: 14.14.44
   resolution: "@types/node@npm:14.14.44"
   checksum: 5c4db716325fc8a25b5b76b800acf0ff00c8fa1e7cfcb764fc79d79594939488cb9d2a756e188eb8e8a36da51e8e2be1ffe859be901b338779cb0aa12ad73b3a
@@ -1625,6 +1755,30 @@ __metadata:
     "@types/pino-std-serializers": "*"
     "@types/sonic-boom": "*"
   checksum: f3cf2324ff72c4472c34dc5019615abfbeb86331a79ed401a135c0d9a1375f560e86d517c18019666d0c1eff2e6cf076925bfa4de836c865214f25f75784f3d4
+  languageName: node
+  linkType: hard
+
+"@types/qs@npm:*":
+  version: 6.9.6
+  resolution: "@types/qs@npm:6.9.6"
+  checksum: a5f3c4f6ad6de2692e710302f5f82fe8db3ec0de1a75ada02a432f75f64025a6e38d28fcc4ed146d3145017e1312cc5cb3d81a0f41a798ec0463b5f47f017963
+  languageName: node
+  linkType: hard
+
+"@types/range-parser@npm:*":
+  version: 1.2.3
+  resolution: "@types/range-parser@npm:1.2.3"
+  checksum: 092fabae0ecbd728d3e4debc938cd043e97cb9f210cfec1c56ff6065c6e91666f376eb586591825d6757a058fd1a1dc4831d34e04ecfbb0800f35b8d86d38635
+  languageName: node
+  linkType: hard
+
+"@types/serve-static@npm:*":
+  version: 1.13.9
+  resolution: "@types/serve-static@npm:1.13.9"
+  dependencies:
+    "@types/mime": ^1
+    "@types/node": "*"
+  checksum: f261127514057b5c038d76259128d7b765dd92bfeaf769d05b8ddf5f254d066ce6142a935e2fc707bb3009d6544a979591852f0d135d0ed4d0c56db08738df6b
   languageName: node
   linkType: hard
 
@@ -6724,6 +6878,7 @@ fsevents@~2.3.1:
     "@types/bluebird": ^3.5.33
     "@types/debug": ^4.1.5
     "@types/json-pointer": ^1.0.30
+    "@types/mocha": ^8.2.2
     "@types/nconf": ^0.10.0
     "@types/node": ^14.14.42
     "@types/node-fetch": ^2.5.10

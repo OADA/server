@@ -10,18 +10,16 @@
  * distributed under the License is distributed on an 'AS IS' BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
- )* limitations under the License.
+ * limitations under the License.
  */
 
-'use strict';
-
-const expect = require('chai').expect;
-const oadaLib = require('..');
+import { expect } from 'chai';
+import * as oadaLib from '../src';
 
 describe('resources lib', () => {
   before(() => oadaLib.init.run());
 
-  it('should find parents based on resource id', () => {
+  it('should find parents based on resource id', async () => {
     return oadaLib.resources
       .getParents('/resources:default:resources_rock_123')
       .then((p) => {

@@ -13,20 +13,18 @@
  )* limitations under the License.
  */
 
-'use strict';
-
-const expect = require('chai').expect;
-const oadaLib = require('..');
+import { expect } from 'chai';
+import * as oadaLib from '../src';
 
 // TODO: Would be nice to just expose these examples on oadaLib itself --- feel
 // like we will want them for all of the microservice tests
-const exampleTokens = require('../libs/exampledocs/authorizations.js');
-const exampleUsers = require('../libs/exampledocs/users.js');
+import exampleTokens from '../src/libs/exampledocs/authorizations';
+import exampleUsers from '../src/libs/exampledocs/users';
 
 describe('token lib', () => {
   before(oadaLib.init.run);
 
-  it('should find a token', () => {
+  it('should find a token', async () => {
     const token = exampleTokens[0];
 
     return oadaLib.authorizations.findByToken(token.token).then((t) => {
@@ -39,13 +37,14 @@ describe('token lib', () => {
     });
   });
 
-  it('should save a token', () => {
+  it('should save a token', async () => {
     const token = exampleTokens[0];
     const user = exampleUsers[0];
 
     return oadaLib.authorizations
       .save(
         Object.assign({}, token, {
+          // @ts-ignore
           _key: token._key + '-no-duplicates',
           token: 'abc-no-duplicates',
           user: {

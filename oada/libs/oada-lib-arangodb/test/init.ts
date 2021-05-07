@@ -1,28 +1,42 @@
-// Tests for init.js
+/* Copyright 2021 Open Ag Data Alliance
+ *
+ * Licensed under the Apache License, Version 2.0 (the 'License');
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an 'AS IS' BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
-const config = require('../config');
-const arango = require('arangojs');
-const chai = require('chai');
-chai.use(require('chai-as-promised'));
-const expect = chai.expect;
-const _ = require('lodash');
-const Promise = require('bluebird');
+import config from '../src/config';
+import { Database } from 'arangojs';
+import { expect } from 'chai';
+import chaiAsPromised from 'chai-as-promised';
+import _ from 'lodash';
+import Bluebird from 'bluebird';
 
 config.set('isTest', true);
-const init = require('../init');
+
+import * as init from '../src/init';
+
 const dbname = config.get('arangodb:database');
 
-const db = new arango.Database({
-  promise: Promise,
+chai.use(chaiAsPromised);
+
+const db = new Database({
   url: config.get('arangodb:connectionString'),
 });
 //const cleanup = init.cleanup; // set this to an empty function if you don't want db to be deleted
 
 describe('init', () => {
   it('should drop test database if it already exists', () => {
-    db.useDatabase('_system');
-    return db
-      .listDatabases()
+    db.database('_system');
+    return Bluebird.resolve(db.listDatabases())
       .then((dbs) => {
         console.log('dbs = ', dbs);
         return dbs;
@@ -30,7 +44,7 @@ describe('init', () => {
       .each((d) => (d === dbname ? db.dropDatabase(dbname) : null))
       .then(() => db.createDatabase(dbname))
       .then(() => {
-        db.useDatabase(dbname);
+        db.database(dbname);
         return db.collection('dummycollection').create();
       })
       .then(init.run)
@@ -45,7 +59,7 @@ describe('init', () => {
     return init
       .run()
       .then(() => {
-        db.useDatabase('_system');
+        db.database('_system');
         return (
           db
             .listDatabases()
@@ -61,8 +75,8 @@ describe('init', () => {
   it('should have created all the collections', () => {
     return init
       .run()
-      .then(() => {
-        db.useDatabase(dbname);
+      .then(async () => {
+        db.database(dbname);
         return db.listCollections().then((dbcols) => {
           const cols = config.get('arangodb:collections');
           _.each(cols, (c) => {
@@ -79,9 +93,9 @@ describe('init', () => {
     return init
       .run()
       .then(() => {
-        db.useDatabase(dbname);
+        db.database(dbname);
         const colsarr = _.values(config.get('arangodb:collections'));
-        return Promise.map(colsarr, (c) => {
+        return Bluebird.map(colsarr, async (c) => {
           // dbindexes looks like [ { fields: [ 'token' ], sparse: true, unique: true },... ]
           return db
             .collection(c.name)
@@ -105,15 +119,18 @@ describe('init', () => {
     return init
       .run()
       .then(() => {
-        db.useDatabase(dbname);
+        db.database(dbname);
         const defaultdata = _.mapValues(
           config.get('arangodb:init:defaultData'),
           (p) => require('../' + p)
         );
-        return Promise.each(_.keys(defaultdata), (colname) => {
+        return Bluebird.each(_.keys(defaultdata), (colname) => {
           const data = defaultdata[colname];
-          return Promise.each(data, (doc) => {
-            if (colname === 'users') delete doc.password; // don't bother to check hashed password
+          return Bluebird.each(data, (doc) => {
+            if (colname === 'users') {
+              // @ts-ignore
+              delete doc.password; // don't bother to check hashed password
+            }
             return expect(
               _.keys(db.collection(colname).firstExample(doc))
             ).to.eventually.include(_.keys(doc));

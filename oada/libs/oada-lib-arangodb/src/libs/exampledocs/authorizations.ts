@@ -1,4 +1,4 @@
-module.exports = [
+export default [
   {
     _id: 'authorizations/default:authorization-123',
     token: 'abc',
