@@ -25,7 +25,8 @@
     "@oada/pino-debug": "^1.0.0",
     "axios": "^0.21.1",
     "bluebird": "^3.7.2",
-    "debug": "^4.3.2"
+    "debug": "^4.3.2",
+    "tslib": "^2.2.0"
   },
   "devDependencies": {
     "@oada/write-handler": "workspace:services/write-handler",

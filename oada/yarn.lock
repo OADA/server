@@ -1048,6 +1048,7 @@ __metadata:
     ksuid: ^2.0.0
     oada-error: ^1.1.1
     pino-http: ^5.5.0
+    tslib: ^2.2.0
     type-is: ^1.6.18
     uuid: ^8.3.2
     well-known-json: ^0.2.0
@@ -1082,6 +1083,8 @@ __metadata:
     json-pointer: ^0.6.1
     lodash: ^4.17.21
     ts-node: ^9.1.1
+    tslib: ^2.2.0
+    typescript: ^4.2.4
   languageName: unknown
   linkType: soft
 
@@ -1113,6 +1116,8 @@ __metadata:
     ksuid: ^2.0.0
     mocha: ^8.4.0
     ts-node: ^9.1.1
+    tslib: ^2.2.0
+    typescript: ^4.2.4
     uuid: ^8.3.2
   languageName: unknown
   linkType: soft
@@ -1199,6 +1204,7 @@ __metadata:
     pino: ^6.11.3
     pino-caller: ^3.1.0
     pino-debug: ^2.0.0
+    tslib: ^2.2.0
   peerDependencies:
     debug: "*"
   languageName: unknown
@@ -1219,6 +1225,7 @@ __metadata:
     debug: ^4.3.2
     p-queue: ^6.6.2
     randomstring: ^1.1.5
+    tslib: ^2.2.0
   languageName: unknown
   linkType: soft
 
@@ -1265,6 +1272,7 @@ __metadata:
     axios: ^0.21.1
     bluebird: ^3.7.2
     debug: ^4.3.2
+    tslib: ^2.2.0
   languageName: unknown
   linkType: soft
 
@@ -1365,6 +1373,7 @@ __metadata:
     json-pointer: ^0.6.1
     object-assign-deep: ^0.4.0
     timed-cache: ^1.1.4
+    tslib: ^2.2.0
   languageName: unknown
   linkType: soft
 
@@ -1529,14 +1538,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/bluebird@npm:^3.5.33":
-  version: 3.5.33
-  resolution: "@types/bluebird@npm:3.5.33"
-  checksum: 45f7adeec6e656501f5b2127d5cc1538d3ae497d06bfa00d8d7f51eb2aa482267b3b4868ac1c75fc84acfad86d2c0d4de8af535cf725156f222d679df9694aff
-  languageName: node
-  linkType: hard
-
-"@types/bluebird@npm:^3.5.34":
+"@types/bluebird@npm:^3.5.33, @types/bluebird@npm:^3.5.34":
   version: 3.5.34
   resolution: "@types/bluebird@npm:3.5.34"
   checksum: 1aa99b94cd373c9eb547476148343faab414b99a2a391b2b368b76e17a327752074ca80b01d5b83e39e5e7a268a49bb4339711c0d347005f7d78764c2892c832
@@ -6362,43 +6364,7 @@ fsevents@~2.3.1:
   languageName: node
   linkType: hard
 
-"mocha@npm:^8.3.2":
-  version: 8.3.2
-  resolution: "mocha@npm:8.3.2"
-  dependencies:
-    "@ungap/promise-all-settled": 1.1.2
-    ansi-colors: 4.1.1
-    browser-stdout: 1.3.1
-    chokidar: 3.5.1
-    debug: 4.3.1
-    diff: 5.0.0
-    escape-string-regexp: 4.0.0
-    find-up: 5.0.0
-    glob: 7.1.6
-    growl: 1.10.5
-    he: 1.2.0
-    js-yaml: 4.0.0
-    log-symbols: 4.0.0
-    minimatch: 3.0.4
-    ms: 2.1.3
-    nanoid: 3.1.20
-    serialize-javascript: 5.0.1
-    strip-json-comments: 3.1.1
-    supports-color: 8.1.1
-    which: 2.0.2
-    wide-align: 1.1.3
-    workerpool: 6.1.0
-    yargs: 16.2.0
-    yargs-parser: 20.2.4
-    yargs-unparser: 2.0.0
-  bin:
-    _mocha: bin/_mocha
-    mocha: bin/mocha
-  checksum: ac4f359cf4dbd3a01202d0a5ef06533b9513ae293a411b3c0743dbeff03ffcfe444636127cc103634e07c932ec2eda104c2e1e8e259d16efd7e07a0a900eb2f4
-  languageName: node
-  linkType: hard
-
-"mocha@npm:^8.4.0":
+"mocha@npm:^8.3.2, mocha@npm:^8.4.0":
   version: 8.4.0
   resolution: "mocha@npm:8.4.0"
   dependencies:
@@ -9297,6 +9263,13 @@ resolve@1.1.x:
   version: 1.14.1
   resolution: "tslib@npm:1.14.1"
   checksum: f44fe7f216946b17d3e3074df3746372703cf24e9127b4c045511456e8e4bf25515fb0a1bb3937676cc305651c5d4fcb6377b0588a4c6a957e748c4c28905d17
+  languageName: node
+  linkType: hard
+
+"tslib@npm:^2.2.0":
+  version: 2.2.0
+  resolution: "tslib@npm:2.2.0"
+  checksum: 2d35468c470410871c5246e43f12dcb6d0fc363b617c176f26443b9530e5c5ee8448966892a42956168d8f495da7865bda33dfe82c26c91991e28999974a618f
   languageName: node
   linkType: hard
 

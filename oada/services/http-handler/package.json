@@ -48,6 +48,7 @@
     "ksuid": "^2.0.0",
     "oada-error": "^1.1.1",
     "pino-http": "^5.5.0",
+    "tslib": "^2.2.0",
     "type-is": "^1.6.18",
     "uuid": "^8.3.2",
     "well-known-json": "^0.2.0",

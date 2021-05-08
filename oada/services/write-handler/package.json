@@ -27,7 +27,8 @@
     "debug": "^4.3.2",
     "json-pointer": "^0.6.1",
     "object-assign-deep": "^0.4.0",
-    "timed-cache": "^1.1.4"
+    "timed-cache": "^1.1.4",
+    "tslib": "^2.2.0"
   },
   "devDependencies": {
     "@oada/types": "^1.5.1",
