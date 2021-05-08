@@ -19,9 +19,8 @@ For example, the [`users`] service has an `add` command
 (see [here](services/users/package.json)).
 
 [`users`]: services/users
-
 [yarn 2 monorepo]: https://yarnpkg.com/features/workspaces
 [pnp]: https://yarnpkg.com/features/pnp
-[Node.js]: https://nodejs.org/en/
+[node.js]: https://nodejs.org/en/
 [arangodb]: https://www.arangodb.com
 [kafka]: https://kafka.apache.org

@@ -43,7 +43,7 @@ cd oada-srvc-docker
 DOMAIN=yourdomain.com docker-compose up -d
 ```
 
-Note that running from the git is __not__ recommended for production use.
+Note that running from the git is **not** recommended for production use.
 
 ### Using `oadadeploy`
 
@@ -61,6 +61,7 @@ Any settings in this [override file] will be merged with ours
 when running docker-compose.
 
 ### Environment variables
+
 Additionally, there are various configuration environment variables available.
 Some important ones are:
 
@@ -75,7 +76,6 @@ Rather than trying to always remembering to set your environment variables,
 you probably want to use a [.env file] for things like `DOMAIN`.
 
 [releases]: https://github.com/OADA/oada-srvc-docker/releases
-
 [docker-compose]: https://docs.docker.com/compose/
 [.env file]: https://docs.docker.com/compose/environment-variables/#substitute-environment-variables-in-compose-files
 [arangodb]: https://www.arangodb.com
