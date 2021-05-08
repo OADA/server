@@ -32,11 +32,10 @@ const axios = process.env.SSL_ALLOW_SELF_SIGNED
 
 //---------------------------------------------------------
 // Kafka intializations:
-const responder = new Responder(
-  config.get('kafka:topics:httpResponse'),
-  null,
-  'webhooks'
-);
+const responder = new Responder({
+  consumeTopic: config.get('kafka:topics:httpResponse'),
+  group: 'webhooks',
+});
 
 module.exports = function stopResp() {
   return responder.disconnect();

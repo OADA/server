@@ -20,7 +20,7 @@ const { OADAError } = require('oada-error');
 const config = require('./config');
 const CACHE_PATH = config.get('storage:binary:cacache');
 
-const requester = require('./requester');
+const { default: requester } = require('./requester');
 
 // Call permissions handler directly rather than via kafka?
 const { handleReq: permissionsRequest } = require('@oada/permissions-handler');

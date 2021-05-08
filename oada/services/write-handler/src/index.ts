@@ -10,7 +10,7 @@ import type { Resource } from '@oada/types/oada/resource';
 import type Change from '@oada/types/oada/change/v2';
 
 import { resources, putBodies, changes } from '@oada/lib-arangodb';
-import { Responder, KafkaRequest } from '@oada/lib-kafka';
+import { Responder, KafkaBase } from '@oada/lib-kafka';
 
 import config from './config';
 
@@ -32,7 +32,7 @@ const responder = new Responder({
 // Per-resource write locks/queues
 const locks: Record<string, Bluebird<unknown>> = {};
 const cache = new Cache<number | string>({ defaultTtl: 60 * 1000 });
-responder.on('request', (req, ...rest) => {
+responder.on('request', (req: WriteRequest, ...rest) => {
   if (counter++ > 500) {
     counter = 0;
     global.gc();
@@ -45,7 +45,7 @@ responder.on('request', (req, ...rest) => {
   // Run once last write finishes (whether it worked or not)
   p = p
     .catch(() => {})
-    .then(() => handleReq(req as WriteRequest & KafkaRequest, ...rest))
+    .then(() => handleReq(req, ...rest))
     .finally(() => {
       // Clean up if queue empty
       if (locks[id] === p) {
@@ -85,6 +85,8 @@ interface WriteContext {
    * Content type of the body being written
    */
   contentType: string;
+  resource_id: string;
+  path_leftover: string;
 }
 
 /**
@@ -131,15 +133,14 @@ export interface WriteRequest extends WriteContext {
 /**
  * Response to a write request
  */
-export interface WriteResponse extends KafkaRequest, WriteContext {
+export interface WriteResponse extends KafkaBase, WriteContext {
   msgtype: 'write-response';
   _rev: number;
+  _orev: number;
   change_id: string;
 }
 
-export function handleReq(
-  req: WriteRequest & KafkaRequest
-): Promise<WriteResponse> {
+export function handleReq(req: WriteRequest): Promise<WriteResponse> {
   req.source = req.source || '';
   req.resourceExists = req.resourceExists ? req.resourceExists : false; // Fixed bug if this is undefined
   let id = req['resource_id'].replace(/^\//, '');

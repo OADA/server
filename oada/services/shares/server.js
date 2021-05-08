@@ -25,11 +25,11 @@ const config = require('./config');
 
 //---------------------------------------------------------
 // Kafka intializations:
-const responder = new Responder(
-  config.get('kafka:topics:httpResponse'),
-  config.get('kafka:topics:writeRequest'),
-  'shares'
-);
+const responder = new Responder({
+  consumeTopic: config.get('kafka:topics:httpResponse'),
+  produceTopic: config.get('kafka:topics:writeRequest'),
+  group: 'shares',
+});
 
 module.exports = function stopResp() {
   return responder.disconnect();

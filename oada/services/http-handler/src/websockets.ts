@@ -1,3 +1,18 @@
+/* Copyright 2017 Open Ag Data Alliance
+ *
+ * Licensed under the Apache License, Version 2.0 (the 'License');
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an 'AS IS' BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 import { strict as assert } from 'assert';
 
 import debug from 'debug';
@@ -20,8 +35,10 @@ import type SocketResponse from '@oada/types/oada/websockets/response';
 import type SocketChange from '@oada/types/oada/websockets/change';
 import type Change from '@oada/types/oada/change/v2';
 
-import { Responder, KafkaRequest } from '@oada/lib-kafka';
+import { Responder, KafkaBase } from '@oada/lib-kafka';
 import { resources, changes } from '@oada/lib-arangodb';
+import type { WriteResponse } from '@oada/write-handler';
+
 // @ts-ignore
 import config from './config';
 
@@ -392,15 +409,7 @@ const writeResponder = new Responder({
   group: 'websockets',
 });
 
-type WriteResponse = {
-  msgtype: 'write-response';
-  code: 'success';
-  resource_id: string;
-  path_leftover: string;
-  _rev: number;
-  _orev: number;
-};
-function checkReq(req: KafkaRequest): req is WriteResponse {
+function checkReq(req: KafkaBase): req is WriteResponse {
   return req.msgtype === 'write-response' && req.code === 'success';
 }
 // Listen for successful write requests to resources of interest, then emit an event

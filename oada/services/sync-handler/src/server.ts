@@ -13,13 +13,17 @@
  * limitations under the License.
  */
 
+import { URL } from 'url';
+
 import debug from 'debug';
 import Bluebird from 'bluebird';
-import { URL } from 'url';
-import { Responder } from '@oada/lib-kafka';
-import { resources, remoteResources } from '@oada/lib-arangodb';
-import config from './config';
 import axios from 'axios';
+
+import { KafkaBase, Responder } from '@oada/lib-kafka';
+import { resources, remoteResources } from '@oada/lib-arangodb';
+import type { WriteResponse } from '@oada/write-handler';
+
+import config from './config';
 
 const info = debug('sync-handler:info');
 const trace = debug('sync-handler:trace');
@@ -37,15 +41,16 @@ const responder = new Responder({
   group: 'sync-handlers',
 });
 
-module.exports = function stopResp() {
+export function stopResp() {
   return responder.disconnect();
-};
+}
+
+function checkReq(req: KafkaBase): req is WriteResponse {
+  return req.msgtype === 'write-response' && req.code === 'success';
+}
 
 responder.on('request', async function handleReq(req) {
-  if (req.msgtype !== 'write-response') {
-    return;
-  }
-  if (req.code !== 'success') {
+  if (!checkReq(req)) {
     return;
   }
 
