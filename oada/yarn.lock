@@ -1097,10 +1097,21 @@ __metadata:
   resolution: "@oada/lib-kafka@workspace:libs/oada-lib-kafka"
   dependencies:
     "@oada/lib-config": ^0.0.1
+    "@types/bluebird": ^3.5.34
+    "@types/chai": ^4.2.17
+    "@types/chai-as-promised": ^7.1.3
+    "@types/debug": ^4.1.5
+    "@types/mocha": ^8.2.2
+    "@types/node": 14
+    "@types/uuid": ^8.3.0
     bluebird: ^3.7.2
+    chai: ^4.3.4
+    chai-as-promised: ^7.1.1
     debug: ^4.3.2
     kafkajs: ^1.15.0
     ksuid: ^2.0.0
+    mocha: ^8.4.0
+    ts-node: ^9.1.1
     uuid: ^8.3.2
   languageName: unknown
   linkType: soft
@@ -1798,6 +1809,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/uuid@npm:^8.3.0":
+  version: 8.3.0
+  resolution: "@types/uuid@npm:8.3.0"
+  checksum: 620985aed8fdb4aed153daca5235f4303457a67a4d181efac0021712eabd9edd7e88895f79730c0e651effde7633b1b61e49a81519ac8d4e75019d2ac9b6412f
+  languageName: node
+  linkType: hard
+
 "@types/ws@npm:^7.4.1":
   version: 7.4.1
   resolution: "@types/ws@npm:7.4.1"
@@ -2242,22 +2260,6 @@ __metadata:
   version: 1.5.2
   resolution: "async@npm:1.5.2"
   checksum: 1a83326544c94e5e18203e548f3abca73af85222017e3db6701a2a188044ec711543ccdd62ecae0afeb76f0efca505d61281404d4cef1a3ca576f7b10333d089
-  languageName: node
-  linkType: hard
-
-"async@npm:^2.6.2":
-  version: 2.6.3
-  resolution: "async@npm:2.6.3"
-  dependencies:
-    lodash: ^4.17.14
-  checksum: 5c30ec6f3d64308dd96d56dae16a00a23b9e6278fe8f66492837896d958508698648c59c53457d3fdf05fd04484e16538efeca2be38337cd78df0284e764ab34
-  languageName: node
-  linkType: hard
-
-"async@npm:~0.2.7":
-  version: 0.2.10
-  resolution: "async@npm:0.2.10"
-  checksum: 8fd2b938bbdbcd48188e7025f2202cb5fc5fce704347337e664971b439da9e2ee7c441b344568647d0c426e5bdc9100c8d4ec3c497a888e2b9878c367aa68979
   languageName: node
   linkType: hard
 
@@ -3353,15 +3355,6 @@ __metadata:
     supports-color:
       optional: true
   checksum: 0d41ba5177510e8b388dfd7df143ab0f9312e4abdaba312595461511dac88e9ef8101939d33b4e6d37e10341af6a5301082e4d7d6f3deb4d57bc05fc7d296fad
-  languageName: node
-  linkType: hard
-
-"debug@npm:^3.1.1":
-  version: 3.2.7
-  resolution: "debug@npm:3.2.7"
-  dependencies:
-    ms: ^2.1.1
-  checksum: 9fc1277e666db3af31df89e9e41f5c83da6e9de56d4a95b37e095d47ba1958238b8c7b49d4327b516465d46b6340bee723a97a7b2f28c5c7563f8b0a8fc9458a
   languageName: node
   linkType: hard
 
@@ -5651,18 +5644,6 @@ fsevents@~2.3.1:
   languageName: node
   linkType: hard
 
-"kafka-please@npm:^1.0.1":
-  version: 1.0.1
-  resolution: "kafka-please@npm:1.0.1"
-  dependencies:
-    node-zookeeper-client: ^0.2.2
-    portfinder: ^1.0.3
-    properties-parser: ^0.3.1
-    tmp: 0.0.28
-  checksum: bfa77f6a0382b70926d1dbaf059037513c1040a82ca2a795c1e1f9189d735dcf4ff376ec3451c0c359b71152a3b2f646a0b7f1da55a1a1785019b14b353baf52
-  languageName: node
-  linkType: hard
-
 "kafkajs@npm:^1.15.0":
   version: 1.15.0
   resolution: "kafkajs@npm:1.15.0"
@@ -5943,7 +5924,7 @@ fsevents@~2.3.1:
   languageName: node
   linkType: hard
 
-"lodash@npm:^4.17.14, lodash@npm:^4.17.15, lodash@npm:^4.17.19, lodash@npm:^4.17.21, lodash@npm:^4.17.4":
+"lodash@npm:^4.17.15, lodash@npm:^4.17.19, lodash@npm:^4.17.21, lodash@npm:^4.17.4":
   version: 4.17.21
   resolution: "lodash@npm:4.17.21"
   checksum: 4983720b9abca930a4a46f18db163d7dad8dd00dbed6db0cc7b499b33b717cce69f80928b27bbb1ff2cbd3b19d251ee90669a8b5ea466072ca81c2ebe91e7468
@@ -6352,7 +6333,7 @@ fsevents@~2.3.1:
   languageName: node
   linkType: hard
 
-"mkdirp@npm:0.5.x, mkdirp@npm:^0.5.0, mkdirp@npm:^0.5.1, mkdirp@npm:^0.5.5":
+"mkdirp@npm:0.5.x, mkdirp@npm:^0.5.0, mkdirp@npm:^0.5.1":
   version: 0.5.5
   resolution: "mkdirp@npm:0.5.5"
   dependencies:
@@ -6412,6 +6393,42 @@ fsevents@~2.3.1:
     _mocha: bin/_mocha
     mocha: bin/mocha
   checksum: ac4f359cf4dbd3a01202d0a5ef06533b9513ae293a411b3c0743dbeff03ffcfe444636127cc103634e07c932ec2eda104c2e1e8e259d16efd7e07a0a900eb2f4
+  languageName: node
+  linkType: hard
+
+"mocha@npm:^8.4.0":
+  version: 8.4.0
+  resolution: "mocha@npm:8.4.0"
+  dependencies:
+    "@ungap/promise-all-settled": 1.1.2
+    ansi-colors: 4.1.1
+    browser-stdout: 1.3.1
+    chokidar: 3.5.1
+    debug: 4.3.1
+    diff: 5.0.0
+    escape-string-regexp: 4.0.0
+    find-up: 5.0.0
+    glob: 7.1.6
+    growl: 1.10.5
+    he: 1.2.0
+    js-yaml: 4.0.0
+    log-symbols: 4.0.0
+    minimatch: 3.0.4
+    ms: 2.1.3
+    nanoid: 3.1.20
+    serialize-javascript: 5.0.1
+    strip-json-comments: 3.1.1
+    supports-color: 8.1.1
+    which: 2.0.2
+    wide-align: 1.1.3
+    workerpool: 6.1.0
+    yargs: 16.2.0
+    yargs-parser: 20.2.4
+    yargs-unparser: 2.0.0
+  bin:
+    _mocha: bin/_mocha
+    mocha: bin/mocha
+  checksum: 51744733d86b4a629846f0cb5f8e2aa3d9c901712f5fb4e3fb5ad49954c3322178abb56854e158456a38828762e0f6192c09ccfc5235650c486493ed2f77a20c
   languageName: node
   linkType: hard
 
@@ -6648,16 +6665,6 @@ fsevents@~2.3.1:
   languageName: node
   linkType: hard
 
-"node-zookeeper-client@npm:^0.2.2":
-  version: 0.2.3
-  resolution: "node-zookeeper-client@npm:0.2.3"
-  dependencies:
-    async: ~0.2.7
-    underscore: ~1.4.4
-  checksum: 9f8aef0931b945b6a1c16791e50ec8fdb0ead2b383b658e5388a42181e4539dc12deab91605d198f2db294b37c05aea8c35d5a509658ed4d6415f5f85868a5bb
-  languageName: node
-  linkType: hard
-
 "nopt@npm:3.x":
   version: 3.0.6
   resolution: "nopt@npm:3.0.6"
@@ -6888,7 +6895,6 @@ fsevents@~2.3.1:
     chai-as-promised: ^7.1.1
     express: ^4.17.1
     istanbul: ^0.4.5
-    kafka-please: ^1.0.1
     keypair: ^1.0.3
     lerna: ^4.0.0
     lodash: ^4.17.21
@@ -7092,7 +7098,7 @@ fsevents@~2.3.1:
   languageName: node
   linkType: hard
 
-"os-tmpdir@npm:^1.0.0, os-tmpdir@npm:^1.0.1, os-tmpdir@npm:~1.0.1, os-tmpdir@npm:~1.0.2":
+"os-tmpdir@npm:^1.0.0, os-tmpdir@npm:^1.0.1, os-tmpdir@npm:~1.0.2":
   version: 1.0.2
   resolution: "os-tmpdir@npm:1.0.2"
   checksum: ca158a3c2e48748adc7736cdbe4c593723f8ed8581d2aae2f2a30fdb9417d4ba14bed1cd487d47561898a7b1ece88bce69745e9ce0303e1dea9ea7d22d1f1082
@@ -7691,17 +7697,6 @@ fsevents@~2.3.1:
   languageName: node
   linkType: hard
 
-"portfinder@npm:^1.0.3":
-  version: 1.0.28
-  resolution: "portfinder@npm:1.0.28"
-  dependencies:
-    async: ^2.6.2
-    debug: ^3.1.1
-    mkdirp: ^0.5.5
-  checksum: 906dc51482ef9336a812df0b2960119e4464c7d14b69e489bf88bbeea317175a5700712688e953b9b2a2a2de0dc28824f0cb01206c56dd8350f3798e212b5bb8
-  languageName: node
-  linkType: hard
-
 "prelude-ls@npm:~1.1.2":
   version: 1.1.2
   resolution: "prelude-ls@npm:1.1.2"
@@ -7771,15 +7766,6 @@ fsevents@~2.3.1:
   dependencies:
     read: 1
   checksum: d907a0a7804a67a7abd80c4808cefb5d20999fef08ec148801f2bdef820e632ac3da964d408cb5adec2de7481f26265f5924d0813af23f5fa745afbbf3962dcc
-  languageName: node
-  linkType: hard
-
-"properties-parser@npm:^0.3.1":
-  version: 0.3.1
-  resolution: "properties-parser@npm:0.3.1"
-  dependencies:
-    string.prototype.codepointat: ^0.2.0
-  checksum: 2c1755c279a35822cb5fc58d8d0cd16655a7414d233243ae040932adc433086e58a30c51185c753fe201817c48ace8a41a962bf359d3e240c02ffea0cf083a2b
   languageName: node
   linkType: hard
 
@@ -8854,13 +8840,6 @@ resolve@1.1.x:
   languageName: node
   linkType: hard
 
-"string.prototype.codepointat@npm:^0.2.0":
-  version: 0.2.1
-  resolution: "string.prototype.codepointat@npm:0.2.1"
-  checksum: 2621f45bdb78d969fd5754bac5aa0686776e894556cba734e11ca6b032869e39b0762a284fca5cdf04ef3d6cca9cb0fb0676fed09dba8518569aae5a353df66e
-  languageName: node
-  linkType: hard
-
 "string.prototype.padstart@npm:^3.0.0":
   version: 3.1.2
   resolution: "string.prototype.padstart@npm:3.1.2"
@@ -9194,15 +9173,6 @@ resolve@1.1.x:
   languageName: node
   linkType: hard
 
-"tmp@npm:0.0.28":
-  version: 0.0.28
-  resolution: "tmp@npm:0.0.28"
-  dependencies:
-    os-tmpdir: ~1.0.1
-  checksum: da10f70fc05c699a310138b52137d75e1e58574d899252719e1134a84ac9acfe545617d431c3264a4aabf83803df4369c929e11cda0afb92dfd3caba11ae0dab
-  languageName: node
-  linkType: hard
-
 "tmp@npm:^0.0.33":
   version: 0.0.33
   resolution: "tmp@npm:0.0.33"
@@ -9489,13 +9459,6 @@ typescript@^4.2.4:
     has-symbols: ^1.0.0
     which-boxed-primitive: ^1.0.1
   checksum: 25e82f99bb40981f30615644305c757ecefff43d2ef2ac1b80e24f304f3002cd637eecb672bdd07f5fb858a265d96a4b2e983c714cba65498715acf7af23e86b
-  languageName: node
-  linkType: hard
-
-"underscore@npm:~1.4.4":
-  version: 1.4.4
-  resolution: "underscore@npm:1.4.4"
-  checksum: da0a0941c241773555ee7e8854f3286e0a57ca53bbbd1cf86c3f0d358eade89d3b3a82ced30427f8d0b08f8e91788ca5704d2136045a3e5153db9b834f673447
   languageName: node
   linkType: hard
 

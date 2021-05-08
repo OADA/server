@@ -2,21 +2,26 @@
   "name": "@oada/lib-kafka",
   "version": "1.0.0",
   "description": "OADA Kafka library",
-  "main": "index.js",
+  "main": "dist/index.js",
   "scripts": {
+    "build": "yarn g:tsc",
     "test": "mocha"
   },
   "mocha": {
     "ui": "bdd",
     "timeout": 4000,
-    "exit": true
+    "exit": true,
+    "require": "ts-node/register",
+    "extension": [
+      "ts"
+    ]
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/OADA/@oada/lib-kafka.git"
   },
-  "author": "",
-  "license": "ISC",
+  "author": "Alex Layton <alex@layton.in>",
+  "license": "Apache-2.0",
   "dependencies": {
     "@oada/lib-config": "^0.0.1",
     "bluebird": "^3.7.2",
@@ -24,5 +29,18 @@
     "kafkajs": "^1.15.0",
     "ksuid": "^2.0.0",
     "uuid": "^8.3.2"
+  },
+  "devDependencies": {
+    "@types/bluebird": "^3.5.34",
+    "@types/chai": "^4.2.17",
+    "@types/chai-as-promised": "^7.1.3",
+    "@types/debug": "^4.1.5",
+    "@types/mocha": "^8.2.2",
+    "@types/node": "14",
+    "@types/uuid": "^8.3.0",
+    "chai": "^4.3.4",
+    "chai-as-promised": "^7.1.1",
+    "mocha": "^8.4.0",
+    "ts-node": "^9.1.1"
   }
 }

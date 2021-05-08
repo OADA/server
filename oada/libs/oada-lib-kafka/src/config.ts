@@ -1,4 +1,4 @@
-/* Copyright 2017 Open Ag Data Alliance
+/* Copyright 2021 Open Ag Data Alliance
  *
  * Licensed under the Apache License, Version 2.0 (the 'License');
  * you may not use this file except in compliance with the License.
@@ -13,22 +13,8 @@
  * limitations under the License.
  */
 
-'use strict';
+// TODO: Publish this to npm instead?
+import libConfig from '@oada/lib-config';
+import config from './config.defaults';
 
-const ksuid = require('ksuid');
-
-const { REQ_ID_KEY, DATA } = require('./base');
-const Responder = require('./Responder');
-
-// Class for generate new requests in response to others
-// (without needing the answer)
-module.exports = class ReResponder extends Responder {
-    constructor(...args) {
-        super(...args);
-
-        // Make everything look like a new request
-        super.prependListener(DATA, (req) => {
-            req[REQ_ID_KEY] = ksuid.randomSync().string;
-        });
-    }
-};
+export default libConfig(config);

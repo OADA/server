@@ -13,16 +13,20 @@
  * limitations under the License.
  */
 
-'use strict';
+import ksuid from 'ksuid';
 
-const Responder = require('./Responder');
-const ReResponder = require('./ReResponder');
-const Requester = require('./Requester');
-const ResponderRequester = require('./ResponderRequester');
+import { REQ_ID_KEY, DATA } from './base';
+import { Responder } from './Responder';
 
-module.exports = {
-    Responder,
-    ReResponder,
-    Requester,
-    ResponderRequester,
-};
+// Class for generate new requests in response to others
+// (without needing the answer)
+export class ReResponder extends Responder {
+  constructor(...args: ConstructorParameters<typeof Responder>) {
+    super(...args);
+
+    // Make everything look like a new request
+    super.prependListener(DATA, (req) => {
+      req[REQ_ID_KEY] = ksuid.randomSync().string;
+    });
+  }
+}
