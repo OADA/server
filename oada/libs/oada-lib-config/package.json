@@ -27,14 +27,14 @@
     "convict": "^6.1.0",
     "convict-format-with-moment": "^6.0.1",
     "convict-format-with-validator": "^6.0.1",
-    "dotenv": "^9.0.1",
+    "dotenv": "^9.0.2",
     "json5": "^2.2.0",
     "tslib": "^2.2.0",
     "yaml": "^1.10.2"
   },
   "devDependencies": {
-    "@types/convict": "^6",
-    "@types/convict-format-with-validator": "^6",
-    "@types/yaml": "^1"
+    "@types/convict": "^6.0.1",
+    "@types/convict-format-with-validator": "^6.0.2",
+    "@types/yaml": "^1.9.7"
   }
 }

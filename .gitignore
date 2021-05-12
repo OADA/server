@@ -13,10 +13,11 @@ package.lock
 act/
 
 # yarn 2 stuff
-**/.yarn/*
-!**/.yarn/releases
-!**/.yarn/plugins
-!**/.yarn/versions
-**/.pnp.*
+.yarn
+!.yarn/releases
+!.yarn/plugins
+!.yarn/versions
+.pnp.*
 # ignore sdk stuff
-**/.vim
+.vim
+.vscode
