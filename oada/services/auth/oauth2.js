@@ -83,7 +83,7 @@ module.exports = function (_server, config) {
       // can access it to pre-fill the domain box
       // ensureLoggedIn fills in req.session.returnTo to let you redirect
       // back after logging in
-      login.ensureLoggedIn(config.get('auth:endpoints:login')),
+      login.ensureLoggedIn(config.get('auth.endpoints.login')),
       server.authorization(function (clientId, redirectURI, done) {
         clients.findById(clientId, function (err, client) {
           if (err) {
@@ -113,23 +113,23 @@ module.exports = function (_server, config) {
           // Load the login info for this domain from the public directory:
           const domain_config =
             domainConfigs[req.hostname] || domainConfigs.localhost;
-          res.render(config.get('auth:views:approvePage'), {
+          res.render(config.get('auth.views.approvePage'), {
             transactionID: req.oauth2.transactionID,
             client: req.oauth2.client,
             scope: req.oauth2.req.scope,
             nonce: req.oauth2.req.nonce,
             trusted: req.oauth2.client.trusted,
-            decision_url: config.get('auth:endpoints:decision'),
+            decision_url: config.get('auth.endpoints.decision'),
             user: {
               name: req.user && req.user.name ? req.user.name : '',
               username:
                 req.user && req.user.username ? req.user.username : 'nobody',
             },
             autoaccept: scopeIsOnlyOpenid(req.oauth2.req.scope) ? true : false,
-            logout: config.get('auth:endpoints:logout'),
+            logout: config.get('auth.endpoints.logout'),
             name: domain_config.name,
             logo_url:
-              config.get('auth:endpointsPrefix') +
+              config.get('auth.endpointsPrefix') +
               '/domains/' +
               domain_config.domain +
               '/' +
@@ -146,7 +146,7 @@ module.exports = function (_server, config) {
         debug('oauth2#decision: Received decision POST from form');
         next();
       },
-      login.ensureLoggedIn(config.get('auth:endpoints:login')),
+      login.ensureLoggedIn(config.get('auth.endpoints.login')),
       server.decision(function parseDecision(req, done) {
         var validScope = req.body.scope.every(function (el) {
           return req.oauth2.req.scope.indexOf(el) != -1;

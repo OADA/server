@@ -43,7 +43,7 @@ function dynReg(req, res) {
     return oadacerts
       .validate(req.body.software_statement, {
         timeout: config.get(
-          'auth:dynamicRegistration:trustedListLookupTimeout'
+          'auth.dynamicRegistration.trustedListLookupTimeout'
         ),
       })
       .then(({ payload, trusted, valid, details }) => {

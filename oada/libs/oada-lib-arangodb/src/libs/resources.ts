@@ -32,12 +32,12 @@ const info = debug('arangodb#resources:info');
 const trace = debug('arangodb#resources:trace');
 
 const resources = db.collection(
-  config.get('arangodb:collections:resources:name')
+  config.get('arangodb.collections.resources.name')
 );
 const graphNodes = db.collection(
-  config.get('arangodb:collections:graphNodes:name')
+  config.get('arangodb.collections.graphNodes.name')
 );
-const edges = db.collection(config.get('arangodb:collections:edges:name'));
+const edges = db.collection(config.get('arangodb.collections.edges.name'));
 
 const MAX_DEPTH = 100; // TODO: Is this good?
 
@@ -306,9 +306,7 @@ export async function getResourceOwnerIdRev(
     ); // Treat non-existing path has not-found
 }
 
-export async function getParents(
-  id: string
-): Promise<Array<{
+export async function getParents(id: string): Promise<Array<{
   resource_id: string;
   path: string;
   contentType: string;

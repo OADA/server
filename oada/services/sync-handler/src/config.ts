@@ -1,4 +1,13 @@
-import config from '@oada/lib-config';
-import defaults from './config.defaults';
+import libConfig from '@oada/lib-config';
 
-export default config(defaults);
+const config = libConfig({
+  kafka: {
+    topics: {
+      default: {
+        httpResponse: 'http_response',
+      },
+    },
+  },
+});
+
+export default config;

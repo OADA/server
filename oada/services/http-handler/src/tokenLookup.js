@@ -33,7 +33,7 @@ module.exports = function tokenLookup(req) {
   return oadaLib.authorizations
     .findByToken(req.token.trim().replace(/^Bearer /, ''))
     .then((t) => {
-      let msg = Object.assign({}, res);
+      const msg = Object.assign({}, res);
 
       if (!t) {
         warn('WARNING: token ' + req.token + ' does not exist.');

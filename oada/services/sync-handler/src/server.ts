@@ -37,7 +37,7 @@ const META_KEY = '_remote_syncs';
 //---------------------------------------------------------
 // Kafka intializations:
 const responder = new Responder({
-  consumeTopic: config.get('kafka:topics:httpResponse'),
+  consumeTopic: config.get('kafka.topics.httpResponse'),
   group: 'sync-handlers',
 });
 
@@ -45,11 +45,14 @@ export function stopResp() {
   return responder.disconnect();
 }
 
+/**
+ * Filter for successful write responses
+ */
 function checkReq(req: KafkaBase): req is WriteResponse {
-  return req.msgtype === 'write-response' && req.code === 'success';
+  return req?.msgtype === 'write-response' && req?.code === 'success';
 }
 
-responder.on('request', async function handleReq(req) {
+responder.on<WriteResponse>('request', async function handleReq(req) {
   if (!checkReq(req)) {
     return;
   }

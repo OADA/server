@@ -23,7 +23,7 @@ import config from '../config';
 const trace = debug('arangodb#remoteResources:trace');
 
 const remoteResources = db.collection(
-  config.get('arangodb:collections:remoteResources:name')
+  config.get('arangodb.collections.remoteResources.name')
 );
 
 export interface RemoteID {

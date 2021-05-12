@@ -12,6 +12,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 'use strict';
 
 const { v4: uuid } = require('uuid');
@@ -22,7 +23,7 @@ var path = require('path');
 var db = require(path.join(
   __dirname,
   '/../../db',
-  config.get('auth:datastoresDriver'),
+  config.get('auth.datastoresDriver'),
   'clients.js'
 ));
 

@@ -34,12 +34,12 @@ const trace = debug('auth#index:trace');
 
 // If there is an endpointsPrefix, update all the endpoints to include the
 // prefix before doing anything else
-const pfx = config.get('auth:endpointsPrefix');
+const pfx = config.get('auth.endpointsPrefix');
 if (typeof pfx === 'string') {
   trace('Adding supplied prefix %s to all endpoints', pfx);
-  const endpoints = config.get('auth:endpoints');
+  const endpoints = config.get('auth.endpoints');
   for (const [k, v] of Object.entries(endpoints)) {
-    config.set('auth:endpoints:' + k, pfx + v);
+    config.set('auth.endpoints.' + k, pfx + v);
   }
 }
 trace('Using config = %O', config.get('auth'));
@@ -85,23 +85,23 @@ module.exports = function (conf) {
   }
 
   config.set(
-    'auth:server:port',
-    process.env.PORT || config.get('auth:server:port')
+    'auth.server.port',
+    process.env.PORT || config.get('auth.server.port')
   );
 
   var publicUri;
-  if (!config.get('auth:server:publicUri')) {
+  if (!config.get('auth.server.publicUri')) {
     publicUri = URI()
-      .hostname(config.get('auth:server:domain'))
-      .port(config.get('auth:server:port'))
-      .protocol(config.get('auth:server:mode'))
+      .hostname(config.get('auth.server.domain'))
+      .port(config.get('auth.server.port'))
+      .protocol(config.get('auth.server.mode'))
       .normalize()
       .toString();
   } else {
-    publicUri = URI(config.get('auth:server:publicUri')).normalize().toString();
+    publicUri = URI(config.get('auth.server.publicUri')).normalize().toString();
   }
 
-  config.set('auth:server:publicUri', publicUri);
+  config.set('auth.server.publicUri', publicUri);
 
   // Require these late because they depend on the config
   const dynReg = require('./dynReg');
@@ -114,21 +114,21 @@ module.exports = function (conf) {
 
   app.use(helmet());
 
-  var wkj = config.get('auth:wkj')
-    ? config.get('auth:wkj')
+  var wkj = config.get('auth.wkj')
+    ? config.get('auth.wkj')
     : require('@oada/well-known-json')();
 
   app.set('view engine', 'ejs');
-  app.set('json spaces', config.get('auth:server:jsonSpaces'));
-  app.set('views', config.get('auth:views:basedir'));
-  app.set('trust proxy', config.get('auth:server:proxy'));
+  app.set('json spaces', config.get('auth.server.jsonSpaces'));
+  app.set('views', config.get('auth.views.basedir'));
+  app.set('trust proxy', config.get('auth.server.proxy'));
 
   app.use(morgan('combined'));
   app.use(bodyParser.urlencoded({ extended: true }));
-  const arangourl = new URL(config.get('arangodb:connectionString'));
+  const arangourl = new URL(config.get('arangodb.connectionString'));
   app.use(
     session({
-      secret: config.get('auth:server:sessionSecret'),
+      secret: config.get('auth.server.sessionSecret'),
       resave: false,
       saveUninitialized: false,
       store: new ArangoSessionStore({
@@ -136,8 +136,8 @@ module.exports = function (conf) {
           host: arangourl.hostname,
           schema: arangourl.protocol.replace(':', ''),
           port: arangourl.port,
-          collection: config.get('arangodb:collections:sessions:name'),
-          database: config.get('arangodb:database'),
+          collection: config.get('arangodb.collections.sessions.name'),
+          database: config.get('arangodb.database'),
         },
       }),
     })
@@ -156,14 +156,14 @@ module.exports = function (conf) {
   //////
   // UI
   //////
-  if (config.get('auth:oauth2:enable') || config.get('auth:oidc:enable')) {
+  if (config.get('auth.oauth2.enable') || config.get('auth.oidc.enable')) {
     var oauth2 = require('./oauth2')(server, config);
 
     //----------------------------------------------------------------
     // Client registration endpoint:
-    app.options(config.get('auth:endpoints:register'), require('cors')());
+    app.options(config.get('auth.endpoints.register'), require('cors')());
     app.post(
-      config.get('auth:endpoints:register'),
+      config.get('auth.endpoints.register'),
       require('cors')(),
       bodyParser.json(),
       dynReg
@@ -172,11 +172,11 @@ module.exports = function (conf) {
     //----------------------------------------------------------------
     // OAuth2 authorization request (serve the authorization screen)
     app.get(
-      config.get('auth:endpoints:authorize'),
+      config.get('auth.endpoints.authorize'),
       function (_req, res, done) {
         trace(
           'GET ' +
-            config.get('auth:endpoints:authorize') +
+            config.get('auth.endpoints.authorize') +
             ': setting X-Frame-Options=SAMEORIGIN before oauth2.authorize'
         );
         res.header('X-Frame-Options', 'SAMEORIGIN');
@@ -184,14 +184,14 @@ module.exports = function (conf) {
       },
       oauth2.authorize
     );
-    app.post(config.get('auth:endpoints:decision'), oauth2.decision);
+    app.post(config.get('auth.endpoints.decision'), oauth2.decision);
     app.post(
-      config.get('auth:endpoints:token'),
+      config.get('auth.endpoints.token'),
       function (req, _res, next) {
         trace(
           req.hostname +
             ': token POST ' +
-            config.get('auth:endpoints:token') +
+            config.get('auth.endpoints.token') +
             ', storing reqdomain in req.user'
         );
         next();
@@ -203,10 +203,10 @@ module.exports = function (conf) {
     // Login page: someone has navigated or been redirected to the login page.
     // Populate based on the domain.
     // If session already has a userid, then just use that.
-    app.get(config.get('auth:endpoints:login'), function (req, res) {
+    app.get(config.get('auth.endpoints.login'), function (req, res) {
       trace(
         'GET ' +
-          config.get('auth:endpoints:login') +
+          config.get('auth.endpoints.login') +
           ': setting X-Frame-Options=SAMEORIGIN before rendering login'
       );
       trace('login endpoint: Session = %O', req.session);
@@ -221,17 +221,17 @@ module.exports = function (conf) {
       // Load the login info for this domain from the public directory:
       const domain_config =
         domainConfigs[req.hostname] || domainConfigs.localhost;
-      res.render(config.get('auth:views:loginPage'), {
+      res.render(config.get('auth.views.loginPage'), {
         // Where should the local login form post:
-        login_url: config.get('auth:endpoints:login'),
+        login_url: config.get('auth.endpoints.login'),
         // Where should the openidconnect form post:
-        loginconnect_url: config.get('auth:endpoints:loginConnect'),
+        loginconnect_url: config.get('auth.endpoints.loginConnect'),
 
         // domain-specific configs:
         // has .username, .password
         hint: domain_config.hint || { username: '', password: '' },
         logo_url:
-          config.get('auth:endpointsPrefix') +
+          config.get('auth.endpointsPrefix') +
           '/domains/' +
           domain_config.domain +
           '/' +
@@ -250,19 +250,19 @@ module.exports = function (conf) {
 
     //---------------------------------------------------
     // Handle post of local form from login page:
-    const pfx = config.get('auth:endpointsPrefix') || '';
+    const pfx = config.get('auth.endpointsPrefix') || '';
     app.post(
-      config.get('auth:endpoints:login'),
+      config.get('auth.endpoints.login'),
       passport.authenticate('local', {
         successReturnToOrRedirect: '/' + pfx,
-        failureRedirect: config.get('auth:endpoints:login') + '?error=1',
+        failureRedirect: config.get('auth.endpoints.login') + '?error=1',
       })
     );
 
     //-----------------------------------------------------------------
     // Handle the POST from clicking the "login with OADA/trellisfw" button
     app.post(
-      config.get('auth:endpoints:loginConnect'),
+      config.get('auth.endpoints.loginConnect'),
       function (req, res, next) {
         // First, get domain entered in the posted form
         // and strip protocol if they used it
@@ -270,7 +270,7 @@ module.exports = function (conf) {
         if (dest_domain) dest_domain = dest_domain.replace(/^https?:\/\//);
         req.body.dest_domain = dest_domain;
         info(
-          config.get('auth:endpoints:loginConnect') +
+          config.get('auth.endpoints.loginConnect') +
             ': OpenIDConnect request to redirect from domain ' +
             req.hostname +
             ' to domain ' +
@@ -286,7 +286,7 @@ module.exports = function (conf) {
             'https://' +
             req.hostname +
             // the config already has the pfx added
-            config.get('auth:endpoints:redirectConnect'),
+            config.get('auth.endpoints.redirectConnect'),
           scope: 'openid profile',
           prompt: 'consent',
           privateKey: domain_config.keys.private,
@@ -294,7 +294,7 @@ module.exports = function (conf) {
 
         // And call the middleware directly so we can use closure variables:
         trace(
-          config.get('auth:endpoints:loginConnect') +
+          config.get('auth.endpoints.loginConnect') +
             ': calling getIDToken for dest_domain = %s',
           dest_domain
         );
@@ -305,11 +305,11 @@ module.exports = function (conf) {
     //-----------------------------------------------------
     // Handle the redirect for openid connect login:
     app.use(
-      config.get('auth:endpoints:redirectConnect'),
+      config.get('auth.endpoints.redirectConnect'),
       (req, _res, next) => {
         info(
           '+++++++++++++++++++=====================++++++++++++++++++++++++',
-          config.get('auth:endpoints:redirectConnect') +
+          config.get('auth.endpoints.redirectConnect') +
             ', req.user.reqdomain = ' +
             req.hostname +
             ': OpenIDConnect request returned'
@@ -331,7 +331,7 @@ module.exports = function (conf) {
         //  If we do know it, don't worry about it
         info(
           '*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+**+*+*+*+*+*+*+*======',
-          config.get('auth:endpoints:redirectConnect') +
+          config.get('auth.endpoints.redirectConnect') +
             ', req.hostname = ' +
             req.hostname +
             ': token is: %O',
@@ -399,14 +399,14 @@ module.exports = function (conf) {
       }
     );
 
-    app.get(config.get('auth:endpoints:logout'), function (req, res) {
+    app.get(config.get('auth.endpoints.logout'), function (req, res) {
       req.logout();
       res.redirect(req.get('Referrer'));
     });
 
-    if (config.get('auth:endpointsPrefix'))
+    if (config.get('auth.endpointsPrefix'))
       app.use(
-        config.get('auth:endpointsPrefix'),
+        config.get('auth.endpointsPrefix'),
         express.static(path.join(__dirname, 'public'))
       );
     else app.use(express.static(path.join(__dirname, 'public')));
@@ -414,7 +414,7 @@ module.exports = function (conf) {
     // Statically serve all the domains-enabled/*/auth-www folders:
     Object.keys(domainConfigs).forEach((domain) => {
       const ondisk = config.get('domainsDir') + '/' + domain + '/auth-www';
-      const webpath = config.get('auth:endpointsPrefix') + '/domains/' + domain;
+      const webpath = config.get('auth.endpointsPrefix') + '/domains/' + domain;
       trace(
         'Serving domain ' +
           domain +
@@ -430,11 +430,11 @@ module.exports = function (conf) {
   //////
   // OAuth 2.0
   //////
-  if (config.get('auth:oauth2:enable')) {
+  if (config.get('auth.oauth2.enable')) {
     wkj.addResource('oada-configuration', {
-      authorization_endpoint: './' + config.get('auth:endpoints:authorize'),
-      token_endpoint: './' + config.get('auth:endpoints:token'),
-      registration_endpoint: './' + config.get('auth:endpoints:register'),
+      authorization_endpoint: './' + config.get('auth.endpoints.authorize'),
+      token_endpoint: './' + config.get('auth.endpoints.token'),
+      registration_endpoint: './' + config.get('auth.endpoints.register'),
       token_endpoint_auth_signing_alg_values_supported: ['RS256'],
     });
   }
@@ -442,21 +442,21 @@ module.exports = function (conf) {
   //////
   // OIDC
   //////
-  if (config.get('auth:oidc:enable')) {
+  if (config.get('auth.oidc.enable')) {
     require('./oidc')(server);
 
-    app.options(config.get('auth:endpoints:certs'), require('cors')());
+    app.options(config.get('auth.endpoints.certs'), require('cors')());
     app.get(
-      config.get('auth:endpoints:certs'),
+      config.get('auth.endpoints.certs'),
       require('cors')(),
       function (_req, res) {
         res.json(keys.jwks);
       }
     );
 
-    app.options(config.get('auth:endpoints:userinfo'), require('cors')());
+    app.options(config.get('auth.endpoints.userinfo'), require('cors')());
     app.get(
-      config.get('auth:endpoints:userinfo'),
+      config.get('auth.endpoints.userinfo'),
       require('cors')(),
       passport.authenticate('bearer', { session: false }),
       function (req, res) {
@@ -471,12 +471,12 @@ module.exports = function (conf) {
     );
 
     wkj.addResource('openid-configuration', {
-      issuer: './', //config.get('auth:server:publicUri'),
-      registration_endpoint: './' + config.get('auth:endpoints:register'),
-      authorization_endpoint: './' + config.get('auth:endpoints:authorize'),
-      token_endpoint: './' + config.get('auth:endpoints:token'),
-      userinfo_endpoint: './' + config.get('auth:endpoints:userinfo'),
-      jwks_uri: './' + config.get('auth:endpoints:certs'),
+      issuer: './', //config.get('auth.server.publicUri'),
+      registration_endpoint: './' + config.get('auth.endpoints.register'),
+      authorization_endpoint: './' + config.get('auth.endpoints.authorize'),
+      token_endpoint: './' + config.get('auth.endpoints.token'),
+      userinfo_endpoint: './' + config.get('auth.endpoints.userinfo'),
+      jwks_uri: './' + config.get('auth.endpoints.certs'),
       response_types_supported: [
         'code',
         'token',
@@ -495,7 +495,7 @@ module.exports = function (conf) {
   /////
   // .well-known
   /////
-  if (!config.get('auth:wkj')) {
+  if (!config.get('auth.wkj')) {
     app.use(wkj);
   }
 
@@ -512,16 +512,16 @@ if (require.main === module) {
   // Note: now we listen on both http and https by default.  https is only
   // for debugging trying to use localhost or 127.0.0.1, since that will resolve
   // inside the container itself instead of as the overall host.
-  if (config.get('auth:server:mode') === 'http') {
+  if (config.get('auth.server.mode') === 'http') {
     const server1 = app.listen(
-      config.get('auth:server:port-http'),
+      config.get('auth.server.port-http'),
       function () {
         info('Listening HTTP on port %d', server1.address().port);
       }
     );
   } else {
-    const server2 = https.createServer(config.get('auth:certs'), app);
-    server2.listen(config.get('auth:server:port-https'), function () {
+    const server2 = https.createServer(config.get('auth.certs'), app);
+    server2.listen(config.get('auth.server.port-https'), function () {
       info('Listening HTTPS on port %d', server2.address().port);
     });
   }

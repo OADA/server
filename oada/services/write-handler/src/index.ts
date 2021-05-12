@@ -23,8 +23,8 @@ const trace = debug('write-handler:trace');
 let counter = 0;
 
 const responder = new Responder({
-  consumeTopic: config.get('kafka:topics:writeRequest'),
-  produceTopic: config.get('kafka:topics:httpResponse'),
+  consumeTopic: config.get('kafka.topics.writeRequest'),
+  produceTopic: config.get('kafka.topics.httpResponse'),
   group: 'write-handlers',
 });
 
@@ -32,7 +32,7 @@ const responder = new Responder({
 // Per-resource write locks/queues
 const locks: Record<string, Bluebird<unknown>> = {};
 const cache = new Cache<number | string>({ defaultTtl: 60 * 1000 });
-responder.on('request', (req: WriteRequest, ...rest) => {
+responder.on<WriteResponse, WriteRequest>('request', (req, ...rest) => {
   if (counter++ > 500) {
     counter = 0;
     global.gc();
@@ -68,7 +68,7 @@ interface WriteContext {
   /**
    * @todo what is this?
    */
-  indexer: unknown;
+  indexer?: unknown;
   /**
    * @todo what is this?
    */
@@ -76,11 +76,11 @@ interface WriteContext {
   /**
    * ID of user performing the write
    */
-  user_id: string;
+  user_id?: string;
   /**
    * ID of the authorization (token) performing the write
    */
-  authorizationid: string;
+  authorizationid?: string;
   /**
    * Content type of the body being written
    */
@@ -123,11 +123,11 @@ export interface WriteRequest extends WriteContext {
   /**
    * @todo what is this?
    */
-  'change_path': string;
+  'change_path'?: string;
   /**
    * @todo what is this?
    */
-  'from_change_id': string[];
+  'from_change_id'?: string[];
 }
 
 /**
@@ -168,10 +168,10 @@ export function handleReq(req: WriteRequest): Promise<WriteResponse> {
       trace('FIRST BODY %O', body);
       trace('doUpsert %d', Date.now() / 1000 - beforeUpsert);
       if (req['if-match']) {
-        const rev = ((await resources.getResource(
+        const rev = (await resources.getResource(
           req['resource_id'],
           '_rev'
-        )) as unknown) as number;
+        )) as unknown as number;
         if (req['if-match'] !== rev) {
           error(rev);
           error(req['if-match']);
@@ -180,10 +180,10 @@ export function handleReq(req: WriteRequest): Promise<WriteResponse> {
         }
       }
       if (req['if-none-match']) {
-        const rev = ((await resources.getResource(
+        const rev = (await resources.getResource(
           req['resource_id'],
           '_rev'
-        )) as unknown) as number;
+        )) as unknown as number;
         if (req['if-none-match'].includes(rev)) {
           error(rev);
           error(req['if-none-match']);
@@ -194,10 +194,10 @@ export function handleReq(req: WriteRequest): Promise<WriteResponse> {
       const beforeCacheRev = Date.now() / 1000;
       let cacheRev = cache.get(req['resource_id']);
       if (!cacheRev) {
-        cacheRev = ((await resources.getResource(
+        cacheRev = (await resources.getResource(
           req['resource_id'],
           '_rev'
-        )) as unknown) as number;
+        )) as unknown as number;
       }
       if (req.rev) {
         if (cacheRev !== req.rev) {
@@ -327,9 +327,9 @@ export function handleReq(req: WriteRequest): Promise<WriteResponse> {
 
       // Compute new change
       const beforeChange = Date.now() / 1000;
-      let children = req['from_change_id'] || [];
+      const children = req['from_change_id'] || [];
       trace('Putting change, "change" = %O', obj);
-      let changeId = await changes.putChange({
+      const changeId = await changes.putChange({
         change: obj,
         resId: id,
         rev,

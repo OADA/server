@@ -17,7 +17,7 @@ import { aql } from 'arangojs';
 
 import { db } from '../db';
 import * as util from '../util';
-import * as users from './users.js';
+import * as users from './users';
 
 import config from '../config';
 
@@ -33,13 +33,15 @@ export interface Code {
   redirectUri: string;
 }
 
+const codes = db.collection(config.get('arangodb.collections.codes.name'));
+
 export async function findByCode(
   code: string
 ): Promise<(Code & { user: users.User }) | null> {
   const c = (await (
     await db.query(
       aql`
-      FOR c IN ${db.collection(config.get('arangodb:collections:codes:name'))}
+      FOR c IN ${codes}
       FILTER c.code == ${code}
       RETURN c`
     )
@@ -65,7 +67,7 @@ export async function save(code: Code) {
     UPSERT { code: ${code.code} }
     INSERT ${code}
     UPDATE ${code}
-    IN ${db.collection(config.get('arangodb:collections:codes:name'))}
+    IN ${codes}
   `);
 
   return await findByCode(code.code);

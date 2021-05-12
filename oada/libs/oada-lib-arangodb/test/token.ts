@@ -28,12 +28,12 @@ describe('token lib', () => {
     const token = exampleTokens[0];
 
     return oadaLib.authorizations.findByToken(token.token).then((t) => {
-      expect(t.token).to.equal(token.token);
-      expect(t.createTime).to.equal(token.createTime);
-      expect(t.expiresIn).to.equal(token.expiresIn);
-      expect(t.user).to.be.a('object');
-      expect(t.user._id).to.equal(token.user._id);
-      expect(t.clientId).to.equal(token.clientId);
+      expect(t?.token).to.equal(token.token);
+      expect(t?.createTime).to.equal(token.createTime);
+      expect(t?.expiresIn).to.equal(token.expiresIn);
+      expect(t?.user).to.be.a('object');
+      expect(t?.user._id).to.equal(token.user._id);
+      expect(t?.clientId).to.equal(token.clientId);
     });
   });
 
@@ -54,12 +54,12 @@ describe('token lib', () => {
       )
       .then(() => oadaLib.authorizations.findByToken('abc-no-duplicates'))
       .then(function checkNewToken(t) {
-        expect(t.token).to.equal('abc-no-duplicates');
-        expect(t.createTime).to.equal(token.createTime);
-        expect(t.expiresIn).to.equal(token.expiresIn);
-        expect(t.user).to.be.a('object');
-        expect(t.user._id).to.equal(user._id);
-        expect(t.clientId).to.equal(token.clientId);
+        expect(t?.token).to.equal('abc-no-duplicates');
+        expect(t?.createTime).to.equal(token.createTime);
+        expect(t?.expiresIn).to.equal(token.expiresIn);
+        expect(t?.user).to.be.a('object');
+        expect(t?.user._id).to.equal(user._id);
+        expect(t?.clientId).to.equal(token.clientId);
       });
   });
 

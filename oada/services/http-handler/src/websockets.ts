@@ -52,7 +52,7 @@ const error = debug('websockets:error');
 const warn = debug('websockets:warn');
 const trace = debug('websockets:trace');
 
-const port = config.get('server:port');
+const port = config.get('server.port');
 
 const emitter = new EventEmitter();
 
@@ -314,7 +314,7 @@ module.exports = function wsHandler(server: Server) {
               request.headers['x-oada-rev']
             );
             const rev = await resources.getResource(resourceId, '_rev');
-            const revInt = parseInt((rev as unknown) as string);
+            const revInt = parseInt(rev as unknown as string);
             // If the requested rev is behind by revLimit, simply
             // re-GET the entire resource
             trace('REVS:', resourceId, rev, request.headers['x-oada-rev']);
@@ -405,7 +405,7 @@ module.exports = function wsHandler(server: Server) {
 };
 
 const writeResponder = new Responder({
-  consumeTopic: config.get('kafka:topics:httpResponse') as string,
+  consumeTopic: config.get('kafka.topics.httpResponse') as string,
   group: 'websockets',
 });
 

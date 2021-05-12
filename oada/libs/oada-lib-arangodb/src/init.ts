@@ -36,33 +36,23 @@ const info = debug('arango:init:info');
 
 // Can't use ./db because we're creating the actual database
 const db = arangojs({
-  url: config.get('arangodb:connectionString'),
+  url: config.get('arangodb.connectionString'),
 });
 db.database('_system');
 
 //------------------------------------------------------------
 // First setup some shorter variable names:
-const dbname: string = config.get('arangodb:database');
-const cols: Record<
-  string,
-  {
-    name: string;
-    indexes: Array<
-      string | { name: string; unique?: boolean; sparse?: boolean }
-    >;
-    defaults: string;
-    edgeCollection?: boolean;
-    createOptions?: { isVolatile?: boolean };
-  }
-> = config.get('arangodb:collections');
+const dbname = config.get('arangodb.database');
+const cols = config.get('arangodb.collections');
 const colsarr = Object.values(cols);
 
 async function run() {
-  const ensureDefaults = config.get('arangodb:ensureDefaults');
+  const ensureDefaults = config.get('arangodb.ensureDefaults');
   trace(
-    `ensureDefaults = ${ensureDefaults}` +
+    `ensureDefaults = %s` +
       "==> false means it will delete default doc._id's from all collections if they exist, " +
-      'and true means it will add them if they do not exist'
+      'and true means it will add them if they do not exist',
+    ensureDefaults
   );
 
   trace('Checking if database exists');
@@ -185,15 +175,7 @@ async function run() {
         //----------------------------------------------------------------------
         // Finally, import default data if they want some:
       )
-      .then(() =>
-        Object.entries<{
-          name: string;
-          indexes: (string | { name: string; unique?: boolean })[];
-          defaults?: string;
-          edgeCollection?: boolean;
-          ensureDefaults?: boolean;
-        }>(config.get('arangodb:collections'))
-      )
+      .then(() => Object.entries(config.get('arangodb.collections')))
       .map(async ([colname, colinfo]) => {
         trace('Setting up collection %s: %O', colname, colinfo);
         if (typeof colinfo.defaults !== 'string') {
@@ -309,14 +291,13 @@ async function cleanup() {
   // arango only lets you drop databases from _system
   db.database('_system');
   trace(
-    'Cleaning up by dropping test database ' + config.get('arangodb:database')
+    'Cleaning up by dropping test database %s',
+    config.get('arangodb.database')
   );
   return db
-    .dropDatabase(config.get('arangodb:database'))
+    .dropDatabase(config.get('arangodb.database'))
     .then(() =>
-      trace(
-        'Database ' + config.get('arangodb:database') + ' dropped successfully'
-      )
+      trace('Database %s dropped successfully', config.get('arangodb.database'))
     );
 }
 

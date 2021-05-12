@@ -22,7 +22,7 @@ var path = require('path');
 var db = require(path.join(
   __dirname,
   '/../../db',
-  config.get('auth:datastoresDriver'),
+  config.get('auth.datastoresDriver'),
   'tokens.js'
 ));
 

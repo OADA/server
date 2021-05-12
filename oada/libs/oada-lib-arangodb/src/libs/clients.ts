@@ -55,11 +55,13 @@ export interface Client {
   trusted?: boolean;
 }
 
+const clients = db.collection(config.get('arangodb.collections.clients.name'));
+
 export async function findById(id: string): Promise<Client | null> {
   const client: Client | null = await (
     await db.query(
       aql`
-      FOR c IN ${db.collection(config.get('arangodb:collections:clients:name'))}
+      FOR c IN ${clients}
       FILTER c.clientId == ${id}
       RETURN c`
     )
@@ -75,9 +77,7 @@ export async function findById(id: string): Promise<Client | null> {
 export async function save(client: Client): Promise<Client['clientId']> {
   const {
     new: { clientId },
-  } = await db
-    .collection(config.get('arangodb:collections:clients:name'))
-    .save(client);
+  } = await clients.save(client);
 
   return clientId;
 }

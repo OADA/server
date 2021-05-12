@@ -17,8 +17,8 @@ const { changes } = require('@oada/lib-arangodb');
 const { putBodies } = require('@oada/lib-arangodb');
 const { OADAError } = require('oada-error');
 
-const config = require('./config');
-const CACHE_PATH = config.get('storage:binary:cacache');
+const { default: config } = require('./config');
+const CACHE_PATH = config.get('storage.binary.cacache');
 
 const { default: requester } = require('./requester');
 
@@ -72,7 +72,7 @@ router.delete('/*', function checkScope(req, res, next) {
         contentType: req.get('content-type'),
         requestType: 'delete',
       },
-      config.get('kafka:topics:permissionsRequest')
+      config.get('kafka.topics.permissionsRequest')
     )
   )
     .then(function handlePermissionsRequest(response) {
@@ -113,7 +113,7 @@ router.put('/*', function checkScope(req, res, next) {
         contentType: req.get('content-type'),
         requestType: 'put',
       },
-      config.get('kafka:topics:permissionsRequest')
+      config.get('kafka.topics.permissionsRequest')
     )
   )
     .then(function handlePermissionsRequest(response) {
@@ -153,7 +153,7 @@ router.get('/*', function checkScope(req, res, next) {
         scope: req.user.scope,
         requestType: 'get',
       },
-      config.get('kafka:topics:permissionsRequest')
+      config.get('kafka.topics.permissionsRequest')
     )
   )
     .then(function handlePermissionsRequest(response) {
@@ -441,7 +441,7 @@ router.put('/*', async function putResource(req, res, next) {
           'if-none-match': ifnonematch?.split(',').map(parseETag),
           ignoreLinks,
         },
-        config.get('kafka:topics:writeRequest')
+        config.get('kafka.topics.writeRequest')
       );
     })
     .tap(function checkWrite(resp) {
@@ -538,7 +538,7 @@ router.delete('/*', function deleteResource(req, res, next) {
         //'bodyid': bodyid, // No body means delete?
         //body: req.body
       },
-      config.get('kafka:topics:writeRequest')
+      config.get('kafka.topics.writeRequest')
     )
   )
     .tap(function checkDelete(resp) {

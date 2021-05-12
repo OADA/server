@@ -1,9 +1,10 @@
 {
   "name": "@oada/lib-config",
   "version": "0.0.1",
-  "description": "Handy nconf wrapper ",
-  "main": "index.js",
+  "description": "Confing wrapper",
+  "main": "dist/index.js",
   "scripts": {
+    "build": "yarn g:tsc",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -14,15 +15,26 @@
     "oada",
     "lib",
     "config",
-    "nconf"
+    "convict"
   ],
-  "author": "Aaron Ault",
+  "author": "Alex Layton <alex@layton.in> (https://github.com/awlayton)",
   "license": "Apache-2.0",
   "bugs": {
     "url": "https://github.com/oada/@oada/lib-config/issues"
   },
   "homepage": "https://github.com/oada/@oada/lib-config#readme",
   "dependencies": {
-    "nconf": "^0.11.2"
+    "convict": "^6.1.0",
+    "convict-format-with-moment": "^6.0.1",
+    "convict-format-with-validator": "^6.0.1",
+    "dotenv": "^9.0.1",
+    "json5": "^2.2.0",
+    "tslib": "^2.2.0",
+    "yaml": "^1.10.2"
+  },
+  "devDependencies": {
+    "@types/convict": "^6",
+    "@types/convict-format-with-validator": "^6",
+    "@types/yaml": "^1"
   }
 }

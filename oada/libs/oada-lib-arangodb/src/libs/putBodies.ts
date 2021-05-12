@@ -18,7 +18,7 @@ import { db } from '../db';
 import config from '../config';
 
 const collection = db.collection(
-  config.get('arangodb:collections:putBodies:name')
+  config.get('arangodb.collections.putBodies.name')
 );
 
 /**

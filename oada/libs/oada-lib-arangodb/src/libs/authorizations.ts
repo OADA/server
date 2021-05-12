@@ -18,14 +18,14 @@ import debug from 'debug';
 
 import { db } from '../db';
 import * as util from '../util';
-import * as users from './users.js';
+import * as users from './users';
 
 import config from '../config';
 
 const trace = debug('@oada/lib-arangodb#authorizations:trace');
 
 const authorizations = db.collection(
-  config.get('arangodb:collections:authorizations:name')
+  config.get('arangodb.collections.authorizations.name')
 );
 
 export interface Authorization {

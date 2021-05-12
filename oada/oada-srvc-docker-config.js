@@ -17,14 +17,7 @@
 
 const domain = process.env.DOMAIN || 'localhost';
 
-/* eslint indent: "off" */
 module.exports = {
-  // By default, this checks for NODE_ENV===production
-  // to determine if is production.
-  // set to true to use the production database name
-  // and prevent init.cleanup() from being called.
-  isProduction: process.env.NODE_ENV === 'production',
-
   domainsDir: '/oada/services/auth/domains', // served by auth for login pages, software statements, keys, etc.
 
   server: {
@@ -40,7 +33,7 @@ module.exports = {
   },
 
   arangodb: {
-    connectionString: process.env.ARANGODB_URL || 'http://arangodb:8529',
+    connectionString: 'http://arangodb:8529',
     database: 'oada',
     // Important: ensureDefaults has the potential to delete particular documents from the database
     // if it is set to false.  This ensures dummy users/tokens don't end up in production.
@@ -120,7 +113,7 @@ module.exports = {
     },
   },
   kafka: {
-    broker: process.env.KAFKA_BROKERS || 'kafka:9092',
+    broker: 'kafka:9092',
     topics: {
       tokenRequest: 'token_request',
       graphRequest: 'graph_request',

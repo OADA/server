@@ -154,8 +154,7 @@ module.exports = {
         {
           // !!! Note the variable section depth.
           sectionid: 'AF 2',
-          name:
-            'Record Keeping And Internal Self-Assessment/Internal Inspection',
+          name: 'Record Keeping And Internal Self-Assessment/Internal Inspection',
           control_pointids: ['AF 2.1', 'AF 2.2', 'AF 2.3'],
         },
         {
@@ -239,8 +238,7 @@ module.exports = {
           sections: [
             {
               sectionid: 'AF 7.1',
-              name:
-                'Impact of Farming on the Environment and Biodiversity (Cross-reference with AB.9 Aquaculture Module)',
+              name: 'Impact of Farming on the Environment and Biodiversity (Cross-reference with AB.9 Aquaculture Module)',
               control_pointids: ['AF 7.1.1', 'AF 7.1.2'],
             },
             {
@@ -330,8 +328,7 @@ module.exports = {
                 },
                 {
                   sectionid: 'CB 2.3',
-                  name:
-                    'Genetically Modified Organisms (N/A if no genetically modified varieties are used)',
+                  name: 'Genetically Modified Organisms (N/A if no genetically modified varieties are used)',
                   control_pointids: [
                     'CB 2.3.1',
                     'CB 2.3.2',
@@ -465,8 +462,7 @@ module.exports = {
                 },
                 {
                   sectionid: 'CB 7.2',
-                  name:
-                    'Advice on Quantity and Type of Plant Protection Products',
+                  name: 'Advice on Quantity and Type of Plant Protection Products',
                   control_pointids: ['CB 7.2.1'],
                 },
                 {
@@ -486,8 +482,7 @@ module.exports = {
                 },
                 {
                   sectionid: 'CB 7.4',
-                  name:
-                    'Pre-Harvest Interval (Not Applicable for Flowers and Ornamentals)',
+                  name: 'Pre-Harvest Interval (Not Applicable for Flowers and Ornamentals)',
                   control_pointids: ['CB 7.4.1'],
                 },
                 {
@@ -497,8 +492,7 @@ module.exports = {
                 },
                 {
                   sectionid: 'CB 7.6',
-                  name:
-                    'Plant Protection Product Residue Analysis (N/A for Flowers and Ornamental Production)',
+                  name: 'Plant Protection Product Residue Analysis (N/A for Flowers and Ornamental Production)',
                   control_pointids: [
                     'CB 7.6.1',
                     'CB 7.6.2',
@@ -532,8 +526,7 @@ module.exports = {
                 },
                 {
                   sectionid: 'CB 7.8',
-                  name:
-                    'Plant Protection Product Handling (N/A if no Plant Protection Product Handling)',
+                  name: 'Plant Protection Product Handling (N/A if no Plant Protection Product Handling)',
                   control_pointids: [
                     'CB 7.8.1',
                     'CB 7.8.2',
@@ -560,8 +553,7 @@ module.exports = {
                 },
                 {
                   sectionid: 'CB 7.11',
-                  name:
-                    'Application of Substances other than Fertilizer and Plant Protection Products',
+                  name: 'Application of Substances other than Fertilizer and Plant Protection Products',
                   control_pointids: ['CB 7.11.1'],
                 },
               ],
@@ -606,13 +598,11 @@ module.exports = {
             },
             {
               sectionid: 'FV 4',
-              name:
-                'Pre-Harvest (Refer to Annex FV 1 GLOBALG.A.P. Guideline - Microbiological Hazards)',
+              name: 'Pre-Harvest (Refer to Annex FV 1 GLOBALG.A.P. Guideline - Microbiological Hazards)',
               sections: [
                 {
                   sectionid: 'FV 4.1',
-                  name:
-                    'Quality of Water Used on Pre-Harvest Activities (in crops that are continuously harvested)',
+                  name: 'Quality of Water Used on Pre-Harvest Activities (in crops that are continuously harvested)',
                   control_pointids: [
                     'FV 4.1.1',
                     'FV 4.1.2',
@@ -638,8 +628,7 @@ module.exports = {
               sections: [
                 {
                   sectionid: 'FV 5.1',
-                  name:
-                    'Principles of Hygiene (Refer to Annex FV 1 GLOBALG.A.P. Guideline - Microbiological Hazards)',
+                  name: 'Principles of Hygiene (Refer to Annex FV 1 GLOBALG.A.P. Guideline - Microbiological Hazards)',
                   control_pointids: [
                     'FV 5.1.1',
                     'FV 5.1.2',
@@ -668,8 +657,7 @@ module.exports = {
                 },
                 {
                   sectionid: 'FV 5.4',
-                  name:
-                    'Packing and Storage Areas (N/A when there is no product packing and/or storing)',
+                  name: 'Packing and Storage Areas (N/A when there is no product packing and/or storing)',
                   control_pointids: [
                     'FV 5.4.1',
                     'FV 5.4.2',
@@ -695,14 +683,12 @@ module.exports = {
                 },
                 {
                   sectionid: 'FV 5.7',
-                  name:
-                    'Post-Harvest Washing (N/A when no post-harvest washing)',
+                  name: 'Post-Harvest Washing (N/A when no post-harvest washing)',
                   control_pointids: ['FV 5.7.1', 'FV 5.7.2', 'FV 5.7.3'],
                 },
                 {
                   sectionid: 'FV 5.8',
-                  name:
-                    'Post-Harvest Treatments (N/A when no post-harvest treatments)',
+                  name: 'Post-Harvest Treatments (N/A when no post-harvest treatments)',
                   control_pointids: [
                     'FV 5.8.1',
                     'FV 5.8.2',

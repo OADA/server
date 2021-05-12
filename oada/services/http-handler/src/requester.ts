@@ -19,6 +19,6 @@ import config from './config';
 
 // TODO: Is it better to have one requester per topic?
 export default new Requester({
-  consumeTopic: config.get('kafka:topics:httpResponse'),
+  consumeTopic: config.get('kafka.topics.httpResponse'),
   group: 'http-handlers',
 });

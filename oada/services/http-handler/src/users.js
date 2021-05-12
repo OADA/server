@@ -6,7 +6,7 @@ const ksuid = require('ksuid');
 const cloneDeep = require('clone-deep');
 const { OADAError } = require('oada-error');
 
-const config = require('./config');
+const { default: config } = require('./config');
 
 const requester = require('./requester');
 
@@ -47,7 +47,7 @@ function requestUserWrite(req, id) {
         user: req.body,
         userid: id, // need for PUT, ignored for POST
       },
-      config.get('kafka:topics:userRequest')
+      config.get('kafka.topics.userRequest')
     )
     .tap(function chkSuccess(resp) {
       switch (resp.code) {

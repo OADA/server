@@ -11,7 +11,7 @@ const debug = require('debug')('init');
 const Bluebird = require('bluebird');
 const config = require('./config');
 
-const init_path = config.get('auth:init');
+const init_path = config.get('auth.init');
 if (typeof init_path !== 'string' || init_path.length < 1) return;
 
 const init = require(init_path);

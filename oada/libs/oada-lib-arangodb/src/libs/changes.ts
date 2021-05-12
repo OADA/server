@@ -25,9 +25,9 @@ import config from '../config';
 
 const trace = debug('arangodb#resources:trace');
 
-const changes = db.collection(config.get('arangodb:collections:changes:name'));
+const changes = db.collection(config.get('arangodb.collections.changes.name'));
 const changeEdges = db.collection(
-  config.get('arangodb:collections:changeEdges:name')
+  config.get('arangodb.collections.changeEdges.name')
 );
 
 const MAX_DEPTH = 100;
@@ -238,9 +238,9 @@ export async function putChange({
   rev: number | string;
   type: Change[0]['type'];
   children: string[];
-  path: Change[0]['path'];
-  userId: string;
-  authorizationId: string;
+  path?: Change[0]['path'];
+  userId?: string;
+  authorizationId?: string;
 }): Promise<string> {
   if (!Array.isArray(children)) {
     throw new Error('children must be an array.');

@@ -16,11 +16,11 @@
 import debug from 'debug';
 import PQueue from 'p-queue';
 
-import { ReResponder, Requester } from '@oada/lib-kafka';
+import { ReResponder, Requester, KafkaBase } from '@oada/lib-kafka';
 import * as oadaLib from '@oada/lib-arangodb';
 
 // Import message format from write-handler
-import type { WriteResponse } from '@oada/write-handler';
+import type { WriteResponse, WriteRequest } from '@oada/write-handler';
 
 import config from './config';
 
@@ -37,13 +37,13 @@ const requests = new Map(); // This map is used as a queue of pending write requ
 //---------------------------------------------------------
 // Kafka intializations:
 const responder = new ReResponder({
-  consumeTopic: config.get('kafka:topics:httpResponse'),
-  produceTopic: config.get('kafka:topics:writeRequest'),
+  consumeTopic: config.get('kafka.topics.httpResponse'),
+  produceTopic: config.get('kafka.topics.writeRequest'),
   group: 'rev-graph-update',
 });
 
 const requester = new Requester({
-  consumeTopic: config.get('kafka:topics:httpResponse'),
+  consumeTopic: config.get('kafka.topics.httpResponse'),
   group: 'rev-graph-update-batch',
 });
 
@@ -51,12 +51,16 @@ export function stopResp() {
   return responder.disconnect();
 }
 
-responder.on('request', async function handleReq(req: WriteResponse) {
-  if (!req || req.msgtype !== 'write-response') {
+/**
+ * check for successful write request
+ */
+function checkReq(req: KafkaBase): req is WriteResponse {
+  return req?.msgtype === 'write-response' && req?.code === 'success';
+}
+
+responder.on<WriteRequest>('request', async function handleReq(req) {
+  if (!checkReq(req)) {
     return []; // not a write-response message, ignore it
-  }
-  if (req.code !== 'success') {
-    return [];
   }
   if (!req['resource_id'] || !Number.isInteger(req['_rev'])) {
     throw new Error(
@@ -164,7 +168,7 @@ responder.on('request', async function handleReq(req: WriteResponse) {
           requests.delete(uniqueKey);
           return requester.send(
             msgPending,
-            config.get('kafka:topics:writeRequest')
+            config.get('kafka.topics.writeRequest')
           );
         });
       }

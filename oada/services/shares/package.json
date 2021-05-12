@@ -2,13 +2,20 @@
   "name": "@oada/shares",
   "version": "1.0.0",
   "description": "",
-  "main": "server.js",
-  "scripts": {
-    "start": "node -r @oada/pino-debug server.js",
-    "test": "DEBUG=* mocha test/index.js"
-  },
   "author": "",
-  "license": "ISC",
+  "license": "Apache-2.0",
+  "main": "dist/server.js",
+  "scripts": {
+    "build": "yarn g:tsc",
+    "start": "node -r @oada/pino-debug --enable-source-maps dist/server.js",
+    "test": "mocha"
+  },
+  "mocha": {
+    "require": "ts-node/register",
+    "extension": [
+      "ts"
+    ]
+  },
   "dependencies": {
     "@oada/lib-arangodb": "^0.0.2",
     "@oada/lib-config": "^0.0.1",
@@ -16,6 +23,14 @@
     "@oada/pino-debug": "^1.0.0",
     "bluebird": "^3.7.2",
     "debug": "^4.3.2",
-    "randomstring": "^1.1.5"
+    "randomstring": "^1.1.5",
+    "tslib": "^2.2.0"
+  },
+  "devDependencies": {
+    "@oada/write-handler": "workspace:services/write-handler",
+    "@types/bluebird": "^3.5.34",
+    "@types/debug": "^4.1.5",
+    "@types/mocha": "^8.2.2",
+    "mocha": "^8.4.0"
   }
 }

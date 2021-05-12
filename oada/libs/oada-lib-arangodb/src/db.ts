@@ -19,18 +19,18 @@ import { Database } from 'arangojs';
 import config from './config';
 
 const db = new Database({
-  url: config.get('arangodb:connectionString'),
+  url: config.get('arangodb.connectionString'),
 });
 
 if (config.get('isTest')) {
-  config.set('arangodb:database', 'oada-test');
+  config.set('arangodb.database', 'oada-test');
 }
 
-db.database(config.get('arangodb:database'));
+db.database(config.get('arangodb.database'));
 
 // Automatically retry queries on deadlock?
-const deadlockRetries = config.get('arangodb:retry:deadlock:retries');
-const deadlockDelay = config.get('arangodb:retry:deadlock:delay');
+const deadlockRetries = config.get('arangodb.retry.deadlock.retries');
+const deadlockDelay = config.get('arangodb.retry.deadlock.delay');
 const DeadlockError = {
   name: 'ArangoError',
   errorNum: 29,

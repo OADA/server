@@ -32,12 +32,12 @@ const CONNECT = Symbol('kafka-lib-connect');
 const DATA = Symbol('kafa-lib-data');
 
 function topicTimeout(topic: string) {
-  let timeout = config.get('kafka:timeouts:default');
+  let timeout = config.get('kafka.timeouts.default');
 
-  const topics = config.get('kafka:topics');
+  const topics = config.get('kafka.topics');
   Object.keys(topics).forEach((topick) => {
     if (topics[topick] === topic) {
-      timeout = config.get('kafka:timeouts:' + topick) || timeout;
+      timeout = config.get('kafka.timeouts')[topick] || timeout;
     }
   });
 
@@ -70,7 +70,7 @@ export interface ConstructorOpts {
  */
 export interface KafkaBase {
   connection_id?: string;
-  msgtype: string;
+  msgtype?: string;
   code?: string;
   /**
    * @todo implement multiple paritions
@@ -102,7 +102,7 @@ export class Base extends EventEmitter {
     this.group = group;
 
     this.kafka = new Kafka({
-      brokers: config.get('kafka:broker').split(','),
+      brokers: config.get('kafka.broker'),
     });
 
     this.consumer =

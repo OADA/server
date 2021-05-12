@@ -41,7 +41,7 @@ function makeHash(length) {
 function createIdToken(iss, aud, user, nonce, userinfoScope) {
   userinfoScope = userinfoScope || [];
 
-  var idToken = config.get('auth:idToken');
+  var idToken = config.get('auth.idToken');
   debug(
     'createIdToken: creating token, kid = %s, keys.sign = %O',
     idToken.signKid,
@@ -80,7 +80,7 @@ function createIdToken(iss, aud, user, nonce, userinfoScope) {
 }
 
 function createToken(scope, user, clientId, done) {
-  var token = config.get('auth:token');
+  var token = config.get('auth.token');
   var tok = {
     token: makeHash(token.length),
     expiresIn: token.expiresIn,
@@ -171,7 +171,7 @@ function issueIdToken(client, user, ares, done) {
 }
 
 function issueCode(client, redirectUri, user, ares, done) {
-  var code = config.get('auth:code');
+  var code = config.get('auth.code');
   var c = {
     code: makeHash(code.length),
     expiresIn: code.expiresIn,

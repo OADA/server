@@ -13,7 +13,7 @@ const { OADAError } = oadaError;
 
 const { pino } = require('@oada/pino-debug');
 
-const config = require('./config');
+const { default: config } = require('./config');
 
 /////////////////////////////////////////////////////////////////
 // Setup express:
@@ -42,9 +42,9 @@ app.get('/favicon.ico', (req, res) => res.end());
 function start() {
   return Bluebird.fromCallback(function (done) {
     logger.info('Starting server...');
-    server.listen(config.get('server:port'), done);
+    server.listen(config.get('server.port'), done);
   }).tap(() => {
-    logger.info('OADA Server started on port %d', config.get('server:port'));
+    logger.info('OADA Server started on port %d', config.get('server.port'));
   });
 }
 // Allow route handlers to return promises:

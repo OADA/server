@@ -13,8 +13,176 @@
  * limitations under the License.
  */
 
-// TODO: Publish this to npm instead?
-import libConfig from '@oada/lib-config';
-import config from './config.defaults';
+import { CreateCollectionOptions } from 'arangojs/collection';
 
-export default libConfig(config);
+import libConfig from '@oada/lib-config';
+
+interface Collection {
+  name: string;
+  createOptions?: CreateCollectionOptions;
+  indexes: (
+    | string
+    | { name: string | string[]; unique?: boolean; sparse?: boolean }
+  )[];
+  defaults?: string;
+  edgeCollection?: boolean;
+  ensureDefaults?: boolean;
+}
+
+/**
+ * @todo actually validate format?
+ */
+export function collection(_val: unknown): asserts _val is Collection {
+  return;
+}
+
+const config = libConfig({
+  arangodb: {
+    ensureDefaults: {
+      doc: 'Ensure the default (i.e., debug) documents are loaded',
+      format: Boolean,
+      nullable: true,
+      default: null,
+      // TODO: Rename?
+      // This name for historical reasons
+      env: 'arangodb__ensureDefaults',
+    },
+    connectionString: {
+      doc: 'URI for connecting to arangodb',
+      format: 'url',
+      default: 'http://arangodb:8529',
+      env: 'ARANGODB_URL',
+    },
+    database: {
+      doc: 'database in arangodb to use',
+      format: String,
+      default: 'oada',
+      env: 'ARANGODB_DATABASE',
+    },
+    collections: {
+      users: {
+        format: Object, //collection,,
+        default: {
+          name: 'users',
+          indexes: ['username'],
+          defaults: './libs/exampledocs/users',
+        },
+      },
+      clients: {
+        format: Object, //collection,,
+        default: {
+          name: 'clients',
+          indexes: ['clientId'],
+          defaults: './libs/exampledocs/clients',
+        },
+      },
+      authorizations: {
+        format: Object, //collection,,
+        default: {
+          name: 'authorizations',
+          indexes: ['token', { name: 'user', unique: false }],
+          defaults: './libs/exampledocs/authorizations',
+        },
+      },
+      codes: {
+        format: Object, //collection,,
+        default: {
+          name: 'codes',
+          indexes: ['code'],
+          defaults: './libs/exampledocs/codes',
+        },
+      },
+      resources: {
+        format: Object, //collection,,
+        default: {
+          name: 'resources',
+          indexes: [],
+          defaults: './libs/exampledocs/resources',
+        },
+      },
+      graphNodes: {
+        format: Object, //collection,,
+        default: {
+          name: 'graphNodes',
+          indexes: [],
+          defaults: './libs/exampledocs/graphNodes',
+        },
+      },
+      changes: {
+        format: Object, //collection,,
+        default: {
+          name: 'changes',
+          indexes: [],
+          defaults: './libs/exampledocs/changes',
+        },
+      },
+      changeEdges: {
+        format: Object, //collection,,
+        default: {
+          name: 'changeEdges',
+          indexes: [{ name: 'name', unique: false }],
+          defaults: './libs/exampledocs/changeEdges',
+          edgeCollection: true,
+        },
+      },
+      edges: {
+        format: Object, //collection,,
+        default: {
+          name: 'edges',
+          indexes: [{ name: 'name', unique: false }],
+          defaults: './libs/exampledocs/edges',
+          edgeCollection: true,
+        },
+      },
+      putBodies: {
+        format: Object, //collection,,
+        default: {
+          name: 'putBodies',
+          indexes: [],
+          defaults: './libs/exampledocs/putBodies',
+          createOptions: { isVolatile: false },
+        },
+      },
+      remoteResources: {
+        format: Object, //collection,,
+        default: {
+          name: 'remoteResources',
+          indexes: [{ name: ['domain', 'resource_id'], unique: true }],
+        },
+      },
+      sessions: {
+        format: Object, //collection,,
+        default: {
+          name: 'sessions',
+          indexes: [],
+          createOptions: { isVolatile: false },
+        },
+      },
+      // Gross hack because convict types don't undertand assert
+    } as Record<string, { default: Collection }>,
+    retry: {
+      deadlock: {
+        retries: {
+          format: 'int',
+          default: 10,
+        },
+        delay: {
+          format: 'int',
+          default: 50,
+        },
+      },
+    },
+    init: {
+      // NOTE: passwordSalt HAS to match the one in auth
+      passwordSalt: {
+        format: String,
+        default: '$2a$10$l64QftVz6.7KR5BXNc29IO',
+      },
+      defaultData: {
+        default: {} as Record<string, string>,
+      },
+    },
+  },
+});
+
+export default config;

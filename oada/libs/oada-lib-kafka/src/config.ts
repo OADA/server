@@ -15,6 +15,47 @@
 
 // TODO: Publish this to npm instead?
 import libConfig from '@oada/lib-config';
-import config from './config.defaults';
 
-export default libConfig(config);
+const config = libConfig({
+  kafka: {
+    healthInterval: {
+      format: 'duration',
+      default: 5 * 60 * 1000, // ms
+    },
+    producer: {
+      pollInterval: {
+        format: 'duration',
+        default: 500, // ms
+      },
+    },
+    broker: {
+      doc: 'Kafka broker(s) to use',
+      format: Array,
+      default: ['kafka:9092'],
+      env: 'KAFKA_BROKERS',
+      arg: 'brokers',
+    },
+    timeouts: {
+      doc: 'Mapping of topic to timeouts (ms)',
+      default: {
+        default: 5000,
+        writeRequest: 45000,
+        websocketsRequest: Infinity,
+      } as Record<string, number>,
+    },
+    topics: {
+      doc: 'Kafka topic names to use',
+      default: {
+        tokenRequest: 'token_request',
+        graphRequest: 'graph_request',
+        writeRequest: 'write_request',
+        websocketsRequest: 'websockets_request',
+        permissionsRequest: 'permissions_request',
+        permissionsResponse: 'permissions_response',
+        httpResponse: 'http_response',
+      } as Record<string, string>,
+    },
+  },
+});
+
+export default config;

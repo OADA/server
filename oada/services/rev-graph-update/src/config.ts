@@ -15,6 +15,16 @@
 
 // TODO: Publish this to npm instead?
 import libConfig from '@oada/lib-config';
-import config from './config.defaults';
 
-export default libConfig(config);
+const config = libConfig({
+  kafka: {
+    topics: {
+      default: {
+        writeRequest: 'write_request',
+        httpResponse: 'http_response',
+      },
+    },
+  },
+});
+
+export default config;

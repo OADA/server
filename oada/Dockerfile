@@ -86,7 +86,7 @@ COPY ./oada-srvc-docker-config.js /oada-srvc-docker-config.js
 # Launch entrypoint with tini
 ENTRYPOINT ["/sbin/tini", "--", "/entrypoint.sh"]
 # Run start script of package
-CMD ["start", "--config=/oada-srvc-docker-config.js"]
+CMD ["start"]
 
 # Copy in the code
 COPY --from=code /oada/ /oada/

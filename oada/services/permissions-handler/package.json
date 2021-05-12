@@ -1,23 +1,35 @@
 {
   "name": "@oada/permissions-handler",
-  "version": "1.0.0",
   "description": "",
-  "main": "server.js",
-  "scripts": {
-    "start": "node -r @oada/pino-debug server.js",
-    "test": "DEBUG=* mocha test/permissions-handler.js"
-  },
+  "version": "1.0.0",
   "author": "",
-  "license": "ISC",
+  "license": "Apache-2.0",
+  "main": "dist/server.js",
+  "scripts": {
+    "build": "yarn g:tsc",
+    "start": "node -r @oada/pino-debug --enable-source-maps server.js",
+    "test": "mocha"
+  },
+  "mocha": {
+    "require": "ts-node/register",
+    "extension": [
+      "ts"
+    ]
+  },
   "dependencies": {
     "@oada/lib-config": "^0.0.1",
     "@oada/lib-kafka": "^1.0.0",
     "@oada/pino-debug": "^1.0.0",
     "debug": "^4.3.2",
-    "randomstring": "^1.1.5",
+    "tslib": "^2.2.0",
     "type-is": "^1.6.18"
   },
   "devDependencies": {
-    "@oada/lib-arangodb": "^0.0.2"
+    "@types/debug": "^4.1.5",
+    "@types/mocha": "^8.2.2",
+    "@types/type-is": "^1.6.3",
+    "mocha": "^8.4.0",
+    "ts-node": "^9.1.1",
+    "typescript": "^4.2.4"
   }
 }

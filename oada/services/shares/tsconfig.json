@@ -1,0 +1,14 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "rootDir": "src",
+    "outDir": "dist"
+  },
+  "include": ["src"],
+  "references": [
+    { "path": "../../libs/oada-pino-debug" },
+    { "path": "../../libs/oada-lib-kafka" },
+    { "path": "../../libs/oada-lib-arangodb" },
+    { "path": "../write-handler" }
+  ]
+}

@@ -2,12 +2,6 @@
   "name": "@oada/write-handler",
   "version": "1.0.0",
   "description": "",
-  "main": "dist/index.js",
-  "scripts": {
-    "test": "DEBUG=\"${DEBUG},*write-handler#test*\" NODE_TLS_REJECT_UNAUTHORIZED=0 mocha",
-    "build": "yarn g:tsc",
-    "start": "node --enable-source-maps --expose-gc -r @oada/pino-debug dist/index.js"
-  },
   "repository": {
     "type": "git",
     "url": "git+ssh://git@github.com/OADA/oada-srvc-write-handler.git"
@@ -18,6 +12,18 @@
     "url": "https://github.com/OADA/oada-srvc-write-handler/issues"
   },
   "homepage": "https://github.com/OADA/oada-srvc-write-handler#readme",
+  "main": "dist/index.js",
+  "scripts": {
+    "test": "mocha",
+    "build": "yarn g:tsc",
+    "start": "node --enable-source-maps --expose-gc -r @oada/pino-debug dist/index.js"
+  },
+  "mocha": {
+    "require": "ts-node/register",
+    "extension": [
+      "ts"
+    ]
+  },
   "dependencies": {
     "@oada/lib-arangodb": "^0.0.2",
     "@oada/lib-config": "^0.0.1",
@@ -31,11 +37,16 @@
     "tslib": "^2.2.0"
   },
   "devDependencies": {
+    "@oada/client": "^2.4.1",
     "@oada/types": "^1.5.1",
     "@types/bluebird": "^3.5.33",
+    "@types/chai": "^4.2.17",
     "@types/debug": "^4.1.5",
     "@types/json-pointer": "^1.0.30",
+    "@types/lodash": "^4",
     "@types/node": "^14.14.42",
-    "@types/object-assign-deep": "^0.4.0"
+    "@types/object-assign-deep": "^0.4.0",
+    "chai": "^4.3.4",
+    "lodash": "^4.17.21"
   }
 }

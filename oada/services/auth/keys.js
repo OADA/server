@@ -34,11 +34,11 @@ var keys = {
 };
 
 // Load in all PEM files
-var files = fs.readdirSync(config.get('auth:keys:signPems'));
+var files = fs.readdirSync(config.get('auth.keys.signPems'));
 for (var i = 0; i < files.length; i++) {
   if (path.extname(files[i]).toLowerCase() === '.pem') {
     var pem = fs.readFileSync(
-      path.join(config.get('auth:keys:signPems'), files[i])
+      path.join(config.get('auth.keys.signPems'), files[i])
     );
 
     var kid = path.basename(files[i], '.pem');

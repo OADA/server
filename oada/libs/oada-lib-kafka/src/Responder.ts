@@ -31,12 +31,9 @@ import {
 
 const trace = debug('@oada/lib-kafka:trace');
 const warn = debug('@oada/lib-kafka:warn');
+const error = debug('@oada/lib-kafka:error');
 
-export type Response =
-  | KafkaBase
-  | Iterable<KafkaBase>
-  | AsyncIterable<KafkaBase>
-  | undefined;
+export type Response<R = KafkaBase> = R | Iterable<R> | AsyncIterable<R> | void;
 
 function isIterable<T>(
   val: T | Iterable<T> | AsyncIterable<T>
@@ -76,7 +73,13 @@ export class Responder extends Base {
     this[CONNECT]();
   }
 
-  on(event: 'request', listener: (reg: KafkaBase) => Response): this;
+  /**
+   * @todo Maybe rearrange type parameters? Maybe make them class params?
+   */
+  on<Res, Req = KafkaBase>(
+    event: 'request',
+    listener: (reg: Req & KafkaBase) => Response<Res> | Promise<Response<Res>>
+  ): this;
   on(event: string | symbol, listener: (...args: any[]) => unknown): this;
   on(event: string | symbol, listener: (...args: any[]) => unknown): this {
     if (event === 'request') {
@@ -113,8 +116,14 @@ export class Responder extends Base {
         if (listener.length === 3) {
           listener(req, data, respond);
         } else {
-          const resp = (await listener(req, data)) as Response;
-          await respond(resp);
+          try {
+            const resp = (await listener(req, data)) as Response;
+            await respond(resp);
+          } catch (err) {
+            // Catch and communciate errors over kafka?
+            error(err);
+            await respond({ code: err?.code ?? err.toString() ?? 'error' });
+          }
           delete this.requests[id];
         }
 

@@ -23,10 +23,11 @@ import * as util from '../util';
 import { db } from '../db';
 
 import config from '../config';
+import { CollectionReadOptions } from 'arangojs/collection';
 
 const info = debug('arangodb#resources:info');
 
-const users = db.collection(config.get('arangodb:collections:users:name'));
+const users = db.collection(config.get('arangodb.collections.users.name'));
 
 /**
  * @todo fix this?
@@ -66,8 +67,11 @@ export interface User {
   scope: readonly string[];
 }
 
-export function findById(id: string): Promise<User | null> {
-  return Bluebird.resolve(users.document(id))
+export function findById(
+  id: string,
+  options?: CollectionReadOptions
+): Promise<User | null> {
+  return Bluebird.resolve(users.document(id, options))
     .then(util.sanitizeResult)
     .catch({ code: 404 }, () => null);
 }
@@ -175,11 +179,11 @@ export async function update(u: User) {
 }
 
 export function like(u: Partial<User>) {
-  return util.bluebirdCursor(users.byExample(flatten(u)));
+  return util.bluebirdCursor<User>(users.byExample(flatten(u)));
 }
 
 export function hashPw(pw: string) {
-  return bcrypt.hashSync(pw, config.get('arangodb:init:passwordSalt'));
+  return bcrypt.hashSync(pw, config.get('arangodb.init.passwordSalt'));
 }
 
 // TODO: Better way to handler errors?

@@ -11,6 +11,8 @@ services:
     volumes:
       - ./oada/oada-srvc-docker-config.js:/oada-srvc-docker-config.js # for debug?
     environment:
+      # Default to loading packaged default config?
+      - CONFIG=${OADA_CONFIG-/oada-srvc-docker-config.js}
       - NODE_ENV=${NODE_ENV-development}
       - DEBUG=${DEBUG-*}
       - PINO_LEVEL

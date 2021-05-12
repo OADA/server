@@ -15,21 +15,22 @@
 
 import config from '../src/config';
 import { Database } from 'arangojs';
-import { expect } from 'chai';
+import chai, { expect } from 'chai';
 import chaiAsPromised from 'chai-as-promised';
 import _ from 'lodash';
 import Bluebird from 'bluebird';
 
+// @ts-ignore
 config.set('isTest', true);
 
 import * as init from '../src/init';
 
-const dbname = config.get('arangodb:database');
+const dbname = config.get('arangodb.database');
 
 chai.use(chaiAsPromised);
 
 const db = new Database({
-  url: config.get('arangodb:connectionString'),
+  url: config.get('arangodb.connectionString'),
 });
 //const cleanup = init.cleanup; // set this to an empty function if you don't want db to be deleted
 
@@ -78,7 +79,7 @@ describe('init', () => {
       .then(async () => {
         db.database(dbname);
         return db.listCollections().then((dbcols) => {
-          const cols = config.get('arangodb:collections');
+          const cols = config.get('arangodb.collections');
           _.each(cols, (c) => {
             // expect the returned list of db collections to contain each name
             const hasname = !!_.find(dbcols, (d) => d.name === c.name);
@@ -94,7 +95,7 @@ describe('init', () => {
       .run()
       .then(() => {
         db.database(dbname);
-        const colsarr = _.values(config.get('arangodb:collections'));
+        const colsarr = _.values(config.get('arangodb.collections'));
         return Bluebird.map(colsarr, async (c) => {
           // dbindexes looks like [ { fields: [ 'token' ], sparse: true, unique: true },... ]
           return db
@@ -120,22 +121,26 @@ describe('init', () => {
       .run()
       .then(() => {
         db.database(dbname);
-        const defaultdata = _.mapValues(
-          config.get('arangodb:init:defaultData'),
+        const defaultdata: Record<string, unknown[]> = _.mapValues(
+          config.get('arangodb.init.defaultData'),
           (p) => require('../' + p)
         );
-        return Bluebird.each(_.keys(defaultdata), (colname) => {
-          const data = defaultdata[colname];
-          return Bluebird.each(data, (doc) => {
-            if (colname === 'users') {
-              // @ts-ignore
-              delete doc.password; // don't bother to check hashed password
-            }
-            return expect(
-              _.keys(db.collection(colname).firstExample(doc))
-            ).to.eventually.include(_.keys(doc));
-          });
-        });
+        return Bluebird.each(
+          _.keys(defaultdata),
+          (colname: keyof typeof defaultdata) => {
+            const data = defaultdata[colname];
+            return Bluebird.each(data, (doc) => {
+              if (colname === 'users') {
+                // @ts-ignore
+                delete doc.password; // don't bother to check hashed password
+              }
+              return expect(
+                // @ts-ignore
+                _.keys(db.collection(colname).firstExample(doc))
+              ).to.eventually.include(_.keys(doc));
+            });
+          }
+        );
       })
       .finally(init.cleanup);
   });

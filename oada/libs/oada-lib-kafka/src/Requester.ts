@@ -57,7 +57,10 @@ export class Requester extends Base {
     super.on(DATA, (...args) => super.emit('response', ...args));
   }
 
-  async send(request: KafkaBase, topic: string = this.produceTopic!) {
+  async send(
+    request: KafkaBase & Record<string, unknown>,
+    topic: string = this.produceTopic!
+  ): Promise<KafkaBase> {
     const id = request[REQ_ID_KEY] || ksuid.randomSync().string;
     const timeout = this.timeouts[topic] ?? topicTimeout(topic);
     this.timeouts[topic] = timeout;
@@ -71,7 +74,7 @@ export class Requester extends Base {
     });
     try {
       await this.produce({ mesg: request, topic, part: null });
-      return await reqDone.timeout(timeout, topic + ' timeout');
+      return (await reqDone.timeout(timeout, topic + ' timeout')) as KafkaBase;
     } finally {
       delete this.requests[id];
     }

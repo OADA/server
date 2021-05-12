@@ -106,7 +106,13 @@ export class ResponderRequester extends Base {
     this[CONNECT]();
   }
 
-  on(event: 'request', listener: (reg: KafkaBase) => Response): this;
+  /**
+   * @todo Maybe rearrange type parameters? Maybe make them class params?
+   */
+  on<Res, Req = KafkaBase>(
+    event: 'request',
+    listener: (reg: Req & KafkaBase) => Response<Res> | Promise<Response<Res>>
+  ): this;
   on(event: string | symbol, listener: (...args: any[]) => unknown): this;
   on(event: string | symbol, listener: (...args: any[]) => unknown): this {
     switch (event) {

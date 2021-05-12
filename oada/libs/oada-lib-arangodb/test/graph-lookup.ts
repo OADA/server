@@ -15,6 +15,7 @@
 
 import config from '../src/config';
 
+// @ts-ignore
 config.set('isTest', true);
 
 import { expect } from 'chai';
@@ -24,6 +25,8 @@ import { lookupFromUrl } from '../src/libs/resources';
 // library under test:
 
 // Tests for the arangodb driver:
+
+const userid = 'user/default:sam_123';
 
 const rockUrl =
   '/resources/default:resources_bookmarks_123/rocks/rocks-index/90j2klfdjss';
@@ -56,18 +59,18 @@ describe('graph-lookup service', () => {
   //--------------------------------------------------
 
   it('should be able to return the resource id from a url', async () => {
-    return lookupFromUrl(rockUrl).then((result) => {
+    return lookupFromUrl(rockUrl, userid).then((result) => {
       expect(result.resource_id).to.equal(rockResourceId);
     });
   });
   it('should also return the leftover path for non-resource URLs', async () => {
-    return lookupFromUrl(rockPickedUrl).then((result) => {
+    return lookupFromUrl(rockPickedUrl, userid).then((result) => {
       expect(result.resource_id).to.equal(rockResourceId);
       expect(result.path_leftover).to.equal(rockPickedPathLeft);
     });
   });
   it('should also return the leftover path for non-resource URLs', async () => {
-    return lookupFromUrl(rocksIndexUrl).then((result) => {
+    return lookupFromUrl(rocksIndexUrl, userid).then((result) => {
       expect(result.resource_id).to.equal(rocksIndexResourceId);
       expect(result.path_leftover).to.equal(rocksIndexPathLeft);
     });

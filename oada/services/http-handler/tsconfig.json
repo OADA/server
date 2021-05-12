@@ -8,8 +8,10 @@
   "include": ["src"],
   "references": [
     { "path": "../../libs/oada-pino-debug" },
+    { "path": "../../libs/oada-lib-config" },
     { "path": "../../libs/oada-lib-kafka" },
     { "path": "../../libs/oada-lib-arangodb" },
+    { "path": "../permissions-handler" },
     { "path": "../write-handler" }
   ]
 }
