@@ -1,19 +1,20 @@
 # TODO: Don't push images if we find vulnerabilities?
 name: Check OADA Dockerfiles with Snyk
 
-on:
-  push:
-    branches:
-      - '**'
-    tags-ignore:
-      - '**'
-  pull_request:
-    branches:
-      - '**'
-    tags-ignore:
-      - '**'
-  schedule:
-    - cron: '25 20 * * 4'
+# Don't actually run this workflow for now? Maybe fix it one day...
+on: []
+#  push:
+#    branches:
+#      - '**'
+#    tags-ignore:
+#      - '**'
+#  pull_request:
+#    branches:
+#      - '**'
+#    tags-ignore:
+#      - '**'
+#  schedule:
+#    - cron: '25 20 * * 4'
 
 jobs:
   dockers:
