@@ -70,7 +70,7 @@ responder.on<void>('request', async function handleReq(req) {
   };
   if (meta?._syncs) {
     return Bluebird.map(Object.keys(meta._syncs), async (sync) => {
-      let url = meta._syncs![sync].url;
+      let url = meta._syncs![sync]!.url;
       if (process.env.NODE_ENV !== 'production') {
         /*
          * If running in dev environment,
@@ -78,7 +78,7 @@ responder.on<void>('request', async function handleReq(req) {
          */
         url = url.replace('localhost', 'proxy');
       }
-      if (meta._syncs![sync]['oada-put']) {
+      if (meta._syncs![sync]!['oada-put']) {
         const change = await changes.getChange(req.resource_id, req._rev);
         if (!change) {
           error('Failed to get change %d for %s', req._rev, req.resource_id);
@@ -102,7 +102,7 @@ responder.on<void>('request', async function handleReq(req) {
             typeof toDelete === 'object' &&
             Object.keys(toDelete).length > 0
           ) {
-            const key = Object.keys(toDelete)[0];
+            const key = Object.keys(toDelete)[0]!;
             deletePath.push(key);
             toDelete = toDelete[key];
           }
@@ -114,7 +114,7 @@ responder.on<void>('request', async function handleReq(req) {
           return await axios({
             method: 'delete',
             url: deleteUrl,
-            headers: meta._syncs![sync].headers,
+            headers: meta._syncs![sync]!.headers,
           });
         } else {
           //Handle merge _changes
@@ -124,7 +124,7 @@ responder.on<void>('request', async function handleReq(req) {
             method: 'put',
             url: url,
             data: body,
-            headers: meta._syncs![sync].headers,
+            headers: meta._syncs![sync]!.headers,
           });
         }
       }

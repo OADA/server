@@ -185,19 +185,19 @@ function toChangeObj(arangoPathObj: {
   // get path
   let path = '';
   for (let j = 0; j < arangoPathObj.edges.length; j++) {
-    path += arangoPathObj.edges[j].path;
+    path += arangoPathObj.edges[j]!.path;
   }
   // get body
   const nVertices = arangoPathObj.vertices.length;
-  const body = arangoPathObj.vertices[nVertices - 1].body;
-  const resource_id = arangoPathObj.vertices[nVertices - 1].resource_id;
+  const body = arangoPathObj.vertices[nVertices - 1]!.body;
+  const resource_id = arangoPathObj.vertices[nVertices - 1]!.resource_id;
   // return change object
   trace('toChangeObj: returning change object with body %O', body);
   return {
     resource_id,
     path,
     body,
-    type: arangoPathObj.vertices[nVertices - 1].type,
+    type: arangoPathObj.vertices[nVertices - 1]!.type,
   };
 }
 

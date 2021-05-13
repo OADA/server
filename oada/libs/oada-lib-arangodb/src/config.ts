@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-import { CreateCollectionOptions } from 'arangojs/collection';
+import type { CreateCollectionOptions } from 'arangojs/collection';
 
 import libConfig from '@oada/lib-config';
 

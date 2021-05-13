@@ -181,12 +181,12 @@ responder.on<UserResponse, UserRequest>(
     if (!created_a_new_user) {
       trace(
         'We did not create a new user, so we are now updating user id %s',
-        cur_user._id
+        cur_user?._id
       );
       cur_user = await users.update({
         // Assume req.user is a full user now?
         ...(req.user as Omit<User, '_id'>),
-        _id: cur_user._id,
+        _id: cur_user!._id,
       });
     }
 

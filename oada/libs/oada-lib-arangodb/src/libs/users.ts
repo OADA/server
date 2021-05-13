@@ -23,7 +23,7 @@ import * as util from '../util';
 import { db } from '../db';
 
 import config from '../config';
-import { CollectionReadOptions } from 'arangojs/collection';
+import type { CollectionReadOptions } from 'arangojs/collection';
 
 const info = debug('arangodb#resources:info');
 

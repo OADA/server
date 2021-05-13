@@ -56,9 +56,9 @@ additionalScopesFiles.forEach((af) => {
   try {
     trace('Trying to add additional scope %s', af);
     const newscope: Scopes = require('../scopes/additional-scopes/' + af);
-    Object.keys(newscope).forEach((k) => {
+    Object.keys(newscope).forEach((k: keyof typeof newscope) => {
       trace('Setting scopeTypes[%s] to new scope %s', k, newscope[k]);
-      scopeTypes[k] = newscope[k]; // overwrite entire scope, or create new if doesn't exist
+      scopeTypes[k] = newscope[k]!; // overwrite entire scope, or create new if doesn't exist
     });
   } catch (e) {
     warn('FAILED to require(scopes/additional-scopes/%s): error was %O', af, e);
@@ -130,7 +130,9 @@ export function handleReq(req: PermissionsRequest): PermissionsResponse {
       }
       trace('User scope: %s', type);
       const contentType = req.oadaGraph.permissions?.type || undefined;
-      const is = contentType ? typeis.is(contentType, scopeTypes[type]) : false;
+      const is = contentType
+        ? typeis.is(contentType, scopeTypes[type] ?? [])
+        : false;
       //let contentType = req.requestType === 'put' ? req.contentType : (resource ? resource._type : undefined);
       //trace('contentType = ', 'is put:', req.requestType === 'put', 'req.contentType:', req.contentType, 'resource:', resource);
       trace(
@@ -154,7 +156,9 @@ export function handleReq(req: PermissionsRequest): PermissionsResponse {
       trace('contentType is %s', req.contentType);
       const contentType =
         req.contentType || req.oadaGraph.permissions?.type || undefined;
-      const is = contentType ? typeis.is(contentType, scopeTypes[type]) : false;
+      const is = contentType
+        ? typeis.is(contentType, scopeTypes[type] ?? [])
+        : false;
       trace('Does user have write scope? %s', scopePerm(perm, 'write'));
       trace('contentType is2 %s', contentType);
       trace('write typeis %s %s', type, is);

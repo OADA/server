@@ -123,8 +123,8 @@ module.exports = function wsHandler(server: Server) {
 
         const mesg: SocketChange = Object.keys(requests)
           // Find requests with changes
-          .filter((requestId) => {
-            const path_leftover = requests[requestId];
+          .filter((requestId: keyof typeof requests) => {
+            const path_leftover = requests[requestId]!;
             const pathChange = jsonpointer.get(
               change?.[0]?.body ?? {},
               path_leftover
@@ -136,7 +136,7 @@ module.exports = function wsHandler(server: Server) {
           .reduce<Partial<SocketChange>>(
             ({ requestId = [], path_leftover = [], ...rest }, id) => ({
               requestId: [id, ...requestId],
-              path_leftover: [requests[id], ...path_leftover],
+              path_leftover: [requests[id]!, ...path_leftover],
               ...rest,
             }),
             { resourceId, change }
@@ -222,7 +222,7 @@ module.exports = function wsHandler(server: Server) {
           let watch: Watch | undefined;
           for (res in socket.watches) {
             watch = socket.watches![res];
-            if (watch.requests[msg.requestId]) {
+            if (watch?.requests[msg.requestId]) {
               break;
             }
           }
@@ -314,7 +314,7 @@ module.exports = function wsHandler(server: Server) {
               request.headers['x-oada-rev']
             );
             const rev = await resources.getResource(resourceId, '_rev');
-            const revInt = parseInt(rev as unknown as string);
+            const revInt = parseInt((rev as unknown) as string);
             // If the requested rev is behind by revLimit, simply
             // re-GET the entire resource
             trace('REVS:', resourceId, rev, request.headers['x-oada-rev']);

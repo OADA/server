@@ -5,6 +5,8 @@
     "importHelpers": true,
     "composite": true,
     "strict": true,
+    "importsNotUsedAsValues": "error",
+    "noUncheckedIndexedAccess": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "noImplicitThis": true,
