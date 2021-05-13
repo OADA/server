@@ -15,8 +15,6 @@
 
 'use strict';
 
-process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
-
 // The config needs to know whether to look for command-line arguments or not,
 // so set isLibrary in global scope before requiring.
 global.isLibrary = !(require.main === module);
