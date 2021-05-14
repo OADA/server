@@ -15,13 +15,15 @@
 
 'use strict';
 
+const fs = require('fs');
+const { join } = require('path');
+
 const URI = require('urijs');
 const login = require('connect-ensure-login');
 const oauth2orize = require('oauth2orize');
 const { AuthorizationError } = require('oauth2orize');
 const passport = require('passport');
 const debug = require('debug')('oauth2:trace');
-const fs = require('fs');
 
 const oadaLookup = require('@oada/oada-lookup');
 
@@ -35,7 +37,9 @@ module.exports = function (_server, config) {
   const ddir = config.get('domainsDir');
   const domainConfigs = fs.readdirSync(ddir).reduce((acc, dirname) => {
     if (dirname.startsWith('.') == false) {
-      const config = require(ddir + '/' + dirname + '/config');
+      const fname = join(ddir, dirname, 'config');
+      // Should be safe because fname is from "admin" input not "user" input
+      const config = require(fname); // nosemgrep: detect-non-literal-require
       acc[config.domain] = config;
     }
     return acc;

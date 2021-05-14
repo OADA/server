@@ -12,14 +12,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 'use strict';
 
-var debug = require('debug')('model-tokens');
+const path = require('path');
 
-var OADAError = require('oada-error');
-var config = require('../../config');
-var path = require('path');
-var db = require(path.join(
+const debug = require('debug')('model-tokens');
+const OADAError = require('oada-error');
+
+const config = require('../../config');
+const db = require(// nosemgrep: detect-non-literal-require
+path.join(
   __dirname,
   '/../../db',
   config.get('auth.datastoresDriver'),

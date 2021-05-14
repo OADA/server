@@ -14,7 +14,7 @@ const config = require('./config');
 const init_path = config.get('auth.init');
 if (typeof init_path !== 'string' || init_path.length < 1) return;
 
-const init = require(init_path);
+const init = require(init_path); // nosemgrep: detect-non-literal-require
 if (typeof init !== 'function')
   return debug('no intialization function available');
 

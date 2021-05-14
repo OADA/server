@@ -13,8 +13,6 @@
  * limitations under the License.
  */
 
-import { Agent } from 'https';
-
 import debug from 'debug';
 import Bluebird from 'bluebird';
 
@@ -23,15 +21,10 @@ import { resources, changes } from '@oada/lib-arangodb';
 import type { WriteResponse } from '@oada/write-handler';
 
 import config from './config';
+import axios from 'axios';
 
 const trace = debug('webhooks:trace');
 const error = debug('webhooks:error');
-
-const axios = process.env.SSL_ALLOW_SELF_SIGNED
-  ? require('axios').create({
-      httpsAgent: new Agent({ rejectUnauthorized: false }),
-    })
-  : require('axios');
 
 //---------------------------------------------------------
 // Kafka intializations:
@@ -111,25 +104,28 @@ responder.on<void>('request', async function handleReq(req) {
           }
           const deleteUrl = url + '/' + deletePath.join('/');
           trace('Deleting: oada-put url changed to: %s', deleteUrl);
-          return await axios({
+          await axios({
             method: 'delete',
             url: deleteUrl,
             headers: meta._syncs![sync]!.headers,
           });
+          return;
         } else {
           //Handle merge _changes
           trace('Sending oada-put to: %s', url);
           trace('oada-put body: %O', body);
-          return await axios({
+          await axios({
             method: 'put',
             url: url,
             data: body,
             headers: meta._syncs![sync]!.headers,
           });
+          return;
         }
       }
       trace('Sending to: %s', url);
-      return await axios(meta._syncs![sync]);
+      await axios(meta._syncs![sync]!);
+      return;
     });
   }
 });

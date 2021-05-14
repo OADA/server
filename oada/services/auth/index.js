@@ -67,7 +67,8 @@ trace('using domainsDir = %s', ddir);
 const domainConfigs = fs.readdirSync(ddir).reduce((acc, dirname) => {
   if (dirname.startsWith('.') == false) {
     try {
-      const config = require(ddir + '/' + dirname + '/config');
+      const fname = path.join(ddir, dirname, 'config');
+      const config = require(fname); // nosemgrep: detect-non-literal-require
       acc[config.domain] = config;
     } catch (e) {
       error('ERROR: could not read config for domain %s, skipping', dirname);

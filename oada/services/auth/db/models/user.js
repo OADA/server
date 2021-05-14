@@ -20,7 +20,8 @@ const debug = require('debug')('model-user');
 
 const config = require('../../config');
 const path = require('path');
-const db = require(path.join(
+const db = require(// nosemgrep: detect-non-literal-require
+path.join(
   __dirname,
   '/../../db',
   config.get('auth.datastoresDriver'),

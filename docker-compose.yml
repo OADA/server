@@ -130,8 +130,6 @@ services:
       - proxy
     networks:
       - http_net
-    environment:
-      - SSL_ALLOW_SELF_SIGNED=1
 
   shares:
     extends:

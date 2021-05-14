@@ -20,7 +20,8 @@ var URI = require('urijs');
 var OADAError = require('oada-error');
 var config = require('../../config');
 var path = require('path');
-var db = require(path.join(
+var db = require(// nosemgrep: detect-non-literal-require
+path.join(
   __dirname,
   '/../../db',
   config.get('auth.datastoresDriver'),

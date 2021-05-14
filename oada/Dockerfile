@@ -61,6 +61,7 @@ COPY --from=yarn /oada/ /oada/
 COPY --from=build /oada/ /oada/
 
 # Remove uncompiled code (e.g. TS files, C/C++ of librdkafka)?
+SHELL ["/bin/ash", "-c"]
 RUN find /oada -name src | xargs rm -rfv
 
 
