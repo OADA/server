@@ -15,21 +15,23 @@
 
 'use strict';
 
-var debug = require('debug')('arango:client:trace');
-var oadaLib = require('@oada/lib-arangodb');
+const debug = require('debug')('arango:client:trace');
+const Bluebird = require('bluebird');
 
-function findById(id, cb) {
+const oadaLib = require('@oada/lib-arangodb');
+
+async function findById(id, cb) {
   debug('retrieving client { clientId: "' + id + '" }');
-  oadaLib.clients
-    .findById(id)
-    .then((c) => c && Object.assign(c, { id: c._id, _id: undefined }))
-    .asCallback(cb);
+  const client = await oadaLib.clients.findById(id);
+  client && Object.assign(client, { id: client._id, _id: undefined });
+  await Bluebird.resolve(client).asCallback(cb);
 }
 
-function save(client, cb) {
+async function save(client, cb) {
   Object.assign(client, { _id: client.id, id: undefined });
   debug('saving clientId ', client.clientId);
-  oadaLib.clients.save(client).asCallback(cb);
+  const c = await oadaLib.clients.save(client);
+  await Bluebird.resolve(c).asCallback(cb);
 }
 
 module.exports = {

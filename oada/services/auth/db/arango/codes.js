@@ -15,14 +15,15 @@
 
 'use strict';
 
+const Bluebird = require('bluebird');
 const cloneDeep = require('clone-deep');
 const trace = require('debug')('arango:codes:trace');
+
 const oadaLib = require('@oada/lib-arangodb');
 
 function findByCode(code, cb) {
   trace('findByCode: searching for code ', code);
-  oadaLib.codes
-    .findByCode(code)
+  return Bluebird.resolve(oadaLib.codes.findByCode(code))
     .then((c) => c && Object.assign(c, { id: c._id, _id: undefined }))
     .then((c) => {
       if (c && c.user) {
@@ -35,13 +36,15 @@ function findByCode(code, cb) {
 }
 
 function save(in_code, cb) {
-  var code = cloneDeep(in_code);
+  const code = cloneDeep(in_code);
   Object.assign(code, { _id: code.id, id: undefined });
   // Link user
   code.user = { _id: null };
-  if (in_code.user) code.user = { _id: in_code.user.id };
+  if (in_code.user) {
+    code.user = { _id: in_code.user.id };
+  }
 
-  oadaLib.codes.save(code).asCallback(cb);
+  return Bluebird.resolve(oadaLib.codes.save(code)).asCallback(cb);
 }
 
 module.exports = {

@@ -75,9 +75,7 @@ export async function findById(id: string): Promise<Client | null> {
 }
 
 export async function save(client: Client): Promise<Client['clientId']> {
-  const {
-    new: { clientId },
-  } = await clients.save(client);
+  const { _id } = await clients.save(client);
 
-  return clientId;
+  return _id;
 }

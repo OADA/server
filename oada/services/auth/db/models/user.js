@@ -15,12 +15,12 @@
 
 'use strict';
 
-const Promise = require('bluebird');
-var debug = require('debug')('model-user');
+const Bluebird = require('bluebird');
+const debug = require('debug')('model-user');
 
-var config = require('../../config');
-var path = require('path');
-var db = require(path.join(
+const config = require('../../config');
+const path = require('path');
+const db = require(path.join(
   __dirname,
   '/../../db',
   config.get('auth.datastoresDriver'),
@@ -33,21 +33,21 @@ function makeUser(user) {
 }
 
 function findById(id, cb) {
-  return Promise.fromCallback((done) => db.findById(id, done))
+  return Bluebird.fromCallback((done) => db.findById(id, done))
     .then((u) => makeUser(u))
     .tapCatch(debug)
     .asCallback(cb);
 }
 
 function findByUsername(id, cb) {
-  return Promise.fromCallback((done) => db.findByUsername(id, done))
+  return Bluebird.fromCallback((done) => db.findByUsername(id, done))
     .then((u) => makeUser(u))
     .tapCatch(debug)
     .asCallback(cb);
 }
 
 function findByUsernamePassword(username, password, cb) {
-  return Promise.fromCallback((done) => {
+  return Bluebird.fromCallback((done) => {
     return db.findByUsernamePassword(username, password, done);
   })
     .tap(debug)
@@ -56,7 +56,7 @@ function findByUsernamePassword(username, password, cb) {
 }
 
 function findByOIDCToken(idtoken, cb) {
-  return Promise.fromCallback((done) => db.findByOIDCToken(idtoken, done))
+  return Bluebird.fromCallback((done) => db.findByOIDCToken(idtoken, done))
     .tap((u) => {
       debug(
         'findByOIDCToken: searched for idtoken sub=',
@@ -72,7 +72,7 @@ function findByOIDCToken(idtoken, cb) {
 }
 
 function findByOIDCUsername(username, iss, cb) {
-  return Promise.fromCallback((done) =>
+  return Bluebird.fromCallback((done) =>
     db.findByOIDCUsername(username, iss, done)
   )
     .then((u) => makeUser(u))
@@ -80,7 +80,7 @@ function findByOIDCUsername(username, iss, cb) {
 }
 
 function update(user, cb) {
-  return Promise.fromCallback((done) => db.update(user, done)).asCallback(cb);
+  return Bluebird.fromCallback((done) => db.update(user, done)).asCallback(cb);
 }
 
 module.exports = {
