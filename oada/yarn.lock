@@ -1104,7 +1104,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@oada/lib-config@workspace:libs/oada-lib-config"
   dependencies:
-    "@types/convict": ^6.0.1
+    "@types/convict": ^6.0.2
     "@types/convict-format-with-validator": ^6.0.2
     "@types/yaml": ^1.9.7
     convict: ^6.1.0
@@ -1693,12 +1693,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/convict@npm:*, @types/convict@npm:^6.0.1":
-  version: 6.0.1
-  resolution: "@types/convict@npm:6.0.1"
+"@types/convict@npm:*, @types/convict@npm:^6.0.2":
+  version: 6.0.2
+  resolution: "@types/convict@npm:6.0.2"
   dependencies:
     "@types/node": "*"
-  checksum: 929960b0376e7ab897f008b8250c79d0cf7e4864b3458435c8d8be002cd35f07bb78a27b61a98d7605721990777eb69f7aa036f25922396c6b3a42e1e38450ed
+  checksum: e7eac70d12c60bae7e5e1bf581e0864c7228380c454241eb4b234123068991258e75b05bef30acda7b6bd6fab7719118c22cb87f94cf93242a61586471371fe1
   languageName: node
   linkType: hard
 
