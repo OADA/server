@@ -206,41 +206,15 @@ export function handleReq(req: WriteRequest): Promise<WriteResponse> {
       }
       trace('cacheRev %d', Date.now() / 1000 - beforeCacheRev);
 
-      const beforeDeletePartial = Date.now() / 1000;
       let path = pointer.parse(
         // The negative lookbehind may look useless but it helps performance.
         req['path_leftover'].replace(/(?<!\/)\/+$/, '')
       ); /* comment so syntax highlighting is ok */
-      let method = resources.putResource;
       changeType = 'merge';
-      const obj: DeepPartial<Resource> = {};
+      let obj: DeepPartial<Resource> = {};
 
-      // Perform delete
       if (body === undefined) {
-        trace('Body is undefined, doing delete');
-        if (path.length > 0) {
-          trace('Delete path = %s', path);
-          // TODO: This is gross
-          let ppath = Array.from(path);
-          method = (id, obj) => resources.deletePartialResource(id, ppath, obj);
-          trace(
-            'Setting method = deletePartialResource(%s, %o, %O)',
-            id,
-            ppath,
-            obj
-          );
-          body = null;
-          changeType = 'delete';
-          trace(`Setting changeType = 'delete'`);
-        } else {
-          if (!req.resourceExists) {
-            return { rev: undefined, orev: undefined, changeId: undefined };
-          }
-          trace('deleting resource altogether');
-          return Bluebird.resolve(resources.deleteResource(id)).tap(() => {
-            trace('deleteResource %d', Date.now() / 1000 - beforeDeletePartial);
-          });
-        }
+        throw new Error('PUT body is empty');
       }
 
       const ts = Date.now() / 1000;
@@ -281,23 +255,6 @@ export function handleReq(req: WriteRequest): Promise<WriteResponse> {
         trace('Intializing resource with %O', obj);
       }
 
-      // Create object to recursively merge into the resource
-      trace('Recursively merging path into arango object, path = %o', path);
-      if (path.length > 0) {
-        let o = obj;
-        let endk = path.pop();
-        path.forEach((k) => {
-          trace(`Adding path for key ${k}`);
-          if (!(k in o)) {
-            // TODO: Support arrays better?
-            o[k] = {};
-          }
-          o = o[k]!;
-        });
-        o[endk!] = body as DeepPartial<Resource>;
-      } else {
-        objectAssignDeep(obj, body);
-      }
       trace('Setting body on arango object to %O', obj);
 
       trace('recursive merge %d', Date.now() / 1000 - ts);
@@ -354,7 +311,7 @@ export function handleReq(req: WriteRequest): Promise<WriteResponse> {
       // Update rev of meta?
       obj['_meta']['_rev'] = rev;
 
-      return Bluebird.resolve(method(id, obj, !req.ignoreLinks))
+      return Bluebird.resolve(resources.putResource(id, obj, !req.ignoreLinks))
         .then((orev) => ({ rev, orev, changeId }))
         .tap(() => trace('method %d', Date.now() / 1000 - beforeMethod));
     })
