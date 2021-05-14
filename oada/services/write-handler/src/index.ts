@@ -251,7 +251,11 @@ export function handleReq(req: WriteRequest): Promise<WriteResponse> {
         req.resource_id,
         req.resourceExists
       );
-      if (req.resourceExists === false) {
+      if (req.resourceExists) {
+        const currentResource = await resources.getResource(req['resource_id']);
+        trace('currentResource %O', currentResource);
+        Object.assign(obj, currentResource);
+      } else {
         trace(
           'initializing arango: resource_id = ' +
             req.resource_id +
@@ -423,4 +427,88 @@ export function handleReq(req: WriteRequest): Promise<WriteResponse> {
   return Bluebird.join(upsert, cleanup, (resp) => resp).tap(() =>
     trace('join %d', Date.now() / 1000 - beforeJoin)
   );
+}
+
+interface Document {
+  [x: string]: any;
+}
+interface ChangeV {
+  _delete?: boolean;
+  [x: string]: any;
+}
+
+export function patch(document: Document, change: ChangeV): Document {
+  // TODO: validate change document
+  // If "_detele" is given, start a new document to replace contents
+  if (change._delete === true) {
+    document = {};
+  }
+  // Iterate over all entries in the change and modify "document"
+  for (const key in change) {
+    // Skip "_delete" key because that's already been taken care of
+    if (key === '_delete') {
+      continue;
+    }
+    // If an object is provided, we need to either 1) delete the entry
+    // altogether (i.e., _delete is given) or 2) recursively modify the entry
+    if (isObject(change[key])) {
+      // Case 1: delete the entry if "_delete" is given and that's the only entry in the object
+      if (
+        change[key]['_delete'] === true &&
+        Object.keys(change[key]).length === 1
+      ) {
+        delete document[key];
+      }
+      // Case 2: recursively apply change
+      else {
+        if (!document[key]) {
+          document[key] = {};
+        }
+        document[key] = patch(document[key], change[key]);
+      }
+    }
+    // If a non-object is provided, just copy that to the document
+    else {
+      document[key] = change[key];
+    }
+  }
+  // That's all
+  return document;
+}
+
+function diff(document1: Document, document2: Document): ChangeV {
+  const change: ChangeV = {};
+  // Get union of keys
+  const keys = new Set<string>([
+    ...Object.keys(document1),
+    ...Object.keys(document2),
+  ]);
+  // Iterate over all the keys that exist in either document1 or document2
+  for (const key of keys) {
+    // The key exists in document1 but not in document2
+    if (key in document1 && !(key in document2)) {
+      change[key] = { _delete: true }; // Mark the entry to be deleted
+    }
+    // The key exists in document2 but not in document1
+    else if (!(key in document1) && key in document2) {
+      change[key] = document2[key]; // It's a new entry so just copy it to change
+    }
+    // The key exists in both documents
+    else {
+      // If they are both objects, recursively generate a new change from that level
+      if (isObject(document1[key]) && isObject(document2[key])) {
+        change[key] = diff(document1[key], document2[key]);
+      }
+      // Otherwise, just copy the content to change
+      else if (document1[key] !== document2[key]) {
+        change[key] = document2[key];
+      }
+    }
+  }
+  // That's all
+  return change;
+}
+
+export function isObject(doc: any) {
+  return typeof doc === 'object' && doc !== null;
 }
