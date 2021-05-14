@@ -255,7 +255,9 @@ export function handleReq(req: WriteRequest): Promise<WriteResponse> {
         trace('Intializing resource with %O', obj);
       }
 
-      trace('Setting body on arango object to %O', obj);
+      const orig = objectAssignDeep({}, obj);
+      trace('Original: %O', orig);
+      const putBody = objectAssignDeep({}, body) as DeepPartial<Resource>;
 
       trace('recursive merge %d', Date.now() / 1000 - ts);
 
@@ -264,7 +266,10 @@ export function handleReq(req: WriteRequest): Promise<WriteResponse> {
         modifiedBy: req['user_id'],
         modified: ts,
       };
-      obj['_meta'] = objectAssignDeep(obj['_meta'] || {}, meta);
+      putBody['_meta'] = objectAssignDeep(
+        putBody['_meta'] || {},
+        meta
+      ) as object;
 
       // Increment rev number
       let rev = parseInt((cacheRev || 0) as string, 10) + 1;
@@ -284,15 +289,22 @@ export function handleReq(req: WriteRequest): Promise<WriteResponse> {
         }
       }
 
-      obj['_rev'] = rev;
-      pointer.set(obj, '/_meta/_rev', rev);
+      putBody['_rev'] = rev;
+      pointer.set(putBody, '/_meta/_rev', rev);
+
+      obj = patch(obj, putBody) as DeepPartial<Resource>;
+      trace('Setting body on arango object to %O', obj);
+      const reverseChange = diff(obj, orig);
+      trace('Reverse change: %O', reverseChange);
 
       // Compute new change
       const beforeChange = Date.now() / 1000;
       const children = req['from_change_id'] || [];
       trace('Putting change, "change" = %O', obj);
+      trace('PutBody %O', putBody);
       const changeId = await changes.putChange({
-        change: obj,
+        change: putBody,
+        reverse: reverseChange,
         resId: id,
         rev,
         type: changeType,
@@ -309,7 +321,7 @@ export function handleReq(req: WriteRequest): Promise<WriteResponse> {
       });
 
       // Update rev of meta?
-      obj['_meta']['_rev'] = rev;
+      //obj!['_meta']['_rev'] = rev;
 
       return Bluebird.resolve(resources.putResource(id, obj, !req.ignoreLinks))
         .then((orev) => ({ rev, orev, changeId }))
@@ -455,6 +467,9 @@ function diff(document1: Document, document2: Document): ChangeV {
       // If they are both objects, recursively generate a new change from that level
       if (isObject(document1[key]) && isObject(document2[key])) {
         change[key] = diff(document1[key], document2[key]);
+        if (Object.keys(change[key]).length === 0) {
+          delete change[key];
+        }
       }
       // Otherwise, just copy the content to change
       else if (document1[key] !== document2[key]) {

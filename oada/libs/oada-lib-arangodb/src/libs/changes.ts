@@ -125,7 +125,8 @@ export async function getChange(
     return undefined;
   }
   const change = {
-    body: result.vertices[0].body,
+      body: result.vertices[0].body,
+      reverse: result.vertices[0].reverse,
     type: result.vertices[0].type,
     wasDelete: result.vertices[result.vertices.length - 1].type === 'delete',
   };
@@ -143,7 +144,7 @@ export async function getChange(
 export async function getChangeArray(
   resourceId: string,
   changeRev: string | number
-): Promise<Change> {
+): Promise<Array<object>> {
   //TODO: This is meant to handle when resources are deleted directly. Edge
   // cases remain to be tested. Does this suffice regarding the need send down a
   // bare tree?
@@ -181,7 +182,7 @@ export async function getChangeArray(
 function toChangeObj(arangoPathObj: {
   edges: ChangeEdge[];
   vertices: ChangeVertex[];
-}): Change[0] {
+}): object {
   // get path
   let path = '';
   for (let j = 0; j < arangoPathObj.edges.length; j++) {
@@ -190,14 +191,15 @@ function toChangeObj(arangoPathObj: {
   // get body
   const nVertices = arangoPathObj.vertices.length;
   const body = arangoPathObj.vertices[nVertices - 1]!.body;
+  const reverse = arangoPathObj.vertices[nVertices - 1]!.reverse;
   const resource_id = arangoPathObj.vertices[nVertices - 1]!.resource_id;
   // return change object
   trace('toChangeObj: returning change object with body %O', body);
   return {
     resource_id,
     path,
-    body,
-    type: arangoPathObj.vertices[nVertices - 1]!.type,
+      body,
+      reverse,
   };
 }
 
@@ -224,7 +226,8 @@ export async function getRootChange(
 }
 
 export async function putChange({
-  change,
+    change,
+    reverse,
   resId,
   rev,
   type,
@@ -233,7 +236,8 @@ export async function putChange({
   userId,
   authorizationId,
 }: {
-  change: Change[0]['body'];
+    change: Change[0]['body'];
+    reverse: Change[0]['body'];
   resId: Change[0]['resource_id'];
   rev: number | string;
   type: Change[0]['type'];
@@ -254,6 +258,7 @@ export async function putChange({
         LET doc = FIRST(
           INSERT {
             body: ${change},
+            reverse: ${reverse},
             type: ${type},
             resource_id: ${resId},
             number: ${number},

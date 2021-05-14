@@ -417,7 +417,7 @@ export async function putResource(
         LET res = ${obj}
         UPSERT { '_key': reskey }
         INSERT res
-        UPDATE res
+        REPLACE res
         IN ${resources}
         RETURN { res: NEW, orev: OLD._oada_rev }
       )
@@ -481,7 +481,7 @@ export async function putResource(
         LET res = ${obj}
         UPSERT { '_key': res._key }
         INSERT res
-        UPDATE res
+        REPLACE res
         IN ${resources}
         return { res: NEW, orev: OLD._oada_rev }
       )
