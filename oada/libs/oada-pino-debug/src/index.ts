@@ -71,7 +71,7 @@ export default function oadaDebug(
   // Load mappings from files
   const fmap =
     process.env.OADA_PINO_MAP &&
-    require(resolve(process.cwd(), process.env.OADA_PINO_MAP)); // nosemgrep: detect-non-literal-require
+    require(resolve(process.cwd(), process.env.OADA_PINO_MAP)); // nosemgrep: javascript.lang.security.detect-non-literal-require.detect-non-literal-require
   // Merge in mappings
   const map = Object.assign({}, defaultMap, fmap, mmap);
   return pinoDebug(logger, { auto, map, ...rest });

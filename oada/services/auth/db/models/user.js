@@ -20,7 +20,7 @@ const debug = require('debug')('model-user');
 
 const config = require('../../config');
 const path = require('path');
-const db = require(// nosemgrep: detect-non-literal-require
+const db = require(// nosemgrep: javascript.lang.security.detect-non-literal-require.detect-non-literal-require
 path.join(
   __dirname,
   '/../../db',

@@ -55,7 +55,7 @@ const additionalScopesFiles = fs
 additionalScopesFiles.forEach((af) => {
   try {
     trace('Trying to add additional scope %s', af);
-    const newscope: Scopes = require('../scopes/additional-scopes/' + af); // nosemgrep: detect-non-literal-require
+    const newscope: Scopes = require('../scopes/additional-scopes/' + af); // nosemgrep: javascript.lang.security.detect-non-literal-require.detect-non-literal-require
     Object.keys(newscope).forEach((k: keyof typeof newscope) => {
       trace('Setting scopeTypes[%s] to new scope %s', k, newscope[k]);
       scopeTypes[k] = newscope[k]!; // overwrite entire scope, or create new if doesn't exist

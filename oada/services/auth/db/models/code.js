@@ -20,7 +20,7 @@ var URI = require('urijs');
 var OADAError = require('oada-error');
 var config = require('../../config');
 var path = require('path');
-var db = require(// nosemgrep: detect-non-literal-require
+var db = require(// nosemgrep: javascript.lang.security.detect-non-literal-require.detect-non-literal-require
 path.join(
   __dirname,
   '/../../db',

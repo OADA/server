@@ -20,7 +20,7 @@ const { v4: uuid } = require('uuid');
 var config = require('../../config');
 var debug = require('debug')('info');
 var path = require('path');
-var db = require(// nosemgrep: detect-non-literal-require
+var db = require(// nosemgrep: javascript.lang.security.detect-non-literal-require.detect-non-literal-require
 path.join(
   __dirname,
   '/../../db',

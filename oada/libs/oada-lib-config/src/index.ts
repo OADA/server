@@ -83,7 +83,7 @@ export default function libConfig<S>(schema: Schema<S>): Config<S & D> {
     if (extname(file) === '.js') {
       // Allow requiring a js config?
       // TODO: Probably remove this later
-      config.load(require(file)); // nosemgrep: detect-non-literal-require
+      config.load(require(file)); // nosemgrep: javascript.lang.security.detect-non-literal-require.detect-non-literal-require
     } else {
       config.loadFile(file);
     }

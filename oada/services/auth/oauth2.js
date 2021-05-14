@@ -39,7 +39,7 @@ module.exports = function (_server, config) {
     if (dirname.startsWith('.') == false) {
       const fname = join(ddir, dirname, 'config');
       // Should be safe because fname is from "admin" input not "user" input
-      const config = require(fname); // nosemgrep: detect-non-literal-require
+      const config = require(fname); // nosemgrep: javascript.lang.security.detect-non-literal-require.detect-non-literal-require
       acc[config.domain] = config;
     }
     return acc;

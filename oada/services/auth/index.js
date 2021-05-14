@@ -68,7 +68,7 @@ const domainConfigs = fs.readdirSync(ddir).reduce((acc, dirname) => {
   if (dirname.startsWith('.') == false) {
     try {
       const fname = path.join(ddir, dirname, 'config');
-      const config = require(fname); // nosemgrep: detect-non-literal-require
+      const config = require(fname); // nosemgrep: javascript.lang.security.detect-non-literal-require.detect-non-literal-require
       acc[config.domain] = config;
     } catch (e) {
       error('ERROR: could not read config for domain %s, skipping', dirname);
