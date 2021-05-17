@@ -189,14 +189,18 @@ const config = libConfig({
       signKid: 'kjcScjc32dwJXXLJDs3r124sa1',
     },
     certs: {
+      // If you want to run in https mode you need certs here.
       key: {
-        default: fs.readFileSync(path.join(__dirname, 'certs/ssl/server.key')),
+        //default: fs.readFileSync(path.join(__dirname, 'certs/ssl/server.key')),
+        default: null,
       },
       cert: {
-        default: fs.readFileSync(path.join(__dirname, 'certs/ssl/server.crt')),
+        //default: fs.readFileSync(path.join(__dirname, 'certs/ssl/server.crt')),
+        default: null,
       },
       ca: {
-        default: fs.readFileSync(path.join(__dirname, 'certs/ssl/ca.crt')),
+        //default: fs.readFileSync(path.join(__dirname, 'certs/ssl/ca.crt')),
+        default: null,
       },
       requestCrt: {
         format: Boolean,
@@ -204,7 +208,7 @@ const config = libConfig({
       },
       rejectUnauthorized: {
         format: Boolean,
-        default: false,
+        default: true,
       },
     },
     keys: {
