@@ -52,7 +52,7 @@ export type ChangeVertex = Change[0] & {
   authorizationid: string;
 };
 
-export async function getChanges(resourceId: string, _changeRev: number) {
+export async function getChanges(resourceId: string, _changeRev?: number) {
   const result = (await (
     await db.query(
       aql`

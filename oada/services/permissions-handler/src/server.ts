@@ -71,23 +71,23 @@ function scopePerm(perm: Perm, has: Perm): boolean {
 
 export interface PermissionsRequest {
   scope: readonly Scope[];
-  contentType: string;
+  contentType?: string;
   user_id: string;
   oadaGraph: {
     resource_id: string;
     resourceExists: boolean;
     permissions?: {
-      type: string | null;
-      owner: string;
-      read: boolean;
-      write: boolean;
+      type?: string;
+      owner?: string;
+      read?: boolean;
+      write?: boolean;
     };
   };
 }
 
 export interface PermissionsResponse {
   scopes: { read: boolean; write: boolean };
-  permissions?: { read: boolean; write: boolean; owner: string | boolean };
+  permissions: { read?: boolean; write?: boolean; owner?: boolean };
 }
 
 export function handleReq(req: PermissionsRequest): PermissionsResponse {
@@ -189,7 +189,10 @@ export function handleReq(req: PermissionsRequest): PermissionsResponse {
       owner: true,
     };
   } else {
-    response.permissions = req.oadaGraph.permissions;
+    response.permissions = {
+      ...req.oadaGraph.permissions,
+      owner: !!req.oadaGraph.permissions?.owner,
+    };
   }
   trace('END RESULT %O', response);
   return response;

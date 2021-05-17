@@ -43,12 +43,25 @@ const MAX_DEPTH = 100; // TODO: Is this good?
 
 export interface Permission {
   type: string;
-  owner: boolean;
+  owner: string;
   read: boolean;
   write: boolean;
 }
 
-export async function lookupFromUrl(url: string, userId: string) {
+export interface GraphLookup {
+  type?: string;
+  rev: number;
+  resource_id: string;
+  path_leftover: string;
+  permissions: Partial<Permission>;
+  from?: Omit<GraphLookup, 'rev'>;
+  resourceExists: boolean;
+}
+
+export async function lookupFromUrl(
+  url: string,
+  userId: string
+): Promise<GraphLookup> {
   const user = await users.findById(userId);
   if (!user) {
     throw 'No User Found for given userId';
@@ -113,58 +126,58 @@ export async function lookupFromUrl(url: string, userId: string) {
   let resourceExists = true;
 
   let path_leftover = '';
-  let from = { resource_id: '', path_leftover: '' };
+  let from = undefined;
 
   if (!result) {
     trace('1 return resource id %s', resource_id);
     return {
+      resourceExists: false,
+      permissions: {},
       resource_id,
       path_leftover,
       from,
-      permissions: {},
       rev,
-      type,
     };
   }
 
   // Walk up and find the graph and return furthest known permissions (and
   // type)
-  let permissions: {
-    owner: boolean | null;
-    read: boolean | null;
-    write: boolean | null;
-    type: string | null;
+  const permissions: {
+    owner?: string;
+    read?: boolean;
+    write?: boolean;
+    type?: string;
   } = {
-    owner: null,
-    read: null,
-    write: null,
-    type: null,
+    owner: undefined,
+    read: undefined,
+    write: undefined,
+    type: undefined,
   };
   result.permissions.reverse().some((p) => {
     if (p) {
-      if (permissions.read === null) {
+      if (permissions.read === undefined) {
         permissions.read = p.read;
       }
-      if (permissions.write === null) {
+      if (permissions.write === undefined) {
         permissions.write = p.write;
       }
-      if (permissions.owner === null) {
+      if (permissions.owner === undefined) {
         permissions.owner = p.owner;
       }
-      if (permissions.type === null) {
+      if (permissions.type === undefined) {
         permissions.type = p.type;
       }
       if (
-        permissions.read !== null &&
-        permissions.write !== null &&
-        permissions.owner !== null &&
-        permissions.type !== null
+        permissions.read !== undefined &&
+        permissions.write !== undefined &&
+        permissions.owner !== undefined &&
+        permissions.type !== undefined
       ) {
         return true;
       }
     }
   });
-  type = permissions.type;
+  type = permissions.type ?? null;
 
   // Check for a traversal that did not finish (aka not found)
   if (result.vertices[0] === null) {
@@ -177,7 +190,7 @@ export async function lookupFromUrl(url: string, userId: string) {
       from,
       permissions,
       rev,
-      type,
+      type: type ?? undefined,
       resourceExists: false,
     };
     // A dangling edge indicates uncreated resource; return graph lookup
@@ -188,12 +201,13 @@ export async function lookupFromUrl(url: string, userId: string) {
     resource_id = 'resources/' + lastEdge.split('graphNodes/resources:')[1];
     trace('graph-lookup traversal uncreated resource %s', resource_id);
     rev = 0;
-    const fromv = result.vertices[result.vertices.length - 2]!;
+    const fromv = result.vertices[result.vertices.length - 2];
     const edge = result.edges[result.edges.length - 1];
     from = {
-      resource_id: from ? from['resource_id'] : '',
-      path_leftover:
-        ((fromv && fromv['path']) || '') + (edge ? '/' + edge.name : ''),
+      resourceExists: !!fromv,
+      permissions,
+      resource_id: fromv?.['resource_id'] || '',
+      path_leftover: (fromv?.['path'] || '') + (edge ? '/' + edge.name : ''),
     };
     resourceExists = false;
   } else {
@@ -218,14 +232,15 @@ export async function lookupFromUrl(url: string, userId: string) {
       path_leftover = result.vertices[result.vertices.length - 1]!.path || '';
     }
     from = {
-      resource_id: fromv ? fromv['resource_id'] : '',
-      path_leftover:
-        ((fromv && fromv['path']) || '') + (edge ? '/' + edge.name : ''),
+      permissions,
+      resourceExists: !!fromv,
+      resource_id: fromv?.['resource_id'] || '',
+      path_leftover: (fromv?.['path'] || '') + (edge ? '/' + edge.name : ''),
     };
   }
 
   return {
-    type,
+    type: type ?? undefined,
     rev,
     resource_id,
     path_leftover,
@@ -306,7 +321,9 @@ export async function getResourceOwnerIdRev(
     ); // Treat non-existing path has not-found
 }
 
-export async function getParents(id: string): Promise<Array<{
+export async function getParents(
+  id: string
+): Promise<Array<{
   resource_id: string;
   path: string;
   contentType: string;

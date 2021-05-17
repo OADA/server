@@ -58,22 +58,25 @@ export class Requester extends Base {
   }
 
   async send(
-    request: KafkaBase & Record<string, unknown>,
+    request: {},
     topic: string = this.produceTopic!
   ): Promise<KafkaBase> {
-    const id = request[REQ_ID_KEY] || ksuid.randomSync().string;
+    const id =
+      // @ts-ignore
+      request[REQ_ID_KEY] || ksuid.randomSync().string;
     const timeout = this.timeouts[topic] ?? topicTimeout(topic);
     this.timeouts[topic] = timeout;
-
-    request[REQ_ID_KEY] = id;
-    // TODO: Handle partitions?
-    request['resp_partition'] = 0;
 
     const reqDone = Bluebird.fromCallback((done) => {
       this.requests[id] = done;
     });
     try {
-      await this.produce({ mesg: request, topic, part: null });
+      // TODO: Handle partitions?
+      await this.produce({
+        mesg: { ...request, [REQ_ID_KEY]: id, resp_partition: '0' },
+        topic,
+        part: null,
+      });
       return (await reqDone.timeout(timeout, topic + ' timeout')) as KafkaBase;
     } finally {
       delete this.requests[id];
