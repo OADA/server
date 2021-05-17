@@ -13,9 +13,6 @@
  * limitations under the License.
  */
 
-import fs from 'fs';
-import path from 'path';
-
 import libConfig from '@oada/lib-config';
 
 const config = libConfig({
@@ -48,16 +45,21 @@ const config = libConfig({
         format: String,
         default: '',
       },
+      // Supply SSL certs here in to use HTTPS without reverse proxy...
       certs: {
         format: Object,
         default: {
-          key: fs.readFileSync(path.join(__dirname, '../certs/ssl/server.key')),
+          // key: fs.readFileSync(path.join(__dirname, '../certs/ssl/server.key')),
+          key: null,
+          /*
           cert: fs.readFileSync(
             path.join(__dirname, '../certs/ssl/server.crt')
           ),
-          ca: fs.readFileSync(path.join(__dirname, '../certs/ssl/ca.crt')),
+          */
+          cert: null,
+          //ca: fs.readFileSync(path.join(__dirname, '../certs/ssl/ca.crt')),
+          ca: null,
           requestCrt: true,
-          rejectUnauthorized: true,
         },
       },
     },
