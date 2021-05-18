@@ -146,7 +146,7 @@ async function init() {
     await app.register(resources, {
       prefix: '/resources',
       prefixPath() {
-        return 'resources/';
+        return 'resources';
       },
     });
 

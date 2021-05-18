@@ -47,12 +47,18 @@ export interface Options {
  * Fastify plugin for OADA /resources
  */
 const plugin: FastifyPluginAsync<Options> = async function (fastify, opts) {
-  // TODO: Better way to handle oada path with fastify?
+  /**
+   * Compute "OADA path" from URL
+   *
+   * @todo Better way to handle oada path with fastify?
+   */
   fastify.addHook('preParsing', async (request) => {
-    // Resolve request URL to a path within OADA
-    const path = request.url
-      .replace(opts.prefix, opts.prefixPath(request))
-      .replace(/\/$/, '');
+    const url = request.url.replace(opts.prefix, opts.prefixPath(request));
+    const path =
+      request.method === 'POST'
+        ? // Treat POST as PUT put append random id
+          join(url, (await ksuid.random()).string)
+        : url.replace(/\/$/, '');
     request.requestContext.set('oadaPath', path);
   });
 
@@ -294,10 +300,10 @@ const plugin: FastifyPluginAsync<Options> = async function (fastify, opts) {
   }
 
   // Parse JSON content types as text (but do not parse JSON yet)
-  // TODO: Stream process the body instead
   fastify.addContentTypeParser(
     ['json', '+json'],
     {
+      // TODO: Stream process the body instead
       parseAs: 'string',
       // 20 MB
       bodyLimit: 20 * 1048576,
@@ -348,12 +354,6 @@ const plugin: FastifyPluginAsync<Options> = async function (fastify, opts) {
     const user = request.requestContext.get<TokenResponse['doc']>('user')!;
     let path = request.requestContext.get<string>('oadaPath')!;
     request.log.trace('Saving PUT body for request');
-
-    // Turn POSTs into PUTs at random id
-    if (request.method === 'POST') {
-      const { string: id } = await ksuid.random();
-      path = join(path, id);
-    }
 
     /**
      * Use binary stuff if not a JSON request
