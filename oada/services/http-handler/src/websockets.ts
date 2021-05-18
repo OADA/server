@@ -14,18 +14,13 @@
  */
 
 import { strict as assert } from 'assert';
-
-import debug from 'debug';
-
-import jsonpointer from 'jsonpointer';
-
-import { OADAError } from 'oada-error';
-
-import * as WebSocket from 'ws';
-import type { Server } from 'http';
-import axios, { AxiosRequestConfig, AxiosResponse } from 'axios';
-
 import { EventEmitter } from 'events';
+
+import type WebSocket from 'ws';
+import fastifyWebsocket from 'fastify-websocket';
+import debug from 'debug';
+import jsonpointer from 'jsonpointer';
+import type LightMyRequest from 'light-my-request';
 
 import SocketRequest, {
   // Runtime check for request type
@@ -34,13 +29,14 @@ import SocketRequest, {
 import type SocketResponse from '@oada/types/oada/websockets/response';
 import type SocketChange from '@oada/types/oada/websockets/change';
 import type Change from '@oada/types/oada/change/v2';
+import { OADAError } from 'oada-error';
 
 import { Responder, KafkaBase } from '@oada/lib-kafka';
 import { resources, changes } from '@oada/lib-arangodb';
 import type { WriteResponse } from '@oada/write-handler';
 
-// @ts-ignore
 import config from './config';
+import type { FastifyPluginAsync } from 'fastify';
 
 /**
  * @todo Actually figure out how "foregtting history" should work...
@@ -52,27 +48,14 @@ const error = debug('websockets:error');
 const warn = debug('websockets:warn');
 const trace = debug('websockets:trace');
 
-const port = config.get('server.port');
-
 const emitter = new EventEmitter();
 
 // Make sure we stringify the http request data ourselves
 type RequestData = string & { __reqData__: void };
-interface HTTPRequest extends AxiosRequestConfig {
-  data?: RequestData;
-}
 function serializeRequestData(data: any): RequestData {
   return JSON.stringify(data) as RequestData;
 }
 
-// Add our state to the websocket type?
-interface Socket extends WebSocket {
-  isAlive?: boolean;
-  /**
-   * @description Indexed by resourceId
-   */
-  watches?: { [resourceId: string]: Watch };
-}
 type Watch = {
   handler: (this: Watch, { change }: { change: Change }) => any;
   /**
@@ -100,26 +83,34 @@ function parseRequest(data: WebSocket.Data): SocketRequest {
   return msg;
 }
 
-module.exports = function wsHandler(server: Server) {
-  const wss = new WebSocket.Server({ server });
+const plugin: FastifyPluginAsync = async function (fastify) {
+  await fastify.register(fastifyWebsocket);
 
-  // Add socket to storage
-  wss.on('connection', function connection(socket: Socket) {
+  fastify.get('/*', { websocket: true }, async ({ socket }, _request) => {
     // Add our state stuff?
-    socket.isAlive = true;
-    socket.watches = {};
+    let isAlive: boolean = true;
+    let watches: Record<string, Watch> = {};
+
+    // Set up periodic ping/pong and timeout on socket
+    const interval = setInterval(function ping() {
+      if (isAlive === false) {
+        return socket.terminate();
+      }
+
+      isAlive = false;
+      socket.ping();
+    }, 30000);
     socket.on('pong', function heartbeat() {
-      socket.isAlive = true;
+      isAlive = true;
     });
+    socket.on('close', () => clearInterval(interval));
+
     function handleChange(resourceId: string): Watch['handler'] {
       function handler(this: Watch, { change }: { change: Change }) {
-        trace('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~');
-        trace('responding watch', resourceId);
-        trace('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~');
+        trace('responding watch %s', resourceId);
 
         const requests =
-          socket.watches?.[resourceId]?.requests ??
-          ({} as Record<string, string>);
+          watches[resourceId]?.requests ?? ({} as Record<string, string>);
 
         const mesg: SocketChange = Object.keys(requests)
           // Find requests with changes
@@ -163,7 +154,9 @@ module.exports = function wsHandler(server: Server) {
       } catch (e) {
         const err: SocketResponse = {
           status: 400,
-          // TODO: the heck??
+          /**
+           * TODO: the heck??
+           */
           requestId: ['error'],
           headers: {},
           data: new OADAError(
@@ -196,8 +189,7 @@ module.exports = function wsHandler(server: Server) {
     async function handleRequest(msg: SocketRequest) {
       info(`Handling socket req ${msg.requestId}:`, msg.method, msg.path);
 
-      const request: HTTPRequest = {
-        baseURL: `http://127.0.0.1:${port}`,
+      const request: LightMyRequest.InjectOptions = {
         url: msg.path,
         headers: {
           // Pass requestId along to main code for easier tracking
@@ -220,8 +212,8 @@ module.exports = function wsHandler(server: Server) {
           // Find corresponding WATCH
           let res: string | undefined;
           let watch: Watch | undefined;
-          for (res in socket.watches) {
-            watch = socket.watches![res];
+          for (res in watches) {
+            watch = watches[res];
             if (watch?.requests[msg.requestId]) {
               break;
             }
@@ -233,7 +225,7 @@ module.exports = function wsHandler(server: Server) {
             delete watch.requests[msg.requestId];
             if (Object.keys(watch.requests).length === 0) {
               // No watches on this resource left
-              delete socket.watches![res!];
+              delete watches[res!];
               emitter.removeListener(res!, watch.handler);
             }
           }
@@ -250,14 +242,14 @@ module.exports = function wsHandler(server: Server) {
 
         case 'put':
         case 'post':
-          request.data = serializeRequestData(msg.data);
+          request.payload = serializeRequestData(msg.data);
         default:
           request.method = msg.method;
           break;
       }
-      let res: AxiosResponse<Record<string, unknown>>;
+      let res: LightMyRequest.Response;
       try {
-        res = await axios.request(request);
+        res = await fastify.inject(request);
       } catch (err) {
         if (err.response) {
           const e = {
@@ -273,12 +265,15 @@ module.exports = function wsHandler(server: Server) {
           throw err;
         }
       }
-      const parts = res.headers['content-location'].split('/');
+      const parts =
+        res.headers['content-location']?.toString().split('/') ?? [];
       let resourceId: string;
       let path_leftover = '';
       assert(parts.length >= 3);
       resourceId = `${parts[1]}/${parts[2]}`;
-      if (parts.length > 3) path_leftover = parts.slice(3).join('/');
+      if (parts.length > 3) {
+        path_leftover = parts.slice(3).join('/');
+      }
       if (path_leftover) {
         path_leftover = `/${path_leftover}`;
       }
@@ -287,14 +282,14 @@ module.exports = function wsHandler(server: Server) {
         case 'watch':
           trace('opening watch', msg.requestId);
 
-          let watch = socket.watches?.[resourceId];
+          let watch = watches[resourceId];
           if (!watch) {
             // No existing WATCH on this resource
             watch = {
               handler: handleChange(resourceId),
               requests: { [msg.requestId]: path_leftover },
             };
-            socket.watches![resourceId] = watch;
+            watches[resourceId] = watch;
 
             emitter.on(resourceId, watch.handler);
             socket.on('close', function handleClose() {
@@ -306,7 +301,7 @@ module.exports = function wsHandler(server: Server) {
           }
 
           // Emit all new changes from the given rev in the request
-          if (request.headers['x-oada-rev'] !== undefined) {
+          if (request.headers?.['x-oada-rev'] !== undefined) {
             trace('Setting up watch on:', resourceId);
             trace(
               'RECEIVED THIS REV:',
@@ -318,7 +313,10 @@ module.exports = function wsHandler(server: Server) {
             // If the requested rev is behind by revLimit, simply
             // re-GET the entire resource
             trace('REVS:', resourceId, rev, request.headers['x-oada-rev']);
-            if (revInt - parseInt(request.headers['x-oada-rev']) >= revLimit) {
+            if (
+              revInt - parseInt(request.headers['x-oada-rev'] as string) >=
+              revLimit
+            ) {
               trace(
                 'REV WAY OUT OF DATE',
                 resourceId,
@@ -345,7 +343,9 @@ module.exports = function wsHandler(server: Server) {
                 request.headers['x-oada-rev']
               );
               // Next, feed changes to client
-              let reqRevInt = parseInt(request.headers['x-oada-rev']);
+              const reqRevInt = parseInt(
+                request.headers['x-oada-rev'] as string
+              );
               for (let sendRev = reqRevInt + 1; sendRev <= revInt; sendRev++) {
                 trace(
                   `Sending change ${sendRev} to resumed WATCH ${msg.requestId}`
@@ -376,31 +376,20 @@ module.exports = function wsHandler(server: Server) {
             emitter.removeAllListeners(resourceId);
           }
         default:
+          const headers: Record<string, string> = {};
+          for (const [k, v] of Object.entries(res.headers)) {
+            // @oada/client gets very angry if a header is anything but a string
+            headers[k] = v!.toString();
+          }
           sendResponse({
             requestId: msg.requestId,
-            status: res.status,
-            headers: res.headers,
-            data: res.data,
+            status: res.statusCode,
+            headers,
+            // TODO: Fix this?
+            data: JSON.parse(res.payload),
           });
       }
     }
-  });
-
-  const interval = setInterval(function ping() {
-    wss.clients.forEach(function each(sock) {
-      // @ts-ignore
-      const socket: Socket = sock;
-      if (socket.isAlive === false) {
-        return socket.terminate();
-      }
-
-      socket.isAlive = false;
-      socket.ping();
-    });
-  }, 30000);
-
-  wss.on('close', function close() {
-    clearInterval(interval);
   });
 };
 
@@ -412,7 +401,9 @@ const writeResponder = new Responder({
 function checkReq(req: KafkaBase): req is WriteResponse {
   return req.msgtype === 'write-response' && req.code === 'success';
 }
-// Listen for successful write requests to resources of interest, then emit an event
+/**
+ * Listen for successful write requests to resources of interest, then emit an event
+ */
 writeResponder.on('request', async function handleReq(req) {
   if (!checkReq(req)) {
     return;
@@ -441,3 +432,5 @@ writeResponder.on('request', async function handleReq(req) {
     error(e);
   }
 });
+
+export default plugin;

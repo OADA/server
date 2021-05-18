@@ -18,28 +18,25 @@ import { join } from 'path';
 import { pipeline } from 'stream/promises';
 
 import type { FastifyPluginAsync, FastifyReply, FastifyRequest } from 'fastify';
-import type {} from './server';
-
 import ksuid from 'ksuid';
-import typeis from 'type-is';
 import cacache from 'cacache';
+import typeis from 'type-is';
+
 import { plugin as formats } from '@oada/formats-server';
-// @ts-ignore
-import { OADAError } from 'oada-error';
 
 import { resources, changes, putBodies } from '@oada/lib-arangodb';
 import {
   handleReq as permissionsRequest,
   Scope,
 } from '@oada/permissions-handler';
-
-import config from './config';
-const CACHE_PATH = config.get('storage.binary.cacache');
-
-import requester from './requester';
-
-import type { TokenResponse } from './tokenLookup';
 import type { WriteRequest, WriteResponse } from '@oada/write-handler';
+
+import type {} from './server';
+import requester from './requester';
+import type { TokenResponse } from './tokenLookup';
+import config from './config';
+
+const CACHE_PATH = config.get('storage.binary.cacache');
 
 export interface Options {
   prefix: string;
@@ -92,7 +89,7 @@ const plugin: FastifyPluginAsync<Options> = async function (fastify, opts) {
    * Has to run after graph lookup.
    * @todo Should this just be in each methods implenting function?
    */
-  fastify.addHook('preHandler', async function checkScope(request) {
+  fastify.addHook('preHandler', async function checkScope(request, reply) {
     const oadaGraph = request.requestContext.get<resources.GraphLookup>(
       'oadaGraph'
     )!;
@@ -121,19 +118,13 @@ const plugin: FastifyPluginAsync<Options> = async function (fastify, opts) {
             '%s tried to PUT resource without proper permissions',
             user.user_id
           );
-          throw new OADAError(
-            'Forbidden',
-            403,
+          return reply.forbidden(
             'User does not have write permission for this resource'
           );
         }
 
         if (!response.scopes.write) {
-          throw new OADAError(
-            'Forbidden',
-            403,
-            'Token does not have required scope'
-          );
+          return reply.forbidden('Token does not have required scope');
         }
 
         break;
@@ -145,19 +136,13 @@ const plugin: FastifyPluginAsync<Options> = async function (fastify, opts) {
             '%s tried to GET resource without proper permissions',
             user.user_id
           );
-          throw new OADAError(
-            'Forbidden',
-            403,
+          return reply.forbidden(
             'User does not have read permission for this resource'
           );
         }
 
         if (!response.scopes.read) {
-          throw new OADAError(
-            'Forbidden',
-            403,
-            'Token does not have required scope'
-          );
+          return reply.forbidden('Token does not have required scope');
         }
 
         break;
@@ -173,34 +158,6 @@ const plugin: FastifyPluginAsync<Options> = async function (fastify, opts) {
     )!;
     // TODO: Better header name?
     reply.header('X-OADA-Path-Leftover', oadaGraph['path_leftover']);
-  });
-
-  // Handle request for /_meta/_changes?
-  fastify.get('/*/_meta/_changes/*', async function getChanges(request) {
-    const oadaGraph = request.requestContext.get<resources.GraphLookup>(
-      'oadaGraph'
-    )!;
-
-    if (oadaGraph.path_leftover === '/_meta/_changes') {
-      const ch = await changes.getChanges(oadaGraph.resource_id);
-      return ch
-        .map((item) => {
-          return {
-            [item]: {
-              _id: oadaGraph.resource_id + '/_meta/_changes/' + item,
-              _rev: item,
-            },
-          };
-        })
-        .reduce((a, b) => {
-          return { ...a, ...b };
-        });
-    } else if (/^\/_meta\/_changes\/.*?/.test(oadaGraph.path_leftover)) {
-      const rev = +oadaGraph.path_leftover.split('/')[3]!;
-      const ch = await changes.getChangeArray(oadaGraph.resource_id, rev);
-      request.log.trace('CHANGE %O', ch);
-      return ch;
-    }
   });
 
   await fastify.register(formats);
@@ -224,9 +181,7 @@ const plugin: FastifyPluginAsync<Options> = async function (fastify, opts) {
     if (ifmatch) {
       const rev = parseETag(ifmatch);
       if (rev !== oadaGraph.rev) {
-        throw new OADAError(
-          'Precondition Failed',
-          412,
+        return reply.preconditionFailed(
           'If-Match header does not match current resource _rev'
         );
       }
@@ -236,12 +191,34 @@ const plugin: FastifyPluginAsync<Options> = async function (fastify, opts) {
     if (ifnonematch) {
       const revs = ifnonematch.split(',').map(parseETag);
       if (revs.includes(oadaGraph.rev)) {
-        throw new OADAError(
-          'Precondition Failed',
-          412,
+        return reply.preconditionFailed(
           'If-None-Match header contains current resource _rev'
         );
       }
+    }
+
+    /**
+     * Handle requests for /_meta/_changes?
+     */
+    if (oadaGraph.path_leftover === '/_meta/_changes') {
+      const ch = await changes.getChanges(oadaGraph.resource_id);
+      return ch
+        .map((item) => {
+          return {
+            [item]: {
+              _id: oadaGraph.resource_id + '/_meta/_changes/' + item,
+              _rev: item,
+            },
+          };
+        })
+        .reduce((a, b) => {
+          return { ...a, ...b };
+        });
+    } else if (/^\/_meta\/_changes\/.*?/.test(oadaGraph.path_leftover)) {
+      const rev = +oadaGraph.path_leftover.split('/')[3]!;
+      const ch = await changes.getChangeArray(oadaGraph.resource_id, rev);
+      request.log.trace('CHANGE %O', ch);
+      return ch;
     }
 
     // TODO: Should it not get the whole meta document?
@@ -261,7 +238,7 @@ const plugin: FastifyPluginAsync<Options> = async function (fastify, opts) {
       // TODO: Allow null values in OADA?
       if (doc === undefined || doc === null) {
         request.log.error('Resource not found');
-        throw new OADAError('Not Found', 404);
+        return reply.notFound();
       } else {
         request.log.info(
           'Resource: %s, Rev: %d',
@@ -275,7 +252,8 @@ const plugin: FastifyPluginAsync<Options> = async function (fastify, opts) {
       // get binary
       if (oadaGraph['path_leftover']) {
         request.log.trace(oadaGraph['path_leftover']);
-        throw new OADAError('Path Leftover on Binary GET');
+        // TODO: What error code to use here?
+        return reply.notImplemented('Path Leftover on Binary GET');
       }
 
       // Look up file size before streaming
@@ -307,15 +285,11 @@ const plugin: FastifyPluginAsync<Options> = async function (fastify, opts) {
   }
 
   // Don't let users modify their shares?
-  function noModifyShares(request: FastifyRequest) {
+  function noModifyShares(request: FastifyRequest, reply: FastifyReply) {
     const path = request.requestContext.get<string>('oadaPath')!;
     const user = request.requestContext.get<TokenResponse['doc']>('user')!;
     if (path.match(`^/${user['shares_id']}`)) {
-      throw new OADAError(
-        'Forbidden',
-        403,
-        'User cannot modify their shares document'
-      );
+      return reply.forbidden('User cannot modify their shares document');
     }
   }
 
@@ -363,7 +337,7 @@ const plugin: FastifyPluginAsync<Options> = async function (fastify, opts) {
    */
   async function putResource(request: FastifyRequest, reply: FastifyReply) {
     // Don't let users modify their shares?
-    noModifyShares(request);
+    noModifyShares(request, reply);
 
     const oadaGraph = request.requestContext.get<resources.GraphLookup>(
       'oadaGraph'
@@ -384,7 +358,7 @@ const plugin: FastifyPluginAsync<Options> = async function (fastify, opts) {
     /**
      * Use binary stuff if not a JSON request
      */
-    if (!typeis(request.raw, ['json', '+json'])) {
+    if (!request.is(['json', '+json'])) {
       await pipeline(
         request.raw,
         cacache.put.stream(CACHE_PATH, oadaGraph.resource_id)
@@ -428,25 +402,17 @@ const plugin: FastifyPluginAsync<Options> = async function (fastify, opts) {
       case 'success':
         break;
       case 'permission':
-        throw new OADAError(
-          'Forbidden',
-          403,
-          'User does not own this resource'
-        );
+        return reply.forbidden('User does not own this resource');
       case 'if-match failed':
-        throw new OADAError(
-          'Precondition Failed',
-          412,
+        return reply.preconditionFailed(
           'If-Match header does not match current resource _rev'
         );
       case 'if-none-match failed':
-        throw new OADAError(
-          'Precondition Failed',
-          412,
+        return reply.preconditionFailed(
           'If-None-Match header contains current resource _rev'
         );
       default:
-        throw new OADAError('write failed with code ' + resp.code);
+        throw new Error('write failed with code ' + resp.code);
     }
     return (
       reply
@@ -471,14 +437,10 @@ const plugin: FastifyPluginAsync<Options> = async function (fastify, opts) {
     let resourceExists = request.requestContext.get<boolean>('resourceExists')!;
 
     // Don't let users delete their shares?
-    noModifyShares(request);
+    noModifyShares(request, reply);
     // Don't let users DELETE their bookmarks?
     if (path === '/' + user['bookmarks_id']) {
-      throw new OADAError(
-        'Forbidden',
-        403,
-        'User cannot delete their bookmarks'
-      );
+      return reply.forbidden('User cannot delete their bookmarks');
     }
 
     /**
@@ -527,25 +489,17 @@ const plugin: FastifyPluginAsync<Options> = async function (fastify, opts) {
       // fall-through
       // TODO: Is 403 a good response for DELETE on non-existent?
       case 'permission':
-        throw new OADAError(
-          'Forbidden',
-          403,
-          'User does not own this resource'
-        );
+        return reply.forbidden('User does not own this resource');
       case 'if-match failed':
-        throw new OADAError(
-          'Precondition Failed',
-          412,
+        return reply.preconditionFailed(
           'If-Match header does not match current resource _rev'
         );
       case 'if-none-match failed':
-        throw new OADAError(
-          'Precondition Failed',
-          412,
+        return reply.preconditionFailed(
           'If-None-Match header contains current resource _rev'
         );
       default:
-        throw new OADAError('delete failed with code ' + resp.code);
+        throw new Error('delete failed with code ' + resp.code);
     }
 
     return reply

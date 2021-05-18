@@ -14,29 +14,29 @@
  */
 
 import fastify, { FastifyRequest } from 'fastify';
-import bearerAuth, { FastifyBearerAuthOptions } from 'fastify-bearer-auth';
+import fastifySensible from 'fastify-sensible';
+import bearerAuth from 'fastify-bearer-auth';
 import { fastifyRequestContextPlugin } from 'fastify-request-context';
 import helmet from 'fastify-helmet';
 import cors from 'fastify-cors';
 import middie from 'middie';
 
-import { OADAError } from 'oada-error';
-
 import { pino } from '@oada/pino-debug';
 
 import tokenLookup, { TokenResponse } from './tokenLookup';
 import resources from './resources';
+import websockets from './websockets';
 import authorizations from './authorizations';
 import users from './users';
 import config from './config';
 
 const logger = pino({ name: 'http-handler' });
-const app = fastify({
+export const app = fastify({
   logger,
   ignoreTrailingSlash: true,
 });
 
-async function start() {
+export async function start() {
   await app.listen(config.get('server.port'), '0.0.0.0');
   app.log.info('OADA Server started on port %d', config.get('server.port'));
 }
@@ -52,8 +52,10 @@ declare module 'fastify' {
   }
 }
 async function init() {
-  //const server = http.createServer(app);
-  //require('./websockets')(server);
+  await app.register(fastifySensible, {
+    // Hide internal error cause from clients except in development
+    errorHandler: process.env.NODE_ENV === 'development' ? false : undefined,
+  });
 
   await app.register(helmet);
 
@@ -75,80 +77,92 @@ async function init() {
     ],
   });
 
-  await app.register(bearerAuth, {
-    keys: new Set(),
-    async auth(token, request: FastifyRequest) {
-      try {
-        const tok = await tokenLookup({
-          //connection_id: request.id,
-          //domain: request.headers.host,
-          token,
-        });
+  /**
+   * Handle WebSockets
+   *
+   * @todo Require token for connecting WebSockets?
+   */
+  await app.register(websockets);
 
-        if (!tok['token_exists']) {
-          request.log.debug('Token does not exist');
-          throw new OADAError('Unauthorized', 401);
+  /**
+   * Create context for authenticated stuff
+   */
+  await app.register(async function tokenScope(app) {
+    await app.register(bearerAuth, {
+      keys: new Set<string>(),
+      async auth(token, request: FastifyRequest) {
+        try {
+          const tok = await tokenLookup({
+            //connection_id: request.id,
+            //domain: request.headers.host,
+            token,
+          });
+
+          if (!tok['token_exists']) {
+            request.log.debug('Token does not exist');
+            return false;
+          }
+          if (tok.doc.expired) {
+            request.log.debug('Token expired');
+            return false;
+          }
+          // TODO: Why both??
+          request.requestContext.set('user', tok.doc);
+          request.requestContext.set('authorization', tok.doc); // for users handler
+
+          return true;
+        } catch (err) {
+          request.log.error(err);
+          return false;
         }
-        if (tok.doc.expired) {
-          request.log.debug('Token expired');
-          throw new OADAError('Unauthorized', 401);
-        }
-        // TODO: Why both??
-        request.requestContext.set('user', tok.doc);
-        request.requestContext.set('authorization', tok.doc); // for users handler
+      },
+    });
 
-        return true;
-      } catch (err) {
-        request.log.error(err);
-        return false;
-      }
-    },
-  } as FastifyBearerAuthOptions);
+    /**
+     * Route /bookmarks to resources?
+     */
+    await app.register(resources, {
+      prefix: '/bookmarks',
+      prefixPath(request) {
+        const user = request.requestContext.get<TokenResponse['doc']>('user')!;
+        return user.bookmarks_id;
+      },
+    });
 
-  /**
-   * Route /bookmarks to resources?
-   */
-  await app.register(resources, {
-    prefix: '/bookmarks',
-    prefixPath(request) {
-      const user = request.requestContext.get<TokenResponse['doc']>('user')!;
-      return user.bookmarks_id;
-    },
+    /**
+     * Route /shares to resources?
+     */
+    await app.register(resources, {
+      prefix: '/shares',
+      prefixPath(request) {
+        const user = request.requestContext.get<TokenResponse['doc']>('user')!;
+        return user.shares_id;
+      },
+    });
+
+    /**
+     * Handle /resources
+     */
+    await app.register(resources, {
+      prefix: '/resources',
+      prefixPath() {
+        return 'resources/';
+      },
+    });
+
+    await app.register(middie);
+    app.use('/authorizations', authorizations);
+    app.use('/users', users);
   });
-
-  /**
-   * Route /shares to resources?
-   */
-  await app.register(resources, {
-    prefix: '/shares',
-    prefixPath(request) {
-      const user = request.requestContext.get<TokenResponse['doc']>('user')!;
-      return user.shares_id;
-    },
-  });
-
-  /**
-   * Handle /resources
-   */
-  await app.register(resources, {
-    prefix: '/resources',
-    prefixPath() {
-      return 'resources/';
-    },
-  });
-
-  await app.register(middie);
-  await app.use('/authorizations', authorizations);
-  await app.use('/users', users);
 
   if (require.main === module) {
-    start().catch((err) => {
+    try {
+      await start();
+    } catch (err) {
       app.log.error(err);
       process.exit(1);
-    });
+    }
   }
 }
 
 init();
-
-export { start };

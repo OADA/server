@@ -1062,7 +1062,6 @@ __metadata:
     "@types/pino-http": ^5.4.1
     "@types/type-is": ^1.6.3
     "@types/ws": ^7.4.4
-    axios: ^0.21.1
     bluebird: ^3.7.2
     body-parser: ^1.19.0
     cacache: ^15.0.6
@@ -1071,19 +1070,22 @@ __metadata:
     debug: ^4.3.1
     express: ^4.17.1
     fastify: ^3.15.1
+    fastify-accepts-serializer: ^3.2.0
     fastify-bearer-auth: ^5.1.0
     fastify-cors: ^6.0.1
     fastify-helmet: ^5.3.1
     fastify-request-context: ^2.1.3
+    fastify-sensible: ^3.1.1
+    fastify-websocket: ^3.2.0
     jsonpointer: ^4.1.0
     ksuid: ^2.0.0
+    light-my-request: ^4.4.1
     middie: ^5.2.0
     oada-error: ^1.1.1
     pino-http: ^5.5.0
     tslib: ^2.2.0
     type-is: ^1.6.18
     uuid: ^8.3.2
-    ws: ^7.4.5
   languageName: unknown
   linkType: soft
 
@@ -2259,7 +2261,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"accepts@npm:^1.3.7, accepts@npm:~1.3.7":
+"accepts@npm:^1.3.5, accepts@npm:^1.3.7, accepts@npm:~1.3.7":
   version: 1.3.7
   resolution: "accepts@npm:1.3.7"
   dependencies:
@@ -4456,6 +4458,26 @@ __metadata:
   languageName: node
   linkType: hard
 
+"fastify-accepts-serializer@npm:^3.2.0":
+  version: 3.2.0
+  resolution: "fastify-accepts-serializer@npm:3.2.0"
+  dependencies:
+    fastify-accepts: ^2.0.0
+    fastify-plugin: ^3.0.0
+  checksum: 619172442fe56a94401faa4e5d42de5badb8011d453fc1fa0863315bd92813b0b07b56b475610f81f1dd6816cd4548714fe0f10207d3e8c4c257d4dfc955813b
+  languageName: node
+  linkType: hard
+
+"fastify-accepts@npm:^2.0.0":
+  version: 2.0.1
+  resolution: "fastify-accepts@npm:2.0.1"
+  dependencies:
+    accepts: ^1.3.5
+    fastify-plugin: ^2.0.0
+  checksum: 2259e1114400cd0200f13bd2f97c7efb283fa9ea47c2383a401b3579a00237c4b948436d76baf55f50e22cb5afa3b8a07cdc5c0183f1874c78dc709301f129dc
+  languageName: node
+  linkType: hard
+
 "fastify-bearer-auth@npm:^5.1.0":
   version: 5.1.0
   resolution: "fastify-bearer-auth@npm:5.1.0"
@@ -4492,6 +4514,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"fastify-plugin@npm:^2.0.0":
+  version: 2.3.4
+  resolution: "fastify-plugin@npm:2.3.4"
+  dependencies:
+    semver: ^7.3.2
+  checksum: 31426b9698776b91efaca65a0afd1ae7e4546d5c116747970fa3dcf3df5f3ec6a87f5fd689e42e09081d684ec889e2659114289667bbead6eab23036911065ca
+  languageName: node
+  linkType: hard
+
 "fastify-plugin@npm:^3.0.0":
   version: 3.0.0
   resolution: "fastify-plugin@npm:3.0.0"
@@ -4511,10 +4542,34 @@ __metadata:
   languageName: node
   linkType: hard
 
+"fastify-sensible@npm:^3.1.1":
+  version: 3.1.1
+  resolution: "fastify-sensible@npm:3.1.1"
+  dependencies:
+    fast-deep-equal: ^3.1.1
+    fastify-plugin: ^3.0.0
+    forwarded: ^0.1.2
+    http-errors: ^1.7.3
+    type-is: ^1.6.18
+    vary: ^1.1.2
+  checksum: 4ba3a490ee938379787c41e17f1ebe9b17bee2767ec4a5c9f9f1e24fc546a77115dd170a4768dccb36531b70b527909acf3a272e02319304a410089c214eb0e8
+  languageName: node
+  linkType: hard
+
 "fastify-warning@npm:^0.2.0":
   version: 0.2.0
   resolution: "fastify-warning@npm:0.2.0"
   checksum: 17b9e2ffdfbfd40486f3395e4c33a8f997c9d23c3201624eed5596f3e3dcd3d5bf4f0c18b3bf7c32f3e80d1d573df9d59bc5c179fcfe5de52a1baa64934a54cf
+  languageName: node
+  linkType: hard
+
+"fastify-websocket@npm:^3.2.0":
+  version: 3.2.0
+  resolution: "fastify-websocket@npm:3.2.0"
+  dependencies:
+    fastify-plugin: ^3.0.0
+    ws: ^7.4.2
+  checksum: a1cc55381dbc80e88575b2573a715a32f8f42a861a540826b77fab1950751cb9de91950a7dd726947dc9a4057afbea6bb513260585f277e3b9d2ec89c410c737
   languageName: node
   linkType: hard
 
@@ -4762,7 +4817,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"forwarded@npm:~0.1.2":
+"forwarded@npm:^0.1.2, forwarded@npm:~0.1.2":
   version: 0.1.2
   resolution: "forwarded@npm:0.1.2"
   checksum: 568d862ad1c514813fc62dc1bd58b8669b16d4ee2e634a6fc71f4849df798883ab94e63d8e1b35a17af51b2b39ca869e672c7310efe42fc7b9bad43a80b5ff87
@@ -5286,7 +5341,7 @@ fsevents@~2.3.1:
   languageName: node
   linkType: hard
 
-"http-errors@npm:^1.6.2":
+"http-errors@npm:^1.6.2, http-errors@npm:^1.7.3":
   version: 1.8.0
   resolution: "http-errors@npm:1.8.0"
   dependencies:
@@ -6338,7 +6393,7 @@ fsevents@~2.3.1:
   languageName: node
   linkType: hard
 
-"light-my-request@npm:^4.2.0":
+"light-my-request@npm:^4.2.0, light-my-request@npm:^4.4.1":
   version: 4.4.1
   resolution: "light-my-request@npm:4.4.1"
   dependencies:
@@ -10584,7 +10639,7 @@ typescript@^4.2.4:
   languageName: node
   linkType: hard
 
-"ws@npm:^7.2.3, ws@npm:^7.4.5":
+"ws@npm:^7.2.3, ws@npm:^7.4.2":
   version: 7.4.5
   resolution: "ws@npm:7.4.5"
   peerDependencies:
