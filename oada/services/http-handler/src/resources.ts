@@ -78,7 +78,7 @@ const plugin: FastifyPluginAsync<Options> = async function (fastify, opts) {
         url.replace(/^\/?resources\//, '/')
       );
     }
-    reply.header('Content-Location', '/resources/' + path);
+    reply.header('Content-Location', '/' + path);
     request.requestContext.set('oadaGraph', resp);
     request.requestContext.set('resourceExists', resp.resourceExists);
   });
