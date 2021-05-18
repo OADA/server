@@ -127,8 +127,6 @@ services:
       # - ARANGO_RANDOM_ROOT_PASSWORD=1
       - ARANGO_NO_AUTH=1
       - ARANGO_STORAGE_ENGINE=rocksdb
-      - ARANGO_STATISTICS=0
-    command: ['arangod']
 
   # You could use an external kafka instance instead.
   # The services just need hostname `kafka`
