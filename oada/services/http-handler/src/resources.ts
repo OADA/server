@@ -17,7 +17,7 @@ import { join } from 'path';
 // @ts-ignore added in node 15/16
 import { pipeline } from 'stream/promises';
 
-import type { FastifyPluginAsync, FastifyRequest } from 'fastify';
+import type { FastifyPluginAsync, FastifyReply, FastifyRequest } from 'fastify';
 import type {} from './server';
 
 import ksuid from 'ksuid';
@@ -51,7 +51,7 @@ export interface Options {
  */
 const plugin: FastifyPluginAsync<Options> = async function (fastify, opts) {
   // TODO: Better way to handle oada path with fastify?
-  fastify.addHook('onRequest', async (request) => {
+  fastify.addHook('preParsing', async (request) => {
     // Resolve request URL to a path within OADA
     const path = request.url
       .replace(opts.prefix, opts.prefixPath(request))
@@ -62,11 +62,11 @@ const plugin: FastifyPluginAsync<Options> = async function (fastify, opts) {
   /**
    * Perform the OADA "graph lookup"
    */
-  fastify.addHook('onRequest', async function graphHandler(request, reply) {
+  fastify.addHook('preHandler', async function graphHandler(request, reply) {
     const path = request.requestContext.get<string>('oadaPath');
 
     const resp = await resources.lookupFromUrl(
-      '/resources' + path,
+      '/' + path,
       request.requestContext.get<TokenResponse['doc']>('user')!.user_id
     );
     request.log.trace('GRAPH LOOKUP RESULT %O', resp);
@@ -92,7 +92,7 @@ const plugin: FastifyPluginAsync<Options> = async function (fastify, opts) {
    * Has to run after graph lookup.
    * @todo Should this just be in each methods implenting function?
    */
-  fastify.addHook('onRequest', async function checkScope(request) {
+  fastify.addHook('preHandler', async function checkScope(request) {
     const oadaGraph = request.requestContext.get<resources.GraphLookup>(
       'oadaGraph'
     )!;
@@ -115,7 +115,7 @@ const plugin: FastifyPluginAsync<Options> = async function (fastify, opts) {
       case 'DELETE':
         if (!oadaGraph['resource_id']) {
           // PUTing non-existant resource
-          return;
+          break;
         } else if (!response.permissions.owner && !response.permissions.write) {
           request.log.warn(
             '%s tried to PUT resource without proper permissions',
@@ -167,7 +167,7 @@ const plugin: FastifyPluginAsync<Options> = async function (fastify, opts) {
   /**
    * Return "path leftover" in a header if token/scope passes
    */
-  fastify.addHook('onRequest', async function pathLeftover(request, reply) {
+  fastify.addHook('preHandler', async function pathLeftover(request, reply) {
     const oadaGraph = request.requestContext.get<resources.GraphLookup>(
       'oadaGraph'
     )!;
@@ -203,9 +203,11 @@ const plugin: FastifyPluginAsync<Options> = async function (fastify, opts) {
     }
   });
 
-  fastify.register(formats);
+  await fastify.register(formats);
 
-  fastify.get('/*', async function getResource(request, reply) {
+  fastify.get('', getResource); // Fix for GET /bookmarks ?
+  fastify.get('/*', getResource);
+  async function getResource(request: FastifyRequest, reply: FastifyReply) {
     const oadaGraph = request.requestContext.get<resources.GraphLookup>(
       'oadaGraph'
     )!;
@@ -287,7 +289,7 @@ const plugin: FastifyPluginAsync<Options> = async function (fastify, opts) {
       reply.header('Content-Length', size);
       return reply.send(cacache.get.stream.byDigest(CACHE_PATH, integrity));
     }
-  });
+  }
 
   // TODO: This was a quick make it work. Do what you want with it.
   function unflattenMeta(doc: any) {
@@ -318,6 +320,7 @@ const plugin: FastifyPluginAsync<Options> = async function (fastify, opts) {
   }
 
   // Parse JSON content types as text (but do not parse JSON yet)
+  // TODO: Stream process the body instead
   fastify.addContentTypeParser(
     ['json', '+json'],
     {
@@ -345,111 +348,115 @@ const plugin: FastifyPluginAsync<Options> = async function (fastify, opts) {
     return rev ? +rev : +etag;
   }
 
-  /**
-   * Handle PUT/POST
-   */
+  fastify.route({
+    url: '*',
+    method: ['PUT', 'POST'],
+    handler: putResource,
+  });
   fastify.route({
     url: '/*',
     method: ['PUT', 'POST'],
-    async handler(request, reply) {
-      // Don't let users modify their shares?
-      noModifyShares(request);
-
-      const oadaGraph = request.requestContext.get<resources.GraphLookup>(
-        'oadaGraph'
-      )!;
-      const resourceExists = request.requestContext.get<boolean>(
-        'resourceExists'
-      )!;
-      const user = request.requestContext.get<TokenResponse['doc']>('user')!;
-      let path = request.requestContext.get<string>('oadaPath')!;
-      request.log.trace('Saving PUT body for request');
-
-      // Turn POSTs into PUTs at random id
-      if (request.method === 'POST') {
-        const { string: id } = await ksuid.random();
-        path = join(path, id);
-      }
-
-      /**
-       * Use binary stuff if not a JSON request
-       */
-      if (!typeis(request.raw, ['json', '+json'])) {
-        await pipeline(
-          request.raw,
-          cacache.put.stream(CACHE_PATH, oadaGraph.resource_id)
-        );
-        request.body = '{}';
-      }
-
-      const { _id: bodyid } = await putBodies.savePutBody(
-        request.body as string
-      );
-      request.log.trace('PUT body saved');
-
-      request.log.trace('RESOURCE EXISTS %O', oadaGraph);
-      request.log.trace('RESOURCE EXISTS %O', resourceExists);
-      const ignoreLinks =
-        ((request.headers['x-oada-ignore-links'] ??
-          '') as string).toLowerCase() == 'true';
-      const ifmatch = request.headers['if-match'];
-      const ifnonematch = request.headers['if-none-match'];
-      const resp = (await requester.send(
-        {
-          'connection_id': request.id,
-          resourceExists,
-          'domain': request.hostname,
-          'url': path,
-          'resource_id': oadaGraph['resource_id'],
-          'path_leftover': oadaGraph['path_leftover'],
-          //'meta_id': oadaGraph['meta_id'],
-          'user_id': user['user_id'],
-          'authorizationid': user['authorizationid'],
-          'client_id': user['client_id'],
-          'contentType': request.headers['content-type'],
-          'bodyid': bodyid,
-          'if-match': ifmatch && parseETag(ifmatch),
-          'if-none-match': ifnonematch?.split(',').map(parseETag),
-          ignoreLinks,
-        } as WriteRequest,
-        config.get('kafka.topics.writeRequest')
-      )) as WriteResponse;
-
-      request.log.trace('Recieved write response');
-      switch (resp.code) {
-        case 'success':
-          break;
-        case 'permission':
-          throw new OADAError(
-            'Forbidden',
-            403,
-            'User does not own this resource'
-          );
-        case 'if-match failed':
-          throw new OADAError(
-            'Precondition Failed',
-            412,
-            'If-Match header does not match current resource _rev'
-          );
-        case 'if-none-match failed':
-          throw new OADAError(
-            'Precondition Failed',
-            412,
-            'If-None-Match header contains current resource _rev'
-          );
-        default:
-          throw new OADAError('write failed with code ' + resp.code);
-      }
-      return (
-        reply
-          .header('X-OADA-Rev', resp['_rev'])
-          .header('ETag', `"${resp['_rev']}"`)
-          // TODO: What is the right thing to return here?
-          //.redirect(204, req.baseUrl + req.url)
-          .send()
-      );
-    },
+    handler: putResource,
   });
+  /**
+   * Handle PUT/POST
+   */
+  async function putResource(request: FastifyRequest, reply: FastifyReply) {
+    // Don't let users modify their shares?
+    noModifyShares(request);
+
+    const oadaGraph = request.requestContext.get<resources.GraphLookup>(
+      'oadaGraph'
+    )!;
+    const resourceExists = request.requestContext.get<boolean>(
+      'resourceExists'
+    )!;
+    const user = request.requestContext.get<TokenResponse['doc']>('user')!;
+    let path = request.requestContext.get<string>('oadaPath')!;
+    request.log.trace('Saving PUT body for request');
+
+    // Turn POSTs into PUTs at random id
+    if (request.method === 'POST') {
+      const { string: id } = await ksuid.random();
+      path = join(path, id);
+    }
+
+    /**
+     * Use binary stuff if not a JSON request
+     */
+    if (!typeis(request.raw, ['json', '+json'])) {
+      await pipeline(
+        request.raw,
+        cacache.put.stream(CACHE_PATH, oadaGraph.resource_id)
+      );
+      request.body = '{}';
+    }
+
+    const { _id: bodyid } = await putBodies.savePutBody(request.body as string);
+    request.log.trace('PUT body saved');
+
+    request.log.trace('RESOURCE EXISTS %O', oadaGraph);
+    request.log.trace('RESOURCE EXISTS %O', resourceExists);
+    const ignoreLinks =
+      ((request.headers['x-oada-ignore-links'] ??
+        '') as string).toLowerCase() == 'true';
+    const ifmatch = request.headers['if-match'];
+    const ifnonematch = request.headers['if-none-match'];
+    const resp = (await requester.send(
+      {
+        'connection_id': request.id,
+        resourceExists,
+        'domain': request.hostname,
+        'url': path,
+        'resource_id': oadaGraph['resource_id'],
+        'path_leftover': oadaGraph['path_leftover'],
+        //'meta_id': oadaGraph['meta_id'],
+        'user_id': user['user_id'],
+        'authorizationid': user['authorizationid'],
+        'client_id': user['client_id'],
+        'contentType': request.headers['content-type'],
+        'bodyid': bodyid,
+        'if-match': ifmatch && parseETag(ifmatch),
+        'if-none-match': ifnonematch?.split(',').map(parseETag),
+        ignoreLinks,
+      } as WriteRequest,
+      config.get('kafka.topics.writeRequest')
+    )) as WriteResponse;
+
+    request.log.trace('Recieved write response');
+    switch (resp.code) {
+      case 'success':
+        break;
+      case 'permission':
+        throw new OADAError(
+          'Forbidden',
+          403,
+          'User does not own this resource'
+        );
+      case 'if-match failed':
+        throw new OADAError(
+          'Precondition Failed',
+          412,
+          'If-Match header does not match current resource _rev'
+        );
+      case 'if-none-match failed':
+        throw new OADAError(
+          'Precondition Failed',
+          412,
+          'If-None-Match header contains current resource _rev'
+        );
+      default:
+        throw new OADAError('write failed with code ' + resp.code);
+    }
+    return (
+      reply
+        .header('X-OADA-Rev', resp['_rev'])
+        .header('ETag', `"${resp['_rev']}"`)
+        // TODO: What is the right thing to return here?
+        //.redirect(204, req.baseUrl + req.url)
+        .send()
+    );
+  }
 
   /**
    * Handle DELETE

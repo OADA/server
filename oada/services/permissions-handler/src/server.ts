@@ -102,11 +102,6 @@ export function handleReq(req: PermissionsRequest): PermissionsResponse {
       owner: false,
     },
   };
-  trace('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~');
-  trace('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~');
-  trace('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~');
-  trace('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~');
-  trace('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~');
   trace('inside permissions handler %s', req.oadaGraph.resource_id);
   //    return oadaLib.resources.getResource(req.oadaGraph.resource_id, '').then((resource) => {
   trace('request is: %O', req);

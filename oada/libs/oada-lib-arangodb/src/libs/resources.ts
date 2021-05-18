@@ -41,6 +41,8 @@ const edges = db.collection(config.get('arangodb.collections.edges.name'));
 
 const MAX_DEPTH = 100; // TODO: Is this good?
 
+type Nullable<T extends {}> = { [K in keyof T]: T[K] | null };
+
 export interface Permission {
   type: string;
   owner: string;
@@ -106,11 +108,11 @@ export async function lookupFromUrl(
     LET rev = DOCUMENT(LAST(path.vertices).resource_id)._oada_rev
     RETURN MERGE(path, {permissions, rev, type})`;
 
-  trace('Query: %s', query);
+  trace('Query: %O', query);
   const result: {
     rev: number;
     type: string | null;
-    permissions: Permission[];
+    permissions: Nullable<Permission>[];
     vertices:
       | Array<{ resource_id: string; is_resource: boolean; path?: string }>
       | [null];
@@ -156,16 +158,16 @@ export async function lookupFromUrl(
   result.permissions.reverse().some((p) => {
     if (p) {
       if (permissions.read === undefined) {
-        permissions.read = p.read;
+        permissions.read = p.read === null ? undefined : p.read;
       }
       if (permissions.write === undefined) {
-        permissions.write = p.write;
+        permissions.read = p.write === null ? undefined : p.write;
       }
       if (permissions.owner === undefined) {
-        permissions.owner = p.owner;
+        permissions.owner = p.owner === null ? undefined : p.owner;
       }
       if (permissions.type === undefined) {
-        permissions.type = p.type;
+        permissions.type = p.type === null ? undefined : p.type;
       }
       if (
         permissions.read !== undefined &&

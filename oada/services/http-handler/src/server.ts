@@ -19,8 +19,6 @@ import { fastifyRequestContextPlugin } from 'fastify-request-context';
 import helmet from 'fastify-helmet';
 import cors from 'fastify-cors';
 import middie from 'middie';
-// @ts-ignore
-import wellKnownJson from 'well-known-json';
 
 import { OADAError } from 'oada-error';
 
@@ -37,108 +35,11 @@ const app = fastify({
   logger,
   ignoreTrailingSlash: true,
 });
-//const server = http.createServer(app);
-//require('./websockets')(server);
-
-app.register(helmet);
-
-app.register(fastifyRequestContextPlugin, {
-  hook: 'preValidation',
-  defaultStoreValues: {},
-});
-
-app.get('/favicon.ico', async (_request, reply) => reply.send());
 
 async function start() {
   await app.listen(config.get('server.port'), '0.0.0.0');
   app.log.info('OADA Server started on port %d', config.get('server.port'));
 }
-
-// Turn on CORS for all domains, allow the necessary headers
-app.register(
-  cors({
-    exposedHeaders: [
-      'x-oada-rev',
-      'x-oada-path-leftover',
-      'location',
-      'content-location',
-    ],
-  })
-);
-//app.options('*', cors());
-
-////////////////////////////////////////////////////////
-// Configure the OADA well-known handler middleware
-const wellKnownHandler = wellKnownJson({
-  headers: {
-    'content-type': 'application/vnd.oada.oada-configuration.1+json',
-  },
-});
-//wellKnownHandler.addResource('oada-configuration', config.oada_configuration);
-
-declare module 'fastify-request-context' {}
-
-app.register(bearerAuth, {
-  keys: new Set(),
-  async auth(token, request: FastifyRequest) {
-    try {
-      const tok = await tokenLookup({
-        //connection_id: request.id,
-        //domain: request.headers.host,
-        token,
-      });
-
-      if (!tok['token_exists']) {
-        request.log.debug('Token does not exist');
-        throw new OADAError('Unauthorized', 401);
-      }
-      if (tok.doc.expired) {
-        request.log.debug('Token expired');
-        throw new OADAError('Unauthorized', 401);
-      }
-      // TODO: Why both??
-      request.requestContext.set('user', tok.doc);
-      request.requestContext.set('authorization', tok.doc); // for users handler
-
-      return true;
-    } catch (err) {
-      request.log.error(err);
-      return false;
-    }
-  },
-} as FastifyBearerAuthOptions);
-
-/**
- * Route /bookmarks to resources?
- */
-app.register(resources, {
-  prefix: '/bookmarks',
-  prefixPath(request) {
-    const user = request.requestContext.get<TokenResponse['doc']>('user')!;
-    return user.bookmarks_id;
-  },
-});
-
-/**
- * Route /shares to resources?
- */
-app.register(resources, {
-  prefix: '/shares',
-  prefixPath(request) {
-    const user = request.requestContext.get<TokenResponse['doc']>('user')!;
-    return user.shares_id;
-  },
-});
-
-/**
- * Handle /resources
- */
-app.register(resources, {
-  prefix: '/resources',
-  prefixPath() {
-    return 'resources/';
-  },
-});
 
 // TODO: Remove middie once everything is ported
 import type { SimpleHandleFunction, NextHandleFunction } from 'connect';
@@ -150,17 +51,104 @@ declare module 'fastify' {
     use(route: string | string[], fn: Handler): this;
   }
 }
-app.register(middie).then(() => {
-  app.use(wellKnownHandler);
-  app.use('/authorizations', authorizations);
-  app.use('/users', users);
-});
+async function init() {
+  //const server = http.createServer(app);
+  //require('./websockets')(server);
 
-if (require.main === module) {
-  start().catch((err) => {
-    app.log.error(err);
-    process.exit(1);
+  await app.register(helmet);
+
+  await app.register(fastifyRequestContextPlugin, {
+    hook: 'onRequest',
+    defaultStoreValues: {},
   });
+
+  app.get('/favicon.ico', async (_request, reply) => reply.send());
+
+  // Turn on CORS for all domains, allow the necessary headers
+  await app.register(cors, {
+    strictPreflight: false,
+    exposedHeaders: [
+      'x-oada-rev',
+      'x-oada-path-leftover',
+      'location',
+      'content-location',
+    ],
+  });
+
+  await app.register(bearerAuth, {
+    keys: new Set(),
+    async auth(token, request: FastifyRequest) {
+      try {
+        const tok = await tokenLookup({
+          //connection_id: request.id,
+          //domain: request.headers.host,
+          token,
+        });
+
+        if (!tok['token_exists']) {
+          request.log.debug('Token does not exist');
+          throw new OADAError('Unauthorized', 401);
+        }
+        if (tok.doc.expired) {
+          request.log.debug('Token expired');
+          throw new OADAError('Unauthorized', 401);
+        }
+        // TODO: Why both??
+        request.requestContext.set('user', tok.doc);
+        request.requestContext.set('authorization', tok.doc); // for users handler
+
+        return true;
+      } catch (err) {
+        request.log.error(err);
+        return false;
+      }
+    },
+  } as FastifyBearerAuthOptions);
+
+  /**
+   * Route /bookmarks to resources?
+   */
+  await app.register(resources, {
+    prefix: '/bookmarks',
+    prefixPath(request) {
+      const user = request.requestContext.get<TokenResponse['doc']>('user')!;
+      return user.bookmarks_id;
+    },
+  });
+
+  /**
+   * Route /shares to resources?
+   */
+  await app.register(resources, {
+    prefix: '/shares',
+    prefixPath(request) {
+      const user = request.requestContext.get<TokenResponse['doc']>('user')!;
+      return user.shares_id;
+    },
+  });
+
+  /**
+   * Handle /resources
+   */
+  await app.register(resources, {
+    prefix: '/resources',
+    prefixPath() {
+      return 'resources/';
+    },
+  });
+
+  await app.register(middie);
+  await app.use('/authorizations', authorizations);
+  await app.use('/users', users);
+
+  if (require.main === module) {
+    start().catch((err) => {
+      app.log.error(err);
+      process.exit(1);
+    });
+  }
 }
+
+init();
 
 export { start };
