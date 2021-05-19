@@ -86,7 +86,7 @@ jobs:
         context:
           - oada
         include:
-          - service: support/proxy
+          - service: support-proxy
             context: support/proxy
 
     runs-on: ubuntu-latest
