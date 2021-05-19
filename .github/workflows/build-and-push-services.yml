@@ -86,7 +86,7 @@ jobs:
         context:
           - oada
         include:
-          - service: support-proxy
+          - service: support/proxy
             context: support/proxy
 
     runs-on: ubuntu-latest
@@ -126,29 +126,33 @@ jobs:
       - name: Prepare Tags
         id: prepare
         run: |
+          # GHCR prefix for this repo
           GHCR=$(echo ghcr.io/${{ github.repository }} | tr '[:upper:]' '[:lower:]')
+          # Name on DockerHub
           DOCKER_IMAGE=oada/${{ matrix.service }}
+          # Name on GHCR
+          GHCR_IMAGE=${GHCR}/${{ matrix.service}}
 
           TAGS="${DOCKER_IMAGE}:${{ needs.setup.outputs.version }}"
-          TAGS="$TAGS,${GHCR}/${DOCKER_IMAGE}:${{ needs.setup.outputs.version }}"
+          TAGS="$TAGS,${GHCR_IMAGE}:${{ needs.setup.outputs.version }}"
           if [[ "${{ needs.setup.outputs.release }}" ]]; then
             if [[ "${{ needs.setup.outputs.prerelease }}" ]]; then
               TAGS="${DOCKER_IMAGE}:${{ needs.setup.outputs.major }}.${{ needs.setup.outputs.minor }}.${{ needs.setup.outputs.patch }}-${{ needs.setup.outputs.prerelease }}"
-              TAGS="$TAGS,${GHCR}/${DOCKER_IMAGE}:${{ needs.setup.outputs.major }}.${{ needs.setup.outputs.minor }}.${{ needs.setup.outputs.patch }}-${{ needs.setup.outputs.prerelease }}"
+              TAGS="$TAGS,${GHCR_IMAGE}:${{ needs.setup.outputs.major }}.${{ needs.setup.outputs.minor }}.${{ needs.setup.outputs.patch }}-${{ needs.setup.outputs.prerelease }}"
               # TODO: Keep old prerelease builds?
             else
               TAGS="$TAGS,${DOCKER_IMAGE}:latest"
-              TAGS="$TAGS,${GHCR}/${DOCKER_IMAGE}:latest"
+              TAGS="$TAGS,${GHCR_IMAGE}:latest"
               TAGS="$TAGS,${DOCKER_IMAGE}:${{ needs.setup.outputs.major }}"
-              TAGS="$TAGS,${GHCR}/${DOCKER_IMAGE}:${{ needs.setup.outputs.major }}"
+              TAGS="$TAGS,${GHCR_IMAGE}:${{ needs.setup.outputs.major }}"
               TAGS="$TAGS,${DOCKER_IMAGE}:${{ needs.setup.outputs.major }}.${{ needs.setup.outputs.major }}"
-              TAGS="$TAGS,${GHCR}/${DOCKER_IMAGE}:${{ needs.setup.outputs.major }}.${{ needs.setup.outputs.major }}"
+              TAGS="$TAGS,${GHCR_IMAGE}:${{ needs.setup.outputs.major }}.${{ needs.setup.outputs.major }}"
             fi
           fi
 
           if [ "${{ github.event_name }}" = "push" ]; then
             TAGS="$TAGS,${DOCKER_IMAGE}:sha-${GITHUB_SHA::8}"
-            TAGS="$TAGS,${GHCR}/${DOCKER_IMAGE}:sha-${GITHUB_SHA::8}"
+            TAGS="$TAGS,${GHCR_IMAGE}:sha-${GITHUB_SHA::8}"
           fi
 
           echo ::set-output name=tags::${TAGS}
