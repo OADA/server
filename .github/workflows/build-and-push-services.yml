@@ -126,7 +126,7 @@ jobs:
       - name: Prepare Tags
         id: prepare
         run: |
-          GHCR=ghcr.io/${{ github.repository }}
+          GHCR=$(echo ghcr.io/${{ github.repository }} | tr '[:upper:]' '[:lower:]')
           DOCKER_IMAGE=oada/${{ matrix.service }}
 
           TAGS="${DOCKER_IMAGE}:${{ needs.setup.outputs.version }}"
