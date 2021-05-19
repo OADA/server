@@ -86,7 +86,7 @@ jobs:
         context:
           - oada
         include:
-          - service: support-proxy
+          - service: support/proxy
             context: support/proxy
 
     runs-on: ubuntu-latest
@@ -116,18 +116,18 @@ jobs:
         id: cache
         with:
           path: /tmp/.buildx-cache
-          # Don't separate cache by service?
-          key: ${{ runner.os }}-buildx-${{ github.sha }}
+          key: ${{ runner.os }}-buildx-${{ github.sha }}-${{ matrix.service }}
           restore-keys: |
+            ${{ runner.os }}-buildx-${{ github.sha }}-
             ${{ runner.os }}-buildx-
 
       - name: Prepare Tags
         id: prepare
         run: |
-          # GHCR prefix for this repo
+          # GHCR prefix for this repo (doesn't like upper case)
           GHCR=$(echo ghcr.io/${{ github.repository }} | tr '[:upper:]' '[:lower:]')
-          # Name on DockerHub
-          DOCKER_IMAGE=oada/${{ matrix.service }}
+          # Name on DockerHub (doesn't like extra / in images?)
+          DOCKER_IMAGE=oada/$(echo ${{ matrix.service }} | tr '/' '-')
           # Name on GHCR
           GHCR_IMAGE=${GHCR}/${{ matrix.service}}
 
@@ -231,9 +231,9 @@ jobs:
         id: cache
         with:
           path: /tmp/.buildx-cache
-          # Don't separate cache by service?
-          key: ${{ runner.os }}-buildx-${{ github.sha }}
+          key: ${{ runner.os }}-buildx-${{ github.sha }}-${{ matrix.service }}
           restore-keys: |
+            ${{ runner.os }}-buildx-${{ github.sha }}-
             ${{ runner.os }}-buildx-
 
       - name: Login to DockerHub
