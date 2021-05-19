@@ -55,12 +55,12 @@ describe('External tests of write-handler, run from admin', () => {
     await con
       .delete({ path: `/${topid}/nonexistentlink` })
       .catch((e) => trace('FAILED DELETE: e = ', e));
-    const changedocs = ((await con
+    const changedocs = (await con
       .get({ path: `/${topid}/_meta/_changes/${firstrev + 1}` })
       .then((r) => r.data)
       .catch((e) =>
         trace('FAILED GET CHANGE DOC, e = ', e)
-      )) as unknown) as Change[];
+      )) as unknown as Change[];
     const thechange = _.find(changedocs, (c) => c.type === 'delete');
 
     expect(_.get(thechange, 'type')).to.equal('delete');

@@ -168,10 +168,10 @@ export function handleReq(req: WriteRequest): Promise<WriteResponse> {
       trace('FIRST BODY %O', body);
       trace('doUpsert %d', Date.now() / 1000 - beforeUpsert);
       if (req['if-match']) {
-        const rev = ((await resources.getResource(
+        const rev = (await resources.getResource(
           req['resource_id'],
           '_rev'
-        )) as unknown) as number;
+        )) as unknown as number;
         if (req['if-match'] !== rev) {
           error(rev);
           error(req['if-match']);
@@ -180,10 +180,10 @@ export function handleReq(req: WriteRequest): Promise<WriteResponse> {
         }
       }
       if (req['if-none-match']) {
-        const rev = ((await resources.getResource(
+        const rev = (await resources.getResource(
           req['resource_id'],
           '_rev'
-        )) as unknown) as number;
+        )) as unknown as number;
         if (req['if-none-match'].includes(rev)) {
           error(rev);
           error(req['if-none-match']);
@@ -194,10 +194,10 @@ export function handleReq(req: WriteRequest): Promise<WriteResponse> {
       const beforeCacheRev = Date.now() / 1000;
       let cacheRev = cache.get(req['resource_id']);
       if (!cacheRev) {
-        cacheRev = ((await resources.getResource(
+        cacheRev = (await resources.getResource(
           req['resource_id'],
           '_rev'
-        )) as unknown) as number;
+        )) as unknown as number;
       }
       if (req.rev) {
         if (cacheRev !== req.rev) {

@@ -323,9 +323,7 @@ export async function getResourceOwnerIdRev(
     ); // Treat non-existing path has not-found
 }
 
-export async function getParents(
-  id: string
-): Promise<Array<{
+export async function getParents(id: string): Promise<Array<{
   resource_id: string;
   path: string;
   contentType: string;
