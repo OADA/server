@@ -21,6 +21,8 @@ import helmet from 'fastify-helmet';
 import cors from 'fastify-cors';
 import middie from 'middie';
 
+import { plugin as formats } from '@oada/formats-server';
+
 import { pino } from '@oada/pino-debug';
 
 import tokenLookup, { TokenResponse } from './tokenLookup';
@@ -76,6 +78,11 @@ async function init() {
       'content-location',
     ],
   });
+
+  /**
+   * @todo why does onSend never run for us??
+   */
+  await app.register(formats);
 
   /**
    * Handle WebSockets

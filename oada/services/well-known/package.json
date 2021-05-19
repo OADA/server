@@ -23,7 +23,7 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
-    "@oada/formats-server": "^1.5.1",
+    "@oada/formats-server": "^1.6.0",
     "@oada/lib-config": "^0.0.1",
     "@oada/pino-debug": "^1.0.0",
     "@oada/well-known-json": "^1.0.1",

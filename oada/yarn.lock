@@ -1021,9 +1021,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@oada/formats-server@npm:^1.5.1":
-  version: 1.5.1
-  resolution: "@oada/formats-server@npm:1.5.1"
+"@oada/formats-server@npm:^1.6.0":
+  version: 1.6.0
+  resolution: "@oada/formats-server@npm:1.6.0"
   dependencies:
     "@oada/media-types": ^1.5.1
     content-type: ^1.0.4
@@ -1038,7 +1038,7 @@ __metadata:
       optional: true
     fastify:
       optional: true
-  checksum: 187ddf91c2403fb6dea2049b52dd21fca59f8eba1a5972fa6d8dfb6b7b603c46292c96e60aef16a65dc6cace51bf7227538c951acc2065e3d9cd41c3c23abb60
+  checksum: deeb3db7d1096c87e94273ba7265b11a78a9656e4a5ca789ee8564e4b6bfa727c30578d34d858382e504edd7c43244edcff2b437a224a7542b072dbc78708fc7
   languageName: node
   linkType: hard
 
@@ -1046,7 +1046,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@oada/http-handler@workspace:services/http-handler"
   dependencies:
-    "@oada/formats-server": ^1.5.1
+    "@oada/formats-server": ^1.6.0
     "@oada/lib-arangodb": ^0.0.2
     "@oada/lib-config": ^0.0.1
     "@oada/lib-kafka": ^1.0.0
@@ -1406,7 +1406,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@oada/well-known@workspace:services/well-known"
   dependencies:
-    "@oada/formats-server": ^1.5.1
+    "@oada/formats-server": ^1.6.0
     "@oada/lib-config": ^0.0.1
     "@oada/pino-debug": ^1.0.0
     "@oada/well-known-json": ^1.0.1

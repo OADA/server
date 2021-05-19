@@ -22,14 +22,14 @@ import ksuid from 'ksuid';
 import cacache from 'cacache';
 import typeis from 'type-is';
 
-import { plugin as formats } from '@oada/formats-server';
-
 import { resources, changes, putBodies } from '@oada/lib-arangodb';
 import {
   handleReq as permissionsRequest,
   Scope,
 } from '@oada/permissions-handler';
 import type { WriteRequest, WriteResponse } from '@oada/write-handler';
+
+import { handleResponse } from '@oada/formats-server';
 
 import type {} from './server';
 import requester from './requester';
@@ -166,8 +166,6 @@ const plugin: FastifyPluginAsync<Options> = async function (fastify, opts) {
     reply.header('X-OADA-Path-Leftover', oadaGraph['path_leftover']);
   });
 
-  await fastify.register(formats);
-
   fastify.get('', getResource); // Fix for GET /bookmarks ?
   fastify.get('/*', getResource);
   async function getResource(request: FastifyRequest, reply: FastifyReply) {
@@ -175,7 +173,12 @@ const plugin: FastifyPluginAsync<Options> = async function (fastify, opts) {
       'oadaGraph'
     )!;
 
-    reply.header('Content-Type', oadaGraph.type);
+    const type = oadaGraph.type ?? 'application/json';
+    // TODO: Why does this not work as a fastify plugin??
+    const headers = handleResponse(type);
+    // TODO: Why does fastify strip content-type params??
+    reply.headers(headers);
+
     reply.header('X-OADA-Rev', oadaGraph.rev);
     reply.header('ETag', `"${oadaGraph.rev}"`);
 
