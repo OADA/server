@@ -192,6 +192,7 @@ __metadata:
     fastify-accepts-serializer: ^3.2.0
     fastify-bearer-auth: ^5.1.0
     fastify-cors: ^6.0.1
+    fastify-graceful-shutdown: ^3.1.0
     fastify-healthcheck: ^3.1.0
     fastify-helmet: ^5.3.1
     fastify-request-context: ^2.1.3
@@ -2780,6 +2781,16 @@ __metadata:
   languageName: node
   linkType: hard
 
+"fastify-graceful-shutdown@npm:^3.1.0":
+  version: 3.1.0
+  resolution: "fastify-graceful-shutdown@npm:3.1.0"
+  dependencies:
+    fastify-plugin: ^3.0.0
+    fastparallel: ^2.4.0
+  checksum: d54be4e5a9a19f27d79c7fb1b27f837db3e6dd3c6ab3ed5d9ce54500969177ddb7cde955c1682cfa3a1fa4b8e36990c6c6897869dbbc659efa14464b2640c472
+  languageName: node
+  linkType: hard
+
 "fastify-healthcheck@npm:^3.1.0":
   version: 3.1.0
   resolution: "fastify-healthcheck@npm:3.1.0"
@@ -2879,6 +2890,16 @@ __metadata:
     semver: ^7.3.2
     tiny-lru: ^7.0.0
   checksum: eac651eb18ce8f1c26f69391c13fbe014a8cfd23a2ba72bb79b328c66f5b6809beeea4550b55f879e5fbec09b1e8fe9e37eb0c592e7f7a1441b5fc2034e5aedc
+  languageName: node
+  linkType: hard
+
+"fastparallel@npm:^2.4.0":
+  version: 2.4.0
+  resolution: "fastparallel@npm:2.4.0"
+  dependencies:
+    reusify: ^1.0.4
+    xtend: ^4.0.2
+  checksum: 96c8da0e470a01c91de01d61e8e3a1ede400701dbf29a55e07ef23ba51f96a756d82d2e5ae6f9d64de6d7d97354299e4bf8ce128e58b7456a80c59a3601bbf13
   languageName: node
   linkType: hard
 
@@ -6446,7 +6467,7 @@ typescript@^4.2.4:
   languageName: node
   linkType: hard
 
-"xtend@npm:^4.0.0":
+"xtend@npm:^4.0.0, xtend@npm:^4.0.2":
   version: 4.0.2
   resolution: "xtend@npm:4.0.2"
   checksum: 37ee522a3e9fb9b143a400c30b21dc122aa8c9c9411c6afae1005a4617dc20a21765c114d544e37a6bb60c2733dd8ee0a44ed9e80d884ac78cccd30b5e0ab0da

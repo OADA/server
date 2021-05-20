@@ -73,7 +73,7 @@ WORKDIR /oada
 # Install packages needed for running node-rdkafka etc.
 RUN apk add --no-cache \
     bash \
-    tini
+    dumb-init
 
 COPY ./utils/entrypoint.sh /entrypoint.sh
 RUN chmod u+x /entrypoint.sh
@@ -84,8 +84,9 @@ RUN chmod u+x /wait-for-it.sh
 # Copy in config file?
 COPY ./oada.config.js /oada.config.js
 
-# Launch entrypoint with tini
-ENTRYPOINT ["/sbin/tini", "--", "/entrypoint.sh"]
+# Launch entrypoint with dumb-init
+# Remap SIGTERM to SIGINT https://github.com/Yelp/dumb-init#signal-rewriting
+ENTRYPOINT ["/usr/bin/dumb-init", "--rewrite", "15:2", "--", "/entrypoint.sh"]
 # Run start script of package
 CMD ["start"]
 

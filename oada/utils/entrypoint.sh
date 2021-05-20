@@ -8,8 +8,12 @@ CMD="yarn workspace @oada/${OADA_SERVICE} run $@"
     if [ ! -t 1 ] && [ -n "${PINO_TRANSPORT}" ];
     then
         # Only pipe if PINO_TRANSPORT set and non-interactive
-        ${CMD} | ${PINO_TRANSPORT};
+        FIFO=/tmp/pino-fifo
+        rm -f ${FIFO}
+        mkfifo ${FIFO}
+        ${PINO_TRANSPORT} < ${FIFO} &
+        exec ${CMD} > ${FIFO}
     else
         # Interactive or no transport set?
-        ${CMD};
+        exec ${CMD};
     fi
