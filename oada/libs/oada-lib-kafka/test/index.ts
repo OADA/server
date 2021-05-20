@@ -30,13 +30,13 @@ const error = debug('@oada/lib-kafka:tests:error');
 
 import { Responder } from '../src/Responder';
 import { Requester } from '../src/Requester';
-import { KafkaBase } from '../src/base';
+import type { KafkaBase } from '../src/base';
 
 const REQ_TOPIC = 'test_requests';
 const RES_TOPIC = 'test_responses';
 const GROUP = 'test_group';
 
-const kafka = new Kafka({ brokers: config.get('kafka:broker').split(',') });
+const kafka = new Kafka({ brokers: config.get('kafka.broker') });
 
 describe('@oada/lib-kafka', () => {
   let prod: Producer;

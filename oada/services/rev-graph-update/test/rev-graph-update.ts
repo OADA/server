@@ -18,7 +18,7 @@ import { expect } from 'chai';
 import randomstring from 'randomstring';
 
 import { Requester } from '@oada/lib-kafka';
-import oadaLib from '@oada/lib-arangodb';
+import { init } from '@oada/lib-arangodb';
 import type { WriteRequest } from '@oada/write-handler';
 
 import revGraphUpdate from '../';
@@ -33,7 +33,7 @@ const requester = new Requester({
 });
 
 describe('rev graph update service', () => {
-  before(oadaLib.init.run);
+  before(init.run);
   before(function waitKafka(done) {
     requester.on('ready', () => done());
   });
@@ -83,7 +83,7 @@ describe('rev graph update service', () => {
   //-------------------------------------------------------
   // After tests are done, get rid of our temp database
   //-------------------------------------------------------
-  after(oadaLib.init.cleanup);
+  after(init.cleanup);
   after(function rdis() {
     this.timeout(10000);
     requester.disconnect();

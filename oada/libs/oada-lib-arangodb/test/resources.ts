@@ -23,11 +23,11 @@ describe('resources lib', () => {
     return oadaLib.resources
       .getParents('/resources:default:resources_rock_123')
       .then((p) => {
-        expect(p?.[0].path).to.equal('/rocks-index/90j2klfdjss');
-        expect(p?.[0].resource_id).to.equal(
+        expect(p?.[0]?.path).to.equal('/rocks-index/90j2klfdjss');
+        expect(p?.[0]?.resource_id).to.equal(
           'resources/default:resources_rocks_123'
         );
-        expect(p?.[0].contentType).to.equal(
+        expect(p?.[0]?.contentType).to.equal(
           'application/vnd.oada.rocks.1+json'
         );
       });

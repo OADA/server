@@ -128,7 +128,7 @@ describe('init', () => {
         return Bluebird.each(
           _.keys(defaultdata),
           (colname: keyof typeof defaultdata) => {
-            const data = defaultdata[colname];
+            const data = defaultdata[colname]!;
             return Bluebird.each(data, (doc) => {
               if (colname === 'users') {
                 // @ts-ignore

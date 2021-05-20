@@ -25,21 +25,21 @@ describe('token lib', () => {
   before(oadaLib.init.run);
 
   it('should find a token', async () => {
-    const token = exampleTokens[0];
+    const token = exampleTokens[0]!;
 
     return oadaLib.authorizations.findByToken(token.token).then((t) => {
       expect(t?.token).to.equal(token.token);
       expect(t?.createTime).to.equal(token.createTime);
       expect(t?.expiresIn).to.equal(token.expiresIn);
       expect(t?.user).to.be.a('object');
-      expect(t?.user._id).to.equal(token.user._id);
+      expect(t?.user?._id).to.equal(token.user._id);
       expect(t?.clientId).to.equal(token.clientId);
     });
   });
 
   it('should save a token', async () => {
-    const token = exampleTokens[0];
-    const user = exampleUsers[0];
+    const token = exampleTokens[0]!;
+    const user = exampleUsers[0]!;
 
     return oadaLib.authorizations
       .save(
