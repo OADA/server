@@ -1050,10 +1050,10 @@ __metadata:
     "@oada/lib-arangodb": ^0.0.2
     "@oada/lib-config": ^0.0.1
     "@oada/lib-kafka": ^1.0.0
-    "@oada/permissions-handler": "workspace:services/permissions-handler"
+    "@oada/permissions-handler": ^1.0.0
     "@oada/pino-debug": ^1.0.0
     "@oada/types": ^1.5.1
-    "@oada/write-handler": "workspace:services/write-handler"
+    "@oada/write-handler": ^1.0.0
     "@types/bluebird": ^3.5.34
     "@types/cacache": ^15.0.0
     "@types/connect": ^3
@@ -1225,7 +1225,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@oada/permissions-handler@workspace:services/permissions-handler":
+"@oada/permissions-handler@^1.0.0, @oada/permissions-handler@workspace:services/permissions-handler":
   version: 0.0.0-use.local
   resolution: "@oada/permissions-handler@workspace:services/permissions-handler"
   dependencies:
@@ -1269,7 +1269,7 @@ __metadata:
     "@oada/lib-config": ^0.0.1
     "@oada/lib-kafka": ^1.0.0
     "@oada/pino-debug": ^1.0.0
-    "@oada/write-handler": "workspace:services/write-handler"
+    "@oada/write-handler": ^1.0.0
     "@types/bluebird": ^3.5.34
     "@types/chai": ^4.2.18
     "@types/debug": ^4.1.5
@@ -1292,7 +1292,7 @@ __metadata:
     "@oada/lib-config": ^0.0.1
     "@oada/lib-kafka": ^1.0.0
     "@oada/pino-debug": ^1.0.0
-    "@oada/write-handler": "workspace:services/write-handler"
+    "@oada/write-handler": ^1.0.0
     "@types/bluebird": ^3.5.34
     "@types/debug": ^4.1.5
     "@types/mocha": ^8.2.2
@@ -1326,7 +1326,7 @@ __metadata:
     "@oada/lib-config": ^0.0.1
     "@oada/lib-kafka": ^1.0.0
     "@oada/pino-debug": ^1.0.0
-    "@oada/write-handler": "workspace:services/write-handler"
+    "@oada/write-handler": ^1.0.0
     "@types/bluebird": ^3.5.34
     "@types/debug": ^4.1.5
     "@types/node": ^14.14.45
@@ -1380,7 +1380,7 @@ __metadata:
     "@oada/lib-config": ^0.0.1
     "@oada/lib-kafka": ^1.0.0
     "@oada/pino-debug": ^1.0.0
-    "@oada/write-handler": "workspace:services/write-handler"
+    "@oada/write-handler": ^1.0.0
     "@types/bluebird": ^3.5.34
     "@types/debug": ^4.1.5
     axios: ^0.21.1
@@ -1428,7 +1428,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@oada/write-handler@workspace:services/write-handler":
+"@oada/write-handler@^1.0.0, @oada/write-handler@workspace:services/write-handler":
   version: 0.0.0-use.local
   resolution: "@oada/write-handler@workspace:services/write-handler"
   dependencies:
