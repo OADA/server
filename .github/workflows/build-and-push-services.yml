@@ -143,8 +143,8 @@ jobs:
               TAGS="$TAGS,${GHCR_IMAGE}:latest"
               TAGS="$TAGS,${DOCKER_IMAGE}:${{ needs.setup.outputs.major }}"
               TAGS="$TAGS,${GHCR_IMAGE}:${{ needs.setup.outputs.major }}"
-              TAGS="$TAGS,${DOCKER_IMAGE}:${{ needs.setup.outputs.major }}.${{ needs.setup.outputs.major }}"
-              TAGS="$TAGS,${GHCR_IMAGE}:${{ needs.setup.outputs.major }}.${{ needs.setup.outputs.major }}"
+              TAGS="$TAGS,${DOCKER_IMAGE}:${{ needs.setup.outputs.major }}.${{ needs.setup.outputs.minor }}"
+              TAGS="$TAGS,${GHCR_IMAGE}:${{ needs.setup.outputs.major }}.${{ needs.setup.outputs.minor }}"
             fi
           fi
 
@@ -173,7 +173,7 @@ jobs:
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build and push to DockerHub
+      - name: Build and push to images
         uses: docker/build-push-action@v2.4.0
         with:
           context: ${{ matrix.context }}

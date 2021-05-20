@@ -70,7 +70,7 @@ FROM node:$NODE_VER AS production
 
 WORKDIR /oada
 
-# Install packages needed for running node-rdkafka etc.
+# Install needed packages
 RUN apk add --no-cache \
     bash \
     dumb-init

@@ -1,6 +1,6 @@
-[![License](https://img.shields.io/github/license/OADA/server)](LICENSE)
-
 # OADA Reference API Server
+
+[![License](https://img.shields.io/github/license/OADA/server)](LICENSE)
 
 This project is a reference implementation of an OADA-conformant API server.
 It can be used to host easily run your own OADA instance,
