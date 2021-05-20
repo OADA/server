@@ -124,12 +124,12 @@ jobs:
       - name: Prepare Tags
         id: prepare
         run: |
-          # GHCR prefix for this repo (doesn't like upper case)
-          GHCR=$(echo ghcr.io/${{ github.repository }} | tr '[:upper:]' '[:lower:]')
+          # Doesn't like upper case
+          OWNER=$(echo ${{ github.repository_owner }} | tr '[:upper:]' '[:lower:]')
           # Name on DockerHub (doesn't like extra / in images?)
-          DOCKER_IMAGE=oada/$(echo ${{ matrix.service }} | tr '/' '-')
+          DOCKER_IMAGE=${OWNER}/$(echo ${{ matrix.service }} | tr '/' '-')
           # Name on GHCR
-          GHCR_IMAGE=${GHCR}/${{ matrix.service}}
+          GHCR_IMAGE=ghcr.io/${OWNER}/${{ matrix.service}}
 
           TAGS="${DOCKER_IMAGE}:${{ needs.setup.outputs.version }}"
           TAGS="$TAGS,${GHCR_IMAGE}:${{ needs.setup.outputs.version }}"
