@@ -14,6 +14,7 @@
  */
 
 import fastify, { FastifyRequest } from 'fastify';
+import fastifyHealthcheck from 'fastify-healthcheck';
 import fastifySensible from 'fastify-sensible';
 import bearerAuth from 'fastify-bearer-auth';
 import { fastifyRequestContextPlugin } from 'fastify-request-context';
@@ -57,6 +58,20 @@ async function init() {
   await app.register(fastifySensible, {
     // Hide internal error cause from clients except in development
     errorHandler: process.env.NODE_ENV === 'development' ? false : undefined,
+  });
+
+  /**
+   * @todo restrict this to localhost?
+   */
+  await app.register(fastifyHealthcheck, {
+    exposeUptime: process.env.NODE_ENV === 'development',
+    // By default everything is off, so give numbers to under-pressure
+    underPressureOptions: {
+      maxEventLoopDelay: 5000,
+      //maxHeapUsedBytes: 100000000,
+      //maxRssBytes: 100000000,
+      maxEventLoopUtilization: 0.98,
+    },
   });
 
   await app.register(helmet);

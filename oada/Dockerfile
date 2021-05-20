@@ -89,15 +89,16 @@ ENTRYPOINT ["/sbin/tini", "--", "/entrypoint.sh"]
 # Run start script of package
 CMD ["start"]
 
-# Copy in the code
-COPY --from=code /oada/ /oada/
-
 # Add volume for Binary data and chown to node?
 RUN mkdir -p /oada/binary && chown node:node /oada/binary
 #VOLUME /oada/binary
 
 # Do not run services as root
 USER node
+ENV PORT=8080
+
+# Copy in the code
+COPY --from=code /oada/ /oada/
 
 ARG OADA_SERVICE
 ENV OADA_SERVICE=${OADA_SERVICE}

@@ -41,6 +41,8 @@ services:
     build:
       args:
         OADA_SERVICE: http-handler
+    healthcheck:
+      test: ["CMD", "yarn", "healthcheck"]
     depends_on:
       - startup
     networks:

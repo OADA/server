@@ -192,6 +192,7 @@ __metadata:
     fastify-accepts-serializer: ^3.2.0
     fastify-bearer-auth: ^5.1.0
     fastify-cors: ^6.0.1
+    fastify-healthcheck: ^3.1.0
     fastify-helmet: ^5.3.1
     fastify-request-context: ^2.1.3
     fastify-sensible: ^3.1.1
@@ -2776,6 +2777,15 @@ __metadata:
   version: 0.3.1
   resolution: "fastify-error@npm:0.3.1"
   checksum: ba3b964a9cc7ee72e1573f10951705ee8cadbc7a395af54ad5cfef7be05ad6eec558b71d7d9862cce92dd68145ccc7e9ab79487c37ed8c763bcf7bbf40ef6d36
+  languageName: node
+  linkType: hard
+
+"fastify-healthcheck@npm:^3.1.0":
+  version: 3.1.0
+  resolution: "fastify-healthcheck@npm:3.1.0"
+  dependencies:
+    under-pressure: ^5.6.0
+  checksum: 54aa8891f060b85ce81fa31496888fbd06fdfddae3c07505f772d690b4ce227c708c4ef8a4ea330a912a5d23e4067ae4097c7179a2cd040872084a91fef47ed7
   languageName: node
   linkType: hard
 
@@ -6192,6 +6202,16 @@ typescript@^4.2.4:
     has-symbols: ^1.0.0
     which-boxed-primitive: ^1.0.1
   checksum: 25e82f99bb40981f30615644305c757ecefff43d2ef2ac1b80e24f304f3002cd637eecb672bdd07f5fb858a265d96a4b2e983c714cba65498715acf7af23e86b
+  languageName: node
+  linkType: hard
+
+"under-pressure@npm:^5.6.0":
+  version: 5.6.0
+  resolution: "under-pressure@npm:5.6.0"
+  dependencies:
+    fastify-error: ^0.3.0
+    fastify-plugin: ^3.0.0
+  checksum: 3892f8580682a78a8d7046277a283bf25d8222d3aa72736f3d3a657a80654b90c7a60c16b1fe6a1484484e8e860b688384e4d4f99ece3937903a1bcf76aa2ed4
   languageName: node
   linkType: hard
 

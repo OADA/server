@@ -17,15 +17,22 @@ import libConfig from '@oada/lib-config';
 
 const config = libConfig({
   'server': {
-    port: { format: 'port', default: 80, env: 'PORT', arg: 'port' },
-    mode: { format: ['http', 'https'], default: 'http' },
+    port: {
+      format: 'port',
+      default: 80,
+      env: 'PORT',
+      arg: 'port',
+    },
     domain: {
       format: String,
       default: 'localhost',
       env: 'DOMAIN',
       arg: 'domain',
     },
-    publicUri: { format: 'url', default: 'https://localhost' },
+    publicUri: {
+      format: 'url',
+      default: 'https://localhost',
+    },
   },
   // Prefix should match nginx proxy's prefix for the auth service
   //endpointsPrefix: '/oadaauth',
