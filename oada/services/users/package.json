@@ -1,6 +1,6 @@
 {
   "name": "@oada/users",
-  "version": "1.0.0",
+  "version": "3.0.1",
   "description": "",
   "author": "Alex Layton <alex@layton.in>",
   "license": "Apache-2.0",
@@ -13,10 +13,10 @@
     "add": "./dist/useradd.js"
   },
   "dependencies": {
-    "@oada/lib-arangodb": "^0.0.2",
-    "@oada/lib-config": "^0.0.1",
-    "@oada/lib-kafka": "^1.0.0",
-    "@oada/pino-debug": "^1.0.0",
+    "@oada/lib-arangodb": "^3.0.1",
+    "@oada/lib-config": "^3.0.1",
+    "@oada/lib-kafka": "^3.0.1",
+    "@oada/pino-debug": "^3.0.1",
     "chalk": "^4.1.1",
     "clone-deep": "^4.0.1",
     "debug": "^4.3.1",

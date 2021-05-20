@@ -1,6 +1,6 @@
 {
   "name": "@oada/lib-kafka",
-  "version": "1.0.0",
+  "version": "3.0.1",
   "description": "OADA Kafka library",
   "main": "dist/index.js",
   "scripts": {
@@ -23,7 +23,7 @@
   "author": "Alex Layton <alex@layton.in>",
   "license": "Apache-2.0",
   "dependencies": {
-    "@oada/lib-config": "^0.0.1",
+    "@oada/lib-config": "^3.0.1",
     "bluebird": "^3.7.2",
     "debug": "^4.3.1",
     "kafkajs": "^1.15.0",
