@@ -82,7 +82,7 @@ COPY ./utils/wait-for-it.sh /wait-for-it.sh
 RUN chmod u+x /wait-for-it.sh
 
 # Copy in config file?
-COPY ./oada-srvc-docker-config.js /oada-srvc-docker-config.js
+COPY ./oada.config.js /oada.config.js
 
 # Launch entrypoint with tini
 ENTRYPOINT ["/sbin/tini", "--", "/entrypoint.sh"]

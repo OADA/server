@@ -1,4 +1,4 @@
-[![License](https://img.shields.io/github/license/OADA/oada-srvc-docker)](LICENSE)
+[![License](https://img.shields.io/github/license/OADA/server)](LICENSE)
 
 # OADA Reference API Server
 
@@ -37,8 +37,8 @@ If you want to contribute, or do other development type things,
 you can run the server straight from this code base.
 
 ```shell
-git clone https://github.com/OADA/oada-srvc-docker.git
-cd oada-srvc-docker
+git clone https://github.com/OADA/server.git
+cd server
 # Running up the first time will automatically build the docker images
 DOMAIN=yourdomain.com docker-compose up -d
 ```
@@ -75,7 +75,7 @@ Some important ones are:
 Rather than trying to always remembering to set your environment variables,
 you probably want to use a [.env file] for things like `DOMAIN`.
 
-[releases]: https://github.com/OADA/oada-srvc-docker/releases
+[releases]: https://github.com/OADA/server/releases
 [docker-compose]: https://docs.docker.com/compose/
 [.env file]: https://docs.docker.com/compose/environment-variables/#substitute-environment-variables-in-compose-files
 [arangodb]: https://www.arangodb.com

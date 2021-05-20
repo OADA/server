@@ -9,10 +9,10 @@ services:
       - kafka_net
       - arango_net
     volumes:
-      - ./oada/oada-srvc-docker-config.js:/oada-srvc-docker-config.js # for debug?
+      - ./oada/oada.config.js:/oada.config.js # for debug?
     environment:
       # Default to loading packaged default config?
-      - CONFIG=${OADA_CONFIG-/oada-srvc-docker-config.js}
+      - CONFIG=${OADA_CONFIG-/oada.config.js}
       - NODE_ENV=${NODE_ENV-development}
       - DEBUG=${DEBUG-*}
       - PINO_LEVEL

@@ -14,7 +14,7 @@
 
 x-release:
   environment: &env # Default to loading packaged default config?
-    CONFIG: ${OADA_CONFIG-/oada-srvc-docker-config.js}
+    CONFIG: ${OADA_CONFIG-/oada.config.js}
     NODE_ENV: ${NODE_ENV-production}
     DEBUG: ${DEBUG-*:error,*:warn,*:info}
     PINO_LEVEL:
