@@ -250,17 +250,31 @@ const plugin: FastifyPluginAsync = async function (fastify) {
       let res: LightMyRequest.Response;
       try {
         res = await fastify.inject(request);
+        // Treat any status above 2xx as error?
+        if (res.statusCode >= 300) {
+          const headers: Record<string, string> = {};
+          for (const [k, v] of Object.entries(res.headers)) {
+            // @oada/client gets very angry if a header is anything but a string
+            headers[k] = v!.toString();
+          }
+          return sendResponse({
+            requestId: msg.requestId,
+            status: res.statusCode,
+            statusText: res.statusMessage,
+            headers,
+            data: res.payload ? JSON.parse(res.payload) : undefined,
+          });
+        }
       } catch (err) {
         if (err.response) {
-          const e = {
+          error(err);
+          return sendResponse({
             requestId: msg.requestId,
             status: err.response.status,
             statusText: err.response.statusText,
             headers: err.response.headers,
             data: err.response.data,
-          };
-          error(err);
-          return sendResponse(e);
+          });
         } else {
           throw err;
         }
@@ -309,7 +323,7 @@ const plugin: FastifyPluginAsync = async function (fastify) {
               request.headers['x-oada-rev']
             );
             const rev = await resources.getResource(resourceId, '_rev');
-            const revInt = parseInt(rev as unknown as string);
+            const revInt = parseInt((rev as unknown) as string);
             // If the requested rev is behind by revLimit, simply
             // re-GET the entire resource
             trace('REVS:', resourceId, rev, request.headers['x-oada-rev']);
@@ -386,7 +400,7 @@ const plugin: FastifyPluginAsync = async function (fastify) {
             status: res.statusCode,
             headers,
             // TODO: Fix this?
-            data: JSON.parse(res.payload),
+            data: res.payload ? JSON.parse(res.payload) : undefined,
           });
       }
     }
