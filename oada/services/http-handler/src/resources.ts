@@ -164,8 +164,10 @@ const plugin: FastifyPluginAsync<Options> = async function (fastify, opts) {
     reply.header('X-OADA-Path-Leftover', oadaGraph['path_leftover']);
   });
 
-  fastify.get('', getResource); // Fix for GET /bookmarks ?
-  fastify.get('/*', getResource);
+  // Fix for GET /bookmarks ?
+  // TODO: why wasn't HEAD working with `.get`?
+  fastify.route({ url: '*', method: ['GET', 'HEAD'], handler: getResource });
+  fastify.route({ url: '/*', method: ['GET', 'HEAD'], handler: getResource });
   async function getResource(request: FastifyRequest, reply: FastifyReply) {
     const oadaGraph =
       request.requestContext.get<resources.GraphLookup>('oadaGraph')!;
@@ -328,16 +330,6 @@ const plugin: FastifyPluginAsync<Options> = async function (fastify, opts) {
     return rev ? +rev : +etag;
   }
 
-  fastify.route({
-    url: '*',
-    method: ['PUT', 'POST'],
-    handler: putResource,
-  });
-  fastify.route({
-    url: '/*',
-    method: ['PUT', 'POST'],
-    handler: putResource,
-  });
   /**
    * Handle PUT/POST
    */
@@ -422,6 +414,8 @@ const plugin: FastifyPluginAsync<Options> = async function (fastify, opts) {
         .send()
     );
   }
+  fastify.route({ url: '*', method: ['PUT', 'POST'], handler: putResource });
+  fastify.route({ url: '/*', method: ['PUT', 'POST'], handler: putResource });
 
   /**
    * Handle DELETE
