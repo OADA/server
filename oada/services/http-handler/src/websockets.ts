@@ -18,7 +18,7 @@ import { EventEmitter } from 'events';
 
 import type WebSocket from 'ws';
 import fastifyWebsocket from 'fastify-websocket';
-import debug from 'debug';
+import _debug from 'debug';
 import jsonpointer from 'jsonpointer';
 import type LightMyRequest from 'light-my-request';
 
@@ -43,10 +43,11 @@ import type { FastifyPluginAsync } from 'fastify';
  */
 const revLimit = Infinity;
 
-const info = debug('websockets:info');
-const error = debug('websockets:error');
-const warn = debug('websockets:warn');
-const trace = debug('websockets:trace');
+const info = _debug('websockets:info');
+const error = _debug('websockets:error');
+const warn = _debug('websockets:warn');
+const debug = _debug('websockets:debug');
+const trace = _debug('websockets:trace');
 
 const emitter = new EventEmitter();
 
@@ -107,7 +108,7 @@ const plugin: FastifyPluginAsync = async function (fastify) {
 
     function handleChange(resourceId: string): Watch['handler'] {
       function handler(this: Watch, { change }: { change: Change }) {
-        trace('responding watch %s', resourceId);
+        debug('responding watch %s', resourceId);
 
         const requests =
           watches[resourceId]?.requests ?? ({} as Record<string, string>);
@@ -138,7 +139,7 @@ const plugin: FastifyPluginAsync = async function (fastify) {
       return handler;
     }
     function sendResponse(resp: SocketResponse) {
-      trace('Responding to request: %O', resp);
+      debug('Responding to request: %O', resp);
       socket.send(JSON.stringify(resp));
     }
     function sendChange(resp: SocketChange) {
@@ -199,7 +200,7 @@ const plugin: FastifyPluginAsync = async function (fastify) {
       };
       switch (msg.method) {
         case 'ping':
-          trace('ping');
+          debug('ping');
           // Send an empty response
           sendResponse({
             requestId: msg.requestId,
@@ -207,7 +208,7 @@ const plugin: FastifyPluginAsync = async function (fastify) {
           });
           return;
         case 'unwatch':
-          trace('closing watch', msg.requestId);
+          debug('closing watch', msg.requestId);
 
           // Find corresponding WATCH
           let res: string | undefined;
@@ -294,7 +295,7 @@ const plugin: FastifyPluginAsync = async function (fastify) {
 
       switch (msg.method) {
         case 'watch':
-          trace('opening watch', msg.requestId);
+          debug('opening watch', msg.requestId);
 
           let watch = watches[resourceId];
           if (!watch) {
@@ -316,14 +317,14 @@ const plugin: FastifyPluginAsync = async function (fastify) {
 
           // Emit all new changes from the given rev in the request
           if (request.headers?.['x-oada-rev'] !== undefined) {
-            trace('Setting up watch on:', resourceId);
+            debug('Setting up watch on: %s', resourceId);
             trace(
               'RECEIVED THIS REV:',
               resourceId,
               request.headers['x-oada-rev']
             );
             const rev = await resources.getResource(resourceId, '_rev');
-            const revInt = parseInt(rev as unknown as string);
+            const revInt = parseInt((rev as unknown) as string);
             // If the requested rev is behind by revLimit, simply
             // re-GET the entire resource
             trace('REVS:', resourceId, rev, request.headers['x-oada-rev']);
@@ -362,7 +363,9 @@ const plugin: FastifyPluginAsync = async function (fastify) {
               );
               for (let sendRev = reqRevInt + 1; sendRev <= revInt; sendRev++) {
                 trace(
-                  `Sending change ${sendRev} to resumed WATCH ${msg.requestId}`
+                  'Sending change %d to resumed WATCH %s',
+                  sendRev,
+                  msg.requestId
                 );
                 await changes
                   .getChangeArray(resourceId, sendRev)
@@ -425,7 +428,7 @@ writeResponder.on('request', async function handleReq(req) {
 
   try {
     const change = await changes.getChangeArray(req.resource_id, req._rev);
-    trace('Emitted change for:', req.resource_id, change);
+    trace('Emitted change for %s: %O', req.resource_id, change);
     emitter.emit(req.resource_id, {
       path_leftover: req.path_leftover,
       change,
@@ -438,7 +441,7 @@ writeResponder.on('request', async function handleReq(req) {
         change
       );
       if (req.resource_id && req.path_leftover === '') {
-        trace('Removing all listeners to:', req.resource_id);
+        debug('Removing all listeners to: %s', req.resource_id);
         emitter.removeAllListeners(req.resource_id);
       }
     }
