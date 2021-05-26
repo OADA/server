@@ -21,7 +21,7 @@
     "@oada/lib-config": "^3.0.1",
     "@oada/lib-kafka": "^3.0.1",
     "@oada/pino-debug": "^3.0.1",
-    "debug": "^4.3.1",
+    "debug": "^4.3.2",
     "p-queue": "^6.6.2",
     "randomstring": "^1.2.1",
     "tslib": "^2.2.0"
@@ -29,16 +29,16 @@
   "devDependencies": {
     "@oada/client": "^2.4.1",
     "@oada/write-handler": "^3.0.1",
-    "@types/bluebird": "^3.5.34",
+    "@types/bluebird": "^3.5.35",
     "@types/chai": "^4.2.18",
     "@types/debug": "^4.1.5",
     "@types/mocha": "^8.2.2",
-    "@types/node": "^14.14.45",
+    "@types/node": "^14.17.1",
     "@types/randomstring": "^1.1.6",
     "bluebird": "^3.7.2",
     "chai": "^4.3.4",
     "mocha": "^8.4.0",
-    "ts-node": "^9.1.1",
+    "ts-node": "^10.0.0",
     "typescript": "^4.2.4"
   }
 }
