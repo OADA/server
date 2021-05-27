@@ -31,7 +31,8 @@ export interface TokenResponse {
     expired: boolean;
     authorizationid: string;
     user_id: string;
-    scope: string[];
+    user_scope: readonly string[];
+    scope: readonly string[];
     bookmarks_id: string;
     shares_id: string;
     client_id: string;
@@ -52,6 +53,7 @@ export default async function tokenLookup(
       authorizationid: '',
       user_id: '',
       scope: [],
+      user_scope: [],
       bookmarks_id: '',
       shares_id: '',
       client_id: '',
@@ -69,13 +71,13 @@ export default async function tokenLookup(
   );
 
   if (!t) {
-    warn('WARNING: token %s does not exist.', req.token);
+    warn('Token %s does not exist.', req.token);
     res.token = undefined;
     return res;
   }
 
   if (!t._id) {
-    warn('WARNING: _id for token does not exist in response');
+    warn('_id for token does not exist in response');
   }
 
   if (!t.user) {
@@ -108,6 +110,7 @@ export default async function tokenLookup(
   res.doc.authorizationid = t._id;
   res.doc.client_id = t.clientId;
   res.doc.user_id = t.user._id || res.doc.user_id;
+  res.doc.user_scope = t.user.scope;
   res.doc.bookmarks_id = t.user.bookmarks._id || res.doc.bookmarks_id;
   res.doc.shares_id = t.user.shares._id || res.doc.shares_id;
   res.doc.scope = t.scope || res.doc.scope;

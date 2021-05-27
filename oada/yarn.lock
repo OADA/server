@@ -181,6 +181,7 @@ __metadata:
     "@oada/permissions-handler": ^3.0.1
     "@oada/pino-debug": ^3.0.1
     "@oada/types": ^1.5.1
+    "@oada/users": "workspace:services/users"
     "@oada/write-handler": ^3.0.1
     "@types/bluebird": ^3.5.35
     "@types/cacache": ^15.0.0
@@ -191,7 +192,6 @@ __metadata:
     "@types/type-is": ^1.6.3
     "@types/ws": ^7.4.4
     bluebird: ^3.7.2
-    body-parser: ^1.19.0
     cacache: ^15.0.6
     clone-deep: ^4.0.1
     connect: ^3.7.0

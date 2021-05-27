@@ -131,7 +131,6 @@ async function init() {
             request.log.debug('Token expired');
             return false;
           }
-          // TODO: Why both??
           request.requestContext.set('user', tok.doc);
           request.requestContext.set('authorization', tok.doc); // for users handler
 
@@ -175,9 +174,15 @@ async function init() {
       },
     });
 
+    /**
+     * Handle /users
+     */
+    await app.register(users, {
+      prefix: '/users',
+    });
+
     await app.register(middie);
     app.use('/authorizations', authorizations);
-    app.use('/users', users);
   });
 
   if (require.main === module) {
