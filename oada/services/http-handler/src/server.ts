@@ -21,7 +21,6 @@ import bearerAuth from 'fastify-bearer-auth';
 import { fastifyRequestContextPlugin } from 'fastify-request-context';
 import helmet from 'fastify-helmet';
 import cors from 'fastify-cors';
-import middie from 'middie';
 
 import { plugin as formats } from '@oada/formats-server';
 
@@ -181,8 +180,12 @@ async function init() {
       prefix: '/users',
     });
 
-    await app.register(middie);
-    app.use('/authorizations', authorizations);
+    /**
+     * Handle /authorizations
+     */
+    await app.register(authorizations, {
+      prefix: '/authorizations',
+    });
   });
 
   if (require.main === module) {

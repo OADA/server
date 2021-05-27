@@ -104,7 +104,7 @@ export async function save({
   return await findByToken(t.token);
 }
 
-export async function revoke(token: Authorization) {
+export async function revoke(token: Authorization | string) {
   await db.query(aql`
     UPDATE ${token} WITH { revoked: true } IN ${authorizations}
   `);

@@ -183,20 +183,17 @@ __metadata:
     "@oada/types": ^1.5.1
     "@oada/users": "workspace:services/users"
     "@oada/write-handler": ^3.0.1
-    "@types/bluebird": ^3.5.35
     "@types/cacache": ^15.0.0
     "@types/connect": ^3.4.34
     "@types/debug": ^4.1.5
     "@types/node": ^14.17.1
-    "@types/pino-http": ^5.4.1
     "@types/type-is": ^1.6.3
+    "@types/uuid": ^8.3.0
     "@types/ws": ^7.4.4
     bluebird: ^3.7.2
     cacache: ^15.0.6
-    clone-deep: ^4.0.1
     connect: ^3.7.0
     debug: ^4.3.2
-    express: ^4.17.1
     fastify: ^3.16.2
     fastify-accepts-serializer: ^3.2.0
     fastify-bearer-auth: ^5.1.0
@@ -210,9 +207,7 @@ __metadata:
     jsonpointer: ^4.1.0
     ksuid: ^2.0.0
     light-my-request: ^4.4.1
-    middie: ^5.2.0
     oada-error: ^1.1.1
-    pino-http: ^5.5.0
     tslib: ^2.2.0
     type-is: ^1.6.18
     uuid: ^8.3.2
@@ -892,15 +887,6 @@ __metadata:
   version: 0.4.0
   resolution: "@types/object-assign-deep@npm:0.4.0"
   checksum: d0ebc298cc0ab6eccbefcbba11f18f47798d6b8605bb9e7361cf811ab26283e4af55239b2b531abfb2ec8d6c3d66de060599ef60ae2fa583842d589192b468fb
-  languageName: node
-  linkType: hard
-
-"@types/pino-http@npm:^5.4.1":
-  version: 5.4.1
-  resolution: "@types/pino-http@npm:5.4.1"
-  dependencies:
-    "@types/pino": "*"
-  checksum: 1619084c573245fcd447abf0eed27a6aa56c68e6bfe58bf8030280e41de2ed0c84cacafc9df46c81a8c74c7a60b8967b55eadf8fa78bc799ec607f38be0b70b5
   languageName: node
   linkType: hard
 
@@ -2765,15 +2751,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"fast-url-parser@npm:^1.1.3":
-  version: 1.1.3
-  resolution: "fast-url-parser@npm:1.1.3"
-  dependencies:
-    punycode: ^1.3.2
-  checksum: 8dbc306b736e32963fe4391a581401c422d826497ce5cacf6e7c60525febfbcea477fbc5b012fe3316f6634a20fa00882168c5ed792ff3ef904c5bc6a11a598d
-  languageName: node
-  linkType: hard
-
 "fastify-accepts-serializer@npm:^3.2.0":
   version: 3.2.0
   resolution: "fastify-accepts-serializer@npm:3.2.0"
@@ -4240,17 +4217,6 @@ fsevents@~2.3.1:
   languageName: node
   linkType: hard
 
-"middie@npm:^5.2.0":
-  version: 5.2.0
-  resolution: "middie@npm:5.2.0"
-  dependencies:
-    fastify-plugin: ^3.0.0
-    path-to-regexp: ^6.1.0
-    reusify: ^1.0.4
-  checksum: aa5405884eecfc36a91269bf018f4ee31522d29f5ccc774bb690453da539fd3ef8b1a59497cc5e6e89ae68f3598116cfe55286fa905eabf938dcbf19f5c3a7ee
-  languageName: node
-  linkType: hard
-
 "mime-db@npm:1.46.0":
   version: 1.46.0
   resolution: "mime-db@npm:1.46.0"
@@ -4981,13 +4947,6 @@ fsevents@~2.3.1:
   languageName: node
   linkType: hard
 
-"path-to-regexp@npm:^6.1.0":
-  version: 6.2.0
-  resolution: "path-to-regexp@npm:6.2.0"
-  checksum: 4116de71f5453163910347f199ab28fdd07f4053ed88093acb42dc044a2e5e7d9e18379e81e8d5d982d1b88291be3666e56be34a0741298673248fd21e3c1c16
-  languageName: node
-  linkType: hard
-
 "path-type@npm:^4.0.0":
   version: 4.0.0
   resolution: "path-type@npm:4.0.0"
@@ -5056,17 +5015,6 @@ fsevents@~2.3.1:
   languageName: node
   linkType: hard
 
-"pino-http@npm:^5.5.0":
-  version: 5.5.0
-  resolution: "pino-http@npm:5.5.0"
-  dependencies:
-    fast-url-parser: ^1.1.3
-    pino: ^6.0.0
-    pino-std-serializers: ^2.4.0
-  checksum: 6ee96d9e9036bf11a1a03646b28f58fc30ece6524d4035a498e3c8ff4988192fdc6f297ab739753cc889f70aca7fd578343fc18d514ef823f54dd25a89a6cb45
-  languageName: node
-  linkType: hard
-
 "pino-pretty@npm:^5.0.0":
   version: 5.0.0
   resolution: "pino-pretty@npm:5.0.0"
@@ -5090,13 +5038,6 @@ fsevents@~2.3.1:
   languageName: node
   linkType: hard
 
-"pino-std-serializers@npm:^2.4.0":
-  version: 2.5.0
-  resolution: "pino-std-serializers@npm:2.5.0"
-  checksum: c7605e6b9dd3b2e6898059da0bca93277ed9139f0b884d9f7c922f22f011ba4a930389a71728e7c682ee5c3bf786aa67a90f10b1eb8eadc0467c5b78883a43bc
-  languageName: node
-  linkType: hard
-
 "pino-std-serializers@npm:^3.1.0":
   version: 3.2.0
   resolution: "pino-std-serializers@npm:3.2.0"
@@ -5104,7 +5045,7 @@ fsevents@~2.3.1:
   languageName: node
   linkType: hard
 
-"pino@npm:^6.0.0, pino@npm:^6.0.2, pino@npm:^6.11.3, pino@npm:^6.2.1":
+"pino@npm:^6.0.2, pino@npm:^6.11.3, pino@npm:^6.2.1":
   version: 6.11.3
   resolution: "pino@npm:6.11.3"
   dependencies:
@@ -5232,13 +5173,6 @@ fsevents@~2.3.1:
   version: 2.1.1
   resolution: "punycode@npm:2.1.1"
   checksum: 0202dc191cb35bfd88870ac99a1e824b03486d4cee20b543ef337a6dee8d8b11017da32a3e4c40b69b19976e982c030b62bd72bba42884acb691bc5ef91354c8
-  languageName: node
-  linkType: hard
-
-"punycode@npm:^1.3.2":
-  version: 1.4.1
-  resolution: "punycode@npm:1.4.1"
-  checksum: 5ce1e044cee2b12f1c65ccd523d7e71d6578f2c77f5c21c2e7a9d588535559c9508571d42638c131dab93cbe9a7b37bce1a7475d43fc8236c99dfe1efc36cfa5
   languageName: node
   linkType: hard
 
