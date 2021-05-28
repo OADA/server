@@ -69,10 +69,9 @@ async function run() {
       await systemdb.createDatabase(dbname);
     }
     info(
-      'isProduction is ' + config.get('isProduction'),
-      'and process.env.RESETDATABASE is ' +
-        process.env.RESETDATABASE +
-        'not dropping database.'
+      'isProduction is %s and process.env.RESETDATABASE is %s, not dropping database.',
+      config.get('isProduction'),
+      process.env.RESETDATABASE
     );
     // otherwise, not test so don't drop database
     trace('database %s exists', dbname);
@@ -214,13 +213,13 @@ async function run() {
             doc._id,
             colname
           );
+        } else {
+          trace(
+            'Default document %s does not exist in collection %s so there is nothing else to do for this one.',
+            doc._key,
+            colname
+          );
         }
-        trace(
-          'Default document %s does not exist in collection %s so there is nothing else to do for this one.',
-          doc._key,
-          colname
-        );
-        return;
       }
     }
   }

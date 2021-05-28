@@ -27,12 +27,10 @@
     "@oada/lib-arangodb": "^3.0.1",
     "@oada/pino-debug": "^3.0.1",
     "debug": "^4.3.2",
-    "express": "^4.17.1",
     "tslib": "^2.2.0"
   },
   "devDependencies": {
     "@types/debug": "^4.1.5",
-    "@types/express": "^4.17.12",
     "@types/node": "14.17.1"
   }
 }
