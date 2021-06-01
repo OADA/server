@@ -80,7 +80,6 @@ jobs:
 
     needs:
       - setup
-      - build
 
     strategy:
       # Only run one build at a time to fix layer reuse?
