@@ -232,10 +232,10 @@ jobs:
           TAG="${GHCR_IMAGE}:next"
           if [[ "${{ needs.setup.outputs.release }}" ]]; then
             if [[ "${{ needs.setup.outputs.prerelease }}" ]]; then
+              TAG="${GHCR_IMAGE}:next"
             else
               TAG="${GHCR_IMAGE}:latest"
             fi
-          else
           fi
 
           echo ::set-output name=tag::${TAG}
