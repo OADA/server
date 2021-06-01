@@ -103,11 +103,6 @@ jobs:
         # Ignore the failure of a step and avoid terminating the job.
         continue-on-error: true
         id: cache
-        with:
-          key: ${{ runner.os }}-buildx-${{ github.sha }}-${{ matrix.service }}
-          restore-keys: |
-            ${{ runner.os }}-buildx-${{ github.sha }}-
-            ${{ runner.os }}-buildx-
 
       - name: Build OADA
         run: docker-compose build
@@ -155,11 +150,6 @@ jobs:
         # Ignore the failure of a step and avoid terminating the job.
         continue-on-error: true
         id: cache
-        with:
-          key: ${{ runner.os }}-buildx-${{ github.sha }}-${{ matrix.service }}
-          restore-keys: |
-            ${{ runner.os }}-buildx-${{ github.sha }}-
-            ${{ runner.os }}-buildx-
 
       - name: Prepare Tags
         id: prepare
@@ -265,16 +255,16 @@ jobs:
           # Doesn't like upper case
           OWNER=$(echo ${{ github.repository_owner }} | tr '[:upper:]' '[:lower:]')
           # Name on DockerHub (doesn't like extra / in images?)
-          #DOCKER_IMAGE=${OWNER}/$(echo ${{ matrix.service }} | tr '/' '-')
+          DOCKER_IMAGE=${OWNER}/$(echo ${{ matrix.service }} | tr '/' '-')
           # Name on GHCR
-          GHCR_IMAGE=ghcr.io/${OWNER}/${{ matrix.service}}
+          #GHCR_IMAGE=ghcr.io/${OWNER}/${{ matrix.service}}
 
-          TAG="${GHCR_IMAGE}:next"
+          TAG="${DOCKER_IMAGE}:next"
           if [[ "${{ needs.setup.outputs.release }}" ]]; then
             if [[ "${{ needs.setup.outputs.prerelease }}" ]]; then
-              TAG="${GHCR_IMAGE}:next"
+              TAG="${DOCKER_IMAGE}:next"
             else
-              TAG="${GHCR_IMAGE}:latest"
+              TAG="${DOCKER_IMAGE}:latest"
             fi
           fi
 
@@ -309,13 +299,11 @@ jobs:
           inputSarifFile: ./snyk.sarif
           outputSarifFile: ./securecodewarrior.sarif
 
-      # Don't push to github thing? Keeps making duplicates.
-      # TODO: Maybe fix it one day...
-      #- name: Upload SARIF file to GitHub Code Scanning
-      #  uses: github/codeql-action/upload-sarif@v1
-      #  with:
-      #    #sarif_file: ./securecodewarrior.sarif
-      #    sarif_file: ./snyk.sarif
+      - name: Upload SARIF file to GitHub Code Scanning
+        uses: github/codeql-action/upload-sarif@v1
+        with:
+          sarif_file: ./securecodewarrior.sarif
+          #sarif_file: ./snyk.sarif
 
   # Create a "release" compose file and attack it to a draft GitHub release.
   # TODO: Disallow relase if high severity vulnerabilities, failing tests, etc.?
@@ -352,11 +340,6 @@ jobs:
         # Ignore the failure of a step and avoid terminating the job.
         continue-on-error: true
         id: cache
-        with:
-          key: ${{ runner.os }}-buildx-${{ github.sha }}-${{ matrix.service }}
-          restore-keys: |
-            ${{ runner.os }}-buildx-${{ github.sha }}-
-            ${{ runner.os }}-buildx-
 
       - name: Login to DockerHub
         uses: docker/login-action@v1.9.0
