@@ -249,7 +249,7 @@ jobs:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         with:
           command: container monitor
-          image: ${{ steps.tag.tag }}
+          image: ${{ steps.tag.outputs.tag }}
           args: --org=${{ github.repository_owner }} --file=${{ matrix.context }}/Dockerfile
 
       - name: Test current Service image with Snyk
@@ -259,7 +259,7 @@ jobs:
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         with:
-          image: ${{ steps.tag.cur }}
+          image: ${{ steps.tag.outputs.cur }}
           args: --org=${{ github.repository_owner }} --file=${{ matrix.context }}/Dockerfile
 
       - name: Secure Code Warrior
