@@ -75,12 +75,51 @@ jobs:
           input_string: ${{ steps.ref.outputs.version }}
           #version_extractor_regex: '\/v(.*)$'
 
+  # I don't like this but it makes the workflow faster
+  build:
+    name: Build images
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2.3.4
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v1.2.0
+
+      - name: Set up Docker Buildx
+        id: buildx
+        uses: docker/setup-buildx-action@v1.3.0
+        with:
+          version: latest
+
+      - name: Pull OADA
+        run: docker-compose pull
+
+      - name: Cache docker layers
+        if: ${{ !env.ACT }} # Awaiting ACT version after 0.2.17 for this feature
+        uses: satackey/action-docker-layer-caching@v0.0.11
+        # Ignore the failure of a step and avoid terminating the job.
+        continue-on-error: true
+        id: cache
+        with:
+          key: ${{ runner.os }}-buildx-${{ github.sha }}-${{ matrix.service }}
+          restore-keys: |
+            ${{ runner.os }}-buildx-${{ github.sha }}-
+            ${{ runner.os }}-buildx-
+
+      - name: Build OADA
+        run: docker-compose build
+
   build-and-push-services:
-    needs: setup
+    name: Push images to DockerHub and GHCR
+
+    needs:
+      - setup
+      - build
 
     strategy:
-      # Only run one build at a time to fix layer reuse?
-      max-parallel: 1
       matrix:
         service: ${{ fromJson(needs.setup.outputs.services) }}
         context:
@@ -112,10 +151,11 @@ jobs:
 
       - name: Cache docker layers
         if: ${{ !env.ACT }} # Awaiting ACT version after 0.2.17 for this feature
-        uses: actions/cache@v2.1.5
+        uses: satackey/action-docker-layer-caching@v0.0.11
+        # Ignore the failure of a step and avoid terminating the job.
+        continue-on-error: true
         id: cache
         with:
-          path: /tmp/.buildx-cache
           key: ${{ runner.os }}-buildx-${{ github.sha }}-${{ matrix.service }}
           restore-keys: |
             ${{ runner.os }}-buildx-${{ github.sha }}-
@@ -195,11 +235,11 @@ jobs:
             org.opencontainers.image.created=${{ steps.prepare.outputs.created }}
             org.opencontainers.image.revision=${{ github.sha }}
             org.opencontainers.image.licenses=${{ github.event.repository.license.spdx_id }}
-          cache-from: type=local,src=/tmp/.buildx-cache
-          cache-to: type=local,dest=/tmp/.buildx-cache
 
   # Use Snyk to check service docker images
   snyk-services:
+    name: Snyk Checks
+
     needs:
       - setup
       - build-and-push-services
@@ -239,6 +279,7 @@ jobs:
           fi
 
           echo ::set-output name=tag::${TAG}
+          echo ::set-output name=org::${OWNER}
           echo ::set-output name=cur::${GHCR_IMAGE}:sha-${GITHUB_SHA::8}
 
       - name: Monitor Service image with Snyk
@@ -250,7 +291,7 @@ jobs:
         with:
           command: container monitor
           image: ${{ steps.tag.outputs.tag }}
-          args: --org=${{ github.repository_owner }} --file=${{ matrix.context }}/Dockerfile
+          args: --org=${{ steps.tag.outputs.owner }} --file=${{ matrix.context }}/Dockerfile
 
       - name: Test current Service image with Snyk
         uses: snyk/actions/docker@master
@@ -260,7 +301,7 @@ jobs:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         with:
           image: ${{ steps.tag.outputs.cur }}
-          args: --org=${{ github.repository_owner }} --file=${{ matrix.context }}/Dockerfile
+          args: --org=${{ steps.tag.outputs.owner }} --file=${{ matrix.context }}/Dockerfile
 
       - name: Secure Code Warrior
         uses: SecureCodeWarrior/github-action-add-sarif-contextual-training@v1
@@ -307,10 +348,11 @@ jobs:
 
       - name: Cache docker layers
         if: ${{ !env.ACT }} # Awaiting ACT version after 0.2.17 for this feature
-        uses: actions/cache@v2.1.5
+        uses: satackey/action-docker-layer-caching@v0.0.11
+        # Ignore the failure of a step and avoid terminating the job.
+        continue-on-error: true
         id: cache
         with:
-          path: /tmp/.buildx-cache
           key: ${{ runner.os }}-buildx-${{ github.sha }}-${{ matrix.service }}
           restore-keys: |
             ${{ runner.os }}-buildx-${{ github.sha }}-
