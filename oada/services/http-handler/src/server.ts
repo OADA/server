@@ -54,6 +54,14 @@ declare module 'fastify' {
     use(route: string | string[], fn: Handler): this;
   }
 }
+
+declare module 'fastify-request-context' {
+  interface RequestContextData {
+    // Add graph lookup result to request context
+    user: TokenResponse['doc'];
+  }
+}
+
 async function init() {
   await app.register(fastifySensible, {
     // Hide internal error cause from clients except in development
@@ -80,7 +88,6 @@ async function init() {
 
   await app.register(fastifyRequestContextPlugin, {
     hook: 'onRequest',
-    defaultStoreValues: {},
   });
 
   app.get('/favicon.ico', async (_request, reply) => reply.send());
@@ -131,7 +138,6 @@ async function init() {
             return false;
           }
           request.requestContext.set('user', tok.doc);
-          request.requestContext.set('authorization', tok.doc); // for users handler
 
           return true;
         } catch (err) {
@@ -147,7 +153,7 @@ async function init() {
     await app.register(resources, {
       prefix: '/bookmarks',
       prefixPath(request) {
-        const user = request.requestContext.get<TokenResponse['doc']>('user')!;
+        const user = request.requestContext.get('user')!;
         return user.bookmarks_id;
       },
     });
@@ -158,7 +164,7 @@ async function init() {
     await app.register(resources, {
       prefix: '/shares',
       prefixPath(request) {
-        const user = request.requestContext.get<TokenResponse['doc']>('user')!;
+        const user = request.requestContext.get('user')!;
         return user.shares_id;
       },
     });

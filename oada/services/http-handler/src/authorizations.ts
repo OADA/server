@@ -20,8 +20,6 @@ import { v4 as uuid } from 'uuid';
 
 import { authorizations, clients } from '@oada/lib-arangodb';
 
-import type { TokenResponse } from './tokenLookup';
-
 export interface Options {
   prefix: string;
 }
@@ -56,9 +54,7 @@ const plugin: FastifyPluginAsync<Options> = async function (fastify, opts) {
   // Authorizations routes
   // TODO: How the heck should this work??
   fastify.get('/', async function (request, reply) {
-    const { user_id: userid } = request.requestContext.get<
-      TokenResponse['doc']
-    >('user')!;
+    const { user_id: userid } = request.requestContext.get('user')!;
     const auths = await authorizations.findByUser(userid);
 
     const res: Record<string, authorizations.Authorization | null> = {};
@@ -72,9 +68,7 @@ const plugin: FastifyPluginAsync<Options> = async function (fastify, opts) {
 
   fastify.get('/:authId', async function (request, reply) {
     const { authId } = request.params as { authId: string };
-    const { user_id: userid } = request.requestContext.get<
-      TokenResponse['doc']
-    >('user')!;
+    const { user_id: userid } = request.requestContext.get('user')!;
 
     const auth = await authorizations.findById(authId);
     // Only let users see their own authorizations
@@ -99,7 +93,7 @@ const plugin: FastifyPluginAsync<Options> = async function (fastify, opts) {
   );
 
   fastify.post('/', async function (request, reply) {
-    const user = request.requestContext.get<TokenResponse['doc']>('user')!;
+    const user = request.requestContext.get('user')!;
 
     // TODO: Most of this could be done inside an Arango query...
     // TODO: Check scope of current token
@@ -153,7 +147,7 @@ const plugin: FastifyPluginAsync<Options> = async function (fastify, opts) {
   // TODO: Should another microservice revoke authorizations?
   fastify.delete('/:authId', async function (request, reply) {
     const { authId } = request.params as { authId: string };
-    const user = request.requestContext.get<TokenResponse['doc']>('user')!;
+    const user = request.requestContext.get('user')!;
 
     const auth = await authorizations.findById(authId);
 

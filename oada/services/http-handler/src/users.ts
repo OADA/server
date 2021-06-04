@@ -21,7 +21,6 @@ import ksuid from 'ksuid';
 import { users } from '@oada/lib-arangodb';
 import type { UserRequest, UserResponse } from '@oada/users';
 
-import type { TokenResponse } from './tokenLookup';
 import requester from './requester';
 import config from './config';
 
@@ -116,9 +115,7 @@ const plugin: FastifyPluginAsync<Options> = async function (fastify, opts) {
   // Lookup a username, limited to tokens and users with oada.admin.user scope
   fastify.get('/username-index/:uname', async function (request, reply) {
     const { uname } = request.params as { uname: string };
-    const authorization = request.requestContext.get<TokenResponse['doc']>(
-      'user'
-    )!;
+    const authorization = request.requestContext.get('user')!;
 
     // Check token scope
     request.log.trace(
@@ -176,9 +173,7 @@ const plugin: FastifyPluginAsync<Options> = async function (fastify, opts) {
   });
 
   fastify.get('/me', async function (request, reply) {
-    const { user_id: id } = request.requestContext.get<TokenResponse['doc']>(
-      'user'
-    )!;
+    const { user_id: id } = request.requestContext.get('user')!;
     await replyUser(id, reply);
   });
 

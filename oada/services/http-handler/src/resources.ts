@@ -33,7 +33,6 @@ import { handleResponse } from '@oada/formats-server';
 
 import type {} from './server';
 import requester from './requester';
-import type { TokenResponse } from './tokenLookup';
 import config from './config';
 
 const CACHE_PATH = config.get('storage.binary.cacache');
@@ -41,6 +40,17 @@ const CACHE_PATH = config.get('storage.binary.cacache');
 export interface Options {
   prefix: string;
   prefixPath(request: FastifyRequest): string;
+}
+
+declare module 'fastify-request-context' {
+  interface RequestContextData {
+    // Add path within OADA to request context
+    oadaPath: string;
+    // Add graph lookup result to request context
+    oadaGraph: resources.GraphLookup;
+    // Not sure why this is a separate thing?
+    resourceExists: boolean;
+  }
 }
 
 /**
@@ -69,11 +79,11 @@ const plugin: FastifyPluginAsync<Options> = async function (fastify, opts) {
     /**
      * The whole path from the request (e.g., /resources/123/link/abc)
      */
-    const fullpath = request.requestContext.get<string>('oadaPath');
+    const fullpath = request.requestContext.get('oadaPath');
 
     const resp = await resources.lookupFromUrl(
       '/' + fullpath,
-      request.requestContext.get<TokenResponse['doc']>('user')!.user_id
+      request.requestContext.get('user')!.user_id
     );
     request.log.trace('GRAPH LOOKUP RESULT %O', resp);
     if (resp['resource_id']) {
@@ -101,10 +111,8 @@ const plugin: FastifyPluginAsync<Options> = async function (fastify, opts) {
    * @todo Should this just be in each methods implenting function?
    */
   fastify.addHook('preHandler', async function checkScope(request, reply) {
-    const oadaGraph = request.requestContext.get<resources.GraphLookup>(
-      'oadaGraph'
-    )!;
-    const user = request.requestContext.get<TokenResponse['doc']>('user')!;
+    const oadaGraph = request.requestContext.get('oadaGraph')!;
+    const user = request.requestContext.get('user')!;
 
     const response = permissionsRequest({
       //connection_id: request.id,
@@ -164,9 +172,7 @@ const plugin: FastifyPluginAsync<Options> = async function (fastify, opts) {
    * Return "path leftover" in a header if token/scope passes
    */
   fastify.addHook('preHandler', async function pathLeftover(request, reply) {
-    const oadaGraph = request.requestContext.get<resources.GraphLookup>(
-      'oadaGraph'
-    )!;
+    const oadaGraph = request.requestContext.get('oadaGraph')!;
     // TODO: Better header name?
     reply.header('X-OADA-Path-Leftover', oadaGraph['path_leftover']);
   });
@@ -176,9 +182,7 @@ const plugin: FastifyPluginAsync<Options> = async function (fastify, opts) {
   fastify.route({ url: '*', method: ['GET', 'HEAD'], handler: getResource });
   fastify.route({ url: '/*', method: ['GET', 'HEAD'], handler: getResource });
   async function getResource(request: FastifyRequest, reply: FastifyReply) {
-    const oadaGraph = request.requestContext.get<resources.GraphLookup>(
-      'oadaGraph'
-    )!;
+    const oadaGraph = request.requestContext.get('oadaGraph')!;
 
     const type = oadaGraph.type ?? 'application/json';
     // TODO: Why does this not work as a fastify plugin??
@@ -302,8 +306,8 @@ const plugin: FastifyPluginAsync<Options> = async function (fastify, opts) {
 
   // Don't let users modify their shares?
   function noModifyShares(request: FastifyRequest, reply: FastifyReply) {
-    const path = request.requestContext.get<string>('oadaPath')!;
-    const user = request.requestContext.get<TokenResponse['doc']>('user')!;
+    const path = request.requestContext.get('oadaPath')!;
+    const user = request.requestContext.get('user')!;
     if (path.match(`^/${user['shares_id']}`)) {
       return reply.forbidden('User cannot modify their shares document');
     }
@@ -345,14 +349,10 @@ const plugin: FastifyPluginAsync<Options> = async function (fastify, opts) {
     // Don't let users modify their shares?
     noModifyShares(request, reply);
 
-    const oadaGraph = request.requestContext.get<resources.GraphLookup>(
-      'oadaGraph'
-    )!;
-    const resourceExists = request.requestContext.get<boolean>(
-      'resourceExists'
-    )!;
-    const user = request.requestContext.get<TokenResponse['doc']>('user')!;
-    let path = request.requestContext.get<string>('oadaPath')!;
+    const oadaGraph = request.requestContext.get('oadaGraph')!;
+    const resourceExists = request.requestContext.get('resourceExists')!;
+    const user = request.requestContext.get('user')!;
+    let path = request.requestContext.get('oadaPath')!;
     request.log.trace('Saving PUT body for request');
 
     /**
@@ -430,13 +430,10 @@ const plugin: FastifyPluginAsync<Options> = async function (fastify, opts) {
    * Handle DELETE
    */
   fastify.delete('/*', async function deleteResource(request, reply) {
-    let path = request.requestContext.get<string>('oadaPath')!;
-    const user = request.requestContext.get<TokenResponse['doc']>('user')!;
-    let {
-      rev,
-      ...oadaGraph
-    } = request.requestContext.get<resources.GraphLookup>('oadaGraph')!;
-    let resourceExists = request.requestContext.get<boolean>('resourceExists')!;
+    let path = request.requestContext.get('oadaPath')!;
+    const user = request.requestContext.get('user')!;
+    let { rev, ...oadaGraph } = request.requestContext.get('oadaGraph')!;
+    let resourceExists = request.requestContext.get('resourceExists')!;
 
     // Don't let users delete their shares?
     noModifyShares(request, reply);
