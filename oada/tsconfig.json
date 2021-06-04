@@ -1,5 +1,5 @@
 {
-  "extends": "@tsconfig/node14",
+  "extends": "@tsconfig/node16",
   "compilerOptions": {
     "removeComments": true,
     "importHelpers": true,
