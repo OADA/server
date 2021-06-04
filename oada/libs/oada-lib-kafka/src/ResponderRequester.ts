@@ -28,13 +28,13 @@ const trace = debug('@oada/lib-kafka:trace');
 export { EventEmitter };
 
 class DummyResponder extends Responder {
-  async [CONNECT]() {
+  override async [CONNECT]() {
     // Don't connect to Kafka
     return undefined;
   }
 }
 class DummyRequester extends Requester {
-  async [CONNECT]() {
+  override async [CONNECT]() {
     // Don't connect to Kafka
     return undefined;
   }
@@ -109,12 +109,12 @@ export class ResponderRequester extends Base {
   /**
    * @todo Maybe rearrange type parameters? Maybe make them class params?
    */
-  on<Res, Req = KafkaBase>(
+  override on<Res, Req = KafkaBase>(
     event: 'request',
     listener: (reg: Req & KafkaBase) => Response<Res> | Promise<Response<Res>>
   ): this;
-  on(event: string | symbol, listener: (...args: any[]) => unknown): this;
-  on(event: string | symbol, listener: (...args: any[]) => unknown): this {
+  override on(event: string | symbol, listener: (...args: any[]) => unknown): this;
+  override on(event: string | symbol, listener: (...args: any[]) => unknown): this {
     switch (event) {
       case 'ready':
         super.on('ready', listener);

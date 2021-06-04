@@ -76,12 +76,12 @@ export class Responder extends Base {
   /**
    * @todo Maybe rearrange type parameters? Maybe make them class params?
    */
-  on<Res, Req = KafkaBase>(
+  override on<Res, Req = KafkaBase>(
     event: 'request',
     listener: (reg: Req & KafkaBase) => Response<Res> | Promise<Response<Res>>
   ): this;
-  on(event: string | symbol, listener: (...args: any[]) => unknown): this;
-  on(event: string | symbol, listener: (...args: any[]) => unknown): this {
+  override on(event: string | symbol, listener: (...args: any[]) => unknown): this;
+  override on(event: string | symbol, listener: (...args: any[]) => unknown): this {
     if (event === 'request') {
       // TODO: Probably a better way to hande this event...
       return super.on(DATA, async (req, data) => {

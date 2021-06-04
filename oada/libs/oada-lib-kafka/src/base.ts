@@ -156,7 +156,7 @@ export class Base extends EventEmitter {
     this.#done();
   }
 
-  on(event: string | symbol, listener: (...args: any[]) => unknown) {
+  override on(event: string | symbol, listener: (...args: any[]) => unknown) {
     if (event === 'error') {
       // Remove our default error handler?
       super.removeListener('error', die);
