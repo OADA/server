@@ -201,8 +201,7 @@ jobs:
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,dest=/tmp/.buildx-cache-new
 
-      -
-        # Temp fix
+      - # Temp fix
         # https://github.com/docker/build-push-action/issues/252
         # https://github.com/moby/buildkit/issues/1896
         name: Move cache
@@ -265,7 +264,7 @@ jobs:
         with:
           command: container monitor
           image: ${{ steps.tag.outputs.tag }}
-          args: --org=${{ steps.tag.outputs.owner }} --file=${{ matrix.context }}/Dockerfile
+          args: --org=${{ steps.tag.outputs.org }} --file=${{ matrix.context }}/Dockerfile
 
       - name: Test current Service image with Snyk
         uses: snyk/actions/docker@master
@@ -275,7 +274,7 @@ jobs:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         with:
           image: ${{ steps.tag.outputs.tag }}
-          args: --org=${{ steps.tag.outputs.owner }} --file=${{ matrix.context }}/Dockerfile
+          args: --org=${{ steps.tag.outputs.org }} --file=${{ matrix.context }}/Dockerfile
 
       - name: Secure Code Warrior
         uses: SecureCodeWarrior/github-action-add-sarif-contextual-training@v1

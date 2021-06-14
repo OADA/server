@@ -29,7 +29,7 @@
     "convict-format-with-validator": "^6.0.1",
     "dotenv": "^10.0.0",
     "json5": "^2.2.0",
-    "tslib": "^2.2.0",
+    "tslib": "^2.3.0",
     "yaml": "^1.10.2"
   },
   "devDependencies": {

@@ -24,7 +24,7 @@
     "axios": "^0.21.1",
     "bluebird": "^3.7.2",
     "debug": "^4.3.2",
-    "tslib": "^2.2.0"
+    "tslib": "^2.3.0"
   },
   "devDependencies": {
     "@oada/write-handler": "^3.0.1",

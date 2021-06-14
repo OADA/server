@@ -186,7 +186,7 @@ __metadata:
     "@types/cacache": ^15.0.0
     "@types/connect": ^3.4.34
     "@types/debug": ^4.1.5
-    "@types/node": ^14.17.2
+    "@types/node": ^14.17.3
     "@types/type-is": ^1.6.3
     "@types/uuid": ^8.3.0
     "@types/ws": ^7.4.4
@@ -208,7 +208,7 @@ __metadata:
     ksuid: ^2.0.0
     light-my-request: ^4.4.1
     oada-error: ^1.1.1
-    tslib: ^2.2.0
+    tslib: ^2.3.0
     type-is: ^1.6.18
     uuid: ^8.3.2
   languageName: unknown
@@ -231,7 +231,7 @@ __metadata:
     "@types/json-pointer": ^1.0.31
     "@types/lodash": ^4.14.170
     "@types/mocha": ^8.2.2
-    "@types/node": ^14.7.2
+    "@types/node": ^14.17.3
     arangojs: ^7.5.0
     bcryptjs: ^2.4.3
     bluebird: ^3.7.2
@@ -243,9 +243,9 @@ __metadata:
     flat: ^5.0.2
     json-pointer: ^0.6.1
     lodash: ^4.17.21
-    mocha: ^8.4.0
+    mocha: ^9.0.0
     ts-node: ^10.0.0
-    tslib: ^2.2.0
+    tslib: ^2.3.0
     typescript: ^4.3.2
   languageName: unknown
   linkType: soft
@@ -262,7 +262,7 @@ __metadata:
     convict-format-with-validator: ^6.0.1
     dotenv: ^10.0.0
     json5: ^2.2.0
-    tslib: ^2.2.0
+    tslib: ^2.3.0
     yaml: ^1.10.2
   languageName: unknown
   linkType: soft
@@ -277,7 +277,7 @@ __metadata:
     "@types/chai-as-promised": ^7.1.4
     "@types/debug": ^4.1.5
     "@types/mocha": ^8.2.2
-    "@types/node": 14.17.2
+    "@types/node": 14.17.3
     "@types/uuid": ^8.3.0
     bluebird: ^3.7.2
     chai: ^4.3.4
@@ -285,9 +285,9 @@ __metadata:
     debug: ^4.3.2
     kafkajs: ^1.15.0
     ksuid: ^2.0.0
-    mocha: ^8.4.0
+    mocha: ^9.0.0
     ts-node: ^10.0.0
-    tslib: ^2.2.0
+    tslib: ^2.3.0
     typescript: ^4.3.2
     uuid: ^8.3.2
   languageName: unknown
@@ -360,12 +360,12 @@ __metadata:
     "@oada/pino-debug": ^3.0.1
     "@types/debug": ^4.1.5
     "@types/mocha": ^8.2.2
-    "@types/node": ^14.7.2
+    "@types/node": ^14.17.3
     "@types/type-is": ^1.6.3
     debug: ^4.3.2
-    mocha: ^8.4.0
+    mocha: ^9.0.0
     ts-node: ^10.0.0
-    tslib: ^2.2.0
+    tslib: ^2.3.0
     type-is: ^1.6.18
     typescript: ^4.3.2
   languageName: unknown
@@ -376,12 +376,12 @@ __metadata:
   resolution: "@oada/pino-debug@workspace:libs/oada-pino-debug"
   dependencies:
     "@types/debug": ^4.1.5
-    "@types/node": ^14.17.2
+    "@types/node": ^14.17.3
     "@types/pino": ^6.3.8
     pino: ^6.11.3
     pino-caller: ^3.1.0
     pino-debug: ^2.0.0
-    tslib: ^2.2.0
+    tslib: ^2.3.0
   peerDependencies:
     debug: "*"
   languageName: unknown
@@ -401,16 +401,16 @@ __metadata:
     "@types/chai": ^4.2.18
     "@types/debug": ^4.1.5
     "@types/mocha": ^8.2.2
-    "@types/node": ^14.17.2
+    "@types/node": ^14.17.3
     "@types/randomstring": ^1.1.6
     bluebird: ^3.7.2
     chai: ^4.3.4
     debug: ^4.3.2
-    mocha: ^8.4.0
+    mocha: ^9.0.0
     p-queue: ^6.6.2
     randomstring: ^1.2.1
     ts-node: ^10.0.0
-    tslib: ^2.2.0
+    tslib: ^2.3.0
     typescript: ^4.3.2
   languageName: unknown
   linkType: soft
@@ -429,8 +429,8 @@ __metadata:
     "@types/mocha": ^8.2.2
     bluebird: ^3.7.2
     debug: ^4.3.2
-    mocha: ^8.4.0
-    tslib: ^2.2.0
+    mocha: ^9.0.0
+    tslib: ^2.3.0
   languageName: unknown
   linkType: soft
 
@@ -441,9 +441,9 @@ __metadata:
     "@oada/lib-arangodb": ^3.0.1
     "@oada/pino-debug": ^3.0.1
     "@types/debug": ^4.1.5
-    "@types/node": 14.17.2
+    "@types/node": 14.17.3
     debug: ^4.3.2
-    tslib: ^2.2.0
+    tslib: ^2.3.0
   languageName: unknown
   linkType: soft
 
@@ -458,11 +458,11 @@ __metadata:
     "@oada/write-handler": ^3.0.1
     "@types/bluebird": ^3.5.35
     "@types/debug": ^4.1.5
-    "@types/node": ^14.17.2
+    "@types/node": ^14.17.3
     axios: ^0.21.1
     bluebird: ^3.7.2
     debug: ^4.3.2
-    tslib: ^2.2.0
+    tslib: ^2.3.0
   languageName: unknown
   linkType: soft
 
@@ -495,7 +495,7 @@ __metadata:
     ksuid: ^2.0.0
     minimist: ^1.2.5
     promptly: ^3.2.0
-    tslib: ^2.2.0
+    tslib: ^2.3.0
   bin:
     add: ./dist/useradd.js
   languageName: unknown
@@ -515,7 +515,7 @@ __metadata:
     axios: ^0.21.1
     bluebird: ^3.7.2
     debug: ^4.3.2
-    tslib: ^2.2.0
+    tslib: ^2.3.0
   languageName: unknown
   linkType: soft
 
@@ -553,7 +553,7 @@ __metadata:
     helmet: ^4.6.0
     oada-error: ^1.1.1
     request: ^2.88.2
-    tslib: ^2.2.0
+    tslib: ^2.3.0
   languageName: unknown
   linkType: soft
 
@@ -573,18 +573,18 @@ __metadata:
     "@types/json-pointer": ^1.0.31
     "@types/lodash": ^4.14.170
     "@types/mocha": ^8.2.2
-    "@types/node": ^14.17.2
+    "@types/node": ^14.17.3
     "@types/object-assign-deep": ^0.4.0
     bluebird: ^3.7.2
     chai: ^4.3.4
     debug: ^4.3.2
     json-pointer: ^0.6.1
     lodash: ^4.17.21
-    mocha: ^8.4.0
+    mocha: ^9.0.0
     object-assign-deep: ^0.4.0
     timed-cache: ^1.1.5
     ts-node: ^10.0.0
-    tslib: ^2.2.0
+    tslib: ^2.3.0
     typescript: ^4.3.2
   languageName: unknown
   linkType: soft
@@ -867,10 +867,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:14.17.2, @types/node@npm:^14.17.2, @types/node@npm:^14.7.2":
-  version: 14.17.2
-  resolution: "@types/node@npm:14.17.2"
-  checksum: 7a2e90989ce2948d3cdfc1d15fb5f0439ea53971d81a466ad049922bb23ef38252f6639271ae5899670ab93d48ed62542ad687767e45ffa6fe902ce59f518e5b
+"@types/node@npm:14.17.3, @types/node@npm:^14.17.3":
+  version: 14.17.3
+  resolution: "@types/node@npm:14.17.3"
+  checksum: 0d3e3c3dbb8250166d7c8c7c6221bde20a366d2c34b27c0072c3962a32c8a74c4ae4a168bfe53d6193e7b0bba8d8bc87608a6fd2af7918cd444a9aa699b4ce18
   languageName: node
   linkType: hard
 
@@ -1861,7 +1861,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"chalk@npm:^4.0.0, chalk@npm:^4.1.1":
+"chalk@npm:^4.0.0, chalk@npm:^4.1.0, chalk@npm:^4.1.1":
   version: 4.1.1
   resolution: "chalk@npm:4.1.1"
   dependencies:
@@ -3205,9 +3205,9 @@ fsevents@~2.3.1:
   languageName: node
   linkType: hard
 
-"glob@npm:7.1.6, glob@npm:^7.1.3, glob@npm:^7.1.4":
-  version: 7.1.6
-  resolution: "glob@npm:7.1.6"
+"glob@npm:7.1.7, glob@npm:^7.1.3, glob@npm:^7.1.4":
+  version: 7.1.7
+  resolution: "glob@npm:7.1.7"
   dependencies:
     fs.realpath: ^1.0.0
     inflight: ^1.0.4
@@ -3215,7 +3215,7 @@ fsevents@~2.3.1:
     minimatch: ^3.0.4
     once: ^1.3.0
     path-is-absolute: ^1.0.0
-  checksum: 789977b52432865bd63846da5c75a6efc2c56abdc0cb5ffcdb8e91eeb67a58fa5594c1195d18b2b4aff99675b0739ed6bd61024b26562e0cca18c8f993efdc82
+  checksum: 352f74f08247db5420161a2f68f2bd84b53228b5fcfc9dcc37cd54d3f19ec0232495d84aeff1286d0727059e9fdc1031400e00b971bdc59e30f8f82b199c9d02
   languageName: node
   linkType: hard
 
@@ -3716,6 +3716,13 @@ fsevents@~2.3.1:
   languageName: node
   linkType: hard
 
+"is-unicode-supported@npm:^0.1.0":
+  version: 0.1.0
+  resolution: "is-unicode-supported@npm:0.1.0"
+  checksum: 00ca6f5581b81d55c567d259175cb1af08c60ae95f6aad69adadfdfbe098c60ef5617ad440770d821f1710773987c0b13ed6dd375cd9ab1bd7b7dd8f9a42625c
+  languageName: node
+  linkType: hard
+
 "is-weakmap@npm:^2.0.1":
   version: 2.0.1
   resolution: "is-weakmap@npm:2.0.1"
@@ -3827,14 +3834,14 @@ fsevents@~2.3.1:
   languageName: node
   linkType: hard
 
-"js-yaml@npm:4.0.0":
-  version: 4.0.0
-  resolution: "js-yaml@npm:4.0.0"
+"js-yaml@npm:4.1.0":
+  version: 4.1.0
+  resolution: "js-yaml@npm:4.1.0"
   dependencies:
     argparse: ^2.0.1
   bin:
     js-yaml: bin/js-yaml.js
-  checksum: ee9b16cdbba690ec70f46d61737b28b35e26e6d51606c466de7fa876d3517de0cfdffd2e1ef21263d5ca3b32659d2e4c65255f50d6e236f022305bce72242d46
+  checksum: 8973cf4296c944cc2551d1e3d3d064e7de0d0a6db3f7bafe40339ee9e5e0329560b52c4b8492b9b22365404c9be0822b62340ab49884e1dedfcc7ff80158abe0
   languageName: node
   linkType: hard
 
@@ -4130,12 +4137,13 @@ fsevents@~2.3.1:
   languageName: node
   linkType: hard
 
-"log-symbols@npm:4.0.0":
-  version: 4.0.0
-  resolution: "log-symbols@npm:4.0.0"
+"log-symbols@npm:4.1.0":
+  version: 4.1.0
+  resolution: "log-symbols@npm:4.1.0"
   dependencies:
-    chalk: ^4.0.0
-  checksum: 2cbdb0427d1853f2bd36645bff42aaca200902284f28aadacb3c0fa4c8c43fe6bfb71b5d61ab08b67063d066d7c55b8bf5fbb43b03e4a150dbcdd643e9cd1dbf
+    chalk: ^4.1.0
+    is-unicode-supported: ^0.1.0
+  checksum: 57be4aeb6a6ecb81d8267600836f81928da1d846ad13384a9a22d179e27590fdb680946edbd15642a31735183adaa3dc6aae2d20e619a19fa0d54e1aee945915
   languageName: node
   linkType: hard
 
@@ -4363,9 +4371,9 @@ fsevents@~2.3.1:
   languageName: node
   linkType: hard
 
-"mocha@npm:^8.4.0":
-  version: 8.4.0
-  resolution: "mocha@npm:8.4.0"
+"mocha@npm:^9.0.0":
+  version: 9.0.0
+  resolution: "mocha@npm:9.0.0"
   dependencies:
     "@ungap/promise-all-settled": 1.1.2
     ansi-colors: 4.1.1
@@ -4375,27 +4383,27 @@ fsevents@~2.3.1:
     diff: 5.0.0
     escape-string-regexp: 4.0.0
     find-up: 5.0.0
-    glob: 7.1.6
+    glob: 7.1.7
     growl: 1.10.5
     he: 1.2.0
-    js-yaml: 4.0.0
-    log-symbols: 4.0.0
+    js-yaml: 4.1.0
+    log-symbols: 4.1.0
     minimatch: 3.0.4
     ms: 2.1.3
-    nanoid: 3.1.20
+    nanoid: 3.1.23
     serialize-javascript: 5.0.1
     strip-json-comments: 3.1.1
     supports-color: 8.1.1
     which: 2.0.2
     wide-align: 1.1.3
-    workerpool: 6.1.0
+    workerpool: 6.1.4
     yargs: 16.2.0
     yargs-parser: 20.2.4
     yargs-unparser: 2.0.0
   bin:
     _mocha: bin/_mocha
     mocha: bin/mocha
-  checksum: 51744733d86b4a629846f0cb5f8e2aa3d9c901712f5fb4e3fb5ad49954c3322178abb56854e158456a38828762e0f6192c09ccfc5235650c486493ed2f77a20c
+  checksum: 5429a9ed5da8f10466c7a967b8adc9359d43d57039116f135680fea4aca0f4e4629fc70aa3fe5b12c9a3651c5d4745d078534f31d793af71d95f2f7a13d5da50
   languageName: node
   linkType: hard
 
@@ -4478,12 +4486,12 @@ fsevents@~2.3.1:
   languageName: node
   linkType: hard
 
-"nanoid@npm:3.1.20":
-  version: 3.1.20
-  resolution: "nanoid@npm:3.1.20"
+"nanoid@npm:3.1.23":
+  version: 3.1.23
+  resolution: "nanoid@npm:3.1.23"
   bin:
     nanoid: bin/nanoid.cjs
-  checksum: 4788d36edcfec7bb32ddf33ed8f1f46df2867f70e9b1993bb131f7677e04ead2b621e5d614d2736308be18db1d54208d8ab207b4586bd5b052f71fb9d4c0ebea
+  checksum: e6dea1da5a593ffdc8cf2676d1d02f0626f07a54a5947a7a1f5ff1fd07901b2f53044c285e98b87eb367f016fde285fd8785d54a2dceeab9c3721f4e618f8326
   languageName: node
   linkType: hard
 
@@ -4614,10 +4622,10 @@ fsevents@~2.3.1:
   dependencies:
     "@tsconfig/node16": ^1.0.1
     "@types/mocha": ^8.2.2
-    "@types/node": ^14.17.2
+    "@types/node": ^14.17.3
     "@yarnpkg/pnpify": ^3.0.0-rc.6
     pino-pretty: ^5.0.2
-    prettier: ^2.3.0
+    prettier: ^2.3.1
     typescript: ^4.3.2
   languageName: unknown
   linkType: soft
@@ -5058,12 +5066,12 @@ fsevents@~2.3.1:
   languageName: node
   linkType: hard
 
-"prettier@npm:^2.3.0":
-  version: 2.3.0
-  resolution: "prettier@npm:2.3.0"
+"prettier@npm:^2.3.1":
+  version: 2.3.1
+  resolution: "prettier@npm:2.3.1"
   bin:
     prettier: bin-prettier.js
-  checksum: 652640cc8b71bc5277cfb8bf6f161783ca588efcf683c3d630837b39da8d57fef35c9e00ae5855a8e3c75136c42274046c913cc2b2d2968558315f31c6a26981
+  checksum: 9b4a695b87ce5f510fc20feec01cce7371f0fa0b92ffe79d543f6be52e2004c532861629de4d7ab1c577e1f649dce3cfccd62cb2ca6526b1da8d9c63eb84bf36
   languageName: node
   linkType: hard
 
@@ -6094,10 +6102,10 @@ fsevents@~2.3.1:
   languageName: node
   linkType: hard
 
-"tslib@npm:^2.2.0":
-  version: 2.2.0
-  resolution: "tslib@npm:2.2.0"
-  checksum: 2d35468c470410871c5246e43f12dcb6d0fc363b617c176f26443b9530e5c5ee8448966892a42956168d8f495da7865bda33dfe82c26c91991e28999974a618f
+"tslib@npm:^2.3.0":
+  version: 2.3.0
+  resolution: "tslib@npm:2.3.0"
+  checksum: 7b4fc9feff0f704743c3760f5d8d708f6417fac6458159e63df3a6b1100f0736e3b99edb9fe370f274ad15160a1f49ff05cb49402534c818ff552c48e38c3e6e
   languageName: node
   linkType: hard
 
@@ -6378,10 +6386,10 @@ typescript@^4.3.2:
   languageName: node
   linkType: hard
 
-"workerpool@npm:6.1.0":
-  version: 6.1.0
-  resolution: "workerpool@npm:6.1.0"
-  checksum: c4295cacc2c8e4b19c608499fb61d9f831052b141b2bef5515c4862712a3fdc4110606beeaaacf3c48b00d930a5b396757bda3490694a7683fc3cb5142537d12
+"workerpool@npm:6.1.4":
+  version: 6.1.4
+  resolution: "workerpool@npm:6.1.4"
+  checksum: e5e708d634d7634dadca64a61ce7aa58642b1751f00ee24402d7af471175e699616781f62f556ddb15661e373a2636f5982a8abc50b279c6b65aa98134a5a3e2
   languageName: node
   linkType: hard
 
