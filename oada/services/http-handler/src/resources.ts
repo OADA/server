@@ -325,6 +325,12 @@ const plugin: FastifyPluginAsync<Options> = async function (fastify, opts) {
     (_, body, done) => done(null, body)
   );
 
+  // Allow unknown contentType but don't parse?
+  fastify.addContentTypeParser('*', (_request, _payload, done) => {
+    // @ts-ignore
+    done();
+  });
+
   /**
    * Parse the rev out of a resource's ETag
    *
