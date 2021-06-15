@@ -15,9 +15,11 @@
 
 import debug from 'debug';
 import PQueue from 'p-queue';
+import Ajv, { JTDSchemaType } from 'ajv/dist/jtd';
+import type { SetRequired } from 'type-fest';
 
-import { ReResponder, Requester, KafkaBase } from '@oada/lib-kafka';
-import * as oadaLib from '@oada/lib-arangodb';
+import { Responder, Requester, KafkaBase } from '@oada/lib-kafka';
+import { resources } from '@oada/lib-arangodb';
 
 // Import message format from write-handler
 import type { WriteResponse, WriteRequest } from '@oada/write-handler';
@@ -27,23 +29,24 @@ import config from './config';
 const trace = debug('rev-graph-update:trace');
 const info = debug('rev-graph-update:info');
 const warn = debug('rev-graph-update:warn');
-//const error = debug('rev-graph-update:error');
+const error = debug('rev-graph-update:error');
 
 //---------------------------------------------------------
 // Batching
-const requestPromises = new PQueue({ concurrency: 1 }); // adjust concurrency as needed
-const requests = new Map(); // This map is used as a queue of pending write requests
+// adjust concurrency as needed
+const requestPromises = new PQueue({ concurrency: 1 });
+// This map is used as a queue of pending write requests
+const requests = new Map<string, SetRequired<WriteRequest, 'from_change_id'>>();
 
 //---------------------------------------------------------
 // Kafka intializations:
-const responder = new ReResponder({
+const responder = new Responder({
   consumeTopic: config.get('kafka.topics.httpResponse'),
-  produceTopic: config.get('kafka.topics.writeRequest'),
   group: 'rev-graph-update',
 });
-
 const requester = new Requester({
   consumeTopic: config.get('kafka.topics.httpResponse'),
+  produceTopic: config.get('kafka.topics.writeRequest'),
   group: 'rev-graph-update-batch',
 });
 
@@ -58,17 +61,26 @@ function checkReq(req: KafkaBase): req is WriteResponse {
   return req?.msgtype === 'write-response' && req?.code === 'success';
 }
 
+// Create custom parser and serializer for causechain.
+// Should be faster than JSON methods and is slightly nicer in TypeScript.
+const ajv = new Ajv();
+const causechainSchema: JTDSchemaType<string[]> = {
+  elements: { type: 'string' },
+};
+const parse = ajv.compileParser(causechainSchema);
+const serialize = ajv.compileSerializer(causechainSchema);
+
 responder.on<WriteRequest>('request', async function handleReq(req) {
   if (!checkReq(req)) {
-    return []; // not a write-response message, ignore it
+    return; // not a successful write-response message, ignore it
   }
-  if (!req['resource_id'] || !Number.isInteger(req['_rev'])) {
+  if (!req.resource_id || !Number.isInteger(req._rev)) {
     throw new Error(
-      `Invalid http_response: keys resource_id or _rev are missing.  response = ${JSON.stringify(
-        req
-      )}`
+      'Invalid http_response: keys resource_id or _rev are missing: ' +
+        JSON.stringify(req)
     );
   }
+
   if (typeof req['user_id'] === 'undefined') {
     warn('Received message does not have user_id');
   }
@@ -76,104 +88,100 @@ responder.on<WriteRequest>('request', async function handleReq(req) {
     warn('Received message does not have authorizationid');
   }
 
-  info(`finding parents for resource_id = ${req['resource_id']}`);
-
   // find resource's parent
-  return oadaLib.resources.getParents(req['resource_id']).then((p) => {
-    if (!p || p.length === 0) {
-      warn(`${req['resource_id']} does not have a parent.`);
-      return undefined;
+  info('finding parents for resource_id = %s', req.resource_id);
+  const parents = await resources.getParents(req.resource_id);
+  if (!parents?.length) {
+    trace('%s does not have parents.', req.resource_id);
+    return;
+  }
+  trace('the parents are: %O', parents);
+
+  if (parents.some((p) => p.resource_id === req.resource_id)) {
+    throw new Error(`${req.resource_id} is its own parent!`);
+  }
+
+  // Real cycle detection: check the write-response's causechain
+  // to see if the parent was already updated.
+  // If so, no need to update it again, thus breaking the cycle.
+  const causechain: string[] = [];
+  if (req.causechain) {
+    // in case req.causechain was an empty string
+    const chain = parse(req.causechain);
+    if (chain) {
+      causechain.push(...chain);
+    } else {
+      error(
+        'Error parsing req.causechain at %s: %s',
+        parse.position,
+        parse.message
+      );
+    }
+  }
+  // Add this resource to the set of "causing" resources to prevent cycles
+  causechain.push(req.resource_id);
+
+  for (const parent of parents) {
+    // delete has null rev
+    const childrev = typeof req._rev === 'number' ? req._rev : 0;
+
+    // Do not update parent if it was already the cause of a rev update
+    // on this chain (prevent cycles)
+    if (causechain.includes(parent.resource_id)) {
+      info(
+        'Parent %s exists in causechain, not scheduling for update',
+        parent.resource_id
+      );
+      continue;
     }
 
-    trace('the parents are: %O', p);
+    const uniqueKey = parent.resource_id + parent.path + '/_rev';
+    const qreq = requests.get(uniqueKey);
+    if (qreq) {
+      // Write request exists in the pending queue.
+      // Add change ID to the request.
+      info(
+        'Resource %s already queued for changes, adding to queue',
+        uniqueKey
+      );
+      if (req.change_id) {
+        qreq.from_change_id.push(req.change_id);
+      }
+      qreq.body = req['_rev'];
+    } else {
+      info(
+        'Writing new child link rev (%d) to %s%s/_rev',
+        childrev,
+        parent.resource_id,
+        parent.path
+      );
+      // Create a new write request.
+      const msg = {
+        connection_id: null, // TODO: Fix ReResponder for multiple responses?
+        type: 'write_request',
+        resource_id: parent.resource_id,
+        path: null,
+        contentType: parent.contentType,
+        body: childrev,
+        url: '',
+        user_id: 'system/rev_graph_update', // FIXME
+        // This is an array; new change IDs may be added later
+        from_change_id: req.change_id ? [req.change_id] : [],
+        authorizationid: 'authorizations/rev_graph_update', // FIXME
+        change_path: parent.path,
+        path_leftover: parent.path + '/_rev',
+        resourceExists: true,
+        causechain: serialize(causechain),
+      };
 
-    if (p.some((p) => p['resource_id'] === req['resource_id'])) {
-      const err = new Error(`${req['resource_id']} is its own parent!`);
-      return Promise.reject(err);
+      // Add the request to the pending queue
+      requests.set(uniqueKey, msg);
+      // push
+      requestPromises.add(async () => {
+        const msgPending = requests.get(uniqueKey);
+        requests.delete(uniqueKey);
+        return msgPending && requester.send(msgPending);
+      });
     }
-
-    // Real cycle detection: check the write-response's causechain to see if the parent was already updated.  If so, no need to update it again, thus breaking the cycle.
-    let causechain: string[] = [];
-    if (req.causechain) {
-      try {
-        causechain = JSON.parse(req.causechain);
-        if (!Array.isArray(causechain)) causechain = []; // in case req.causechain was an empty string
-      } catch (e) {
-        warn(
-          'WARNING: failed to JSON.parse req.causechain.  It is: %s',
-          req.causechain
-        );
-      }
-    }
-    causechain.push(req.resource_id); // Add this resource to the set of "causing" resources to prevent cycles
-
-    p.forEach(function (item) {
-      const childrev = typeof req._rev === 'number' ? req._rev : 0; // delete has null rev
-
-      // Do not update parent if it was already the cause of a rev update on this chain (prevent cycles)
-      if (causechain.includes(item.resource_id)) {
-        info(
-          'Parent ' +
-            item.resource_id +
-            ' exists in causechain, not scheduling for update'
-        );
-        return;
-      }
-
-      const uniqueKey = item['resource_id'] + item.path + '/_rev';
-      if (requests.has(uniqueKey)) {
-        // Write request exists in the pending queue. Add change ID to the request.
-        info(
-          'Resource ' +
-            uniqueKey +
-            ' already queued for changes, adding to queue'
-        );
-        if (req.change_id) {
-          requests.get(uniqueKey).from_change_id.push(req.change_id);
-        }
-        requests.get(uniqueKey).body = req['_rev'];
-      } else {
-        info(
-          'Writing new child link rev (' +
-            childrev +
-            ') to ' +
-            item.resource_id +
-            item.path +
-            '/_rev'
-        );
-        // Create a new write request.
-        const msg = {
-          connection_id: null, // TODO: Fix ReResponder for multiple responses?
-          type: 'write_request',
-          resource_id: item['resource_id'],
-          path: null,
-          contentType: item.contentType,
-          body: childrev,
-          url: '',
-          user_id: 'system/rev_graph_update', // FIXME
-          from_change_id: req.change_id ? [req.change_id] : [], // This is an array; new change IDs may be added later
-          authorizationid: 'authorizations/rev_graph_update', // FIXME
-          change_path: item['path'],
-          path_leftover: item.path + '/_rev',
-          resourceExists: true,
-          causechain: JSON.stringify(causechain),
-        };
-
-        // Add the request to the pending queue
-        requests.set(uniqueKey, msg);
-
-        // push
-        requestPromises.add(() => {
-          const msgPending = requests.get(uniqueKey);
-          requests.delete(uniqueKey);
-          return requester.send(
-            msgPending,
-            config.get('kafka.topics.writeRequest')
-          );
-        });
-      }
-    });
-
-    return []; // FIXME
-  });
+  }
 });
