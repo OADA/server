@@ -177,117 +177,117 @@ const plugin: FastifyPluginAsync<Options> = async function (fastify, opts) {
     reply.header('X-OADA-Path-Leftover', oadaGraph['path_leftover']);
   });
 
-  // Fix for GET /bookmarks ?
-  // TODO: why wasn't HEAD working with `.get`?
-  fastify.route({ url: '*', method: ['GET', 'HEAD'], handler: getResource });
-  fastify.route({ url: '/*', method: ['GET', 'HEAD'], handler: getResource });
-  async function getResource(request: FastifyRequest, reply: FastifyReply) {
-    const oadaGraph = request.requestContext.get('oadaGraph')!;
+  fastify.get(
+    '*',
+    { exposeHeadRoute: true },
+    async function getResource(request: FastifyRequest, reply: FastifyReply) {
+      const oadaGraph = request.requestContext.get('oadaGraph')!;
 
-    const type = oadaGraph.type ?? 'application/json';
-    // TODO: Why does this not work as a fastify plugin??
-    const headers = handleResponse(type);
-    // TODO: Why does fastify strip content-type params??
-    reply.headers(headers);
+      const type = oadaGraph.type ?? 'application/json';
+      // TODO: Why does this not work as a fastify plugin??
+      const headers = handleResponse(type);
+      // TODO: Why does fastify strip content-type params??
+      reply.headers(headers);
 
-    reply.header('X-OADA-Rev', oadaGraph.rev);
-    reply.header('ETag', `"${oadaGraph.rev}"`);
+      reply.header('X-OADA-Rev', oadaGraph.rev);
+      reply.header('ETag', `"${oadaGraph.rev}"`);
 
-    /**
-     * Check preconditions before actually getting the body
-     */
+      /**
+       * Check preconditions before actually getting the body
+       */
 
-    const ifmatch = request.headers['if-match'];
-    if (ifmatch) {
-      const rev = parseETag(ifmatch);
-      if (rev !== oadaGraph.rev) {
-        return reply.preconditionFailed(
-          'If-Match header does not match current resource _rev'
-        );
+      const ifmatch = request.headers['if-match'];
+      if (ifmatch) {
+        const rev = parseETag(ifmatch);
+        if (rev !== oadaGraph.rev) {
+          return reply.preconditionFailed(
+            'If-Match header does not match current resource _rev'
+          );
+        }
       }
-    }
 
-    const ifnonematch = request.headers['if-none-match'];
-    if (ifnonematch) {
-      const revs = ifnonematch.split(',').map(parseETag);
-      if (revs.includes(oadaGraph.rev)) {
-        return reply.preconditionFailed(
-          'If-None-Match header contains current resource _rev'
-        );
+      const ifnonematch = request.headers['if-none-match'];
+      if (ifnonematch) {
+        const revs = ifnonematch.split(',').map(parseETag);
+        if (revs.includes(oadaGraph.rev)) {
+          return reply.preconditionFailed(
+            'If-None-Match header contains current resource _rev'
+          );
+        }
       }
-    }
 
-    /**
-     * Handle requests for /_meta/_changes?
-     */
-    if (oadaGraph.path_leftover === '/_meta/_changes') {
-      const ch = await changes.getChanges(oadaGraph.resource_id);
-      return ch
-        .map((item) => {
-          return {
-            [item]: {
-              _id: oadaGraph.resource_id + '/_meta/_changes/' + item,
-              _rev: item,
-            },
-          };
-        })
-        .reduce((a, b) => {
-          return { ...a, ...b };
-        });
-    } else if (/^\/_meta\/_changes\/.*?/.test(oadaGraph.path_leftover)) {
-      const rev = +oadaGraph.path_leftover.split('/')[3]!;
-      const ch = await changes.getChangeArray(oadaGraph.resource_id, rev);
-      request.log.trace('CHANGE %O', ch);
-      return ch;
-    }
+      /**
+       * Handle requests for /_meta/_changes?
+       */
+      if (oadaGraph.path_leftover === '/_meta/_changes') {
+        const ch = await changes.getChanges(oadaGraph.resource_id);
+        return ch
+          .map((item) => {
+            return {
+              [item]: {
+                _id: oadaGraph.resource_id + '/_meta/_changes/' + item,
+                _rev: item,
+              },
+            };
+          })
+          .reduce((a, b) => {
+            return { ...a, ...b };
+          });
+      } else if (/^\/_meta\/_changes\/.*?/.test(oadaGraph.path_leftover)) {
+        const rev = +oadaGraph.path_leftover.split('/')[3]!;
+        const ch = await changes.getChangeArray(oadaGraph.resource_id, rev);
+        request.log.trace('CHANGE %O', ch);
+        return ch;
+      }
 
-    // TODO: Should it not get the whole meta document?
-    // TODO: Make getResource accept an array of paths and return an array of
-    //       results. I think we can do that in one arango query
+      // TODO: Should it not get the whole meta document?
+      // TODO: Make getResource accept an array of paths and return an array of
+      //       results. I think we can do that in one arango query
 
-    if (
-      typeis.is(oadaGraph.type!, ['json', '+json']) ||
-      oadaGraph['path_leftover'].match(/\/_meta$/)
-    ) {
-      const doc = await resources.getResource(
-        oadaGraph['resource_id'],
-        oadaGraph['path_leftover']
-      );
-      request.log.trace('DOC IS %O', doc);
+      if (
+        typeis.is(oadaGraph.type!, ['json', '+json']) ||
+        oadaGraph['path_leftover'].match(/\/_meta$/)
+      ) {
+        const doc = await resources.getResource(
+          oadaGraph['resource_id'],
+          oadaGraph['path_leftover']
+        );
+        request.log.trace('DOC IS %O', doc);
 
-      // TODO: Allow null values in OADA?
-      if (doc === undefined || doc === null) {
-        request.log.error('Resource not found');
-        return reply.notFound();
+        // TODO: Allow null values in OADA?
+        if (doc === undefined || doc === null) {
+          request.log.error('Resource not found');
+          return reply.notFound();
+        } else {
+          request.log.info(
+            'Resource: %s, Rev: %d',
+            oadaGraph.resource_id,
+            oadaGraph.rev
+          );
+        }
+
+        return unflattenMeta(doc);
       } else {
-        request.log.info(
-          'Resource: %s, Rev: %d',
-          oadaGraph.resource_id,
-          oadaGraph.rev
-        );
+        // get binary
+        if (oadaGraph['path_leftover']) {
+          request.log.trace(oadaGraph['path_leftover']);
+          // TODO: What error code to use here?
+          return reply.notImplemented('Path Leftover on Binary GET');
+        }
+
+        // Look up file size before streaming
+        const {
+          integrity,
+          // @ts-ignore
+          size,
+        } = await cacache.get.info(CACHE_PATH, oadaGraph['resource_id']);
+
+        // Stream file to client
+        reply.header('Content-Length', size);
+        return cacache.get.stream.byDigest(CACHE_PATH, integrity);
       }
-
-      return reply.send(unflattenMeta(doc));
-    } else {
-      // get binary
-      if (oadaGraph['path_leftover']) {
-        request.log.trace(oadaGraph['path_leftover']);
-        // TODO: What error code to use here?
-        return reply.notImplemented('Path Leftover on Binary GET');
-      }
-
-      // Look up file size before streaming
-      const {
-        integrity,
-        // @ts-ignore
-        size,
-      } = await cacache.get.info(CACHE_PATH, oadaGraph['resource_id']);
-
-      // Stream file to client
-      reply.header('Content-Length', size);
-      return reply.send(cacache.get.stream.byDigest(CACHE_PATH, integrity));
     }
-  }
+  );
 
   // TODO: This was a quick make it work. Do what you want with it.
   function unflattenMeta(doc: any) {
@@ -351,91 +351,98 @@ const plugin: FastifyPluginAsync<Options> = async function (fastify, opts) {
   /**
    * Handle PUT/POST
    */
-  async function putResource(request: FastifyRequest, reply: FastifyReply) {
-    // Don't let users modify their shares?
-    noModifyShares(request, reply);
+  fastify.route({
+    url: '*',
+    method: ['PUT', 'POST'],
+    handler: async function putResource(
+      request: FastifyRequest,
+      reply: FastifyReply
+    ) {
+      // Don't let users modify their shares?
+      noModifyShares(request, reply);
 
-    const oadaGraph = request.requestContext.get('oadaGraph')!;
-    const resourceExists = request.requestContext.get('resourceExists')!;
-    const user = request.requestContext.get('user')!;
-    let path = request.requestContext.get('oadaPath')!;
-    request.log.trace('Saving PUT body for request');
+      const oadaGraph = request.requestContext.get('oadaGraph')!;
+      const resourceExists = request.requestContext.get('resourceExists')!;
+      const user = request.requestContext.get('user')!;
+      let path = request.requestContext.get('oadaPath')!;
+      request.log.trace('Saving PUT body for request');
 
-    /**
-     * Use binary stuff if not a JSON request
-     */
-    if (!request.is(['json', '+json'])) {
-      await pipeline(
-        request.raw,
-        cacache.put.stream(CACHE_PATH, oadaGraph.resource_id)
+      /**
+       * Use binary stuff if not a JSON request
+       */
+      if (!request.is(['json', '+json'])) {
+        await pipeline(
+          request.raw,
+          cacache.put.stream(CACHE_PATH, oadaGraph.resource_id)
+        );
+        request.body = '{}';
+      }
+
+      const { _id: bodyid } = await putBodies.savePutBody(
+        request.body as string
       );
-      request.body = '{}';
-    }
+      request.log.trace('PUT body saved');
 
-    const { _id: bodyid } = await putBodies.savePutBody(request.body as string);
-    request.log.trace('PUT body saved');
+      request.log.trace('RESOURCE EXISTS %O', oadaGraph);
+      request.log.trace('RESOURCE EXISTS %O', resourceExists);
+      const ignoreLinks =
+        ((request.headers['x-oada-ignore-links'] ??
+          '') as string).toLowerCase() == 'true';
+      const ifmatch = request.headers['if-match'];
+      const ifnonematch = request.headers['if-none-match'];
+      const resp = (await requester.send(
+        {
+          'connection_id': request.id,
+          resourceExists,
+          'domain': request.hostname,
+          'url': path,
+          'resource_id': oadaGraph['resource_id'],
+          'path_leftover': oadaGraph['path_leftover'],
+          //'meta_id': oadaGraph['meta_id'],
+          'user_id': user['user_id'],
+          'authorizationid': user['authorizationid'],
+          'client_id': user['client_id'],
+          'contentType': request.headers['content-type'],
+          'bodyid': bodyid,
+          'if-match': ifmatch && parseETag(ifmatch),
+          'if-none-match': ifnonematch?.split(',').map(parseETag),
+          ignoreLinks,
+        } as WriteRequest,
+        config.get('kafka.topics.writeRequest')
+      )) as WriteResponse;
 
-    request.log.trace('RESOURCE EXISTS %O', oadaGraph);
-    request.log.trace('RESOURCE EXISTS %O', resourceExists);
-    const ignoreLinks =
-      ((request.headers['x-oada-ignore-links'] ??
-        '') as string).toLowerCase() == 'true';
-    const ifmatch = request.headers['if-match'];
-    const ifnonematch = request.headers['if-none-match'];
-    const resp = (await requester.send(
-      {
-        'connection_id': request.id,
-        resourceExists,
-        'domain': request.hostname,
-        'url': path,
-        'resource_id': oadaGraph['resource_id'],
-        'path_leftover': oadaGraph['path_leftover'],
-        //'meta_id': oadaGraph['meta_id'],
-        'user_id': user['user_id'],
-        'authorizationid': user['authorizationid'],
-        'client_id': user['client_id'],
-        'contentType': request.headers['content-type'],
-        'bodyid': bodyid,
-        'if-match': ifmatch && parseETag(ifmatch),
-        'if-none-match': ifnonematch?.split(',').map(parseETag),
-        ignoreLinks,
-      } as WriteRequest,
-      config.get('kafka.topics.writeRequest')
-    )) as WriteResponse;
-
-    request.log.trace('Recieved write response');
-    switch (resp.code) {
-      case 'success':
-        break;
-      case 'permission':
-        return reply.forbidden('User does not own this resource');
-      case 'if-match failed':
-        return reply.preconditionFailed(
-          'If-Match header does not match current resource _rev'
-        );
-      case 'if-none-match failed':
-        return reply.preconditionFailed(
-          'If-None-Match header contains current resource _rev'
-        );
-      default:
-        throw new Error('write failed with code ' + resp.code);
-    }
-    return (
-      reply
-        .header('X-OADA-Rev', resp['_rev'])
-        .header('ETag', `"${resp['_rev']}"`)
-        // TODO: What is the right thing to return here?
-        //.redirect(204, req.baseUrl + req.url)
-        .send()
-    );
-  }
-  fastify.route({ url: '*', method: ['PUT', 'POST'], handler: putResource });
-  fastify.route({ url: '/*', method: ['PUT', 'POST'], handler: putResource });
+      request.log.trace('Recieved write response');
+      switch (resp.code) {
+        case 'success':
+          break;
+        case 'permission':
+          return reply.forbidden('User does not own this resource');
+        case 'if-match failed':
+          return reply.preconditionFailed(
+            'If-Match header does not match current resource _rev'
+          );
+        case 'if-none-match failed':
+          return reply.preconditionFailed(
+            'If-None-Match header contains current resource _rev'
+          );
+        default:
+          throw new Error('write failed with code ' + resp.code);
+      }
+      return (
+        reply
+          .header('X-OADA-Rev', resp['_rev'])
+          .header('ETag', `"${resp['_rev']}"`)
+          // TODO: What is the right thing to return here?
+          //.redirect(204, req.baseUrl + req.url)
+          .send()
+      );
+    },
+  });
 
   /**
    * Handle DELETE
    */
-  fastify.delete('/*', async function deleteResource(request, reply) {
+  fastify.delete('*', async function deleteResource(request, reply) {
     let path = request.requestContext.get('oadaPath')!;
     const user = request.requestContext.get('user')!;
     let { rev, ...oadaGraph } = request.requestContext.get('oadaGraph')!;
