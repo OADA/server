@@ -138,9 +138,18 @@ const plugin: FastifyPluginAsync = async function (fastify) {
       }
       return handler;
     }
-    function sendResponse(resp: SocketResponse) {
+    function sendResponse({
+      payload,
+      ...resp
+    }: SocketResponse & { payload?: string }) {
       debug('Responding to request: %O', resp);
-      socket.send(JSON.stringify(resp));
+      // TODO: Remove this hack...
+      const str = JSON.stringify(resp);
+      if (payload) {
+        socket.send(`${str.slice(0, -1)},"data":${payload}}`);
+      } else {
+        socket.send(str);
+      }
     }
     function sendChange(resp: SocketChange) {
       trace('Sending change: %O', resp);
@@ -177,6 +186,7 @@ const plugin: FastifyPluginAsync = async function (fastify) {
         await handleRequest(msg);
       } catch (e) {
         error(e);
+        error('Request was: %O', msg);
         const err = {
           status: 500,
           requestId: msg.requestId,
@@ -263,7 +273,7 @@ const plugin: FastifyPluginAsync = async function (fastify) {
             status: res.statusCode,
             statusText: res.statusMessage,
             headers,
-            data: res.payload ? JSON.parse(res.payload) : undefined,
+            payload: res.payload,
           });
         }
       } catch (err) {
@@ -402,8 +412,8 @@ const plugin: FastifyPluginAsync = async function (fastify) {
             requestId: msg.requestId,
             status: res.statusCode,
             headers,
-            // TODO: Fix this?
-            data: res.payload ? JSON.parse(res.payload) : undefined,
+            // TODO: why is there a payload for HEAD??
+            payload: msg.method === 'head' ? undefined : res.payload,
           });
       }
     }
