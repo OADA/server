@@ -158,7 +158,7 @@ jobs:
         with:
           images: |
             ${{ steps.images.outputs.dockerhub }}
-            ${{ steps.images.output.ghcr}}
+            ${{ steps.images.outputs.ghcr}}
           labels: |
             org.opencontainers.image.title=${{ matrix.service }}
             org.opencontainers.image.description=An OADA microservice
