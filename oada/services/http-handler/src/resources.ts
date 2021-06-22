@@ -245,7 +245,7 @@ const plugin: FastifyPluginAsync<Options> = async function (fastify, opts) {
       //       results. I think we can do that in one arango query
 
       if (
-        typeis.is(oadaGraph.type!, ['json', '+json']) ||
+        typeis.is(type, ['json', '+json']) ||
         oadaGraph['path_leftover'].match(/\/_meta$/)
       ) {
         const doc = await resources.getResource(
@@ -268,9 +268,11 @@ const plugin: FastifyPluginAsync<Options> = async function (fastify, opts) {
 
         const res = unflattenMeta(doc);
 
+        // TODO: Support non-JSON accept? (e.g., YAML)
         const accept = request.accepts();
-        switch (accept.type(['json'])) {
+        switch (accept.type(['json', type])) {
           case 'json':
+          case type:
             // TODO: Better way to ensure string gets JSON serialized?
             return reply.serializer(JSON.stringify).send(res);
           default:
