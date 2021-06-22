@@ -266,7 +266,16 @@ const plugin: FastifyPluginAsync<Options> = async function (fastify, opts) {
           );
         }
 
-        return unflattenMeta(doc);
+        const res = unflattenMeta(doc);
+
+        const accept = request.accepts();
+        switch (accept.type(['json'])) {
+          case 'json':
+            // TODO: Better way to ensure string gets JSON serialized?
+            return reply.serializer(JSON.stringify).send(res);
+          default:
+            return reply.notAcceptable();
+        }
       } else {
         // get binary
         if (oadaGraph['path_leftover']) {

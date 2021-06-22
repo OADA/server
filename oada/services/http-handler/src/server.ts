@@ -16,6 +16,7 @@
 import fastify, { FastifyRequest } from 'fastify';
 import fastifyHealthcheck from 'fastify-healthcheck';
 import fastifySensible from 'fastify-sensible';
+import fastifyAccepts from 'fastify-accepts';
 import fastifyGracefulShutdown from 'fastify-graceful-shutdown';
 import bearerAuth from 'fastify-bearer-auth';
 import { fastifyRequestContextPlugin } from 'fastify-request-context';
@@ -67,6 +68,8 @@ async function init() {
     // Hide internal error cause from clients except in development
     errorHandler: process.env.NODE_ENV === 'development' ? false : undefined,
   });
+
+  await app.register(fastifyAccepts);
 
   await app.register(fastifyGracefulShutdown);
 
