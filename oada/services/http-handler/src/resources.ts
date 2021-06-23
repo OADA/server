@@ -270,6 +270,7 @@ const plugin: FastifyPluginAsync<Options> = async function (fastify, opts) {
 
         // TODO: Support non-JSON accept? (e.g., YAML)
         const accept = request.accepts();
+        reply.vary('Accept');
         switch (accept.type(['json', type])) {
           case 'json':
           case type:
