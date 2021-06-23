@@ -87,7 +87,11 @@ async function init() {
     },
   });
 
-  await app.register(helmet);
+  await app.register(helmet, {
+    crossOriginResourcePolicy: {
+      policy: 'cross-origin',
+    },
+  });
 
   await app.register(fastifyRequestContextPlugin, {
     hook: 'onRequest',
