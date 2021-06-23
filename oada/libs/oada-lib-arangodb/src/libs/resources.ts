@@ -83,9 +83,11 @@ export async function lookupFromUrl(
   // Create a filter for each segment of the url
   let filters = aql``;
   for (const [i, urlPiece] of Object.entries(pieces)) {
+    // Need to be sure `i` is a number and not a string
+    // otherwise indexes don't work...
     filters = aql`
       ${filters}
-      FILTER p.edges[${i}].name == ${urlPiece} || p.edges[${i}].name == null`;
+      FILTER p.edges[${+i}].name == ${urlPiece} || p.edges[${+i}].name == null`;
   }
   const query = aql`
     WITH ${edges}, ${graphNodes}
@@ -323,7 +325,9 @@ export async function getResourceOwnerIdRev(
     ); // Treat non-existing path has not-found
 }
 
-export async function getParents(id: string): Promise<Array<{
+export async function getParents(
+  id: string
+): Promise<Array<{
   resource_id: string;
   path: string;
   contentType: string;
