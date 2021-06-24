@@ -176,7 +176,7 @@ const config = libConfig({
       profile: {
         doc: 'Whether to profile all AQL queries',
         format: 'int',
-        default: false as false | 1 | 2,
+        default: 0 as 0 | 1 | 2,
         env: 'PROFILE_AQL',
         arg: 'profile-aql',
       },

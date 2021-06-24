@@ -1,7 +1,7 @@
 import { resolve } from 'path';
 
-import _pino, { LoggerOptions } from 'pino';
-import pinoDebug, { Logger, Options } from 'pino-debug';
+import _pino, { Logger, LoggerOptions } from 'pino';
+import pinoDebug, { Options } from 'pino-debug';
 import debug from 'debug';
 
 /**
@@ -51,7 +51,10 @@ export function logLevel(): string {
 /**
  * Get pino, wrapping it with pino-caller when in development environment
  */
-export function pino({ level = logLevel(), ...opts }: LoggerOptions = {}) {
+export function pino({
+  level = logLevel(),
+  ...opts
+}: LoggerOptions = {}): Logger {
   const p = _pino({ level, ...opts });
   return process.env.NODE_ENV === 'development' ? require('pino-caller')(p) : p;
 }

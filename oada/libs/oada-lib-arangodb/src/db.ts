@@ -17,11 +17,12 @@ import Bluebird from 'bluebird';
 import type { AqlQuery } from 'arangojs/aql';
 import type { QueryOptions } from 'arangojs/database';
 import { Database } from 'arangojs';
-import debug from 'debug'
+
+import { pino } from '@oada/pino-debug';
 
 import config from './config';
 
-const trace = debug('oada-lib-arangodb:trace')
+const logger = pino({ name: '@oada/lib-arango#aql' });
 
 const { profile } = config.get('arangodb.aql');
 class DatabaseWrapper extends Database {
@@ -42,10 +43,9 @@ class DatabaseWrapper extends Database {
       );
     }
     const res = await tryquery();
-    if(trace.enabled) {
-      for (const [key, extra] of Object.entries(res.extra)) {
-        trace('AQL %s: %O', key, extra)
-      }
+    // TODO: Less gross way to do this?
+    if (logger.isLevelEnabled('trace')) {
+      logger.trace({...query, ...res.extra}, 'AQL query info')
     }
     return res
   }
