@@ -5,9 +5,9 @@ services:
       context: ./oada
     restart: unless-stopped
     networks:
-      - startup_net
-      - kafka_net
-      - arango_net
+      startup_net: {}
+      kafka_net: {}
+      arango_net: {}
     volumes:
       - ./oada/oada.config.js:/oada.config.js # for debug?
     environment:
@@ -25,6 +25,7 @@ services:
       - DOMAIN=${DOMAIN:-localhost}
       - NODE_TLS_REJECT_UNAUTHORIZED
       - PINO_TRANSPORT=${PINO_TRANSPORT-yarn g:pretty -clti pid,hostname}
+      - PROFILE_AQL
       # Allow changing arangodb URL (e.g., to use external arango)
       - ARANGODB_URL=${ARANGODB_URL-http://arangodb:8529}
       # Allow changing kafka brokers (e.g., to use external kafka)

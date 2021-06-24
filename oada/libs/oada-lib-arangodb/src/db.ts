@@ -14,18 +14,51 @@
  */
 
 import Bluebird from 'bluebird';
+import type { AqlQuery } from 'arangojs/aql';
+import type { QueryOptions } from 'arangojs/database';
 import { Database } from 'arangojs';
+import debug from 'debug'
 
 import config from './config';
 
-const db = new Database({
-  url: config.get('arangodb.connectionString'),
-  databaseName: config.get('arangodb.database'),
-});
+const trace = debug('oada-lib-arangodb:trace')
+
+const { profile } = config.get('arangodb.aql');
+class DatabaseWrapper extends Database {
+  // @ts-ignore
+  override async query(query: AqlQuery, options: QueryOptions = {}) {
+    let tries = 0;
+    const tryquery: () => ReturnType<Database['query']> = async () => {
+      return await Bluebird.resolve(super.query(query, {profile, ...options})).catch(
+        DeadlockError,
+        async (err: unknown) => {
+          if (++tries >= deadlockRetries) {
+            throw err;
+          }
+
+          // warn(`Retrying query due to deadlock (retry #${tries})`, err);
+          return await Bluebird.delay(deadlockDelay).then(tryquery);
+        }
+      );
+    }
+    const res = await tryquery();
+    if(trace.enabled) {
+      for (const [key, extra] of Object.entries(res.extra)) {
+        trace('AQL %s: %O', key, extra)
+      }
+    }
+    return res
+  }
+}
 
 if (config.get('isTest')) {
   config.set('arangodb.database', 'oada-test');
 }
+
+const db = new DatabaseWrapper({
+  url: config.get('arangodb.connectionString'),
+  databaseName: config.get('arangodb.database'),
+});
 
 // Automatically retry queries on deadlock?
 const deadlockRetries = config.get('arangodb.retry.deadlock.retries');
@@ -34,24 +67,5 @@ const DeadlockError = {
   name: 'ArangoError',
   errorNum: 29,
 };
-const query = db.query;
-db.query = function (...args: Parameters<typeof query>) {
-  let tries = 0;
-  function tryquery(): ReturnType<typeof query> {
-    return Bluebird.resolve(query.apply(db, args)).catch(
-      DeadlockError,
-      async (err: unknown) => {
-        if (++tries >= deadlockRetries) {
-          throw err;
-        }
-
-        //      warn(`Retrying query due to deadlock (retry #${tries})`, err);
-        return Bluebird.delay(deadlockDelay).then(tryquery);
-      }
-    );
-  }
-
-  return tryquery();
-} as typeof query;
 
 export { db };

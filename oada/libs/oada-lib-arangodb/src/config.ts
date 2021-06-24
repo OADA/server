@@ -172,6 +172,15 @@ const config = libConfig({
         },
       },
     },
+    aql: {
+      profile: {
+        doc: 'Whether to profile all AQL queries',
+        format: 'int',
+        default: false as false | 1 | 2,
+        env: 'PROFILE_AQL',
+        arg: 'profile-aql',
+      },
+    },
     init: {
       // NOTE: passwordSalt HAS to match the one in auth
       passwordSalt: {
