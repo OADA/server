@@ -184,6 +184,7 @@ const plugin: FastifyPluginAsync<Options> = async function (fastify, opts) {
       const oadaGraph = request.requestContext.get('oadaGraph')!;
 
       const type = oadaGraph.type ?? 'application/json';
+      reply.type(type);
       // TODO: Why does this not work as a fastify plugin??
       const headers = handleResponse(type);
       // TODO: Why does fastify strip content-type params??
