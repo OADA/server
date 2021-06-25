@@ -21,6 +21,7 @@ import fastifyWebsocket from 'fastify-websocket';
 import _debug from 'debug';
 import jsonpointer from 'jsonpointer';
 import type LightMyRequest from 'light-my-request';
+import { is } from 'type-is';
 
 import SocketRequest, {
   // Runtime check for request type
@@ -407,6 +408,17 @@ const plugin: FastifyPluginAsync = async function (fastify) {
           for (const [k, v] of Object.entries(res.headers)) {
             // @oada/client gets very angry if a header is anything but a string
             headers[k] = v!.toString();
+          }
+          // Can only send JSON over websockets
+          const type = res.headers['content-type']?.toString();
+          if (type && !is(type, ['json', '+json'])) {
+            sendResponse({
+              requestId: msg.requestId,
+              // Bad Request
+              status: 400,
+              headers,
+            });
+            return;
           }
           sendResponse({
             requestId: msg.requestId,
