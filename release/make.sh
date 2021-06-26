@@ -50,6 +50,8 @@ docker-compose \
 } | {
     # Sort the output by key
     yq eval 'sortKeys(..)' -
+} | {
+    # Allow pulling our images by tag OADA_VERSION, or default to this digest
+    sed 's/image: oada\/\(.*\)\(@.*\)/image: oada\/\1:${OADA_VERSION:-digest\2}/'
 }
-
 
