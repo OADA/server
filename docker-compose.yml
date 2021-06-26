@@ -157,7 +157,7 @@ services:
       - PGID=1000
       - TZ=America/New_york
       - URL=${DOMAIN:-localhost}
-      - SUBDOMAINS=, #e.g., www
+      - SUBDOMAINS= #e.g., www
       - VALIDATION=http
       - CERTPROVIDER= #optional
       - DNSPLUGIN= #optional
