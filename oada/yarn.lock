@@ -219,7 +219,6 @@ __metadata:
   resolution: "@oada/lib-arangodb@workspace:libs/oada-lib-arangodb"
   dependencies:
     "@oada/lib-config": ^3.0.1
-    "@oada/pino-debug": ^3.0.1
     "@oada/types": ^1.5.1
     "@types/bcryptjs": ^2.4.2
     "@types/bluebird": ^3.5.35

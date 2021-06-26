@@ -17,12 +17,11 @@ import Bluebird from 'bluebird';
 import type { AqlQuery } from 'arangojs/aql';
 import type { QueryOptions } from 'arangojs/database';
 import { Database } from 'arangojs';
-
-import { pino } from '@oada/pino-debug';
+import debug from 'debug';
 
 import config from './config';
 
-const logger = pino({ name: '@oada/lib-arango#aql' });
+const trace = debug('arangodb#aql:trace');
 
 const { profile } = config.get('arangodb.aql');
 class DatabaseWrapper extends Database {
@@ -44,8 +43,8 @@ class DatabaseWrapper extends Database {
     }
     const res = await tryquery();
     // TODO: Less gross way to do this?
-    if (logger.isLevelEnabled('trace')) {
-      logger.trace({...query, ...res.extra}, 'AQL query info')
+    if (trace.enabled) {
+      trace({...query, ...res.extra}, 'AQL query info')
     }
     return res
   }

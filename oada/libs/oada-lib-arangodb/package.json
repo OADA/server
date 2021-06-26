@@ -36,7 +36,6 @@
   },
   "dependencies": {
     "@oada/lib-config": "^3.0.1",
-    "@oada/pino-debug": "^3.0.1",
     "@oada/types": "^1.5.1",
     "arangojs": "^7.5.0",
     "bcryptjs": "^2.4.3",
