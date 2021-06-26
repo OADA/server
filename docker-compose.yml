@@ -179,7 +179,7 @@ services:
 
   # Arango is the main backend where core data and graph is stored
   arangodb:
-    image: arangodb:3.7.10
+    image: arangodb:3.7.12
     restart: unless-stopped
     networks:
       arango_net: {}
