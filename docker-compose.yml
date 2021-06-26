@@ -169,6 +169,7 @@ services:
       - STAGING=true #optional (set false for release)
       - MAXMINDDB_LICENSE_KEY= #optional
     volumes:
+      - proxy_config:/config
       # Hack in self-signed ssl for localhost
       - ./support/proxy/selfsigned:/config/keys/letsencrypt:ro
     ports:
@@ -382,6 +383,7 @@ volumes:
   binary_data:
   redpanda_data:
   redpanda_config:
+  proxy_config:
   prometheus_data:
   prometheus_config:
   grafana_data:

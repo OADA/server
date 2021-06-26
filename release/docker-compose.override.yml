@@ -111,6 +111,8 @@ services:
       - EXTRA_DOMAINS= #optional
       - STAGING=false #optional
       - MAXMINDDB_LICENSE_KEY= #optional
+    volumes:
+      - proxy_config:/config
     ports:
       - '${BIND:-0.0.0.0}:${PORT_HTTPS:-443}:443'
       - '${BIND:-0.0.0.0}:${PORT_HTTP:-80}:80'
@@ -172,6 +174,7 @@ volumes:
   binary_data:
   redpanda_data:
   redpanda_config:
+  proxy_config:
   prometheus_data:
   prometheus_config:
   grafana_data:
