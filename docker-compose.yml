@@ -14,7 +14,7 @@ services:
       - '8080'
     environment:
       # set RESETDATABASE to "yes" if you want to drop database on startup and recreate
-      - RESETDATABASE=${RESETDATABASE-no}
+      RESETDATABASE: ${RESETDATABASE-no}
 
   auth:
     extends:
@@ -27,7 +27,7 @@ services:
     depends_on:
       - startup
     networks:
-      - http_net
+      http_net: {}
     expose: # expose only internally, not on host
       - '8080'
 
@@ -46,11 +46,11 @@ services:
     depends_on:
       - startup
     networks:
-      - http_net
+      http_net: {}
     expose: # expose only internally, not on host
       - '8080'
     environment:
-      - IGNORE_SCOPE
+      IGNORE_SCOPE:
     volumes:
       # Storage for non-JSON resources
       - binary_data:/oada/binary
@@ -67,9 +67,9 @@ services:
       - startup
       - proxy
     networks:
-      - http_net
+      http_net: {}
     environment:
-      - IGNORE_SCOPE
+      IGNORE_SCOPE:
 
   write-handler:
     extends:
@@ -115,7 +115,7 @@ services:
     depends_on:
       - startup
     networks:
-      - http_net
+      http_net: {}
     expose: # expose only internally, not on host
       - '8080'
 
@@ -131,7 +131,7 @@ services:
       - startup
       - proxy
     networks:
-      - http_net
+      http_net: {}
 
   shares:
     extends:
@@ -151,13 +151,13 @@ services:
     cap_add:
       - NET_ADMIN
     networks:
-      - http_net
+      http_net: {}
     environment:
       - PUID=1000
       - PGID=1000
       - TZ=America/New_york
       - URL=${DOMAIN:-localhost}
-      - SUBDOMAINS=www,
+      - SUBDOMAINS=, #e.g., www
       - VALIDATION=http
       - CERTPROVIDER= #optional
       - DNSPLUGIN= #optional
@@ -181,7 +181,7 @@ services:
     image: arangodb:3.7.10
     restart: unless-stopped
     networks:
-      - arango_net
+      arango_net: {}
     volumes:
       - arangodb_data:/var/lib/arangodb3
       - arangodb_apps_data:/var/lib/arangodb3-apps
@@ -189,8 +189,8 @@ services:
       - '8529'
     environment:
       # - ARANGO_RANDOM_ROOT_PASSWORD=1
-      - ARANGO_NO_AUTH=1
-      - ARANGO_STORAGE_ENGINE=rocksdb
+      ARANGO_NO_AUTH: 1
+      ARANGO_STORAGE_ENGINE: rocksdb
     command: ['arangod', '--server.statistics=false']
 
   # Redpanda is API compatible with kafka.
@@ -249,8 +249,8 @@ services:
       - redpanda
     restart: unless-stopped
     networks:
-      - grafana_net
-      - kafka_net
+      grafana_net: {}
+      kafka_net: {}
     expose:
       - '9090'
     #ports:
@@ -290,7 +290,7 @@ services:
       - grafana-provision-dashboards
     restart: unless-stopped
     networks:
-      - grafana_net
+      grafana_net:
     ports:
       - '3000:3000'
     volumes:
@@ -388,11 +388,11 @@ volumes:
   grafana_prov:
 
 networks:
-  arango_net:
-  kafka_net:
-  http_net:
-  startup_net:
-  grafana_net:
+  arango_net: {}
+  kafka_net: {}
+  http_net: {}
+  startup_net: {}
+  grafana_net: {}
 
 # Set up Mutagen forwards
 x-mutagen:
