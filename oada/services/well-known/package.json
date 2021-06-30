@@ -27,6 +27,7 @@
     "@oada/lib-config": "^3.0.1",
     "@oada/pino-debug": "^3.0.1",
     "@oada/well-known-json": "^1.0.1",
+    "axios": "^0.21.1",
     "bluebird": "^3.7.2",
     "cors": "^2.8.5",
     "debug": "^4.3.2",
@@ -34,7 +35,6 @@
     "express-promise": "^0.4.0",
     "helmet": "^4.6.0",
     "oada-error": "^1.1.1",
-    "request": "^2.88.2",
     "tslib": "^2.3.0"
   },
   "devDependencies": {
@@ -42,7 +42,6 @@
     "@types/cors": "^2.8.10",
     "@types/debug": "^4.1.5",
     "@types/express": "^4.17.12",
-    "@types/helmet": "^4.0.0",
-    "@types/request": "^2.48.5"
+    "@types/helmet": "^4.0.0"
   }
 }

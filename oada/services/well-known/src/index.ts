@@ -30,7 +30,7 @@ import express from 'express';
 import express_promise from 'express-promise';
 import helmet from 'helmet';
 import cors from 'cors';
-import _request from 'request';
+import axios from 'axios';
 
 // @ts-ignore
 import well_known_json from '@oada/well-known-json';
@@ -39,8 +39,6 @@ import oada_error from 'oada-error';
 import { middleware as formats } from '@oada/formats-server';
 
 import config from './config';
-
-const request = Bluebird.promisify(_request);
 
 Bluebird.try(function () {
   // Setup the loggers:
@@ -140,9 +138,10 @@ Bluebird.try(function () {
         // Request this resource from the subservice:
         const url = s.base + whichdoc;
         log.trace('Requesting subservice URL: %s', url);
-        return request({ url: url, json: true })
+        return axios
+          .get(url)
           .then(function (result) {
-            if (!result || result.statusCode !== 200) {
+            if (result?.status !== 200) {
               log.trace(
                 '%s does not exist for subservice %s',
                 whichdoc,
@@ -158,7 +157,7 @@ Bluebird.try(function () {
             // so this top-level wkj handler will replace properly:
             const pfx = s.addPrefix || '';
             const body: Record<string, unknown> = {};
-            for (const [key, val] of Object.entries(result.body)) {
+            for (const [key, val] of Object.entries(result.data)) {
               if (typeof val !== 'string') {
                 body[key] = val;
               } else {
