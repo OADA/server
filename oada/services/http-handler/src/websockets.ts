@@ -403,15 +403,14 @@ const plugin: FastifyPluginAsync = async function (fastify) {
             // it is a resource
             emitter.removeAllListeners(resourceId);
           }
-        default:
-          const headers: Record<string, string> = {};
-          for (const [k, v] of Object.entries(res.headers)) {
-            // @oada/client gets very angry if a header is anything but a string
-            headers[k] = v!.toString();
-          }
+        case 'get':
           // Can only send JSON over websockets
           const type = res.headers['content-type']?.toString();
           if (type && !is(type, ['json', '+json'])) {
+            const headers: Record<string, string> = {};
+            for (const [k, v] of Object.entries(res.headers)) {
+              headers[k] = v!.toString();
+            }
             sendResponse({
               requestId: msg.requestId,
               // Bad Request
@@ -419,6 +418,12 @@ const plugin: FastifyPluginAsync = async function (fastify) {
               headers,
             });
             return;
+          }
+        default:
+          const headers: Record<string, string> = {};
+          for (const [k, v] of Object.entries(res.headers)) {
+            // @oada/client gets very angry if a header is anything but a string
+            headers[k] = v!.toString();
           }
           sendResponse({
             requestId: msg.requestId,
