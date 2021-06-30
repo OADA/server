@@ -45,17 +45,6 @@ export async function start() {
   app.log.info('OADA Server started on port %d', config.get('server.port'));
 }
 
-// TODO: Remove middie once everything is ported
-import type { SimpleHandleFunction, NextHandleFunction } from 'connect';
-declare module 'fastify' {
-  type Handler = SimpleHandleFunction | NextHandleFunction;
-
-  interface FastifyInstance {
-    use(fn: Handler): this;
-    use(route: string | string[], fn: Handler): this;
-  }
-}
-
 declare module 'fastify-request-context' {
   interface RequestContextData {
     // Add graph lookup result to request context

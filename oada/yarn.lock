@@ -168,7 +168,6 @@ __metadata:
     "@oada/users": "workspace:services/users"
     "@oada/write-handler": ^3.0.1
     "@types/cacache": ^15.0.0
-    "@types/connect": ^3.4.34
     "@types/debug": ^4.1.5
     "@types/node": ^14.17.4
     "@types/type-is": ^1.6.3
@@ -686,7 +685,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/connect@npm:*, @types/connect@npm:^3.4.34":
+"@types/connect@npm:*":
   version: 3.4.34
   resolution: "@types/connect@npm:3.4.34"
   dependencies:
