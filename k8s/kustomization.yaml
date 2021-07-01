@@ -24,5 +24,4 @@ resources:
   - ./webhooks.yaml
   - ./well-known.yaml
   - ./write-handler.yaml
-  - ./proxy-service.yaml
-  - ./proxy-deployment.yaml
+  - ./proxy.yaml
