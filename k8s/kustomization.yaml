@@ -4,6 +4,7 @@ kind: Kustomization
 #namespace: oada
 
 resources:
+  - https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v0.47.0/deploy/static/provider/cloud/deploy.yaml
   - https://raw.githubusercontent.com/arangodb/kube-arangodb/1.1.9/manifests/arango-crd.yaml
     #- https://github.com/vectorizedio/redpanda/src/go/k8s/config/crd?ref=v21.6.5
   - https://github.com/arangodb/kube-arangodb/manifests/kustomize/deployment/?ref=1.1.9
@@ -12,8 +13,6 @@ resources:
   - ./arangodb-deployment.yaml
   - ./redpanda-deployment.yaml
   - ./binary-data-persistentvolumeclaim.yaml
-  - ./issuer.yaml
-  - ./self-signed-secret.yaml
   - ./startup.yaml
   - ./auth.yaml
   - ./http-handler.yaml
@@ -24,4 +23,3 @@ resources:
   - ./webhooks.yaml
   - ./well-known.yaml
   - ./write-handler.yaml
-  - ./proxy.yaml

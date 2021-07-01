@@ -13,6 +13,60 @@ spec:
   selector:
     app: http
 ---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: http-ingress
+  annotations:
+    #nginx.ingress.kubernetes.io/rewrite-target: /
+spec:
+  rules:
+    - http:
+        paths:
+          # Needed for WebSockets to connect...
+          #- path: '/'
+          #  pathType: Exact
+          #  backend:
+          #    service:
+          #      name: http-handler
+          #      port:
+          #        name: http
+          - path: /resources
+            pathType: Prefix
+            backend:
+              service:
+                name: http-handler
+                port:
+                  name: http
+          - path: /bookmarks
+            pathType: Prefix
+            backend:
+              service:
+                name: http-handler
+                port:
+                  name: http
+          - path: /shares
+            pathType: Prefix
+            backend:
+              service:
+                name: http-handler
+                port:
+                  name: http
+          - path: /users
+            pathType: Prefix
+            backend:
+              service:
+                name: http-handler
+                port:
+                  name: http
+          - path: /authorizations
+            pathType: Prefix
+            backend:
+              service:
+                name: http-handler
+                port:
+                  name: http
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:

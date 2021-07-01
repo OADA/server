@@ -11,9 +11,25 @@ spec:
       port: 8080
       targetPort: 8080
   selector:
-    io.kompose.service: well-known
-status:
-  loadBalancer: {}
+    app: well-known
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: well-known-ingress
+  annotations:
+    #nginx.ingress.kubernetes.io/rewrite-target: /
+spec:
+  rules:
+    - http:
+        paths:
+          - path: /.well-known/
+            pathType: Prefix
+            backend:
+              service:
+                name: well-known
+                port:
+                  name: http
 ---
 apiVersion: apps/v1
 kind: Deployment
