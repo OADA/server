@@ -48,12 +48,23 @@ spec:
             - name: arangodb__ensureDefaults
               value: 'true'
           image: oada/http-handler:edge
+          securityContext:
+            #runAsNonRoot: true
+            # run as user node (uid 1000)
+            runAsUser: 1000
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
           name: http-handler
           ports:
             - containerPort: 8080
           volumeMounts:
             - mountPath: /oada/binary
               name: binary-data
-      restartPolicy: Always
+            - mountPath: /tmp
+              name: tmp
       volumes:
         - name: binary-data
+        - name: tmp
+          emptyDir:
+            medium: Memory
+      restartPolicy: Always

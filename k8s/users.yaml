@@ -33,5 +33,18 @@ spec:
             - name: arangodb__ensureDefaults
               value: 'true'
           image: oada/users:edge
+          securityContext:
+            #runAsNonRoot: true
+            # run as user node (uid 1000)
+            runAsUser: 1000
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
           name: users
+          volumeMounts:
+            - mountPath: /tmp
+              name: tmp
+      volumes:
+        - name: tmp
+          emptyDir:
+            medium: Memory
       restartPolicy: Always

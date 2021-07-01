@@ -67,9 +67,12 @@ spec:
             - containerPort: 443
             - containerPort: 80
           securityContext:
+            runAsNonRoot: true
+            allowPrivilegeEscalation: false
             capabilities:
               add:
                 - NET_ADMIN
+            readOnlyRootFilesystem: true
           volumeMounts:
             - mountPath: /config/keys/letsencrypt
               name: tls

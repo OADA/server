@@ -48,7 +48,20 @@ spec:
             - name: PINO_TRANSPORT
               value: yarn g:pretty -clti pid,hostname
           image: oada/well-known:edge
+          securityContext:
+            #runAsNonRoot: true
+            # run as user node (uid 1000)
+            runAsUser: 1000
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
           name: well-known
           ports:
             - containerPort: 8080
+          volumeMounts:
+            - mountPath: /tmp
+              name: tmp
+      volumes:
+        - name: tmp
+          emptyDir:
+            medium: Memory
       restartPolicy: Always
