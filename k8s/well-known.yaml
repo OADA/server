@@ -1,0 +1,54 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: well-known
+  name: well-known
+spec:
+  ports:
+    - name: http
+      port: 8080
+      targetPort: 8080
+  selector:
+    io.kompose.service: well-known
+status:
+  loadBalancer: {}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: well-known
+  name: well-known
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: well-known
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: well-known
+    spec:
+      containers:
+        - env:
+            - name: CONFIG
+              value: /oada.config.js
+            - name: DEBUG
+              value: '*:error,*:warn,*:info'
+            - name: DOMAIN
+              value: localhost
+            - name: NODE_ENV
+              value: production
+            - name: NODE_TLS_REJECT_UNAUTHORIZED
+              value: '0'
+            - name: PINO_TRANSPORT
+              value: yarn g:pretty -clti pid,hostname
+          image: oada/well-known:edge
+          name: well-known
+          ports:
+            - containerPort: 8080
+      restartPolicy: Always

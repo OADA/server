@@ -1,0 +1,86 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: proxy
+  name: proxy
+spec:
+  ports:
+    - name: https
+      port: 443
+      targetPort: 443
+    - name: http
+      port: 80
+      targetPort: 80
+  selector:
+    app: proxy
+status:
+  loadBalancer: {}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: proxy
+  name: proxy
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: proxy
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: proxy
+    spec:
+      containers:
+        - env:
+            - name: CERTPROVIDER
+            - name: DNSPLUGIN
+            - name: DUCKDNSTOKEN
+            - name: EMAIL
+            - name: EXTRA_DOMAINS
+            - name: MAXMINDDB_LICENSE_KEY
+            - name: ONLY_SUBDOMAINS
+              value: 'false'
+            - name: PGID
+              value: '1000'
+            - name: PROPAGATION
+            - name: PUID
+              value: '1000'
+            - name: STAGING
+              value: 'true'
+            - name: SUBDOMAINS
+              value: www,
+            - name: TZ
+              value: America/New_york
+            - name: URL
+              value: localhost
+            - name: VALIDATION
+              value: http
+          image: oada/support-proxy:edge
+          name: proxy
+          ports:
+            - containerPort: 443
+            - containerPort: 80
+          securityContext:
+            capabilities:
+              add:
+                - NET_ADMIN
+          volumeMounts:
+            - mountPath: /config/keys/letsencrypt
+              name: tls
+              readOnly: true
+      restartPolicy: Always
+      volumes:
+        - name: tls
+          secret:
+            secretName: self-signed
+            items:
+              - key: tls.crt
+                path: fullchain.pem
+              - key: tls.key
+                path: privkey.pem

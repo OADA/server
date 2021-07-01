@@ -1,0 +1,54 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: startup
+  name: startup
+spec:
+  ports:
+    - name: http
+      port: 8080
+      targetPort: 8080
+  selector:
+    app: startup
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: startup
+  name: startup
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: startup
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: startup
+    spec:
+      containers:
+        - env:
+            - name: CONFIG
+              value: /oada.config.js
+            - name: DEBUG
+              value: '*:error,*:warn,*:info'
+            - name: DOMAIN
+              value: localhost
+            - name: NODE_ENV
+              value: production
+            - name: NODE_TLS_REJECT_UNAUTHORIZED
+              value: '0'
+            - name: PINO_TRANSPORT
+              value: yarn g:pretty -clti pid,hostname
+            - name: RESETDATABASE
+              value: 'no'
+          image: oada/startup:edge
+          name: startup
+          ports:
+            - containerPort: 8080
+      restartPolicy: Always

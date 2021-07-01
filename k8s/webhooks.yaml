@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: webhooks
+  name: webhooks
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: webhooks
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: webhooks
+    spec:
+      containers:
+        - env:
+            - name: CONFIG
+              value: /oada.config.js
+            - name: DEBUG
+              value: '*:error,*:warn,*:info'
+            - name: DOMAIN
+              value: localhost
+            - name: NODE_ENV
+              value: production
+            - name: NODE_TLS_REJECT_UNAUTHORIZED
+              value: '0'
+            - name: PINO_TRANSPORT
+              value: yarn g:pretty -clti pid,hostname
+          image: oada/webhooks:edge
+          name: webhooks
+      restartPolicy: Always

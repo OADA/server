@@ -1,0 +1,28 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+#namespace: oada
+
+resources:
+  - https://raw.githubusercontent.com/arangodb/kube-arangodb/1.1.9/manifests/arango-crd.yaml
+    #- https://github.com/vectorizedio/redpanda/src/go/k8s/config/crd?ref=v21.6.5
+  - https://github.com/arangodb/kube-arangodb/manifests/kustomize/deployment/?ref=1.1.9
+  - https://github.com/jetstack/cert-manager/releases/download/v1.4.0/cert-manager.yaml
+  - https://github.com/vectorizedio/redpanda/src/go/k8s/config/default
+  - ./arangodb-deployment.yaml
+  - ./redpanda-deployment.yaml
+  - ./binary-data-persistentvolumeclaim.yaml
+  - ./issuer.yaml
+  - ./self-signed-secret.yaml
+  - ./startup.yaml
+  - ./auth.yaml
+  - ./http-handler.yaml
+  - ./rev-graph-update.yaml
+  - ./shares.yaml
+  - ./sync-handler.yaml
+  - ./users.yaml
+  - ./webhooks.yaml
+  - ./well-known.yaml
+  - ./write-handler.yaml
+  - ./proxy-service.yaml
+  - ./proxy-deployment.yaml
