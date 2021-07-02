@@ -16,7 +16,7 @@
   "scripts": {
     "test": "mocha",
     "build": "yarn g:tsc",
-    "start": "node --enable-source-maps --expose-gc -r @oada/pino-debug dist/index.js"
+    "start": "node --enable-source-maps --expose-gc -r @oada/pino-debug --unhandled-rejections=strict dist/index.js"
   },
   "mocha": {
     "require": "ts-node/register",

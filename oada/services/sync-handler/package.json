@@ -5,7 +5,7 @@
   "main": "dist/server.js",
   "scripts": {
     "build": "yarn g:tsc",
-    "start": "node -r @oada/pino-debug dist/server.js",
+    "start": "node -r @oada/pino-debug --unhandled-rejections=strict dist/server.js",
     "test": "mocha"
   },
   "repository": {

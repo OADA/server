@@ -7,7 +7,7 @@
   "main": "dist/server.js",
   "scripts": {
     "build": "yarn g:tsc",
-    "start": "node -r @oada/pino-debug --enable-source-maps server.js",
+    "start": "node -r @oada/pino-debug --unhandled-rejections=strict --enable-source-maps server.js",
     "test": "mocha"
   },
   "mocha": {

@@ -22,7 +22,7 @@
     "lint": "jshint --reporter node_modules/jshint-stylish .",
     "style": "jscs .",
     "clean": "rm -rf test/oada-compliance && rm -rf coverage",
-    "start": "node -r @oada/pino-debug index.js",
+    "start": "node -r @oada/pino-debug --unhandled-rejections=strict index.js",
     "init": "node init.js"
   },
   "mocha": {

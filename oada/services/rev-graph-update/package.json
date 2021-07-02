@@ -8,7 +8,7 @@
   "scripts": {
     "test": "DEBUG=\"*rev-graph-update*\" NODE_TLS_REJECT_UNAUTHORIZED=0 mocha",
     "build": "yarn g:tsc",
-    "start": "node -r @oada/pino-debug --enable-source-maps dist/index.js"
+    "start": "node -r @oada/pino-debug --enable-source-maps --unhandled-rejections=strict dist/index.js"
   },
   "mocha": {
     "require": "ts-node/register",
