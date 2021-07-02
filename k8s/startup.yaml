@@ -51,7 +51,7 @@ spec:
               value: 'true'
           image: oada/startup:edge
           securityContext:
-            #runAsNonRoot: true
+            runAsNonRoot: true
             # run as user node (uid 1000)
             runAsUser: 1000
             allowPrivilegeEscalation: false

@@ -65,7 +65,7 @@ spec:
               value: yarn g:pretty -clti pid,hostname
           image: oada/well-known:edge
           securityContext:
-            #runAsNonRoot: true
+            runAsNonRoot: true
             # run as user node (uid 1000)
             runAsUser: 1000
             allowPrivilegeEscalation: false

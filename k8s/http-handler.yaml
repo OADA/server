@@ -112,7 +112,7 @@ spec:
               value: 'true'
           image: oada/http-handler:edge
           securityContext:
-            #runAsNonRoot: true
+            runAsNonRoot: true
             # run as user node (uid 1000)
             runAsUser: 1000
             allowPrivilegeEscalation: false
