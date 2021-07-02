@@ -80,8 +80,14 @@ export class Responder extends Base {
     event: 'request',
     listener: (reg: Req & KafkaBase) => Response<Res> | Promise<Response<Res>>
   ): this;
-  override on(event: string | symbol, listener: (...args: any[]) => unknown): this;
-  override on(event: string | symbol, listener: (...args: any[]) => unknown): this {
+  override on(
+    event: string | symbol,
+    listener: (...args: any[]) => unknown
+  ): this;
+  override on(
+    event: string | symbol,
+    listener: (...args: any[]) => unknown
+  ): this {
     if (event === 'request') {
       // TODO: Probably a better way to hande this event...
       return super.on(DATA, async (req, data) => {

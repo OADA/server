@@ -17,7 +17,7 @@ import process from 'process';
 import EventEmitter from 'events';
 
 import Bluebird from 'bluebird';
-import { Kafka, Producer, Consumer } from 'kafkajs';
+import { Kafka, Producer, Consumer, logLevel } from 'kafkajs';
 import debug from 'debug';
 
 import config from './config';
@@ -78,6 +78,26 @@ export interface KafkaBase {
   resp_partition?: 0;
 }
 
+/**
+ * Make kafkajs logging nicer?
+ */
+type KafkajsDebug = Record<
+  keyof Omit<typeof logLevel, 'NOTHING'>,
+  debug.Debugger
+>;
+const kafkajsDebugs: Record<string, KafkajsDebug> = {};
+function getKafkajsDebug(namespace: string): KafkajsDebug {
+  return (
+    kafkajsDebugs[namespace] ??
+    (kafkajsDebugs[namespace] = {
+      ERROR: debug(`kafkajs:${namespace}:error`),
+      WARN: debug(`kafkajs:${namespace}:warn`),
+      INFO: debug(`kafkajs:${namespace}:info`),
+      DEBUG: debug(`kafkajs:${namespace}:debug`),
+    })
+  );
+}
+
 export class Base extends EventEmitter {
   readonly consumeTopic;
   readonly produceTopic;
@@ -102,6 +122,16 @@ export class Base extends EventEmitter {
     this.group = group;
 
     this.kafka = new Kafka({
+      /**
+       * Make kafkajs logging nicer?
+       */
+      logCreator() {
+        return ({ namespace, label, log: { message, ...extra } }) => {
+          const l = label as keyof KafkajsDebug;
+          const log = getKafkajsDebug(namespace)[l];
+          return log(extra, message);
+        };
+      },
       brokers: config.get('kafka.broker'),
     });
 
