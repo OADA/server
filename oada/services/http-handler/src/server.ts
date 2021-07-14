@@ -200,4 +200,20 @@ async function init() {
   }
 }
 
+/**
+ * Try to cleanup and always die on unexpected error
+ */
+async function close(err: Error) {
+  try {
+    app.log.error(err, 'Attempting to cleanup server after error.');
+    // Try to close server nicely
+    await app.close();
+  } finally {
+    // Always exit
+    process.exit(1);
+  }
+}
+process.on('uncaughtException', close);
+process.on('unhandledRejection', close);
+
 init();

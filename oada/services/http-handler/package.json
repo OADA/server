@@ -7,7 +7,7 @@
     "test": "mocha",
     "build": "yarn g:tsc",
     "healthcheck": "node --enable-source-maps dist/healthcheck.js http://localhost:${PORT}/health",
-    "start": "node --enable-source-maps -r @oada/pino-debug dist/server.js"
+    "start": "node --enable-source-maps -r @oada/pino-debug --unhandled-rejections=strict dist/server.js"
   },
   "mocha": {
     "require": [

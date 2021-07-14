@@ -113,8 +113,14 @@ export class ResponderRequester extends Base {
     event: 'request',
     listener: (reg: Req & KafkaBase) => Response<Res> | Promise<Response<Res>>
   ): this;
-  override on(event: string | symbol, listener: (...args: any[]) => unknown): this;
-  override on(event: string | symbol, listener: (...args: any[]) => unknown): this {
+  override on(
+    event: string | symbol,
+    listener: (...args: any[]) => unknown
+  ): this;
+  override on(
+    event: string | symbol,
+    listener: (...args: any[]) => unknown
+  ): this {
     switch (event) {
       case 'ready':
         super.on('ready', listener);

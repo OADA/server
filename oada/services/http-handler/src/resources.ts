@@ -58,6 +58,14 @@ declare module 'fastify-request-context' {
  */
 const plugin: FastifyPluginAsync<Options> = async function (fastify, opts) {
   /**
+   * Try to cleanup our stuff on close
+   */
+  fastify.addHook('onClose', async () => {
+    // Disconnect kafka
+    await requester.disconnect();
+  });
+
+  /**
    * Compute "OADA path" from URL
    *
    * @todo Better way to handle oada path with fastify?

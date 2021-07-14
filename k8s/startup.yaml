@@ -47,9 +47,11 @@ spec:
               value: yarn g:pretty -clti pid,hostname
             - name: RESETDATABASE
               value: 'no'
+            - name: arangodb__ensureDefaults
+              value: 'true'
           image: oada/startup:edge
           securityContext:
-            #runAsNonRoot: true
+            runAsNonRoot: true
             # run as user node (uid 1000)
             runAsUser: 1000
             allowPrivilegeEscalation: false

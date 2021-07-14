@@ -435,46 +435,50 @@ const plugin: FastifyPluginAsync = async function (fastify) {
       }
     }
   });
-};
 
-const writeResponder = new Responder({
-  consumeTopic: config.get('kafka.topics.httpResponse') as string,
-  group: 'websockets',
-});
+  const writeResponder = new Responder({
+    consumeTopic: config.get('kafka.topics.httpResponse') as string,
+    group: 'websockets',
+  });
 
-function checkReq(req: KafkaBase): req is WriteResponse {
-  return req.msgtype === 'write-response' && req.code === 'success';
-}
-/**
- * Listen for successful write requests to resources of interest, then emit an event
- */
-writeResponder.on('request', async function handleReq(req) {
-  if (!checkReq(req)) {
-    return;
+  fastify.addHook('onClose', async () => {
+    await writeResponder.disconnect();
+  });
+
+  function checkReq(req: KafkaBase): req is WriteResponse {
+    return req.msgtype === 'write-response' && req.code === 'success';
   }
-
-  try {
-    const change = await changes.getChangeArray(req.resource_id, req._rev);
-    trace('Emitted change for %s: %O', req.resource_id, change);
-    emitter.emit(req.resource_id, {
-      path_leftover: req.path_leftover,
-      change,
-    });
-    if (change?.[0]?.type === 'delete') {
-      trace(
-        'Delete change received for:',
-        req.resource_id,
-        req.path_leftover,
-        change
-      );
-      if (req.resource_id && req.path_leftover === '') {
-        debug('Removing all listeners to: %s', req.resource_id);
-        emitter.removeAllListeners(req.resource_id);
-      }
+  /**
+   * Listen for successful write requests to resources of interest, then emit an event
+   */
+  writeResponder.on('request', async function handleReq(req) {
+    if (!checkReq(req)) {
+      return;
     }
-  } catch (e) {
-    error(e);
-  }
-});
+
+    try {
+      const change = await changes.getChangeArray(req.resource_id, req._rev);
+      trace('Emitted change for %s: %O', req.resource_id, change);
+      emitter.emit(req.resource_id, {
+        path_leftover: req.path_leftover,
+        change,
+      });
+      if (change?.[0]?.type === 'delete') {
+        trace(
+          'Delete change received for:',
+          req.resource_id,
+          req.path_leftover,
+          change
+        );
+        if (req.resource_id && req.path_leftover === '') {
+          debug('Removing all listeners to: %s', req.resource_id);
+          emitter.removeAllListeners(req.resource_id);
+        }
+      }
+    } catch (e) {
+      error(e);
+    }
+  });
+};
 
 export default plugin;
