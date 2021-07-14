@@ -27,9 +27,9 @@
   },
   "devDependencies": {
     "@oada/write-handler": "^3.0.1",
-    "@types/bluebird": "^3.5.35",
-    "@types/debug": "^4.1.5",
-    "@types/mocha": "^8.2.2",
-    "mocha": "^9.0.1"
+    "@types/bluebird": "^3.5.36",
+    "@types/debug": "^4.1.6",
+    "@types/mocha": "^8.2.3",
+    "mocha": "^9.0.2"
   }
 }

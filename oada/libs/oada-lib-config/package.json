@@ -33,7 +33,7 @@
     "yaml": "^1.10.2"
   },
   "devDependencies": {
-    "@types/convict": "^6.0.2",
+    "@types/convict": "^6.1.1",
     "@types/convict-format-with-validator": "^6.0.2",
     "@types/yaml": "^1.9.7"
   }

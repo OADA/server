@@ -27,8 +27,8 @@
   },
   "devDependencies": {
     "@types/clone-deep": "^4.0.1",
-    "@types/debug": "^4.1.5",
-    "@types/minimist": "^1.2.1",
-    "@types/promptly": "^3.0.1"
+    "@types/debug": "^4.1.6",
+    "@types/minimist": "^1.2.2",
+    "@types/promptly": "^3.0.2"
   }
 }

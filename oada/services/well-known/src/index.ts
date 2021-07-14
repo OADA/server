@@ -57,6 +57,7 @@ Bluebird.try(function () {
   // Allow route handlers to return promises:
   app.use(express_promise());
 
+  // @ts-ignore
   app.use(helmet());
 
   //-----------------------------------------------------------------

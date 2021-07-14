@@ -14,15 +14,15 @@
   "author": "Alex Layton <alex@layton.in>",
   "license": "ISC",
   "dependencies": {
-    "@types/pino": "^6.3.8",
-    "pino": "^6.11.3",
+    "@types/pino": "^6.3.9",
+    "pino": "^6.12.0",
     "pino-caller": "^3.1.0",
     "pino-debug": "^2.0.0",
     "tslib": "^2.3.0"
   },
   "devDependencies": {
-    "@types/debug": "^4.1.5",
-    "@types/node": "^14.17.4"
+    "@types/debug": "^4.1.6",
+    "@types/node": "^16.3.2"
   },
   "peerDependencies": {
     "debug": "*"
