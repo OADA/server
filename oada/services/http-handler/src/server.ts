@@ -83,8 +83,9 @@ async function init() {
    * This is to handle an intermittent error on sending requests,
    * likely from tulios/kafkajs#979
    */
+  const errorHandler = app.errorHandler;
   app.setErrorHandler(async (err, request, reply) => {
-    app.errorHandler(err, request, reply);
+    errorHandler(err, request, reply);
     // TODO: Make kafka plugin for server?
     if (err instanceof KafkaError) {
       // Kill the server on Kafka Errors?

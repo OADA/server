@@ -13,7 +13,8 @@
  * limitations under the License.
  */
 
-export { KafkaJSError as KafkaError } from 'kafkajs';
+// @ts-ignore
+export { KafkaJSError as KafkaError } from 'kafkajs/src/errors';
 
 export { KafkaBase } from './base';
 export { Responder } from './Responder';
