@@ -52,12 +52,6 @@ const trace = _debug('websockets:trace');
 
 const emitter = new EventEmitter();
 
-// Make sure we stringify the http request data ourselves
-type RequestData = string & { __reqData__: void };
-function serializeRequestData(data: any): RequestData {
-  return JSON.stringify(data) as RequestData;
-}
-
 type Watch = {
   handler: (this: Watch, { change }: { change: Change }) => any;
   /**
@@ -199,7 +193,13 @@ const plugin: FastifyPluginAsync = async function (fastify) {
     });
 
     async function handleRequest(msg: SocketRequest) {
-      info(`Handling socket req ${msg.requestId}:`, msg.method, msg.path);
+      info(
+        'Handling socket req %s: %s %s',
+        msg.requestId,
+        msg.method,
+        msg.path
+      );
+      trace(msg);
 
       const request: LightMyRequest.InjectOptions = {
         url: msg.path,
@@ -254,7 +254,7 @@ const plugin: FastifyPluginAsync = async function (fastify) {
 
         case 'put':
         case 'post':
-          request.payload = serializeRequestData(msg.data);
+          request.payload = msg.data;
         default:
           request.method = msg.method;
           break;
@@ -415,6 +415,7 @@ const plugin: FastifyPluginAsync = async function (fastify) {
               requestId: msg.requestId,
               // Bad Request
               status: 400,
+              statusText: 'Cannot GET binary over WebSockets',
               headers,
             });
             return;
