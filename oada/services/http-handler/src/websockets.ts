@@ -254,7 +254,7 @@ const plugin: FastifyPluginAsync = async function (fastify) {
 
         case 'put':
         case 'post':
-          request.payload = msg.data;
+          request.payload = JSON.stringify(msg.data);
         default:
           request.method = msg.method;
           break;

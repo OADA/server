@@ -20,7 +20,7 @@ import { pipeline } from 'stream/promises';
 import type { FastifyPluginAsync, FastifyReply, FastifyRequest } from 'fastify';
 import ksuid from 'ksuid';
 import cacache from 'cacache';
-import typeis from 'type-is';
+import { is } from 'type-is';
 
 import { resources, changes, putBodies } from '@oada/lib-arangodb';
 import {
@@ -254,7 +254,7 @@ const plugin: FastifyPluginAsync<Options> = async function (fastify, opts) {
       //       results. I think we can do that in one arango query
 
       if (
-        typeis.is(type, ['json', '+json']) ||
+        is(type, ['json', '+json']) ||
         oadaGraph['path_leftover'].match(/\/_meta$/)
       ) {
         const doc = await resources.getResource(
