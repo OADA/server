@@ -379,6 +379,10 @@ const plugin: FastifyPluginAsync<Options> = async function (fastify, opts) {
       request: FastifyRequest,
       reply: FastifyReply
     ) {
+      if (!request.headers['content-type']) {
+        return reply.badRequest('No content type specified');
+      }
+
       // Don't let users modify their shares?
       noModifyShares(request, reply);
 
