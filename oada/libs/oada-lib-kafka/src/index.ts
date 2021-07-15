@@ -13,6 +13,8 @@
  * limitations under the License.
  */
 
+export { KafkaJSError as KafkaError } from 'kafkajs';
+
 export { KafkaBase } from './base';
 export { Responder } from './Responder';
 export { ReResponder } from './ReResponder';

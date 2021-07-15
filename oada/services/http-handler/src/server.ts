@@ -26,6 +26,7 @@ import cors from 'fastify-cors';
 import { plugin as formats } from '@oada/formats-server';
 
 import { pino } from '@oada/pino-debug';
+import { KafkaError } from '@oada/lib-kafka';
 
 import tokenLookup, { TokenResponse } from './tokenLookup';
 import resources from './resources';
@@ -74,6 +75,21 @@ async function init() {
       //maxRssBytes: 100000000,
       maxEventLoopUtilization: 0.98,
     },
+  });
+
+  /**
+   * Try to kill server on Kafka error.
+   *
+   * This is to handle an intermittent error on sending requests,
+   * likely from tulios/kafkajs#979
+   */
+  app.setErrorHandler(async (err, request, reply) => {
+    app.errorHandler(err, request, reply);
+    // TODO: Make kafka plugin for server?
+    if (err instanceof KafkaError) {
+      // Kill the server on Kafka Errors?
+      await close(err);
+    }
   });
 
   await app.register(helmet, {
