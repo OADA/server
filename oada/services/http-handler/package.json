@@ -37,7 +37,7 @@
     "bluebird": "^3.7.2",
     "cacache": "^15.2.0",
     "debug": "^4.3.2",
-    "fastify": "^3.19.1",
+    "fastify": "^3.19.2",
     "fastify-accepts": "^2.0.1",
     "fastify-bearer-auth": "^6.0.0",
     "fastify-cors": "^6.0.2",
@@ -59,10 +59,10 @@
     "@oada/write-handler": "^3.0.1",
     "@types/cacache": "^15.0.1",
     "@types/debug": "^4.1.6",
-    "@types/node": "^16.3.2",
+    "@types/node": "^16.4.1",
     "@types/type-is": "^1.6.3",
     "@types/uuid": "^8.3.1",
-    "@types/ws": "^7.4.6",
+    "@types/ws": "^7.4.7",
     "connect": "^3.7.0",
     "light-my-request": "^4.4.1"
   }
