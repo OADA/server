@@ -1,6 +1,6 @@
 import { resolve } from 'path';
 
-import _pino, { Logger, LoggerOptions } from 'pino';
+import _pino from 'pino';
 import pinoDebug, { Options } from 'pino-debug';
 import debug from 'debug';
 
@@ -54,7 +54,7 @@ export function logLevel(): string {
 export function pino({
   level = logLevel(),
   ...opts
-}: LoggerOptions = {}): Logger {
+}: _pino.LoggerOptions = {}): _pino.Logger {
   const p = _pino({ level, ...opts });
   return process.env.NODE_ENV === 'development' ? require('pino-caller')(p) : p;
 }
@@ -63,7 +63,7 @@ export function pino({
  * Give use better defaults for pino-debug?
  */
 export default function oadaDebug(
-  logger: Logger = pino(),
+  logger: _pino.Logger = pino(),
   {
     // Turn off auto so only things enabled in DEBUG var get logged
     auto = false,
