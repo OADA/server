@@ -118,86 +118,84 @@ export interface UserResponse {
   code: string;
   user: User & { _id: string };
 }
+responder.on<UserResponse, UserRequest>('request', handleReq);
 
-responder.on<UserResponse, UserRequest>(
-  'request',
-  async function handleReq(req) {
-    // TODO: Sanitize?
-    trace('REQUEST: req.user = %O, userid = %s', req.user, req.userid);
-    trace(
-      'REQUEST: req.authorization.scope = %s',
-      req.authorization ? req.authorization.scope : null
+export async function handleReq(req: UserRequest): Promise<UserResponse> {
+  // TODO: Sanitize?
+  trace('REQUEST: req.user = %O, userid = %s', req.user, req.userid);
+  trace(
+    'REQUEST: req.authorization.scope = %s',
+    req.authorization ? req.authorization.scope : null
+  );
+  // While this could fit in permissions_handler, since users are not really resources (i.e. no graph),
+  // we'll add a check here that the user has oada.admin.user:write or oada.admin.user:all scope
+  const authorization = cloneDeep(req.authorization) || { scope: '' };
+  const tokenscope = Array.isArray(authorization.scope)
+    ? authorization.scope.join(' ')
+    : authorization.scope; // force to space-separated string
+  if (
+    !tokenscope.match(/oada.admin.user:write/) &&
+    !tokenscope.match(/oada.admin.user:all/)
+  ) {
+    warn(
+      'WARNING: attempt to create a user, but request does not have token with oada.admin.user:write or oada.admin.user:all scope'
     );
-    // While this could fit in permissions_handler, since users are not really resources (i.e. no graph),
-    // we'll add a check here that the user has oada.admin.user:write or oada.admin.user:all scope
-    const authorization = cloneDeep(req.authorization) || { scope: '' };
-    const tokenscope = Array.isArray(authorization.scope)
-      ? authorization.scope.join(' ')
-      : authorization.scope; // force to space-separated string
-    if (
-      !tokenscope.match(/oada.admin.user:write/) &&
-      !tokenscope.match(/oada.admin.user:all/)
-    ) {
-      warn(
-        'WARNING: attempt to create a user, but request does not have token with oada.admin.user:write or oada.admin.user:all scope'
-      );
-      throw new Error('Token does not have required scope to create users.');
-    }
+    throw new Error('Token does not have required scope to create users.');
+  }
 
-    // First, check if the ID exists already:
-    let cur_user = null;
-    if (req.userid) {
-      trace('Checking if user id %s exists.', req.userid);
-      cur_user = await users.findById(req.userid, { graceful: true });
-    }
-    trace('Result of search for user with id %s: %O', req.userid, cur_user);
+  // First, check if the ID exists already:
+  let cur_user = null;
+  if (req.userid) {
+    trace('Checking if user id %s exists.', req.userid);
+    cur_user = await users.findById(req.userid, { graceful: true });
+  }
+  trace('Result of search for user with id %s: %O', req.userid, cur_user);
 
-    // Make one if it doesn't exist already:
-    let created_a_new_user = false;
-    if (!cur_user) {
-      try {
-        created_a_new_user = true;
-        cur_user = await createNewUser(req);
-      } catch (err) {
-        if (err && err.errorNum === users.UniqueConstraintError.errorNum) {
-          created_a_new_user = false;
-          trace(
-            'Tried to create user, but it already existed (same username).  Returning as if we had created it.  User object was: %O',
-            req.user
-          );
-          cur_user = (await users.like({ username: req.user.username }))[0];
-          trace('existing user found as: %O', cur_user);
-        } else {
-          error(
-            'FAILED: unknown error occurred when creating new user. Error was: %O',
-            err
-          );
-          throw err;
-        }
+  // Make one if it doesn't exist already:
+  let created_a_new_user = false;
+  if (!cur_user) {
+    try {
+      created_a_new_user = true;
+      cur_user = await createNewUser(req);
+    } catch (err) {
+      if (err && err.errorNum === users.UniqueConstraintError.errorNum) {
+        created_a_new_user = false;
+        trace(
+          'Tried to create user, but it already existed (same username).  Returning as if we had created it.  User object was: %O',
+          req.user
+        );
+        cur_user = (await users.like({ username: req.user.username }))[0];
+        trace('existing user found as: %O', cur_user);
+      } else {
+        error(
+          'FAILED: unknown error occurred when creating new user. Error was: %O',
+          err
+        );
+        throw err;
       }
     }
-
-    // Now we know the user exists and has bookmarks/shares.  Now update/merge it with the requested data
-    if (!created_a_new_user) {
-      trace(
-        'We did not create a new user, so we are now updating user id %s',
-        cur_user?._id
-      );
-      cur_user = await users.update({
-        // Assume req.user is a full user now?
-        ...(req.user as Omit<User, '_id'>),
-        _id: cur_user!._id,
-      });
-    }
-
-    // All done!
-    // Respond to the request with success:
-    trace('Finished with update, responding with success, user = %O', cur_user);
-    return {
-      code: 'success',
-      new: created_a_new_user,
-      // TODO: figure out what cur_user is supposed to be??
-      user: cur_user as User,
-    };
   }
-);
+
+  // Now we know the user exists and has bookmarks/shares.  Now update/merge it with the requested data
+  if (!created_a_new_user) {
+    trace(
+      'We did not create a new user, so we are now updating user id %s',
+      cur_user?._id
+    );
+    cur_user = await users.update({
+      // Assume req.user is a full user now?
+      ...(req.user as Omit<User, '_id'>),
+      _id: cur_user!._id,
+    });
+  }
+
+  // All done!
+  // Respond to the request with success:
+  trace('Finished with update, responding with success, user = %O', cur_user);
+  return {
+    code: 'success',
+    new: created_a_new_user,
+    // TODO: figure out what cur_user is supposed to be??
+    user: cur_user as User,
+  };
+}

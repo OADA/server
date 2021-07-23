@@ -19,10 +19,8 @@ import promptly from 'promptly';
 import chalk from 'chalk';
 
 import { users } from '@oada/lib-arangodb';
-import { Requester } from '@oada/lib-kafka';
 
-import type { UserResponse } from './server';
-import config from './config';
+import { handleReq } from './server';
 
 const argv = minimist(process.argv.slice(2));
 
@@ -56,30 +54,12 @@ async function run() {
     }
     const password =
       argv.p || argv.password || (await promptly.prompt('Password: '));
-    const domain =
-      argv.d ||
-      argv.domain ||
-      (await promptly.prompt('Domain (without the https://): '));
     const isadmin = !!(argv.a || argv.isadmin || argv.isAdmin);
 
-    //-------------------------------------
-    // Talk to user service over Kafka...
-    trace('Creating kafka requester...');
-    // Produce a request to the user service to create one for us:
-    const kafkareq = new Requester({
-      // Topic to look for final answer on (consume):
-      consumeTopic: config.get('kafka.topics.httpResponse'),
-      // Topic to send request on (produce):
-      produceTopic: config.get('kafka.topics.userRequest'),
-      // group name
-      group: 'useradd',
-    });
-
-    trace('Sending request to kafka');
-    const response = ((await kafkareq.send({
-      connection_id: 'useradd',
-      domain,
-      token: 'admin',
+    trace('Sending request to users');
+    const response = await handleReq({
+      //connection_id: 'useradd',
+      //token: 'admin',
       authorization: {
         scope: ['oada.admin.user:all'],
       },
@@ -90,14 +70,9 @@ async function run() {
         // Add scope if you want the user to have permission to create other users
         scope: isadmin ? ['oada.admin.user:all'] : [],
       },
-    })) as unknown) as UserResponse;
+    });
 
-    trace('Finished kafka.send, have our response = %O', response);
-    // no need to keep hearing messages
-    trace('Disconnecting from kafka');
-    await kafkareq.disconnect();
-
-    trace('Checking response.code, response = %O', response);
+    trace(response, 'Checking response.code');
     if (response.code !== 'success') {
       console.error(
         chalk.red(
