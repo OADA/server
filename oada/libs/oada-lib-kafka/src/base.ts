@@ -213,6 +213,9 @@ export class Base extends EventEmitter {
     topic?: string;
     part: number | null;
   }) {
+    // Wait for producer to be ready?
+    await this.ready
+
     // Assume all messages are JSON
     const value = JSON.stringify({
       time: Date.now(),
