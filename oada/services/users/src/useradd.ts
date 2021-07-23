@@ -74,6 +74,7 @@ async function run() {
     trace('Sending request to kafka');
     const response = ((await kafkareq.send({
       connection_id: 'useradd',
+      domain: config.get('server.domain'),
       token: 'admin',
       authorization: {
         scope: ['oada.admin.user:all'],
