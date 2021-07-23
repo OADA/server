@@ -204,10 +204,6 @@ export class Base extends EventEmitter {
     topic?: string;
     part: number | null;
   }) {
-    // Wait to be connected before send?
-    // TODO: isn't kafkajs supposed to do this?
-    await this.ready;
-
     // Assume all messages are JSON
     const value = JSON.stringify({
       time: Date.now(),

@@ -19,8 +19,10 @@ import promptly from 'promptly';
 import chalk from 'chalk';
 
 import { users } from '@oada/lib-arangodb';
+import { Requester } from '@oada/lib-kafka';
 
-import { handleReq } from './server';
+import type { UserResponse, UserRequest } from './server';
+import config from './config';
 
 const argv = minimist(process.argv.slice(2));
 
@@ -38,11 +40,24 @@ async function run() {
     if (argv.h || argv.help) {
       console.log(
         chalk.yellow(
-          'useradd [-u username] [-p password] [-d domain.com] [ -a (if you want user to have admin priviledges to create other users)]'
+          'useradd [-u username] [-p password] [ -a (if you want user to have admin priviledges to create other users)]'
         )
       );
       return;
     }
+
+    //-------------------------------------
+    // Talk to user service over Kafka...
+    trace('Creating kafka requester...');
+    // Produce a request to the user service to create one for us:
+    const kafkareq = new Requester({
+      // Topic to look for final answer on (consume):
+      consumeTopic: config.get('kafka.topics.httpResponse'),
+      // Topic to send request on (produce):
+      produceTopic: config.get('kafka.topics.userRequest'),
+      // group name
+      group: 'useradd',
+    });
 
     //-----------------------------------------------------
     // Ensure we have a username and password...
@@ -56,10 +71,10 @@ async function run() {
       argv.p || argv.password || (await promptly.prompt('Password: '));
     const isadmin = !!(argv.a || argv.isadmin || argv.isAdmin);
 
-    trace('Sending request to users');
-    const response = await handleReq({
-      //connection_id: 'useradd',
-      //token: 'admin',
+    trace('Sending request to kafka');
+    const response = ((await kafkareq.send({
+      connection_id: 'useradd',
+      token: 'admin',
       authorization: {
         scope: ['oada.admin.user:all'],
       },
@@ -70,9 +85,14 @@ async function run() {
         // Add scope if you want the user to have permission to create other users
         scope: isadmin ? ['oada.admin.user:all'] : [],
       },
-    });
+    } as UserRequest)) as unknown) as UserResponse;
 
-    trace(response, 'Checking response.code');
+    trace('Finished kafka.send, have our response = %O', response);
+    // no need to keep hearing messages
+    trace('Disconnecting from kafka');
+    await kafkareq.disconnect();
+
+    trace('Checking response.code, response = %O', response);
     if (response.code !== 'success') {
       console.error(
         chalk.red(
