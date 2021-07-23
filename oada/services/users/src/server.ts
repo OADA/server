@@ -116,6 +116,7 @@ export interface UserRequest {
 
 export interface UserResponse {
   code: string;
+  new: boolean;
   user: User & { _id: string };
 }
 responder.on<UserResponse, UserRequest>('request', handleReq);
