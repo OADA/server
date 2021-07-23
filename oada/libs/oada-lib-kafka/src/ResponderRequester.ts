@@ -14,6 +14,11 @@
  */
 
 import type EventEmitter from 'events';
+
+import debug from 'debug';
+import type { EachMessagePayload } from 'kafkajs'
+import type Bluebird from 'bluebird'
+
 import { Base, CONNECT, DATA, KafkaBase } from './base';
 import {
   Responder,
@@ -21,19 +26,26 @@ import {
   ConstructorOpts as ResponderOpts,
 } from './Responder';
 import { Requester, ConstructorOpts as RequesterOpts } from './Requester';
-import debug from 'debug';
 
 const trace = debug('@oada/lib-kafka:trace');
 
 export { EventEmitter };
 
 class DummyResponder extends Responder {
+  constructor(opts: ResponderOpts, ready: Bluebird<void>) {
+    super(opts)
+    this.ready = ready
+  }
   override async [CONNECT]() {
     // Don't connect to Kafka
     return undefined;
   }
 }
 class DummyRequester extends Requester {
+  constructor(opts: RequesterOpts, ready: Bluebird<void>) {
+    super(opts)
+    this.ready = ready
+  }
   override async [CONNECT]() {
     // Don't connect to Kafka
     return undefined;
@@ -77,18 +89,18 @@ export class ResponderRequester extends Base {
       group,
       ...respondTopics,
       ...opts,
-    });
+    }, this.ready);
     this.requester = new DummyRequester({
       consumer: this.consumer,
       producer: this.producer,
       group,
       ...requestTopics,
       ...opts,
-    });
+    }, this.ready);
 
     // Mux the consumer between requester and responder
     this.on(DATA, (val, data, ...rest) => {
-      trace('Received data: %o', val);
+      trace(data, 'Received data: %o', val);
       if (data.topic === this.requester.consumeTopic) {
         trace('Muxing data to requester');
         this.requester.emit(DATA, val, data, ...rest);
@@ -112,6 +124,10 @@ export class ResponderRequester extends Base {
   override on<Res, Req = KafkaBase>(
     event: 'request',
     listener: (reg: Req & KafkaBase) => Response<Res> | Promise<Response<Res>>
+  ): this;
+  override on(
+    event: typeof DATA,
+    listener: (resp: any, payload: EachMessagePayload, ...rest: any[]) => unknown
   ): this;
   override on(
     event: string | symbol,

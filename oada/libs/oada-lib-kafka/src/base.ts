@@ -17,7 +17,7 @@ import process from 'process';
 import EventEmitter from 'events';
 
 import Bluebird from 'bluebird';
-import { Kafka, Producer, Consumer, logLevel } from 'kafkajs';
+import { Kafka, Producer, Consumer, logLevel, EachMessagePayload } from 'kafkajs';
 import debug from 'debug';
 
 import config from './config';
@@ -174,10 +174,11 @@ export class Base extends EventEmitter {
         await this.consumer.subscribe({ topic });
       }
       await this.consumer.run({
-        eachMessage: async ({ message: { value, ...data } }) => {
+        eachMessage: async (payload) => {
           // Assume all messages are JSON
-          const resp = value && JSON.parse(value.toString());
-          super.emit(DATA, resp, data);
+          const resp = payload.message.value &&
+            JSON.parse(payload.message.value.toString());
+          super.emit(DATA, resp, payload);
         },
       });
     } catch (err) {
@@ -186,6 +187,14 @@ export class Base extends EventEmitter {
     this.#done();
   }
 
+  override on(
+    event: typeof DATA,
+    listener: (resp: any, payload: EachMessagePayload, ...rest: any[]) => unknown
+  ): this;
+  override on(
+    event: string | symbol,
+    listener: (...args: any[]) => unknown
+  ): this;
   override on(event: string | symbol, listener: (...args: any[]) => unknown) {
     if (event === 'error') {
       // Remove our default error handler?
