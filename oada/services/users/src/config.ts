@@ -16,14 +16,6 @@
 import libConfig from '@oada/lib-config';
 
 const config = libConfig({
-  server: {
-    domain: {
-      format: String,
-      default: 'localhost',
-      env: 'DOMAIN',
-      arg: 'domain',
-    },
-  },
   kafka: {
     topics: {
       userRequest: {
