@@ -76,7 +76,7 @@ async function run() {
     });
 
     trace('Sending request to kafka');
-    const response = (await kafkareq.send({
+    const response = ((await kafkareq.send({
       connection_id: 'useradd',
       domain,
       token: 'admin',
@@ -90,7 +90,7 @@ async function run() {
         // Add scope if you want the user to have permission to create other users
         scope: isadmin ? ['oada.admin.user:all'] : [],
       },
-    })) as unknown as UserResponse;
+    })) as unknown) as UserResponse;
 
     trace('Finished kafka.send, have our response = %O', response);
     // no need to keep hearing messages
@@ -115,9 +115,11 @@ async function run() {
         chalk.green(' now exists: ') +
         su?._id
     );
-  } finally {
-    process.exit(0);
+  } catch (err) {
+    console.error(err);
+    process.exit(1);
   }
+  process.exit(0);
 }
 
 run();
