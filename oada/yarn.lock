@@ -168,8 +168,8 @@ __metadata:
     "@oada/users": "workspace:services/users"
     "@oada/write-handler": ^3.0.1
     "@types/cacache": ^15.0.1
-    "@types/debug": ^4.1.6
-    "@types/node": ^16.4.1
+    "@types/debug": ^4.1.7
+    "@types/node": ^16.4.7
     "@types/type-is": ^1.6.3
     "@types/uuid": ^8.3.1
     "@types/ws": ^7.4.7
@@ -208,13 +208,13 @@ __metadata:
     "@types/chai": ^4.2.21
     "@types/chai-as-promised": ^7.1.4
     "@types/clone-deep": ^4.0.1
-    "@types/debug": ^4.1.6
+    "@types/debug": ^4.1.7
     "@types/deep-equal": ^1.0.1
     "@types/flat": ^5.0.2
     "@types/json-pointer": ^1.0.31
     "@types/lodash": ^4.14.171
     "@types/mocha": ^9.0.0
-    "@types/node": ^16.4.1
+    "@types/node": ^16.4.7
     arangojs: ^7.5.0
     bcryptjs: ^2.4.3
     bluebird: ^3.7.2
@@ -226,7 +226,7 @@ __metadata:
     flat: ^5.0.2
     json-pointer: ^0.6.1
     lodash: ^4.17.21
-    mocha: ^9.0.2
+    mocha: ^9.0.3
     ts-node: ^10.1.0
     tslib: ^2.3.0
     typescript: ^4.3.5
@@ -258,9 +258,9 @@ __metadata:
     "@types/bluebird": ^3.5.36
     "@types/chai": ^4.2.21
     "@types/chai-as-promised": ^7.1.4
-    "@types/debug": ^4.1.6
+    "@types/debug": ^4.1.7
     "@types/mocha": ^9.0.0
-    "@types/node": 16.4.1
+    "@types/node": 16.4.7
     "@types/uuid": ^8.3.1
     bluebird: ^3.7.2
     chai: ^4.3.4
@@ -268,7 +268,7 @@ __metadata:
     debug: ^4.3.2
     kafkajs: ^1.15.0
     ksuid: ^2.0.0
-    mocha: ^9.0.2
+    mocha: ^9.0.3
     ts-node: ^10.1.0
     tslib: ^2.3.0
     typescript: ^4.3.5
@@ -341,12 +341,12 @@ __metadata:
     "@oada/lib-config": ^3.0.1
     "@oada/lib-kafka": ^3.0.1
     "@oada/pino-debug": ^3.0.1
-    "@types/debug": ^4.1.6
+    "@types/debug": ^4.1.7
     "@types/mocha": ^9.0.0
-    "@types/node": ^16.4.1
+    "@types/node": ^16.4.7
     "@types/type-is": ^1.6.3
     debug: ^4.3.2
-    mocha: ^9.0.2
+    mocha: ^9.0.3
     ts-node: ^10.1.0
     tslib: ^2.3.0
     type-is: ^1.6.18
@@ -358,9 +358,9 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@oada/pino-debug@workspace:libs/oada-pino-debug"
   dependencies:
-    "@types/debug": ^4.1.6
-    "@types/node": ^16.4.1
-    pino: ^7.0.0-rc.1
+    "@types/debug": ^4.1.7
+    "@types/node": ^16.4.7
+    pino: ^7.0.0-rc.2
     pino-caller: ^3.1.0
     pino-debug: ^2.0.0
     tslib: ^2.3.0
@@ -381,20 +381,20 @@ __metadata:
     "@oada/write-handler": ^3.0.1
     "@types/bluebird": ^3.5.36
     "@types/chai": ^4.2.21
-    "@types/debug": ^4.1.6
+    "@types/debug": ^4.1.7
     "@types/mocha": ^9.0.0
-    "@types/node": ^16.4.1
+    "@types/node": ^16.4.7
     "@types/randomstring": ^1.1.7
     ajv: ^8.6.2
     bluebird: ^3.7.2
     chai: ^4.3.4
     debug: ^4.3.2
-    mocha: ^9.0.2
+    mocha: ^9.0.3
     p-queue: ^6.6.2
     randomstring: ^1.2.1
     ts-node: ^10.1.0
     tslib: ^2.3.0
-    type-fest: ^1.2.2
+    type-fest: ^1.2.3
     typescript: ^4.3.5
   languageName: unknown
   linkType: soft
@@ -409,11 +409,11 @@ __metadata:
     "@oada/pino-debug": ^3.0.1
     "@oada/write-handler": ^3.0.1
     "@types/bluebird": ^3.5.36
-    "@types/debug": ^4.1.6
+    "@types/debug": ^4.1.7
     "@types/mocha": ^9.0.0
     bluebird: ^3.7.2
     debug: ^4.3.2
-    mocha: ^9.0.2
+    mocha: ^9.0.3
     tslib: ^2.3.0
   languageName: unknown
   linkType: soft
@@ -424,8 +424,8 @@ __metadata:
   dependencies:
     "@oada/lib-arangodb": ^3.0.1
     "@oada/pino-debug": ^3.0.1
-    "@types/debug": ^4.1.6
-    "@types/node": ^16.4.1
+    "@types/debug": ^4.1.7
+    "@types/node": ^16.4.7
     debug: ^4.3.2
     tslib: ^2.3.0
   languageName: unknown
@@ -441,8 +441,8 @@ __metadata:
     "@oada/pino-debug": ^3.0.1
     "@oada/write-handler": ^3.0.1
     "@types/bluebird": ^3.5.36
-    "@types/debug": ^4.1.6
-    "@types/node": ^16.4.1
+    "@types/debug": ^4.1.7
+    "@types/node": ^16.4.7
     axios: ^0.21.1
     bluebird: ^3.7.2
     debug: ^4.3.2
@@ -470,7 +470,7 @@ __metadata:
     "@oada/lib-kafka": ^3.0.1
     "@oada/pino-debug": ^3.0.1
     "@types/clone-deep": ^4.0.1
-    "@types/debug": ^4.1.6
+    "@types/debug": ^4.1.7
     "@types/minimist": ^1.2.2
     "@types/promptly": ^3.0.2
     chalk: ^4.1.1
@@ -495,7 +495,7 @@ __metadata:
     "@oada/pino-debug": ^3.0.1
     "@oada/write-handler": ^3.0.1
     "@types/bluebird": ^3.5.36
-    "@types/debug": ^4.1.6
+    "@types/debug": ^4.1.7
     axios: ^0.21.1
     bluebird: ^3.7.2
     debug: ^4.3.2
@@ -525,7 +525,7 @@ __metadata:
     "@oada/well-known-json": ^1.0.1
     "@types/bluebird": ^3.5.36
     "@types/cors": ^2.8.12
-    "@types/debug": ^4.1.6
+    "@types/debug": ^4.1.7
     "@types/express": ^4.17.13
     "@types/helmet": ^4.0.0
     axios: ^0.21.1
@@ -552,18 +552,18 @@ __metadata:
     "@oada/types": ^1.5.1
     "@types/bluebird": ^3.5.36
     "@types/chai": ^4.2.21
-    "@types/debug": ^4.1.6
+    "@types/debug": ^4.1.7
     "@types/json-pointer": ^1.0.31
     "@types/lodash": ^4.14.171
     "@types/mocha": ^9.0.0
-    "@types/node": ^16.4.1
+    "@types/node": ^16.4.7
     "@types/object-assign-deep": ^0.4.0
     bluebird: ^3.7.2
     chai: ^4.3.4
     debug: ^4.3.2
     json-pointer: ^0.6.1
     lodash: ^4.17.21
-    mocha: ^9.0.2
+    mocha: ^9.0.3
     object-assign-deep: ^0.4.0
     timed-cache: ^1.1.5
     ts-node: ^10.1.0
@@ -725,10 +725,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/debug@npm:^4.1.6":
-  version: 4.1.6
-  resolution: "@types/debug@npm:4.1.6"
-  checksum: b4c5d07fb383527b1416ab7911dd85c47da276d32f4a337425c0d54f84f36c55cac76ff2d5cd3c5b5f32d213912fcc4e5aa44aa5206e49929328b465bb63f310
+"@types/debug@npm:^4.1.7":
+  version: 4.1.7
+  resolution: "@types/debug@npm:4.1.7"
+  dependencies:
+    "@types/ms": "*"
+  checksum: 0a7b89d8ed72526858f0b61c6fd81f477853e8c4415bb97f48b1b5545248d2ae389931680b94b393b993a7cfe893537a200647d93defe6d87159b96812305adc
   languageName: node
   linkType: hard
 
@@ -836,10 +838,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:*, @types/node@npm:16.4.1, @types/node@npm:>=13.13.4, @types/node@npm:^16.4.1":
-  version: 16.4.1
-  resolution: "@types/node@npm:16.4.1"
-  checksum: 6cff78c802a1efecc900506a468a9bdaa321c7132a05e87552ab710f3d3a5cd230308317634f94b8db4833c66c72a765b28670d5ccf8c7c5a7363fcce32d1b1e
+"@types/ms@npm:*":
+  version: 0.7.31
+  resolution: "@types/ms@npm:0.7.31"
+  checksum: daadd354aedde024cce6f5aa873fefe7b71b22cd0e28632a69e8b677aeb48ae8caa1c60e5919bb781df040d116b01cb4316335167a3fc0ef6a63fa3614c0f6da
+  languageName: node
+  linkType: hard
+
+"@types/node@npm:*, @types/node@npm:16.4.7, @types/node@npm:>=13.13.4, @types/node@npm:^16.4.7":
+  version: 16.4.7
+  resolution: "@types/node@npm:16.4.7"
+  checksum: a1e80deea93f10225d1ac0825bd5eff3355dbc37084a88b0138921c9c930eb54acebb008d090a332a96d31ff50de69f2f5fc1402571070ea745f023e9f874805
   languageName: node
   linkType: hard
 
@@ -4279,9 +4288,9 @@ fsevents@~2.3.2:
   languageName: node
   linkType: hard
 
-"mocha@npm:^9.0.2":
-  version: 9.0.2
-  resolution: "mocha@npm:9.0.2"
+"mocha@npm:^9.0.3":
+  version: 9.0.3
+  resolution: "mocha@npm:9.0.3"
   dependencies:
     "@ungap/promise-all-settled": 1.1.2
     ansi-colors: 4.1.1
@@ -4311,7 +4320,7 @@ fsevents@~2.3.2:
   bin:
     _mocha: bin/_mocha
     mocha: bin/mocha
-  checksum: 70c637f7dc7aab6f609864cc9c85a3c5cf506c9eb19ef0abacd436e024f7f59bcf70ac2773c7d441a11b3cb4182a1ae47f490fba1f8a12d7b78658cfc5954498
+  checksum: 60e5769550140b71fb36bda5728db3131cfbfee9f0bb6226110e813119fbeed63e2c8b1bdbba1b947b4742e1247f4098fd7d6ce37a32f156a30d7d4944f4ac0c
   languageName: node
   linkType: hard
 
@@ -4530,7 +4539,7 @@ fsevents@~2.3.2:
   dependencies:
     "@tsconfig/node16": ^1.0.2
     "@types/mocha": ^9.0.0
-    "@types/node": ^16.4.1
+    "@types/node": ^16.4.7
     "@yarnpkg/sdks": ^2.4.1-rc.4
     pino-pretty: ^5.1.2
     prettier: ^2.3.2
@@ -4631,10 +4640,10 @@ fsevents@~2.3.2:
   languageName: node
   linkType: hard
 
-"on-exit-leak-free@npm:^0.1.0":
-  version: 0.1.0
-  resolution: "on-exit-leak-free@npm:0.1.0"
-  checksum: 0042cb66916eeeb3a223777f07f2065b4a03857e79738860bec73e1bbd9408041f22dad5f27abe29238fb336dd969785f6262bc77e85ad61e1bd446602135e3d
+"on-exit-leak-free@npm:^0.2.0":
+  version: 0.2.0
+  resolution: "on-exit-leak-free@npm:0.2.0"
+  checksum: d22b0f0538069110626b578db6e68b6ee0e85b1ee9cc5ef9b4de1bba431431d6a8da91a61e09d2ad46f22a96f968e5237833cb9d0b69bc4d294f7ec82f609b05
   languageName: node
   linkType: hard
 
@@ -4990,15 +4999,15 @@ fsevents@~2.3.2:
   languageName: node
   linkType: hard
 
-"pino@npm:^7.0.0-rc.1":
-  version: 7.0.0-rc.1
-  resolution: "pino@npm:7.0.0-rc.1"
+"pino@npm:^7.0.0-rc.2":
+  version: 7.0.0-rc.2
+  resolution: "pino@npm:7.0.0-rc.2"
   dependencies:
     fast-redact: ^3.0.0
     fast-safe-stringify: ^2.0.8
     get-caller-file: ^2.0.5
     json-stringify-safe: ^5.0.1
-    on-exit-leak-free: ^0.1.0
+    on-exit-leak-free: ^0.2.0
     pino-abstract-transport: ^0.2.0
     pino-std-serializers: ^4.0.0
     quick-format-unescaped: ^4.0.3
@@ -5006,7 +5015,7 @@ fsevents@~2.3.2:
     thread-stream: ^0.11.0
   bin:
     pino: bin.js
-  checksum: f918d36bd47775d93ddf256cc459d6d41afe9bc3f53db40574e35102e2364bec595ce3e6069a5e8c196e109802bf57711f854334bc399ab299a6953a337bafed
+  checksum: 2a2c9ab2d942c0769bd6f62fa3c6a992707a517180c35c242f491e25e08e65a222f5cc70ddebd6fd85e1eee2654868d6e9cddd47595163353d12706d10ce3bf1
   languageName: node
   linkType: hard
 
@@ -6113,10 +6122,10 @@ fsevents@~2.3.2:
   languageName: node
   linkType: hard
 
-"type-fest@npm:^1.2.2":
-  version: 1.2.2
-  resolution: "type-fest@npm:1.2.2"
-  checksum: 51ea6792ffae81c037ace48bbf085672273efc5af0226092d8debabb9b724ee6ade0f6456ca173c98975ac1ff267a1778bbe051d08479d18e47c2a60fd4a399e
+"type-fest@npm:^1.2.3":
+  version: 1.2.3
+  resolution: "type-fest@npm:1.2.3"
+  checksum: 9380929ed49249572c50fe86bf8f0ef8998da7eced9f21e898b7a54e4f5d9bd4624cf5374983c623b5631df49bad551246bedb30beeaff4c78e5733dec01e3fc
   languageName: node
   linkType: hard
 
