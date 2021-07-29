@@ -1,6 +1,6 @@
 # OADA micro-services
 
-This is a [yarn 2 monorepo] using [pnp].
+This is a [yarn 3 monorepo] using [pnp].
 It contains all the core "OADA" micro-services of the reference implementation,
 as well as some libraries for said services.
 
@@ -19,7 +19,7 @@ For example, the [`users`] service has an `add` command
 (see [here](services/users/package.json)).
 
 [`users`]: services/users
-[yarn 2 monorepo]: https://yarnpkg.com/features/workspaces
+[yarn 3 monorepo]: https://yarnpkg.com/features/workspaces
 [pnp]: https://yarnpkg.com/features/pnp
 [node.js]: https://nodejs.org/en/
 [arangodb]: https://www.arangodb.com
