@@ -646,23 +646,34 @@ export async function deletePartialResource(
             FOR node IN ${graphNodes}
               LET path = node.path || null
               FILTER node['resource_id'] == ${id} AND path == ${spath || null}
-              RETURN node
+              RETURN node._id
           )
-
-          LET v = (
+          LET vs = (
             FOR v, e, p IN 1..${MAX_DEPTH} OUTBOUND start ${edges}
               OPTIONS { bfs: true, uniqueVertices: 'global' }
               FILTER p.edges[0].name == ${name}
               FILTER p.vertices[*].resource_id ALL == ${id}
-              REMOVE v IN ${graphNodes}
-              RETURN OLD
+              RETURN v._id
           )
 
-          LET e = (
-            FOR edge IN ${edges}
-              FILTER (v[*]._id ANY == edge._to) || (v[*]._id ANY == edge._from) || (edge._from == start._id && edge.name == ${name})
-              REMOVE edge IN ${edges}
-              RETURN OLD
+          LET estart = (
+            FOR v, e IN 1..1 OUTBOUND start ${edges}
+              FILTER e.name == ${name}
+              RETURN e
+          )
+          LET ev = (
+            FOR vd IN vs
+              FOR v, e IN 1..1 ANY vd ${edges}
+                RETURN e
+          )
+
+          LET es = (
+            FOR e IN APPEND(ev, estart)
+              REMOVE e IN ${edges}
+          )
+          LET vd = (
+            FOR v IN vs
+              REMOVE v IN ${graphNodes}
           )
 
           LET newres = MERGE_RECURSIVE(
@@ -672,8 +683,7 @@ export async function deletePartialResource(
               _meta: {_rev: ${rev}}
             }
           )
-
-          UPDATE ${key} WITH newres IN ${resources} OPTIONS {keepNull: false}
+          UPDATE ${key} WITH newres IN ${resources} OPTIONS { keepNull: false }
           RETURN OLD._oada_rev`
       )
     ).next()) as number;
