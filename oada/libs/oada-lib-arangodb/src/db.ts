@@ -29,22 +29,23 @@ class DatabaseWrapper extends Database {
   override async query(query: AqlQuery, options: QueryOptions = {}) {
     let tries = 0;
     const tryquery: () => ReturnType<Database['query']> = async () => {
-      return await Bluebird.resolve(super.query(query, {profile, ...options})).catch(
-        DeadlockError,
-        async (err: unknown) => {
-          if (++tries >= deadlockRetries) {
-            throw err;
-          }
+      return await Bluebird.resolve(super.query(query, { profile, ...options }))
+        .catch(
+          DeadlockError,
+          async (err: unknown) => {
+            if (++tries >= deadlockRetries) {
+              throw err;
+            }
 
-          // warn(`Retrying query due to deadlock (retry #${tries})`, err);
-          return await Bluebird.delay(deadlockDelay).then(tryquery);
-        }
-      );
+            // warn(`Retrying query due to deadlock (retry #${tries})`, err);
+            return await Bluebird.delay(deadlockDelay).then(tryquery);
+          });
     }
     const res = await tryquery();
     // TODO: Less gross way to do this?
     if (trace.enabled) {
-      trace({...query, ...res.extra}, 'AQL query info')
+      const { query: aql, ...rest } = query;
+      trace({ ...rest, ...res.extra }, aql);
     }
     return res
   }
