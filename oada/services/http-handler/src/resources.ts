@@ -100,10 +100,7 @@ const plugin: FastifyPluginAsync<Options> = async function (fastify, opts) {
       // log
       request.log.info('Graph lookup: %s => %s', fullpath, url);
       // Remove `/resources`? idek
-      request.requestContext.set(
-        'oadaPath',
-        url.replace(/^\/?resources\//, '/')
-      );
+      request.requestContext.set('oadaPath', url);
       reply.header('Content-Location', '/' + url);
     } else {
       reply.header('Content-Location', '/' + fullpath);
@@ -476,7 +473,7 @@ const plugin: FastifyPluginAsync<Options> = async function (fastify, opts) {
     // Don't let users delete their shares?
     noModifyShares(request, reply);
     // Don't let users DELETE their bookmarks?
-    if (path === '/' + user['bookmarks_id']) {
+    if (path === user.bookmarks_id) {
       return reply.forbidden('User cannot delete their bookmarks');
     }
 
@@ -487,7 +484,7 @@ const plugin: FastifyPluginAsync<Options> = async function (fastify, opts) {
       // Switch to DELETE on parent resource
       const id = oadaGraph.from['resource_id'];
       const pathlo = oadaGraph.from['path_leftover'];
-      path = '/' + id.replace(/^\/?resources\//, '') + pathlo;
+      path = '/' + id + pathlo;
       oadaGraph = oadaGraph.from;
       // parent resource DOES exist,
       // but linked resource may or may not have existed
