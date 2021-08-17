@@ -1,6 +1,6 @@
 # OADA Reference API Server
 
-[![CodeFactor](https://www.codefactor.io/repository/github/OADA/server)](https://www.codefactor.io/repository/github/OADA/server)
+[![CodeFactor](https://www.codefactor.io/repository/github/OADA/server/badge)](https://www.codefactor.io/repository/github/OADA/server)
 [![code style: prettier](https://img.shields.io/badge/code_style-prettier-ff69b4.svg)](https://github.com/prettier/prettier)
 [![License](https://img.shields.io/github/license/OADA/server)](LICENSE)
 
