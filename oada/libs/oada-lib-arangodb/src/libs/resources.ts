@@ -66,7 +66,7 @@ export async function lookupFromUrl(
 ): Promise<GraphLookup> {
   const user = await users.findById(userId);
   if (!user) {
-    throw 'No User Found for given userId';
+    throw new Error('No User Found for given userId');
   }
   if (/^\/bookmarks/.test(url)) {
     url = url.replace(/^\/bookmarks/, '/' + user.bookmarks._id);
@@ -130,7 +130,7 @@ export async function lookupFromUrl(
   let resourceExists = true;
 
   let path_leftover = '';
-  let from = undefined;
+  let from;
 
   if (!result) {
     trace('1 return resource id %s', resource_id);
@@ -332,7 +332,7 @@ export async function getParents(
   path: string;
   contentType: string;
 }> | null> {
-  return await Bluebird.resolve(
+  return Bluebird.resolve(
     db.query(
       aql`
         WITH ${edges}, ${graphNodes}, ${resources}
@@ -531,9 +531,9 @@ async function forLinks(
   await Bluebird.map(Object.keys(res), async (key) => {
     if (res[key] && res[key].hasOwnProperty('_id') && key !== '_meta') {
       // If it has _id and is not _meta, treat as a link
-      return await cb(res[key], path.concat(key));
+      return cb(res[key], path.concat(key));
     } else if (typeof res[key] === 'object' && res[key] !== null) {
-      return await forLinks(res[key], cb, path.concat(key));
+      return forLinks(res[key], cb, path.concat(key));
     }
   });
 }
