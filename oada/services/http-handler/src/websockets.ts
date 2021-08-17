@@ -69,7 +69,7 @@ function parseRequest(data: WebSocket.Data): SocketRequest {
   // Normalize header name capitalization
   const headers = msg?.headers ?? {};
   msg.headers = {};
-  for (const header in headers) {
+  for (const header of Object.keys(headers)) {
     msg.headers[header.toLowerCase()] = headers[header];
   }
 
@@ -85,7 +85,7 @@ const plugin: FastifyPluginAsync = async function (fastify) {
   fastify.get('/*', { websocket: true }, async ({ socket }, _request) => {
     // Add our state stuff?
     let isAlive: boolean = true;
-    let watches: Record<string, Watch> = {};
+    const watches: Map<string, Watch> = new Map();
 
     // Set up periodic ping/pong and timeout on socket
     const interval = setInterval(function ping() {
@@ -106,7 +106,7 @@ const plugin: FastifyPluginAsync = async function (fastify) {
         debug('responding watch %s', resourceId);
 
         const requests =
-          watches[resourceId]?.requests ?? ({} as Record<string, string>);
+          watches.get(resourceId)?.requests ?? ({} as Record<string, string>);
 
         const mesg: SocketChange = Object.keys(requests)
           // Find requests with changes
@@ -224,8 +224,7 @@ const plugin: FastifyPluginAsync = async function (fastify) {
           // Find corresponding WATCH
           let res: string | undefined;
           let watch: Watch | undefined;
-          for (res in watches) {
-            watch = watches[res];
+          for ([res, watch] of watches) {
             if (watch?.requests[msg.requestId]) {
               break;
             }
@@ -237,7 +236,7 @@ const plugin: FastifyPluginAsync = async function (fastify) {
             delete watch.requests[msg.requestId];
             if (Object.keys(watch.requests).length === 0) {
               // No watches on this resource left
-              delete watches[res!];
+              watches.delete(res!);
               emitter.removeListener(res!, watch.handler);
             }
           }
@@ -308,14 +307,14 @@ const plugin: FastifyPluginAsync = async function (fastify) {
         case 'watch':
           debug('opening watch', msg.requestId);
 
-          let watch = watches[resourceId];
+          let watch = watches.get(resourceId);
           if (!watch) {
             // No existing WATCH on this resource
             watch = {
               handler: handleChange(resourceId),
               requests: { [msg.requestId]: path_leftover },
             };
-            watches[resourceId] = watch;
+            watches.set(resourceId, watch);
 
             emitter.on(resourceId, watch.handler);
             socket.on('close', function handleClose() {
@@ -335,12 +334,12 @@ const plugin: FastifyPluginAsync = async function (fastify) {
               request.headers['x-oada-rev']
             );
             const rev = await resources.getResource(resourceId, '_rev');
-            const revInt = parseInt((rev as unknown) as string);
+            const revInt = parseInt((rev as unknown) as string, 10);
             // If the requested rev is behind by revLimit, simply
             // re-GET the entire resource
             trace('REVS:', resourceId, rev, request.headers['x-oada-rev']);
             if (
-              revInt - parseInt(request.headers['x-oada-rev'] as string) >=
+              revInt - parseInt(request.headers['x-oada-rev'] as string, 10) >=
               revLimit
             ) {
               trace(
@@ -370,7 +369,8 @@ const plugin: FastifyPluginAsync = async function (fastify) {
               );
               // Next, feed changes to client
               const reqRevInt = parseInt(
-                request.headers['x-oada-rev'] as string
+                request.headers['x-oada-rev'] as string,
+                10
               );
               for (let sendRev = reqRevInt + 1; sendRev <= revInt; sendRev++) {
                 trace(

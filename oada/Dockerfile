@@ -62,7 +62,7 @@ COPY --from=build /oada/ /oada/
 
 # Remove uncompiled code (e.g. TS files, C/C++ of librdkafka)?
 SHELL ["/bin/ash", "-c"]
-RUN find /oada -name src | xargs rm -rfv
+RUN find /oada -name src -exec xargs rm -rfv {} +
 
 
 # Assemble "production" image

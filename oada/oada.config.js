@@ -118,7 +118,6 @@ module.exports = {
       tokenRequest: 'token_request',
       graphRequest: 'graph_request',
       writeRequest: 'write_request',
-      websocketsRequest: 'websockets_request',
       userRequest: 'user_request',
       permissionsRequest: 'permissions_request', //show bobs
       httpResponse: 'http_response',

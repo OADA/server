@@ -66,7 +66,7 @@ export async function lookupFromUrl(
 ): Promise<GraphLookup> {
   const user = await users.findById(userId);
   if (!user) {
-    throw 'No User Found for given userId';
+    throw new Error(`No User Found for given userId ${userId}`);
   }
   if (/^\/bookmarks/.test(url)) {
     url = url.replace(/^\/bookmarks/, '/' + user.bookmarks._id);
@@ -130,7 +130,7 @@ export async function lookupFromUrl(
   let resourceExists = true;
 
   let path_leftover = '';
-  let from = undefined;
+  let from;
 
   if (!result) {
     trace('1 return resource id %s', resource_id);

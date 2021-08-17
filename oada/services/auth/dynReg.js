@@ -17,7 +17,7 @@
 
 const oadacerts = require('@oada/oada-certs');
 const Bluebird = require('bluebird');
-const clients = Bluebird.promisifyAll(require('./db/models/client'));
+let clients = Bluebird.promisifyAll(require('./db/models/client'));
 const config = require('./config');
 const debug = require('debug');
 
