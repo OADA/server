@@ -278,7 +278,7 @@ const plugin: FastifyPluginAsync = async function (fastify) {
             payload: res.payload,
           });
         }
-      } catch (err: unknown) {
+      } catch (err) {
         if (err.response) {
           error(err);
           return sendResponse({

@@ -47,7 +47,7 @@ const usage = () => {
 */
 
 // The main event:
-(async function () {
+async function run() {
   // ./extendTime -n abc ==> should not have argv.n = 'abc'
   if (typeof argv.n === 'string') {
     trace('have -n, fixing argv.');
@@ -149,4 +149,5 @@ const usage = () => {
     await authorizations.save(update);
     console.info(chalk.green(`Successfully wrote token ${update.token}`));
   }
-})();
+}
+run();
