@@ -3,6 +3,9 @@
   "version": "3.0.1",
   "description": "OADA pino-debug wrapper",
   "main": "dist/index.js",
+  "engines": {
+    "node": ">=16.0.0"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/OADA/@oada/pino-debug.git"

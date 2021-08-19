@@ -50,7 +50,7 @@ trace('Parsed builtin scopes, they are: %O', scopeTypes);
 const additionalScopesFiles = fs
   .readdirSync(join(__dirname, '../scopes/additional-scopes'))
   .filter(
-    (f) => !f.match(/^\./) // remove hidden files
+    (f) => !(/^\./.exec(f)) // remove hidden files
   );
 additionalScopesFiles.forEach((af) => {
   try {

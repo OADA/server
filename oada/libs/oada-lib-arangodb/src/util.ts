@@ -39,12 +39,12 @@ export function sanitizeResult<T extends Record<string, any>>(
 // This was too much trouble to fix for TS...
 export function bluebirdCursor<T>(cur: Promise<ArrayCursor<T>>): Bluebird<T[]> {
   // Make .then exhaust the cursor
-  let then = cur.then.bind(cur);
+  const then = cur.then.bind(cur);
   cur.then = (f: any) => then((cur) => cur.all()).then(f);
   (<const>['each', 'any', 'some', 'map', 'reduce']).forEach((meth) => {
     // @ts-ignore
     cur[meth] = async function () {
-      let args = arguments;
+      const args = arguments;
       // @ts-ignore
       return cur.then((cur) => ccur[meth].apply(cur, args));
     };

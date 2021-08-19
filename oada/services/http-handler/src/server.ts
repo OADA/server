@@ -41,7 +41,7 @@ export const app = fastify({
   ignoreTrailingSlash: true,
 });
 
-export async function start() {
+export async function start(): Promise<void> {
   await app.listen(config.get('server.port'), '0.0.0.0');
   app.log.info('OADA Server started on port %d', config.get('server.port'));
 }
@@ -53,7 +53,7 @@ declare module 'fastify-request-context' {
   }
 }
 
-async function init() {
+async function init(): Promise<void> {
   await app.register(fastifySensible, {
     // Hide internal error cause from clients except in development
     errorHandler: process.env.NODE_ENV === 'development' ? false : undefined,
@@ -220,7 +220,7 @@ async function init() {
 /**
  * Try to cleanup and always die on unexpected error
  */
-async function close(err: Error) {
+async function close(err: Error): Promise<void> {
   try {
     app.log.error(err, 'Attempting to cleanup server after error.');
     // Try to close server nicely
@@ -233,4 +233,4 @@ async function close(err: Error) {
 process.on('uncaughtException', close);
 process.on('unhandledRejection', close);
 
-init();
+void init();

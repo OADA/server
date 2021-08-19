@@ -1,4 +1,3 @@
-#!/usr/bin/env node
 /* Copyright 2014 Open Ag Data Alliance
  *
  * Licensed under the Apache License, Version 2.0 (the 'License');

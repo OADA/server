@@ -14,7 +14,6 @@
  */
 
 import { join } from 'path';
-// @ts-ignore added in node 15/16
 import { pipeline } from 'stream/promises';
 
 import type { FastifyPluginAsync, FastifyReply, FastifyRequest } from 'fastify';
@@ -56,7 +55,7 @@ declare module 'fastify-request-context' {
 /**
  * Fastify plugin for OADA /resources
  */
-const plugin: FastifyPluginAsync<Options> = async function (fastify, opts) {
+const plugin: FastifyPluginAsync<Options> = function (fastify, opts) {
   /**
    * Try to cleanup our stuff on close
    */
@@ -87,7 +86,7 @@ const plugin: FastifyPluginAsync<Options> = async function (fastify, opts) {
     /**
      * The whole path from the request (e.g., /resources/123/link/abc)
      */
-    const fullpath = request.requestContext.get('oadaPath');
+    const fullpath = request.requestContext.get('oadaPath')!;
 
     const resp = await resources.lookupFromUrl(
       '/' + fullpath,
@@ -101,9 +100,9 @@ const plugin: FastifyPluginAsync<Options> = async function (fastify, opts) {
       request.log.info('Graph lookup: %s => %s', fullpath, url);
       // Remove `/resources`? idek
       request.requestContext.set('oadaPath', url);
-      reply.header('Content-Location', '/' + url);
+      void reply.header('Content-Location', '/' + url);
     } else {
-      reply.header('Content-Location', '/' + fullpath);
+      void reply.header('Content-Location', '/' + fullpath);
     }
     request.requestContext.set('oadaGraph', resp);
     request.requestContext.set('resourceExists', resp.resourceExists);
@@ -115,7 +114,7 @@ const plugin: FastifyPluginAsync<Options> = async function (fastify, opts) {
    * Has to run after graph lookup.
    * @todo Should this just be in each methods implenting function?
    */
-  fastify.addHook('preHandler', async function checkScope(request, reply) {
+  fastify.addHook('preHandler', function checkScope(request, reply) {
     const oadaGraph = request.requestContext.get('oadaGraph')!;
     const user = request.requestContext.get('user')!;
 
@@ -176,10 +175,10 @@ const plugin: FastifyPluginAsync<Options> = async function (fastify, opts) {
   /**
    * Return "path leftover" in a header if token/scope passes
    */
-  fastify.addHook('preHandler', async function pathLeftover(request, reply) {
+  fastify.addHook('preHandler', function pathLeftover(request, reply) {
     const oadaGraph = request.requestContext.get('oadaGraph')!;
     // TODO: Better header name?
-    reply.header('X-OADA-Path-Leftover', oadaGraph['path_leftover']);
+    void reply.header('X-OADA-Path-Leftover', oadaGraph['path_leftover']);
   });
 
   fastify.get(
@@ -189,14 +188,14 @@ const plugin: FastifyPluginAsync<Options> = async function (fastify, opts) {
       const oadaGraph = request.requestContext.get('oadaGraph')!;
 
       const type = oadaGraph.type ?? 'application/json';
-      reply.type(type);
+      void reply.type(type);
       // TODO: Why does this not work as a fastify plugin??
       const headers = handleResponse(type);
       // TODO: Why does fastify strip content-type params??
-      reply.headers(headers);
+      void reply.headers(headers);
 
-      reply.header('X-OADA-Rev', oadaGraph.rev);
-      reply.header('ETag', `"${oadaGraph.rev}"`);
+      void reply.header('X-OADA-Rev', oadaGraph.rev);
+      void reply.header('ETag', `"${oadaGraph.rev}"`);
 
       /**
        * Check preconditions before actually getting the body
@@ -231,7 +230,7 @@ const plugin: FastifyPluginAsync<Options> = async function (fastify, opts) {
           .map((item) => {
             return {
               [item]: {
-                _id: oadaGraph.resource_id + '/_meta/_changes/' + item,
+                _id: `${oadaGraph.resource_id}/_meta/_changes/${item}`,
                 _rev: item,
               },
             };
@@ -252,7 +251,7 @@ const plugin: FastifyPluginAsync<Options> = async function (fastify, opts) {
 
       if (
         is(type, ['json', '+json']) ||
-        oadaGraph['path_leftover'].match(/\/_meta$/)
+        /\/_meta$/.exec(oadaGraph['path_leftover'])
       ) {
         const doc = await resources.getResource(
           oadaGraph['resource_id'],
@@ -272,7 +271,7 @@ const plugin: FastifyPluginAsync<Options> = async function (fastify, opts) {
           );
         }
 
-        const res = unflattenMeta(doc);
+        const res: unknown = unflattenMeta(doc);
 
         // TODO: Support non-JSON accept? (e.g., YAML)
         const accept = request.accepts();
@@ -301,7 +300,7 @@ const plugin: FastifyPluginAsync<Options> = async function (fastify, opts) {
         } = await cacache.get.info(CACHE_PATH, oadaGraph['resource_id']);
 
         // Stream file to client
-        reply.header('Content-Length', size);
+        void reply.header('Content-Length', size);
         return cacache.get.stream.byDigest(CACHE_PATH, integrity);
       }
     }
@@ -326,7 +325,7 @@ const plugin: FastifyPluginAsync<Options> = async function (fastify, opts) {
   function noModifyShares(request: FastifyRequest, reply: FastifyReply) {
     const path = request.requestContext.get('oadaPath')!;
     const user = request.requestContext.get('user')!;
-    if (path.match(`^/${user['shares_id']}`)) {
+    if (RegExp(`^/${user['shares_id']}`).exec(path)) {
       return reply.forbidden('User cannot modify their shares document');
     }
   }
@@ -360,7 +359,7 @@ const plugin: FastifyPluginAsync<Options> = async function (fastify, opts) {
     // e.g., `W/"123"` or `"123"`
     const r = /(W\/)?"(?<rev>\d*)"/;
 
-    const { rev } = etag.match(r)?.groups ?? {};
+    const { rev } = r.exec(etag)?.groups ?? {};
 
     // If parse fails, assume `123` format (for legacy code)
     return rev ? +rev : +etag;
@@ -386,7 +385,7 @@ const plugin: FastifyPluginAsync<Options> = async function (fastify, opts) {
       const oadaGraph = request.requestContext.get('oadaGraph')!;
       const resourceExists = request.requestContext.get('resourceExists')!;
       const user = request.requestContext.get('user')!;
-      let path = request.requestContext.get('oadaPath')!;
+      const path = request.requestContext.get('oadaPath')!;
       request.log.trace('Saving PUT body for request');
 
       /**
@@ -414,7 +413,7 @@ const plugin: FastifyPluginAsync<Options> = async function (fastify, opts) {
       const ifnonematch = request.headers['if-none-match'];
       const resp = (await requester.send(
         {
-          'connection_id': request.id,
+          'connection_id': request.id as unknown,
           resourceExists,
           'domain': request.hostname,
           'url': path,
@@ -448,7 +447,7 @@ const plugin: FastifyPluginAsync<Options> = async function (fastify, opts) {
             'If-None-Match header contains current resource _rev'
           );
         default:
-          throw new Error('write failed with code ' + resp.code);
+          throw new Error(`Write failed with code "${resp.code || ''}"`);
       }
       return (
         reply
@@ -497,7 +496,7 @@ const plugin: FastifyPluginAsync<Options> = async function (fastify, opts) {
     const resp = (await requester.send(
       {
         resourceExists,
-        'connection_id': request.id,
+        'connection_id': request.id as unknown,
         'domain': request.hostname,
         'url': path,
         'resource_id': oadaGraph['resource_id'],
@@ -533,7 +532,7 @@ const plugin: FastifyPluginAsync<Options> = async function (fastify, opts) {
           'If-None-Match header contains current resource _rev'
         );
       default:
-        throw new Error('delete failed with code ' + resp.code);
+        throw new Error(`Delete failed with code "${resp.code || ''}"`);
     }
 
     return reply
@@ -542,6 +541,8 @@ const plugin: FastifyPluginAsync<Options> = async function (fastify, opts) {
       .code(204)
       .send();
   });
+
+  return Promise.resolve();
 };
 
 export default plugin;

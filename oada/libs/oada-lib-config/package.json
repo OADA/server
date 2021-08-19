@@ -3,6 +3,9 @@
   "version": "3.0.1",
   "description": "Confing wrapper",
   "main": "dist/index.js",
+  "engines": {
+    "node": ">=16.0.0"
+  },
   "scripts": {
     "build": "yarn g:tsc",
     "test": "echo \"Error: no test specified\" && exit 1"

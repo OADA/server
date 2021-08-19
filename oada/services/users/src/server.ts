@@ -135,8 +135,8 @@ export async function handleReq(req: UserRequest): Promise<UserResponse> {
     ? authorization.scope.join(' ')
     : authorization.scope; // force to space-separated string
   if (
-    !tokenscope.match(/oada.admin.user:write/) &&
-    !tokenscope.match(/oada.admin.user:all/)
+    !(/oada.admin.user:write/.exec(tokenscope)) &&
+    !(/oada.admin.user:all/.exec(tokenscope))
   ) {
     warn(
       'WARNING: attempt to create a user, but request does not have token with oada.admin.user:write or oada.admin.user:all scope'

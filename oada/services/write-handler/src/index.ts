@@ -43,7 +43,7 @@ const responder = new Responder({
 
 // Only run one write at a time?
 // Per-resource write locks/queues
-const locks: Record<string, Bluebird<unknown>> = {};
+const locks: Map<string, Bluebird<unknown>> = new Map();
 const cache = new Cache<number | string>({ defaultTtl: 60 * 1000 });
 responder.on<WriteResponse, WriteRequest>('request', (req, ...rest) => {
   if (counter++ > 500) {
@@ -52,24 +52,26 @@ responder.on<WriteResponse, WriteRequest>('request', (req, ...rest) => {
   }
 
   const id = req['resource_id'].replace(/^\//, '');
-  let p = locks[id] || Bluebird.resolve();
+  const ps = locks.get(id) ?? Bluebird.resolve();
   const pTime = Date.now() / 1000;
 
   // Run once last write finishes (whether it worked or not)
-  p = p
-    .catch(() => {})
+  const p = ps
+    .catch(() => {
+      return;
+    })
     .then(() => handleReq(req, ...rest))
     .finally(() => {
       // Clean up if queue empty
-      if (locks[id] === p) {
+      if (locks.get(id) === p) {
         // Our write has finished AND no others queued for this id
-        delete locks[id];
+        locks.delete(id);
       }
     })
     .tap(() => {
       trace('handleReq %d', Date.now() / 1000 - pTime);
     });
-  locks[id] = p;
+  locks.set(id, p);
 
   return p;
 });
@@ -234,7 +236,7 @@ export function handleReq(req: WriteRequest): Promise<WriteResponse> {
         if (path.length > 0) {
           trace('Delete path = %s', path);
           // TODO: This is gross
-          let ppath = Array.from(path);
+          const ppath = Array.from(path);
           method = (id, obj) => resources.deletePartialResource(id, ppath, obj);
           trace(
             'Setting method = deletePartialResource(%s, %o, %O)',
@@ -287,16 +289,16 @@ export function handleReq(req: WriteRequest): Promise<WriteResponse> {
             },
           },
         });
-        trace('Intializing resource with %O', obj);
+        trace(obj, 'Intializing resource');
       }
 
       // Create object to recursively merge into the resource
-      trace('Recursively merging path into arango object, path = %o', path);
+      trace(path, 'Recursively merging path into arango object');
       if (path.length > 0) {
         let o = obj;
-        let endk = path.pop();
+        const endk = path.pop();
         path.forEach((k) => {
-          trace(`Adding path for key ${k}`);
+          trace('Adding path for key %s', k);
           if (!(k in o)) {
             // TODO: Support arrays better?
             o[k] = {};
@@ -413,7 +415,7 @@ export function handleReq(req: WriteRequest): Promise<WriteResponse> {
       error(err);
       return {
         msgtype: 'write-response',
-        code: err.message || 'error',
+        code: err.message ?? 'error',
         user_id: req['user_id'],
         authorizationid: req['authorizationid'],
       };

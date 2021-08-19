@@ -5,6 +5,9 @@
   "author": "",
   "license": "Apache-2.0",
   "main": "dist/server.js",
+  "engines": {
+    "node": ">=16.0.0"
+  },
   "scripts": {
     "build": "yarn g:tsc",
     "start": "node -r @oada/pino-debug --unhandled-rejections=strict --enable-source-maps server.js",

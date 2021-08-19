@@ -3,6 +3,9 @@
   "version": "3.0.1",
   "description": "All OADA Arango interface code in one place.",
   "main": "dist/index.js",
+  "engines": {
+    "node": ">=16.0.0"
+  },
   "contributors": [
     "Alex Layton <alex@layton.in> (https://github.com/awlayton)",
     "Andrew Balmos <andrew@balmos.org> (https://github.com/abalmos)"

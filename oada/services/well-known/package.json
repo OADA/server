@@ -17,6 +17,9 @@
   },
   "homepage": "https://github.com/oada/oada-srvc-well-known#readme",
   "main": "dist/index.js",
+  "engines": {
+    "node": ">=16.0.0"
+  },
   "scripts": {
     "build": "yarn g:tsc",
     "start": "node -r @oada/pino-debug --enable-source-maps --unhandled-rejections=strict dist/index.js",

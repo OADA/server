@@ -3,6 +3,9 @@
   "version": "3.0.1",
   "description": "",
   "main": "dist/server.js",
+  "engines": {
+    "node": ">=16.0.0"
+  },
   "scripts": {
     "test": "mocha",
     "build": "yarn g:tsc",

@@ -5,6 +5,9 @@
   "author": "",
   "license": "Apache-2.0",
   "main": "dist/index.js",
+  "engines": {
+    "node": ">=16.0.0"
+  },
   "scripts": {
     "test": "DEBUG=\"*rev-graph-update*\" NODE_TLS_REJECT_UNAUTHORIZED=0 mocha",
     "build": "yarn g:tsc",

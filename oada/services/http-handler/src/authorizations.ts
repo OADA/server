@@ -97,7 +97,7 @@ const plugin: FastifyPluginAsync<Options> = async function (fastify, opts) {
 
     // TODO: Most of this could be done inside an Arango query...
     // TODO: Check scope of current token
-    let auth = Object.assign(
+    const auth = Object.assign(
       {
         // TODO: Which fields should be selectable by the client?
         user: {

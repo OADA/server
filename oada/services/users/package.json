@@ -5,6 +5,9 @@
   "author": "Alex Layton <alex@layton.in>",
   "license": "Apache-2.0",
   "main": "dist/server.js",
+  "engines": {
+    "node": ">=16.0.0"
+  },
   "scripts": {
     "build": "yarn g:tsc",
     "start": "node -r @oada/pino-debug --enable-source-maps --unhandled-rejections=strict dist/server.js"

@@ -218,12 +218,12 @@ export async function lookupFromUrl(
     resource_id = result.vertices[result.vertices.length - 1]!['resource_id'];
     trace('graph-lookup traversal found resource %s', resource_id);
     const fromv = result.vertices[result.vertices.length - 2]!;
-    let edge = result.edges[result.edges.length - 1];
+    const edge = result.edges[result.edges.length - 1];
     // If the desired url has more pieces than the longest path, the
     // pathLeftover is the extra pieces
     if (result.vertices.length - 1 < pieces.length) {
-      let revVertices = cloneDeep(result.vertices).reverse();
-      let lastResource =
+      const revVertices = cloneDeep(result.vertices).reverse();
+      const lastResource =
         result.vertices.length -
         1 -
         // @ts-ignore
@@ -256,7 +256,7 @@ export async function lookupFromUrl(
 
 export function getResource(
   id: string,
-  path: string = ''
+  path = ''
 ): Promise<Partial<Resource>> {
   // TODO: Escaping stuff?
   const parts = path.split('/').filter((x) => !!x);
@@ -414,7 +414,7 @@ export async function getChanges(id: string, rev: string | number) {
 export async function putResource(
   id: string,
   obj: any,
-  checkLinks: boolean = true
+  checkLinks = true
 ) {
   // Fix rev
   obj['_oada_rev'] = obj['_rev'];
@@ -430,9 +430,9 @@ export async function putResource(
   trace('Upserting links: %O', links);
 
   // TODO: Should it check that graphNodes exist but are wrong?
-  var q;
+  let q;
   if (links.length > 0) {
-    let thingy = aql`
+    const thingy = aql`
       LET reskey = ${obj['_key']}
       LET resup = FIRST(
         LET res = ${obj}
