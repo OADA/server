@@ -10,10 +10,10 @@ COPY ./yarn.lock ./.yarnrc.yml /oada/
 COPY ./.yarn /oada/.yarn
 # TODO: How to COPY all package.json files with glob?
 COPY ./package.json /oada/package.json
-COPY ./libs/oada-lib-arangodb/package.json /oada/libs/oada-lib-arangodb/package.json
-COPY ./libs/oada-lib-config/package.json /oada/libs/oada-lib-config/package.json
-COPY ./libs/oada-lib-kafka/package.json /oada/libs/oada-lib-kafka/package.json
-COPY ./libs/oada-pino-debug/package.json /oada/libs/oada-pino-debug/package.json
+COPY ./libs/lib-arangodb/package.json /oada/libs/lib-arangodb/package.json
+COPY ./libs/lib-config/package.json /oada/libs/lib-config/package.json
+COPY ./libs/lib-kafka/package.json /oada/libs/lib-kafka/package.json
+COPY ./libs/pino-debug/package.json /oada/libs/pino-debug/package.json
 COPY ./services/auth/package.json /oada/services/auth/package.json
 COPY ./services/http-handler/package.json /oada/services/http-handler/package.json
 COPY ./services/permissions-handler/package.json /oada/services/permissions-handler/package.json
