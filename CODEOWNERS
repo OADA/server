@@ -5,24 +5,30 @@
 # Default group of people?
 * @awlayton @abalmos @aultac
 
-oada/.dockerignore @awalyton
-.prettierignore @awlayton
-.prettierrc.json @awlayton
 .gitattributes @aultac
 
+# prettier
+.prettierignore @awlayton
+.prettierrc.json @awlayton
+
+# docker
+oada/.dockerignore @awalyton
+oada/Dockerfile @abalmos @awlayton
 docker-compose.yml @abalmos @awlayton
 common.yml @abalmos
+
+# eslint
+.eslint* @awlayton
 
 # Alex made swag based proxy
 support/proxy @awlayton
 
-oada/Dockerfile @abalmos @awlayton
 oada/lerna.json @awlayton
 
-oada/libs/oada-lib-kafka @awlayton
-oada/libs/oada-pino-debug @awlayton
+oada/libs/lib-kafka @awlayton
+oada/libs/pino-debug @awlayton
 #oada/libs/oada-lib-arangodb
-oada/libs/oada-lib-config @aultac
+oada/libs/lib-config @awlayton
 
 # Service authors?
 oada/services/auth @abalmos
