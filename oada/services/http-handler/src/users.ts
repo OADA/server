@@ -15,30 +15,26 @@
 
 import { join } from 'path';
 
-import type { FastifyPluginAsync, FastifyReply, FastifyRequest } from 'fastify';
-import ksuid from 'ksuid';
-
 import { users } from '@oada/lib-arangodb';
+
 import type { UserRequest, UserResponse } from '@oada/users';
 
-import requester from './requester';
 import config from './config';
+import requester from './requester';
+
+import type { FastifyPluginAsync, FastifyReply, FastifyRequest } from 'fastify';
+import ksuid from 'ksuid';
 
 export interface Options {
   prefix: string;
 }
 
-const plugin: FastifyPluginAsync<Options> = async function (fastify, opts) {
+const plugin: FastifyPluginAsync<Options> = function (fastify, opts) {
   function sanitizeDbResult(user: users.User | null) {
     if (!user) {
       return null;
     }
-    const {
-      // @ts-ignore
-      _rev,
-      password,
-      ...u
-    } = user;
+    const { _rev, password, ...u } = user;
     return u;
   }
 
@@ -57,7 +53,7 @@ const plugin: FastifyPluginAsync<Options> = async function (fastify, opts) {
     // TODO: Sanitize POST body?
     const resp = (await requester.send(
       {
-        connection_id: req.id,
+        connection_id: req.id as string,
         domain: req.hostname,
         token: authorization,
         authorization,
@@ -87,10 +83,9 @@ const plugin: FastifyPluginAsync<Options> = async function (fastify, opts) {
     const resp = await requestUserWrite(request, newid);
     // TODO: Better status code choices?
     // if db didn't send back a user, it was an update so use id from URL
-    // @ts-ignore
-    const id = resp?.user?._key ?? newid;
+    const id = resp?.user?._id?.replace(/^users\//, '') ?? newid;
     // return res.redirect(201, req.baseUrl + '/' + id)
-    reply.header('content-location', join(opts.prefix, id));
+    void reply.header('content-location', join(opts.prefix, id));
     return reply.code(201).send();
   });
 
@@ -105,10 +100,9 @@ const plugin: FastifyPluginAsync<Options> = async function (fastify, opts) {
     const resp = await requestUserWrite(request, id);
     // TODO: Better status code choices?
     // if db didn't send back a user, it was an update so use id from URL
-    // @ts-ignore
-    const userid = resp?.user?._key ?? id;
+    const userid = resp?.user?._id.replace(/^users\//, '') ?? id;
     // return res.redirect(201, req.baseUrl + '/' + id)
-    reply.header('content-location', join(opts.prefix, userid));
+    void reply.header('content-location', join(opts.prefix, userid));
     return reply.code(201).send();
   });
 
@@ -141,7 +135,7 @@ const plugin: FastifyPluginAsync<Options> = async function (fastify, opts) {
     );
     const haveuserscope =
       Array.isArray(authorization.user_scope) &&
-      authorization.user_scope.find(
+      (authorization.user_scope as string[]).find(
         (s) => s === 'oada.admin.user:read' || s === 'oada.admin.user:all'
       );
     if (!haveuserscope) {
@@ -189,9 +183,11 @@ const plugin: FastifyPluginAsync<Options> = async function (fastify, opts) {
     if (Object.keys(user).length === 0) {
       return reply.notFound;
     }
-    reply.header('Content-Location', join(opts.prefix, id));
+    void reply.header('Content-Location', join(opts.prefix, id));
     return reply.send(user);
   }
+
+  return Promise.resolve();
 };
 
 export default plugin;

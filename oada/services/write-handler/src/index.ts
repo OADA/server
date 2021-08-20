@@ -13,19 +13,19 @@
  * limitations under the License.
  */
 
-import Bluebird from 'bluebird';
-import pointer from 'json-pointer';
-import debug from 'debug';
-import Cache from 'timed-cache';
-import objectAssignDeep from 'object-assign-deep';
+import { changes, putBodies, resources } from '@oada/lib-arangodb';
+import { KafkaBase, Responder } from '@oada/lib-kafka';
 
-import type { Resource } from '@oada/types/oada/resource';
 import type Change from '@oada/types/oada/change/v2';
-
-import { resources, putBodies, changes } from '@oada/lib-arangodb';
-import { Responder, KafkaBase } from '@oada/lib-kafka';
+import type { Resource } from '@oada/types/oada/resource';
 
 import config from './config';
+
+import Bluebird from 'bluebird';
+import debug from 'debug';
+import pointer from 'json-pointer';
+import objectAssignDeep from 'object-assign-deep';
+import Cache from 'timed-cache';
 
 type DeepPartial<T> = { [K in keyof T]?: DeepPartial<T[K]> };
 
@@ -45,7 +45,7 @@ const responder = new Responder({
 // Per-resource write locks/queues
 const locks: Map<string, Bluebird<unknown>> = new Map();
 const cache = new Cache<number | string>({ defaultTtl: 60 * 1000 });
-responder.on<WriteResponse, WriteRequest>('request', (req, ...rest) => {
+responder.on<WriteResponse, WriteRequest>('request', (req) => {
   if (counter++ > 500) {
     counter = 0;
     global.gc?.();
@@ -53,23 +53,19 @@ responder.on<WriteResponse, WriteRequest>('request', (req, ...rest) => {
 
   const id = req['resource_id'].replace(/^\//, '');
   const ps = locks.get(id) ?? Bluebird.resolve();
-  const pTime = Date.now() / 1000;
 
   // Run once last write finishes (whether it worked or not)
   const p = ps
     .catch(() => {
       return;
     })
-    .then(() => handleReq(req, ...rest))
+    .then(() => handleReq(req))
     .finally(() => {
       // Clean up if queue empty
       if (locks.get(id) === p) {
         // Our write has finished AND no others queued for this id
         locks.delete(id);
       }
-    })
-    .tap(() => {
-      trace('handleReq %d', Date.now() / 1000 - pTime);
     });
   locks.set(id, p);
 
@@ -151,42 +147,34 @@ export interface WriteRequest extends WriteContext {
 export interface WriteResponse extends KafkaBase, WriteContext {
   msgtype: 'write-response';
   _rev: number;
-  _orev: number;
-  change_id: string;
+  _orev?: number;
+  change_id?: string;
 }
 
-export function handleReq(req: WriteRequest): Promise<WriteResponse> {
+export async function handleReq(req: WriteRequest): Promise<WriteResponse> {
   req.source = req.source || '';
   req.resourceExists = req.resourceExists ? req.resourceExists : false; // Fixed bug if this is undefined
   let id = req['resource_id'].replace(/^\//, '');
 
   // Get body and check permission in parallel
-  const getB = Date.now() / 1000;
   info('Handling %s', id);
-  const body = Bluebird.try(function getBody() {
-    if (req.bodyid) {
-      const pb = Date.now() / 1000;
-      return Bluebird.resolve(putBodies.getPutBody(req.bodyid)).tap(() =>
-        trace('getPutBody %d', Date.now() / 1000 - pb)
-      );
-    }
-    return req.body;
-  });
-  trace('getBody %d', Date.now() / 1000 - getB);
+  const body = req.bodyid
+    ? putBodies.getPutBody(req.bodyid)
+    : Promise.resolve(req.body);
 
-  trace(`PUTing to "%s" in "%s"`, req['path_leftover'], id);
+  trace('PUTing to "%s" in "%s"', req['path_leftover'], id);
 
   let changeType: Change[0]['type'];
-  const beforeUpsert = Date.now() / 1000;
-  const upsert = body
-    .then(async function doUpsert(body) {
-      trace('FIRST BODY %O', body);
-      trace('doUpsert %d', Date.now() / 1000 - beforeUpsert);
+  const upsert = Bluebird.resolve(body)
+    .then(async function doUpsert(
+      body: unknown
+    ): Promise<{ rev?: number; orev?: number; changeId?: string }> {
+      trace(body, 'FIRST BODY');
       if (req['if-match']) {
-        const rev = ((await resources.getResource(
+        const rev = (await resources.getResource(
           req['resource_id'],
           '_rev'
-        )) as unknown) as number;
+        )) as unknown as number;
         if (req['if-match'] !== rev) {
           error(rev);
           error(req['if-match']);
@@ -195,10 +183,10 @@ export function handleReq(req: WriteRequest): Promise<WriteResponse> {
         }
       }
       if (req['if-none-match']) {
-        const rev = ((await resources.getResource(
+        const rev = (await resources.getResource(
           req['resource_id'],
           '_rev'
-        )) as unknown) as number;
+        )) as unknown as number;
         if (req['if-none-match'].includes(rev)) {
           error(rev);
           error(req['if-none-match']);
@@ -206,22 +194,19 @@ export function handleReq(req: WriteRequest): Promise<WriteResponse> {
           throw new Error('if-none-match failed');
         }
       }
-      const beforeCacheRev = Date.now() / 1000;
       let cacheRev = cache.get(req['resource_id']);
       if (!cacheRev) {
-        cacheRev = ((await resources.getResource(
+        cacheRev = (await resources.getResource(
           req['resource_id'],
           '_rev'
-        )) as unknown) as number;
+        )) as unknown as number;
       }
       if (req.rev) {
         if (cacheRev !== req.rev) {
           throw new Error('rev mismatch');
         }
       }
-      trace('cacheRev %d', Date.now() / 1000 - beforeCacheRev);
 
-      const beforeDeletePartial = Date.now() / 1000;
       let path = pointer.parse(
         // The negative lookbehind may look useless but it helps performance.
         req['path_leftover'].replace(/(?<!\/)\/+$/, '')
@@ -252,9 +237,8 @@ export function handleReq(req: WriteRequest): Promise<WriteResponse> {
             return { rev: undefined, orev: undefined, changeId: undefined };
           }
           trace('deleting resource altogether');
-          return Bluebird.resolve(resources.deleteResource(id)).tap(() => {
-            trace('deleteResource %d', Date.now() / 1000 - beforeDeletePartial);
-          });
+          const orev = await resources.deleteResource(id);
+          return { orev };
         }
       }
 
@@ -311,10 +295,8 @@ export function handleReq(req: WriteRequest): Promise<WriteResponse> {
       }
       trace('Setting body on arango object to %O', obj);
 
-      trace('recursive merge %d', Date.now() / 1000 - ts);
-
       // Update meta
-      const meta: Partial<Resource['_meta']> & Record<string, any> = {
+      const meta: Partial<Resource['_meta']> & Record<string, unknown> = {
         modifiedBy: req['user_id'],
         modified: ts,
       };
@@ -342,11 +324,10 @@ export function handleReq(req: WriteRequest): Promise<WriteResponse> {
       pointer.set(obj, '/_meta/_rev', rev);
 
       // Compute new change
-      const beforeChange = Date.now() / 1000;
       const children = req['from_change_id'] || [];
-      trace('Putting change, "change" = %O', obj);
+      trace(obj, 'Putting change');
       const changeId = await changes.putChange({
-        change: obj,
+        change: { ...obj, _rev: rev },
         resId: id,
         rev,
         type: changeType,
@@ -355,8 +336,6 @@ export function handleReq(req: WriteRequest): Promise<WriteResponse> {
         userId: req['user_id'],
         authorizationId: req['authorizationid'],
       });
-      trace('change_id %d', Date.now() / 1000 - beforeChange);
-      const beforeMethod = Date.now() / 1000;
       pointer.set(obj, '/_meta/_changes', {
         _id: id + '/_meta/_changes',
         _rev: rev,
@@ -365,25 +344,25 @@ export function handleReq(req: WriteRequest): Promise<WriteResponse> {
       // Update rev of meta?
       obj['_meta']['_rev'] = rev;
 
-      return Bluebird.resolve(method(id, obj, !req.ignoreLinks))
-        .then((orev) => ({ rev, orev, changeId }))
-        .tap(() => trace('method %d', Date.now() / 1000 - beforeMethod));
+      return await method(id, obj, !req.ignoreLinks).then((orev) => ({
+        rev,
+        orev,
+        changeId,
+      }));
     })
-    // @ts-ignore
     .then(function respond({
       rev,
       orev,
       changeId,
     }: {
-      rev: number;
-      orev: number;
-      changeId: string;
+      rev?: number;
+      orev?: number;
+      changeId?: string;
     }) {
-      trace('upsert then %d', Date.now() / 1000 - beforeUpsert);
-      const beforeCachePut = Date.now() / 1000;
-      // Put the new rev into the cache
-      cache.put(id, rev);
-      trace('cache.put %d', Date.now() / 1000 - beforeCachePut);
+      if (rev) {
+        // Put the new rev into the cache
+        cache.put(id, rev);
+      }
 
       const res: WriteResponse = {
         msgtype: 'write-response',
@@ -411,31 +390,24 @@ export function handleReq(req: WriteRequest): Promise<WriteResponse> {
         authorizationid: req['authorizationid'],
       };
     })
-    .catch(function respondErr(err) {
+    .catch(function respondErr(err: unknown) {
       error(err);
+      const { message = 'error' } = err as { message?: string };
       return {
         msgtype: 'write-response',
-        code: err.message ?? 'error',
+        code: message,
         user_id: req['user_id'],
         authorizationid: req['authorizationid'],
       };
     });
 
-  const beforeCleanUp = Date.now() / 1000;
   const cleanup = body.then(async () => {
-    trace('cleanup %d', Date.now() / 1000 - beforeCleanUp);
-    const beforeRPB = Date.now() / 1000;
     // Remove putBody, if there was one
     // const result = req.bodyid && putBodies.removePutBody(req.bodyid);
-    return (
-      req.bodyid &&
-      Bluebird.resolve(putBodies.removePutBody(req.bodyid)).tap(() =>
-        trace('remove Put Body %d', Date.now() / 1000 - beforeRPB)
-      )
-    );
+    return req.bodyid && putBodies.removePutBody(req.bodyid);
   });
-  const beforeJoin = Date.now() / 1000;
-  return Bluebird.join(upsert, cleanup, (resp) => resp).tap(() =>
-    trace('join %d', Date.now() / 1000 - beforeJoin)
-  );
+  await cleanup;
+
+  // TODO: Better return type for this function
+  return (await upsert) as WriteResponse;
 }

@@ -24,13 +24,11 @@
     "@oada/lib-config": "^3.0.1",
     "@oada/lib-kafka": "^3.0.1",
     "@oada/pino-debug": "^3.0.1",
-    "bluebird": "^3.7.2",
     "debug": "^4.3.2",
     "tslib": "^2.3.0"
   },
   "devDependencies": {
     "@oada/write-handler": "^3.0.1",
-    "@types/bluebird": "^3.5.36",
     "@types/debug": "^4.1.7",
     "@types/mocha": "^9.0.0",
     "mocha": "^9.0.3"

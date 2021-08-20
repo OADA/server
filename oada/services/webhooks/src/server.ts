@@ -13,15 +13,17 @@
  * limitations under the License.
  */
 
-import debug from 'debug';
-import Bluebird from 'bluebird';
-
+import { changes, resources } from '@oada/lib-arangodb';
 import { KafkaBase, Responder } from '@oada/lib-kafka';
-import { resources, changes } from '@oada/lib-arangodb';
+
+import type Resource from '@oada/types/oada/resource';
 import type { WriteResponse } from '@oada/write-handler';
 
 import config from './config';
+
 import axios from 'axios';
+import Bluebird from 'bluebird';
+import debug from 'debug';
 
 const trace = debug('webhooks:trace');
 const error = debug('webhooks:error');
@@ -33,7 +35,7 @@ const responder = new Responder({
   group: 'webhooks',
 });
 
-export function stopResp() {
+export function stopResp(): Promise<void> {
   return responder.disconnect();
 }
 
@@ -78,9 +80,8 @@ responder.on<void>('request', async function handleReq(req) {
           return;
         }
 
-        const {
-          body: { _meta, _rev, _id, _type, ...body },
-        } = change;
+        const { _meta, _rev, _id, _type, ...body } = (change.body ??
+          {}) as Partial<Resource>;
         //If change is only to _id, _rev, _meta, or _type, don't do put
         if (Object.keys(body).length == 0) {
           return;
@@ -88,7 +89,7 @@ responder.on<void>('request', async function handleReq(req) {
         if (change.type === 'delete') {
           //Handle delete _changes
           const deletePath = [];
-          let toDelete = body;
+          let toDelete: unknown = body;
           trace('Sending oada-put to: %s', url);
           while (
             toDelete &&
@@ -97,7 +98,7 @@ responder.on<void>('request', async function handleReq(req) {
           ) {
             const key = Object.keys(toDelete)[0]!;
             deletePath.push(key);
-            toDelete = toDelete[key];
+            toDelete = toDelete[key as keyof typeof toDelete];
           }
           if (toDelete !== null) {
             return;
@@ -117,7 +118,7 @@ responder.on<void>('request', async function handleReq(req) {
           await axios({
             method: 'put',
             url: url,
-            data: body,
+            data: body as unknown,
             headers: meta._syncs![sync]!.headers,
           });
           return;

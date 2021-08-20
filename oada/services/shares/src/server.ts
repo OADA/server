@@ -13,16 +13,16 @@
  * limitations under the License.
  */
 
-import debug from 'debug';
-import Bluebird from 'bluebird';
-
-import { Responder, KafkaBase } from '@oada/lib-kafka';
 import { changes, users } from '@oada/lib-arangodb';
+import { KafkaBase, Responder } from '@oada/lib-kafka';
 
-import type { WriteResponse, WriteRequest } from '@oada/write-handler';
+import type { WriteRequest, WriteResponse } from '@oada/write-handler';
 
 import config from './config';
 
+import debug from 'debug';
+
+const error = debug('shares:error');
 const trace = debug('shares:trace');
 
 //---------------------------------------------------------
@@ -33,7 +33,7 @@ const responder = new Responder({
   group: 'shares',
 });
 
-export function stopResp() {
+export function stopResp(): Promise<void> {
   return responder.disconnect();
 }
 
@@ -44,7 +44,7 @@ function checkReq(req: KafkaBase): req is WriteResponse {
   return req?.msgtype === 'write-response' && req?.code === 'success';
 }
 
-responder.on<WriteRequest>('request', async function handleReq(req) {
+responder.on<WriteRequest>('request', async function* handleReq(req) {
   if (!checkReq(req)) {
     return;
   }
@@ -55,29 +55,38 @@ responder.on<WriteRequest>('request', async function handleReq(req) {
   ) {
     //get user's /shares and add this
     const change = await changes.getChange(req.resource_id, req._rev);
-    if (change?.type === 'merge' && change?.body._meta) {
-      return await Bluebird.map(
-        Object.keys(change.body._meta._permissions || {}),
-        async (id) => {
-          trace('Change made on user: %s', id);
-          const user = await users.findById(id);
-          trace('making a write request to /shares for user - %s %s', id, user);
-          return {
-            resource_id: user!.shares._id,
-            path_leftover: '',
-            //						'meta_id': req['meta_id'],
-            user_id: user?._id,
-            //					 'authorizationid': req.user.doc['authorizationid'],
-            //			     'client_id': req.user.doc['client_id'],
-            contentType: 'application/vnd.oada.permission.1+json',
-            body: {
-              [req.resource_id.replace(/^resources\//, '')]: {
-                _id: req.resource_id,
-              },
-            },
-          };
+    if (
+      change?.type === 'merge' &&
+      typeof change.body?._meta === 'object' &&
+      change.body._meta &&
+      '_permissions' in change.body?._meta
+    ) {
+      const { _permissions: permissions } = change.body._meta as {
+        _permissions: Record<string, unknown>;
+      };
+      for (const id of Object.keys(permissions)) {
+        trace('Change made on user: %s', id);
+        const user = await users.findById(id);
+        if (!user) {
+          error('Failed to find user by id %s', id);
+          continue;
         }
-      ).filter((it) => it !== null);
-    } else return;
-  } else return;
+        trace('making a write request to /shares for user - %s %s', id, user);
+        yield {
+          resource_id: user.shares._id,
+          path_leftover: '',
+          //						'meta_id': req['meta_id'],
+          user_id: user._id,
+          //					 'authorizationid': req.user.doc['authorizationid'],
+          //			     'client_id': req.user.doc['client_id'],
+          contentType: 'application/vnd.oada.permission.1+json',
+          body: {
+            [req.resource_id.replace(/^resources\//, '')]: {
+              _id: req.resource_id,
+            },
+          },
+        };
+      }
+    }
+  }
 });

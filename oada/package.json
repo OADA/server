@@ -11,14 +11,24 @@
   },
   "devDependencies": {
     "@tsconfig/node16": "^1.0.2",
+    "@types/eslint": "^7",
     "@types/mocha": "^9.0.0",
     "@types/node": "^16.4.7",
+    "@typescript-eslint/eslint-plugin": "^4.29.2",
+    "@typescript-eslint/parser": "^4.29.2",
     "@yarnpkg/sdks": "^2.4.1-rc.4",
+    "eslint": "^7.32.0",
+    "eslint-plugin-disable": "^2.0.1",
+    "eslint-plugin-node": "^11.1.0",
+    "eslint-plugin-simple-import-sort": "^7.0.0",
     "prettier": "^2.3.2",
     "typescript": "^4.3.5"
   },
   "dependencies": {
     "pino-pretty": "^5.1.2"
+  },
+  "engines": {
+    "node": ">=16.0.0"
   },
   "volta": {
     "node": "16.0.0"

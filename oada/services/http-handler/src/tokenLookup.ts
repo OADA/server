@@ -13,9 +13,9 @@
  * limitations under the License.
  */
 
-import debug from 'debug';
-
 import { authorizations } from '@oada/lib-arangodb';
+
+import debug from 'debug';
 
 const trace = debug('token-lookup:trace');
 const info = debug('token-lookup:info');

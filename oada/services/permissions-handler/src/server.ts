@@ -16,13 +16,13 @@
 import fs from 'fs';
 import { join } from 'path';
 
-import debug from 'debug';
-import typeis from 'type-is';
-
 import { Responder } from '@oada/lib-kafka';
 
 import config from './config';
 import scopeTypes from './scopes';
+
+import debug from 'debug';
+import typeis from 'type-is';
 
 const warn = debug('permissions-handler:warn');
 const trace = debug('permissions-handler:trace');
@@ -50,18 +50,18 @@ trace('Parsed builtin scopes, they are: %O', scopeTypes);
 const additionalScopesFiles = fs
   .readdirSync(join(__dirname, '../scopes/additional-scopes'))
   .filter(
-    (f) => !(/^\./.exec(f)) // remove hidden files
+    (f) => !/^\./.exec(f) // remove hidden files
   );
 additionalScopesFiles.forEach((af) => {
   try {
     trace('Trying to add additional scope %s', af);
-    const newscope: Scopes = require('../scopes/additional-scopes/' + af); // nosemgrep: javascript.lang.security.detect-non-literal-require.detect-non-literal-require
+    const newscope = require('../scopes/additional-scopes/' + af) as Scopes; // nosemgrep: javascript.lang.security.detect-non-literal-require.detect-non-literal-require
     Object.keys(newscope).forEach((k: keyof typeof newscope) => {
       trace('Setting scopeTypes[%s] to new scope %s', k, newscope[k]);
       scopeTypes[k] = newscope[k]!; // overwrite entire scope, or create new if doesn't exist
     });
   } catch (e) {
-    warn('FAILED to require(scopes/additional-scopes/%s): error was %O', af, e);
+    error(e, `Failed to require(scopes/additional-scopes/${af}})`);
   }
 });
 

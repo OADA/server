@@ -13,25 +13,30 @@
  * limitations under the License.
  */
 
-import debug from 'debug';
-import minimist from 'minimist';
-import promptly from 'promptly';
-import chalk from 'chalk';
+/* eslint no-console: off, no-process-exit: off -- This is a cli command */
 
 import { users } from '@oada/lib-arangodb';
 import { Requester } from '@oada/lib-kafka';
 
-import type { UserResponse, UserRequest } from './server';
 import config from './config';
+import type { UserRequest, UserResponse } from './server';
+
+import chalk from 'chalk';
+import debug from 'debug';
+import minimist from 'minimist';
+import promptly from 'promptly';
 
 const argv = minimist(process.argv.slice(2));
 
 const trace = debug('useradd:trace');
 
 async function findUserByUsername(username: string) {
-  const all_users = await users.like({ username });
-  trace('findUserByUsername: Finished users.like, all_users = %O', all_users);
-  return all_users?.length > 0 ? all_users[0] : false;
+  const like = await users.like({ username });
+  for await (const user of like) {
+    trace(user, 'findUserByUsername: Finished users.like');
+    return user;
+  }
+  return false;
 }
 
 // The main event:
@@ -61,18 +66,20 @@ async function run() {
 
     //-----------------------------------------------------
     // Ensure we have a username and password...
-    const username =
-      argv.u || argv.username || (await promptly.prompt('Username: '));
+    const username = (argv.u ||
+      argv.username ||
+      (await promptly.prompt('Username: '))) as string;
     if (await findUserByUsername(username)) {
       console.error(chalk.red('Username ' + username + ' already exists'));
       process.exit(1);
     }
-    const password =
-      argv.p || argv.password || (await promptly.prompt('Password: '));
+    const password = (argv.p ||
+      argv.password ||
+      (await promptly.prompt('Password: '))) as string;
     const isadmin = !!(argv.a || argv.isadmin || argv.isAdmin);
 
     trace('Sending request to kafka');
-    const response = ((await kafkareq.send({
+    const response = (await kafkareq.send({
       connection_id: 'useradd',
       token: 'admin',
       authorization: {
@@ -85,7 +92,7 @@ async function run() {
         // Add scope if you want the user to have permission to create other users
         scope: isadmin ? ['oada.admin.user:all'] : [],
       },
-    } as UserRequest)) as unknown) as UserResponse;
+    } as UserRequest)) as unknown as UserResponse;
 
     trace('Finished kafka.send, have our response = %O', response);
     // no need to keep hearing messages
@@ -117,4 +124,4 @@ async function run() {
   process.exit(0);
 }
 
-run();
+void run();

@@ -16,28 +16,28 @@
 import { strict as assert } from 'assert';
 import { EventEmitter } from 'events';
 
-import type WebSocket from 'ws';
-import fastifyWebsocket from 'fastify-websocket';
-import _debug from 'debug';
-import jsonpointer from 'jsonpointer';
-import type LightMyRequest from 'light-my-request';
-import { is } from 'type-is';
+import { changes, resources } from '@oada/lib-arangodb';
+import { KafkaBase, Responder } from '@oada/lib-kafka';
 
+import type Change from '@oada/types/oada/change/v2';
+import type SocketChange from '@oada/types/oada/websockets/change';
 import SocketRequest, {
   // Runtime check for request type
   assert as assertRequest,
 } from '@oada/types/oada/websockets/request';
 import type SocketResponse from '@oada/types/oada/websockets/response';
-import type SocketChange from '@oada/types/oada/websockets/change';
-import type Change from '@oada/types/oada/change/v2';
-import { OADAError } from 'oada-error';
-
-import { Responder, KafkaBase } from '@oada/lib-kafka';
-import { resources, changes } from '@oada/lib-arangodb';
 import type { WriteResponse } from '@oada/write-handler';
 
 import config from './config';
+
+import _debug from 'debug';
 import type { FastifyPluginAsync } from 'fastify';
+import fastifyWebsocket from 'fastify-websocket';
+import jsonpointer from 'jsonpointer';
+import type LightMyRequest from 'light-my-request';
+import { OADAError } from 'oada-error';
+import { is } from 'type-is';
+import type WebSocket from 'ws';
 
 /**
  * @todo Actually figure out how "foregtting history" should work...
@@ -53,7 +53,7 @@ const trace = _debug('websockets:trace');
 const emitter = new EventEmitter();
 
 type Watch = {
-  handler: (this: Watch, { change }: { change: Change }) => any;
+  handler: (this: Watch, { change }: { change: Change }) => void;
   /**
    * @description Maps requestId to path_leftover
    */
@@ -144,7 +144,7 @@ const plugin: FastifyPluginAsync = async function (fastify) {
       }
     }
     function sendChange(resp: SocketChange) {
-      trace('Sending change: %O', resp);
+      trace(resp, 'Sending change');
       socket.send(JSON.stringify(resp));
     }
 
@@ -278,15 +278,25 @@ const plugin: FastifyPluginAsync = async function (fastify) {
             payload: res.payload,
           });
         }
-      } catch (err) {
-        if (err.response) {
+      } catch (err: unknown) {
+        if (err && typeof err === 'object' && 'response' in err) {
           error(err);
+          const {
+            response: { status, statusText, headers, data },
+          } = err as {
+            response: {
+              status: number;
+              statusText: string;
+              headers: Record<string, string>;
+              data: Record<string, unknown>;
+            };
+          };
           return sendResponse({
             requestId: msg.requestId,
-            status: err.response.status,
-            statusText: err.response.statusText,
-            headers: err.response.headers,
-            data: err.response.data,
+            status,
+            statusText,
+            headers,
+            data,
           });
         } else {
           throw err;
@@ -338,7 +348,7 @@ const plugin: FastifyPluginAsync = async function (fastify) {
               request.headers['x-oada-rev']
             );
             const rev = await resources.getResource(resourceId, '_rev');
-            const revInt = parseInt((rev as unknown) as string, 10);
+            const revInt = parseInt(rev as unknown as string, 10);
             // If the requested rev is behind by revLimit, simply
             // re-GET the entire resource
             trace(

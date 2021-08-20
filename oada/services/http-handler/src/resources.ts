@@ -16,23 +16,25 @@
 import { join } from 'path';
 import { pipeline } from 'stream/promises';
 
-import type { FastifyPluginAsync, FastifyReply, FastifyRequest } from 'fastify';
-import ksuid from 'ksuid';
-import cacache from 'cacache';
-import { is } from 'type-is';
+import { changes, putBodies, resources } from '@oada/lib-arangodb';
 
-import { resources, changes, putBodies } from '@oada/lib-arangodb';
 import {
   handleReq as permissionsRequest,
   Scope,
 } from '@oada/permissions-handler';
-import type { WriteRequest, WriteResponse } from '@oada/write-handler';
 
 import { handleResponse } from '@oada/formats-server';
+import type { Resource } from '@oada/types/oada/resource';
+import type { WriteRequest, WriteResponse } from '@oada/write-handler';
 
-import type {} from './server';
-import requester from './requester';
 import config from './config';
+import requester from './requester';
+import type {} from './server';
+
+import cacache from 'cacache';
+import type { FastifyPluginAsync, FastifyReply, FastifyRequest } from 'fastify';
+import ksuid from 'ksuid';
+import { is } from 'type-is';
 
 const CACHE_PATH = config.get('storage.binary.cacache');
 
@@ -49,6 +51,12 @@ declare module 'fastify-request-context' {
     oadaGraph: resources.GraphLookup;
     // Not sure why this is a separate thing?
     resourceExists: boolean;
+  }
+}
+
+declare module 'cacache' {
+  interface CacheObject {
+    size: number;
   }
 }
 
@@ -293,11 +301,10 @@ const plugin: FastifyPluginAsync<Options> = function (fastify, opts) {
         }
 
         // Look up file size before streaming
-        const {
-          integrity,
-          // @ts-ignore
-          size,
-        } = await cacache.get.info(CACHE_PATH, oadaGraph['resource_id']);
+        const { integrity, size } = await cacache.get.info(
+          CACHE_PATH,
+          oadaGraph['resource_id']
+        );
 
         // Stream file to client
         void reply.header('Content-Length', size);
@@ -307,15 +314,15 @@ const plugin: FastifyPluginAsync<Options> = function (fastify, opts) {
   );
 
   // TODO: This was a quick make it work. Do what you want with it.
-  function unflattenMeta(doc: any) {
-    if (doc === null) {
+  function unflattenMeta(doc: Partial<Resource>) {
+    if (!doc) {
       // Object.keys does not like null
-      return null;
+      return doc;
     }
-    if (doc._meta) {
+    if ('_meta' in doc) {
       doc._meta = {
-        _id: doc._meta._id,
-        _rev: doc._meta._rev,
+        _id: doc._meta!._id,
+        _rev: doc._meta!._rev,
       };
     }
     return doc;
@@ -344,8 +351,7 @@ const plugin: FastifyPluginAsync<Options> = function (fastify, opts) {
 
   // Allow unknown contentType but don't parse?
   fastify.addContentTypeParser('*', (_request, _payload, done) => {
-    // @ts-ignore
-    done();
+    done(null);
   });
 
   /**
@@ -407,8 +413,9 @@ const plugin: FastifyPluginAsync<Options> = function (fastify, opts) {
       request.log.trace('RESOURCE EXISTS %O', oadaGraph);
       request.log.trace('RESOURCE EXISTS %O', resourceExists);
       const ignoreLinks =
-        ((request.headers['x-oada-ignore-links'] ??
-          '') as string).toLowerCase() == 'true';
+        (
+          (request.headers['x-oada-ignore-links'] ?? '') as string
+        ).toLowerCase() == 'true';
       const ifmatch = request.headers['if-match'];
       const ifnonematch = request.headers['if-none-match'];
       const resp = (await requester.send(

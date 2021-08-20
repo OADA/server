@@ -23,24 +23,23 @@
 
 import https from 'https';
 
-import debuglib from 'debug';
-import Bluebird from 'bluebird';
-import express from 'express';
-// @ts-ignore
-import express_promise from 'express-promise';
-import helmet from 'helmet';
-import cors from 'cors';
-import axios from 'axios';
-
+import { middleware as formats } from '@oada/formats-server';
 // @ts-ignore
 import well_known_json from '@oada/well-known-json';
-// @ts-ignore
-import oada_error from 'oada-error';
-import { middleware as formats } from '@oada/formats-server';
 
 import config from './config';
 
-Bluebird.try(function () {
+import axios from 'axios';
+import Bluebird from 'bluebird';
+import cors from 'cors';
+import debuglib from 'debug';
+import express from 'express';
+import helmet from 'helmet';
+import type { ServerOptions } from 'http';
+// @ts-ignore
+import oada_error from 'oada-error';
+
+function run() {
   // Setup the loggers:
   const log = {
     error: debuglib('well-known:error'),
@@ -54,8 +53,6 @@ Bluebird.try(function () {
 
   // Setup express:
   const app = express();
-  // Allow route handlers to return promises:
-  app.use(express_promise());
 
   // @ts-ignore
   app.use(helmet());
@@ -162,7 +159,7 @@ Bluebird.try(function () {
               if (typeof val !== 'string') {
                 body[key] = val;
               } else {
-                body[key] = val.replace(/^https?:\/\/[^\/]+\//, './' + pfx);
+                body[key] = val.replace(/^https?:\/\/[^/]+\//, './' + pfx);
               }
             }
             well_known_handler.addResource(s.resource, body);
@@ -187,7 +184,7 @@ Bluebird.try(function () {
 
   //--------------------------------------------------
   // Default handler for top-level routes not found:
-  app.use(function (req, _res) {
+  app.use(function (req) {
     throw new oada_error.OADAError(
       'Route not found: ' + req.url,
       // @ts-ignore
@@ -209,7 +206,7 @@ Bluebird.try(function () {
   // but this service could also have its own certs and run https
   if (config.get('wellKnown.server.mode') === 'https') {
     const s = https.createServer(
-      config.get('wellKnown.server.certs') as any,
+      config.get('wellKnown.server.certs') as ServerOptions,
       app
     );
     s.listen(app.get('port'), function () {
@@ -226,4 +223,6 @@ Bluebird.try(function () {
       log.info('OADA well-known server started on port %d', app.get('port'));
     });
   }
-});
+}
+
+void run();

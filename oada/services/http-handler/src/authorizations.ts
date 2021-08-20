@@ -15,16 +15,16 @@
 
 import { join } from 'path';
 
+import { authorizations, clients } from '@oada/lib-arangodb';
+
 import type { FastifyPluginAsync, FastifyRequest } from 'fastify';
 import { v4 as uuid } from 'uuid';
-
-import { authorizations, clients } from '@oada/lib-arangodb';
 
 export interface Options {
   prefix: string;
 }
 
-const plugin: FastifyPluginAsync<Options> = async function (fastify, opts) {
+const plugin: FastifyPluginAsync<Options> = function (fastify, opts) {
   async function addClientToAuth(
     req: FastifyRequest,
     auth: authorizations.Authorization | null
@@ -58,7 +58,7 @@ const plugin: FastifyPluginAsync<Options> = async function (fastify, opts) {
     const auths = await authorizations.findByUser(userid);
 
     const res: Record<string, authorizations.Authorization | null> = {};
-    for (const auth of auths) {
+    for await (const auth of auths) {
       const k = auth['_id'].replace(/^authorizations\//, '');
       res[k] = await addClientToAuth(request, auth);
     }
@@ -133,14 +133,9 @@ const plugin: FastifyPluginAsync<Options> = async function (fastify, opts) {
       return null;
     }
 
-    const {
-      // @ts-ignore
-      _rev,
-      user: u,
-      ...ret
-    } = result;
+    const { _rev, user: u, ...ret } = result;
 
-    reply.header('Content-Location', join(opts.prefix, ret._id));
+    void reply.header('Content-Location', join(opts.prefix, ret._id));
     return reply.send({ ...ret, user: u ? { _id: u._id } : undefined });
   });
 
@@ -159,6 +154,8 @@ const plugin: FastifyPluginAsync<Options> = async function (fastify, opts) {
     await authorizations.revoke(authId);
     return reply.code(204).send();
   });
+
+  return Promise.resolve();
 };
 
 export default plugin;

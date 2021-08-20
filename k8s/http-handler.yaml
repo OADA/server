@@ -110,7 +110,7 @@ spec:
               value: yarn g:pretty -clti pid,hostname
             - name: arangodb__ensureDefaults
               value: 'true'
-          image: oada/http-handler:edge
+          image: oada/http-handler:build
           securityContext:
             runAsNonRoot: true
             # run as user node (uid 1000)

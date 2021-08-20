@@ -13,18 +13,18 @@
  * limitations under the License.
  */
 
-import debug from 'debug';
-import PQueue from 'p-queue';
-import Ajv, { JTDSchemaType } from 'ajv/dist/jtd';
-import type { SetRequired } from 'type-fest';
-
-import { Responder, Requester, KafkaBase } from '@oada/lib-kafka';
 import { resources } from '@oada/lib-arangodb';
+import { KafkaBase, Requester, Responder } from '@oada/lib-kafka';
 
 // Import message format from write-handler
-import type { WriteResponse, WriteRequest } from '@oada/write-handler';
+import type { WriteRequest, WriteResponse } from '@oada/write-handler';
 
 import config from './config';
+
+import Ajv, { JTDSchemaType } from 'ajv/dist/jtd';
+import debug from 'debug';
+import PQueue from 'p-queue';
+import type { SetRequired } from 'type-fest';
 
 const trace = debug('rev-graph-update:trace');
 const info = debug('rev-graph-update:info');
@@ -50,7 +50,7 @@ const requester = new Requester({
   group: 'rev-graph-update-batch',
 });
 
-export function stopResp() {
+export function stopResp(): Promise<void> {
   return responder.disconnect();
 }
 
@@ -176,8 +176,9 @@ responder.on<WriteRequest>('request', async function handleReq(req) {
 
       // Add the request to the pending queue
       requests.set(uniqueKey, msg);
+      // TODO: What is up with the queue?
       // push
-      requestPromises.add(async () => {
+      void requestPromises.add(async () => {
         const msgPending = requests.get(uniqueKey);
         requests.delete(uniqueKey);
         return msgPending && requester.send(msgPending);

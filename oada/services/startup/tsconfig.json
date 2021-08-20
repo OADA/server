@@ -6,7 +6,7 @@
   },
   "include": ["src"],
   "references": [
-    { "path": "../../libs/oada-pino-debug" },
-    { "path": "../../libs/oada-lib-arangodb" }
+    { "path": "../../libs/pino-debug" },
+    { "path": "../../libs/lib-arangodb" }
   ]
 }

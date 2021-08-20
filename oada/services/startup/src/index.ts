@@ -16,6 +16,7 @@
 import http from 'http';
 
 import { init } from '@oada/lib-arangodb';
+
 import debug from 'debug';
 
 const trace = debug('startup:trace');
@@ -33,7 +34,7 @@ server.on('listening', () =>
 );
 
 info('Startup is creating database');
-init.run().then(() => {
+void init.run().then(() => {
   info('Database created/ensured.');
   server.listen(port);
 });

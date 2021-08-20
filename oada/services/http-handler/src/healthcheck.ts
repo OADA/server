@@ -19,5 +19,4 @@
  * @packageDocumentation
  */
 
-// @ts-ignore
 import 'fastify-healthcheck/src/healthcheck';

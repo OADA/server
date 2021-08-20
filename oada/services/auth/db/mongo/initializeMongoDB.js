@@ -12,12 +12,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+/* eslint no-console: off, no-process-exit: off -- This is a cli command */
+
 'use strict';
 
-var path = require('path');
-var mongojs = require('mongojs');
-var bcrypt = require('bcryptjs');
-var config = require('../../config');
+const path = require('path');
+const mongojs = require('mongojs');
+const bcrypt = require('bcryptjs');
+const config = require('../../config');
 
 if (process.argv.length < 3) {
   console.log(

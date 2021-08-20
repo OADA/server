@@ -13,15 +13,15 @@
  * limitations under the License.
  */
 
-import debug from 'debug';
-import ksuid from 'ksuid';
-import cloneDeep from 'clone-deep';
-
-import { ResponderRequester } from '@oada/lib-kafka';
 import { users } from '@oada/lib-arangodb';
 import type { User } from '@oada/lib-arangodb/dist/libs/users';
+import { ResponderRequester } from '@oada/lib-kafka';
 
 import config from './config';
+
+import cloneDeep from 'clone-deep';
+import debug from 'debug';
+import ksuid from 'ksuid';
 
 const trace = debug('users:trace');
 const warn = debug('users:warn');
@@ -44,21 +44,24 @@ const responder = new ResponderRequester({
   group: 'user-handlers',
 });
 
-export function stopResp() {
+export function stopResp(): Promise<void> {
   return responder.disconnect();
 }
 
 async function createNewUser(req: UserRequest): Promise<User> {
-  const _id = req.userid?.match(/^users/) ? req.userid : 'users/' + req.userid;
-  const _key = req.userid?.match(/^users/)
-    ? req.userid.replace(/^users\//, '')
-    : req.userid;
+  const _id =
+    req.userid &&
+    (/^users/.exec(req.userid) ? req.userid : 'users/' + req.userid);
+  const _key =
+    req.userid &&
+    (/^users/.exec(req.userid)
+      ? req.userid.replace(/^users\//, '')
+      : req.userid);
   const { password, ...user } = await users.create({
-    // @ts-ignore
     _id,
     _key,
     ...req.user,
-  });
+  } as Omit<User, '_rev'>);
   // Create empty resources for user
   for (const res of <const>['bookmarks', 'shares']) {
     if (!user[res]?._id) {
@@ -135,8 +138,8 @@ export async function handleReq(req: UserRequest): Promise<UserResponse> {
     ? authorization.scope.join(' ')
     : authorization.scope; // force to space-separated string
   if (
-    !(/oada.admin.user:write/.exec(tokenscope)) &&
-    !(/oada.admin.user:all/.exec(tokenscope))
+    !/oada.admin.user:write/.exec(tokenscope) &&
+    !/oada.admin.user:all/.exec(tokenscope)
   ) {
     warn(
       'WARNING: attempt to create a user, but request does not have token with oada.admin.user:write or oada.admin.user:all scope'
@@ -158,20 +161,25 @@ export async function handleReq(req: UserRequest): Promise<UserResponse> {
     try {
       created_a_new_user = true;
       cur_user = await createNewUser(req);
-    } catch (err) {
-      if (err && err.errorNum === users.UniqueConstraintError.errorNum) {
+    } catch (err: unknown) {
+      if (
+        err &&
+        typeof err === 'object' &&
+        'errorNum' in err &&
+        (err as { errorNum: number }).errorNum ===
+          users.UniqueConstraintError.errorNum
+      ) {
         created_a_new_user = false;
         trace(
-          'Tried to create user, but it already existed (same username).  Returning as if we had created it.  User object was: %O',
-          req.user
+          req.user,
+          'Tried to create user, but it already existed (same username). Returning as if we had created it'
         );
-        cur_user = (await users.like({ username: req.user.username }))[0];
-        trace('existing user found as: %O', cur_user);
+        const like = await users.like({ username: req.user.username });
+        for await (const user of like) {
+          trace(user, 'existing user found');
+        }
       } else {
-        error(
-          'FAILED: unknown error occurred when creating new user. Error was: %O',
-          err
-        );
+        error(err, 'Unknown error occurred when creating new user');
         throw err;
       }
     }
@@ -185,14 +193,14 @@ export async function handleReq(req: UserRequest): Promise<UserResponse> {
     );
     cur_user = await users.update({
       // Assume req.user is a full user now?
-      ...(req.user as Omit<User, '_id'>),
+      ...req.user,
       _id: cur_user!._id,
     });
   }
 
   // All done!
   // Respond to the request with success:
-  trace('Finished with update, responding with success, user = %O', cur_user);
+  trace(cur_user, 'Finished with update, responding with success');
   return {
     code: 'success',
     new: created_a_new_user,

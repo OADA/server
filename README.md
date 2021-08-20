@@ -4,7 +4,6 @@
 [![code style: prettier](https://img.shields.io/badge/code_style-prettier-ff69b4.svg)](https://github.com/prettier/prettier)
 [![License](https://img.shields.io/github/license/OADA/server)](LICENSE)
 
-
 This project is a reference implementation of an OADA-conformant API server.
 It can be used to host easily run your own OADA instance,
 or for comparison when creating an OADA-conformant API implementation.

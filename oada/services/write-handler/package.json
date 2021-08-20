@@ -41,7 +41,7 @@
   },
   "devDependencies": {
     "@oada/client": "^2.4.6",
-    "@oada/types": "^1.5.1",
+    "@oada/types": "^1.7.0",
     "@types/bluebird": "^3.5.36",
     "@types/chai": "^4.2.21",
     "@types/debug": "^4.1.7",

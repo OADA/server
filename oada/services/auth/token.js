@@ -1,4 +1,7 @@
 #!/usr/bin/env node
+
+/* eslint no-console: off, no-process-exit: off -- This is a cli command */
+
 const argv = require('minimist')(process.argv.slice(2));
 const cloneDeep = require('clone-deep');
 const chalk = require('chalk');

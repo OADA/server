@@ -15,15 +15,16 @@
 
 import { URL } from 'url';
 
-import debug from 'debug';
-import Bluebird from 'bluebird';
-import axios from 'axios';
-
+import { remoteResources, resources } from '@oada/lib-arangodb';
 import { KafkaBase, Responder } from '@oada/lib-kafka';
-import { resources, remoteResources } from '@oada/lib-arangodb';
+
 import type { WriteResponse } from '@oada/write-handler';
 
 import config from './config';
+
+import axios from 'axios';
+import Bluebird from 'bluebird';
+import debug from 'debug';
 
 const info = debug('sync-handler:info');
 const trace = debug('sync-handler:trace');
@@ -41,7 +42,7 @@ const responder = new Responder({
   group: 'sync-handlers',
 });
 
-export function stopResp() {
+export function stopResp(): Promise<void> {
   return responder.disconnect();
 }
 
@@ -61,13 +62,11 @@ responder.on<WriteResponse>('request', async function handleReq(req) {
   trace('Saw change for resource %s', id);
 
   //let rev = req['_rev'];
-  const orev = req['_orev'];
+  const orev = req['_orev']!;
   // TODO: Add AQL query for just syncs and newest change?
-  const syncs = (
-    await resources
-      .getResource(id, `/_meta/${META_KEY}`)
-      .then((syncs) => syncs || {})
-      .then(Object.entries)
+  const syncs = Object.entries(
+    ((await resources.getResource(id, `/_meta/${META_KEY}`)).syncs ??
+      {}) as Record<string, { url: string; domain: string; token: string }>
   )
     // Ignore sync entries that aren't objects
     .filter((sync) => sync[1] && typeof sync[1] === 'object');
@@ -104,10 +103,9 @@ responder.on<WriteResponse>('request', async function handleReq(req) {
 
     // TODO: Cache this?
     const apiroot = Bluebird.resolve(
-      axios({
-        method: 'get',
-        url: `https://${domain}/.well-known/oada-configuration`,
-      })
+      axios.get<{ oada_base_uri: string }>(
+        `https://${domain}/.well-known/oada-configuration`
+      )
     )
       .get('data')
       .get('oada_base_uri')
@@ -128,14 +126,15 @@ responder.on<WriteResponse>('request', async function handleReq(req) {
         // Create any missing remote IDs
         const {
           headers: { location: loc },
-        } = axios({
-          method: 'post',
-          data: {},
-          headers: {
-            authorization: token,
-          },
+        } = await axios.post<void, { headers: { location: string } }>(
           url,
-        }) as any;
+          {},
+          {
+            headers: {
+              authorization: token,
+            },
+          }
+        );
 
         // TODO: Less gross way of create new remote resources?
         lchanges[id] = resources.getResource(id);
@@ -178,7 +177,7 @@ responder.on<WriteResponse>('request', async function handleReq(req) {
       const type = change['_meta']?.['_type'];
 
       // Fix links etc.
-      const body = JSON.stringify(change, function (k, v) {
+      const body = JSON.stringify(change, function (k, v: unknown) {
         /* eslint-disable no-invalid-this */
         switch (k) {
           case '_meta': // Don't send resources's _meta
@@ -199,8 +198,8 @@ responder.on<WriteResponse>('request', async function handleReq(req) {
               return undefined;
             }
             // TODO: Better link detection?
-            if (idmapping[v]) {
-              return idmapping[v];
+            if (idmapping[v as string]) {
+              return idmapping[v as string];
             }
             warn('Could not resolve link to %s at %s', v, domain);
             // TODO: What to do in this case?

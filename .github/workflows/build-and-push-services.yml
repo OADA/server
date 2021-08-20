@@ -163,8 +163,7 @@ jobs:
             org.opencontainers.image.title=${{ matrix.service }}
             org.opencontainers.image.description=An OADA microservice
           # Don't update latest on prereleases?
-          flavor:
-            latest=${{ !!(needs.setup.outputs.release && !needs.setup.outputs.prerelease) }}
+          flavor: latest=${{ !!(needs.setup.outputs.release && !needs.setup.outputs.prerelease) }}
           tags: |
             type=semver,pattern={{version}}
             type=semver,pattern={{major}}.{{minor}}

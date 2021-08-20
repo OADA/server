@@ -13,27 +13,27 @@
  * limitations under the License.
  */
 
-import fastify, { FastifyRequest } from 'fastify';
-import fastifyHealthcheck from 'fastify-healthcheck';
-import fastifySensible from 'fastify-sensible';
-import fastifyAccepts from 'fastify-accepts';
-import fastifyGracefulShutdown from 'fastify-graceful-shutdown';
-import bearerAuth from 'fastify-bearer-auth';
-import { fastifyRequestContextPlugin } from 'fastify-request-context';
-import helmet from 'fastify-helmet';
-import cors from 'fastify-cors';
+import { KafkaError } from '@oada/lib-kafka';
+import { pino } from '@oada/pino-debug';
 
 import { plugin as formats } from '@oada/formats-server';
 
-import { pino } from '@oada/pino-debug';
-import { KafkaError } from '@oada/lib-kafka';
-
-import tokenLookup, { TokenResponse } from './tokenLookup';
-import resources from './resources';
-import websockets from './websockets';
 import authorizations from './authorizations';
-import users from './users';
 import config from './config';
+import resources from './resources';
+import tokenLookup, { TokenResponse } from './tokenLookup';
+import users from './users';
+import websockets from './websockets';
+
+import fastify, { FastifyRequest } from 'fastify';
+import fastifyAccepts from 'fastify-accepts';
+import bearerAuth from 'fastify-bearer-auth';
+import cors from 'fastify-cors';
+import fastifyGracefulShutdown from 'fastify-graceful-shutdown';
+import fastifyHealthcheck from 'fastify-healthcheck';
+import helmet from 'fastify-helmet';
+import { fastifyRequestContextPlugin } from 'fastify-request-context';
+import fastifySensible from 'fastify-sensible';
 
 const logger = pino({ name: 'http-handler' });
 export const app = fastify({
@@ -52,6 +52,8 @@ declare module 'fastify-request-context' {
     user: TokenResponse['doc'];
   }
 }
+
+/* eslint no-process-exit: off */
 
 async function init(): Promise<void> {
   await app.register(fastifySensible, {
