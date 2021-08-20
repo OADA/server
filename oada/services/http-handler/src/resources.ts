@@ -413,9 +413,8 @@ const plugin: FastifyPluginAsync<Options> = function (fastify, opts) {
       request.log.trace('RESOURCE EXISTS %O', oadaGraph);
       request.log.trace('RESOURCE EXISTS %O', resourceExists);
       const ignoreLinks =
-        (
-          (request.headers['x-oada-ignore-links'] ?? '') as string
-        ).toLowerCase() == 'true';
+        ((request.headers['x-oada-ignore-links'] ??
+          '') as string).toLowerCase() == 'true';
       const ifmatch = request.headers['if-match'];
       const ifnonematch = request.headers['if-none-match'];
       const resp = (await requester.send(
@@ -473,7 +472,10 @@ const plugin: FastifyPluginAsync<Options> = function (fastify, opts) {
   fastify.delete('*', async function deleteResource(request, reply) {
     let path = request.requestContext.get('oadaPath')!;
     const user = request.requestContext.get('user')!;
-    let { rev, ...oadaGraph } = request.requestContext.get('oadaGraph')!;
+    let {
+      rev, // eslint-disable-line prefer-const
+      ...oadaGraph
+    } = request.requestContext.get('oadaGraph')!;
     let resourceExists = request.requestContext.get('resourceExists')!;
 
     // Don't let users delete their shares?

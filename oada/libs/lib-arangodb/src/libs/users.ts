@@ -150,7 +150,8 @@ export async function findByUsernamePassword(
   const user = await findByUsername(username);
   if (!user) return null;
 
-  return (await bcrypt.compare(password, user.password!)) ? user : null;
+  const { password: pass } = user;
+  return pass && (await bcrypt.compare(password, pass)) ? user : null;
 }
 
 export async function create(u: Omit<User, '_id' | '_rev'>): Promise<User> {

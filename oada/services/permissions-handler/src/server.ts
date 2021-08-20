@@ -45,7 +45,7 @@ if (require.main === module) {
   responder.on('request', handleReq);
 }
 
-trace('Parsed builtin scopes, they are: %O', scopeTypes);
+trace(scopeTypes, 'Parsed builtin scopes');
 // Augment scopeTypes by merging in anything in /scopes/additional-scopes
 const additionalScopesFiles = fs
   .readdirSync(join(__dirname, '../scopes/additional-scopes'))
@@ -56,9 +56,9 @@ additionalScopesFiles.forEach((af) => {
   try {
     trace('Trying to add additional scope %s', af);
     const newscope = require('../scopes/additional-scopes/' + af) as Scopes; // nosemgrep: javascript.lang.security.detect-non-literal-require.detect-non-literal-require
-    Object.keys(newscope).forEach((k: keyof typeof newscope) => {
-      trace('Setting scopeTypes[%s] to new scope %s', k, newscope[k]);
-      scopeTypes[k] = newscope[k]!; // overwrite entire scope, or create new if doesn't exist
+    Object.entries(newscope).forEach(([k, scope]) => {
+      trace('Setting scopeTypes[%s] to new scope %s', k, scope);
+      scopeTypes[k] = scope; // overwrite entire scope, or create new if doesn't exist
     });
   } catch (e) {
     error(e, `Failed to require(scopes/additional-scopes/${af}})`);
@@ -104,7 +104,7 @@ export function handleReq(req: PermissionsRequest): PermissionsResponse {
   };
   trace('inside permissions handler %s', req.oadaGraph.resource_id);
   //    return oadaLib.resources.getResource(req.oadaGraph.resource_id, '').then((resource) => {
-  trace('request is: %O', req);
+  trace(req, 'request');
   //        trace('Resource is', req.oadaGraph.resource_id, resource);
   //Check scopes
   if (process.env.IGNORE_SCOPE === 'yes') {
@@ -113,7 +113,7 @@ export function handleReq(req: PermissionsRequest): PermissionsResponse {
   } else {
     // Check for read permission
     if (!Array.isArray(req.scope)) {
-      error('ERROR: scope is not an array: %O', req.scope);
+      error(req.scope, 'Scope is not an array');
       req.scope = [];
     }
     response.scopes.read = req.scope.some(function chkScope(scope) {
@@ -154,11 +154,12 @@ export function handleReq(req: PermissionsRequest): PermissionsResponse {
       const is = contentType
         ? typeis.is(contentType, scopeTypes[type] ?? [])
         : false;
-      trace('Does user have write scope? %s', scopePerm(perm, 'write'));
-      trace('contentType is2 %s', contentType);
+      const write = scopePerm(perm, 'write');
+      trace('Does user have write scope? %s', write);
+      trace('contentType is %s', contentType);
       trace('write typeis %s %s', type, is);
       trace('scope types %O', scopeTypes[type]);
-      return is && scopePerm(perm, 'write');
+      return is && write;
     });
   }
   //Check permissions. 1. Check if owner.
@@ -189,7 +190,7 @@ export function handleReq(req: PermissionsRequest): PermissionsResponse {
       owner: !!req.oadaGraph.permissions?.owner,
     };
   }
-  trace('END RESULT %O', response);
+  trace(response, 'END RESULT');
   return response;
   //});
 }

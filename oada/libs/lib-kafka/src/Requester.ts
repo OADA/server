@@ -32,14 +32,17 @@ import ksuid from 'ksuid';
 export { ConstructorOpts };
 export class Requester extends Base {
   private timeouts: Record<string, number>;
-  protected requests: Map<string, (err: Error | null, res: KafkaBase) => void> =
-    new Map();
+  protected requests: Map<
+    string,
+    (err: Error | null, res: KafkaBase) => void
+  > = new Map();
 
   constructor({ consumeTopic, produceTopic, group, ...opts }: ConstructorOpts) {
     super({ consumeTopic, produceTopic, group, ...opts });
 
     super.on(DATA, (resp) => {
-      const done = this.requests.get(resp[REQ_ID_KEY]!);
+      const id = resp[REQ_ID_KEY];
+      const done = id && this.requests.get(id);
 
       return done && done(null, resp);
     });
@@ -55,11 +58,16 @@ export class Requester extends Base {
     super.on(DATA, (...args) => super.emit('response', ...args));
   }
 
+  // eslint-disable-next-line @typescript-eslint/ban-types
   async send(request: {}, topic?: string): Promise<KafkaBase>;
   async send(
     request: Record<string, unknown>,
-    topic: string = this.produceTopic!
+    topic: string | null | undefined = this.produceTopic
   ): Promise<KafkaBase> {
+    if (!topic) {
+      throw new Error('Send called with no topic specified');
+    }
+
     const id = (request[REQ_ID_KEY] || ksuid.randomSync().string) as string;
     const timeout = this.timeouts[topic] ?? topicTimeout(topic);
     this.timeouts[topic] = timeout;
@@ -81,7 +89,14 @@ export class Requester extends Base {
   }
 
   // Like send but return an event emitter to allow multiple responses
-  async emitter(request: KafkaBase, topic: string = this.produceTopic!) {
+  async emitter(
+    request: KafkaBase,
+    topic: string | null | undefined = this.produceTopic
+  ): Promise<EventEmitter & { close(): Promise<void> }> {
+    if (!topic) {
+      throw new Error('Emit called with no topic specified');
+    }
+
     const emitter = new EventEmitter();
 
     const id = request[REQ_ID_KEY] || ksuid.randomSync().string;
@@ -110,6 +125,8 @@ export class Requester extends Base {
       topic,
       part: null,
     });
-    return { ...emitter, close };
+
+    const ret = { ...emitter, close };
+    return ret;
   }
 }

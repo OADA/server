@@ -16,6 +16,7 @@
 import { extname } from 'path';
 
 import convict, { Config, Schema } from 'convict';
+// eslint-disable-next-line
 // @ts-ignore
 import moment from 'convict-format-with-moment';
 import validator from 'convict-format-with-validator';

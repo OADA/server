@@ -306,6 +306,7 @@ const plugin: FastifyPluginAsync = async function (fastify) {
         res.headers['content-location']?.toString().split('/') ?? [];
       let path_leftover = '';
       assert(parts.length >= 3);
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       const resourceId = `${parts[1]!}/${parts[2]!}`;
       if (parts.length > 3) {
         path_leftover = parts.slice(3).join('/');
@@ -348,7 +349,7 @@ const plugin: FastifyPluginAsync = async function (fastify) {
               request.headers['x-oada-rev']
             );
             const rev = await resources.getResource(resourceId, '_rev');
-            const revInt = parseInt(rev as unknown as string, 10);
+            const revInt = parseInt((rev as unknown) as string, 10);
             // If the requested rev is behind by revLimit, simply
             // re-GET the entire resource
             trace(

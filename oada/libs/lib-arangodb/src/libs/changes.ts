@@ -125,20 +125,24 @@ export async function getChange(
     edges: { path: string }[];
   };
 
-  if (!result || !result.vertices[0]) {
+  const firstv = result?.vertices[0];
+  if (!firstv) {
     return undefined;
   }
   const change = {
     resource_id: resourceId,
     path: '',
-    body: result.vertices[0].body,
-    type: result.vertices[0].type,
+    body: firstv.body,
+    type: firstv.type,
     wasDelete: result.vertices[result.vertices.length - 1]?.type === 'delete',
   };
   let path = '';
   for (let i = 0; i < result.vertices.length - 1; i++) {
-    path += result.edges[i]!.path;
-    pointer.set(change.body!, path, result.vertices[i + 1]!.body);
+    path += result.edges[i]?.path;
+    if (change.body) {
+      const { body } = result.vertices[i + 1] ?? {};
+      pointer.set(change.body, path, body);
+    }
   }
   return change as Change[0];
 }
@@ -184,8 +188,8 @@ export async function getChangeArray(
 }
 
 function toChangeObj(arangoPathObj: {
-  edges: ChangeEdge[];
-  vertices: ChangeVertex[];
+  edges: readonly ChangeEdge[];
+  vertices: readonly ChangeVertex[];
 }): Change[0] {
   // get path
   let path = '';
@@ -193,16 +197,18 @@ function toChangeObj(arangoPathObj: {
     path += edge.path;
   }
   // get body
-  const nVertices = arangoPathObj.vertices.length;
-  const body = arangoPathObj.vertices[nVertices - 1]!.body;
-  const resource_id = arangoPathObj.vertices[nVertices - 1]!.resource_id;
+  const [lastv] = arangoPathObj.vertices.slice(-1);
+  if (!lastv) {
+    throw new Error('No vertices in arangoPathObj');
+  }
+  const { body, resource_id, type } = lastv;
   // return change object
   trace(body, 'toChangeObj: returning change object with body');
   return {
     resource_id,
     path,
     body,
-    type: arangoPathObj.vertices[nVertices - 1]!.type,
+    type,
   } as Change[0];
 }
 

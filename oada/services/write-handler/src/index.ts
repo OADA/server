@@ -171,10 +171,10 @@ export async function handleReq(req: WriteRequest): Promise<WriteResponse> {
     ): Promise<{ rev?: number; orev?: number; changeId?: string }> {
       trace(body, 'FIRST BODY');
       if (req['if-match']) {
-        const rev = (await resources.getResource(
+        const rev = ((await resources.getResource(
           req['resource_id'],
           '_rev'
-        )) as unknown as number;
+        )) as unknown) as number;
         if (req['if-match'] !== rev) {
           error(rev);
           error(req['if-match']);
@@ -183,10 +183,10 @@ export async function handleReq(req: WriteRequest): Promise<WriteResponse> {
         }
       }
       if (req['if-none-match']) {
-        const rev = (await resources.getResource(
+        const rev = ((await resources.getResource(
           req['resource_id'],
           '_rev'
-        )) as unknown as number;
+        )) as unknown) as number;
         if (req['if-none-match'].includes(rev)) {
           error(rev);
           error(req['if-none-match']);
@@ -196,10 +196,10 @@ export async function handleReq(req: WriteRequest): Promise<WriteResponse> {
       }
       let cacheRev = cache.get(req['resource_id']);
       if (!cacheRev) {
-        cacheRev = (await resources.getResource(
+        cacheRev = ((await resources.getResource(
           req['resource_id'],
           '_rev'
-        )) as unknown as number;
+        )) as unknown) as number;
       }
       if (req.rev) {
         if (cacheRev !== req.rev) {
@@ -278,22 +278,22 @@ export async function handleReq(req: WriteRequest): Promise<WriteResponse> {
 
       // Create object to recursively merge into the resource
       trace(path, 'Recursively merging path into arango object');
-      if (path.length > 0) {
-        let o = obj;
-        const endk = path.pop();
+      const endk = path.pop();
+      if (endk !== undefined) {
+        let o = obj as Record<string, unknown>;
         path.forEach((k) => {
           trace('Adding path for key %s', k);
           if (!(k in o)) {
             // TODO: Support arrays better?
             o[k] = {};
           }
-          o = o[k]!;
+          o = o[k] as Record<string, unknown>;
         });
-        o[endk!] = body as DeepPartial<Resource>;
+        o[endk] = body as DeepPartial<Resource>;
       } else {
         objectAssignDeep(obj, body);
       }
-      trace('Setting body on arango object to %O', obj);
+      trace(obj, 'Setting body on arango object');
 
       // Update meta
       const meta: Partial<Resource['_meta']> & Record<string, unknown> = {

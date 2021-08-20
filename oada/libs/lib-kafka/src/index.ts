@@ -13,6 +13,7 @@
  * limitations under the License.
  */
 
+// eslint-disable-next-line
 // @ts-ignore
 export { KafkaJSError as KafkaError } from 'kafkajs/src/errors';
 

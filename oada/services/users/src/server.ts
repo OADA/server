@@ -187,14 +187,15 @@ export async function handleReq(req: UserRequest): Promise<UserResponse> {
 
   // Now we know the user exists and has bookmarks/shares.  Now update/merge it with the requested data
   if (!created_a_new_user) {
+    const { _id } = cur_user ?? {};
     trace(
       'We did not create a new user, so we are now updating user id %s',
-      cur_user?._id
+      _id
     );
     cur_user = await users.update({
       // Assume req.user is a full user now?
       ...req.user,
-      _id: cur_user!._id,
+      _id: _id as string,
     });
   }
 

@@ -13,6 +13,8 @@
  * limitations under the License.
  */
 
+import { setTimeout } from 'timers/promises';
+
 import config from './config';
 
 import { Database } from 'arangojs';
@@ -37,7 +39,10 @@ class DatabaseWrapper extends Database {
         }
 
         // warn(`Retrying query due to deadlock (retry #${tries})`, err);
-        return await Bluebird.delay(deadlockDelay).then(tryquery);
+        // There is no eval here...
+        // eslint-disable-next-line @typescript-eslint/no-implied-eval
+        await setTimeout(deadlockDelay)
+        return await tryquery();
       });
     };
     const res = await tryquery();

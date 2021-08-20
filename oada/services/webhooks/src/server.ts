@@ -64,16 +64,15 @@ responder.on<void>('request', async function handleReq(req) {
     _changes: Record<number, { _id: string }>;
   };
   if (meta?._syncs) {
-    return Bluebird.map(Object.keys(meta._syncs), async (sync) => {
-      let url = meta._syncs![sync]!.url;
+    return Bluebird.map(Object.values(meta._syncs), async (sync) => {
       if (process.env.NODE_ENV !== 'production') {
         /*
          * If running in dev environment,
          * https://localhost webhooks should be directed to the proxy server.
          */
-        url = url.replace('localhost', 'proxy');
+        sync.url = sync.url.replace('localhost', 'proxy');
       }
-      if (meta._syncs![sync]!['oada-put']) {
+      if (sync['oada-put']) {
         const change = await changes.getChange(req.resource_id, req._rev);
         if (!change) {
           error('Failed to get change %d for %s', req._rev, req.resource_id);
@@ -90,42 +89,42 @@ responder.on<void>('request', async function handleReq(req) {
           //Handle delete _changes
           const deletePath = [];
           let toDelete: unknown = body;
-          trace('Sending oada-put to: %s', url);
+          trace('Sending oada-put to: %s', sync.url);
           while (
             toDelete &&
             typeof toDelete === 'object' &&
             Object.keys(toDelete).length > 0
           ) {
-            const key = Object.keys(toDelete)[0]!;
+            const key = Object.keys(toDelete)[0];
             deletePath.push(key);
             toDelete = toDelete[key as keyof typeof toDelete];
           }
           if (toDelete !== null) {
             return;
           }
-          const deleteUrl = url + '/' + deletePath.join('/');
+          const deleteUrl = sync.url + '/' + deletePath.join('/');
           trace('Deleting: oada-put url changed to: %s', deleteUrl);
           await axios({
             method: 'delete',
             url: deleteUrl,
-            headers: meta._syncs![sync]!.headers,
+            headers: sync.headers,
           });
           return;
         } else {
           //Handle merge _changes
-          trace('Sending oada-put to: %s', url);
+          trace('Sending oada-put to: %s', sync.url);
           trace('oada-put body: %O', body);
           await axios({
             method: 'put',
-            url: url,
+            url: sync.url,
             data: body as unknown,
-            headers: meta._syncs![sync]!.headers,
+            headers: sync.headers,
           });
           return;
         }
       }
-      trace('Sending to: %s', url);
-      await axios(meta._syncs![sync]!);
+      trace('Sending to: %s', sync.url);
+      await axios(sync);
       return;
     });
   }

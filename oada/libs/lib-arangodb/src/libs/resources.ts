@@ -78,8 +78,11 @@ export async function lookupFromUrl(
 
   //    trace(userId);
   const pieces = pointer.parse(url);
+  if (!(pieces[0] && pieces[1])) {
+    throw new Error(`Failed to parse URL ${url}`);
+  }
   // resources/123 => graphNodes/resources:123
-  const startNode = graphNodes.name + '/' + pieces[0]! + ':' + pieces[1]!;
+  const startNode = graphNodes.name + '/' + pieces[0] + ':' + pieces[1];
   const id = pieces.splice(0, 2);
   // Create a filter for each segment of the url
   let filters = aql``;
@@ -117,20 +120,30 @@ export async function lookupFromUrl(
     type: string | null;
     permissions: Nullable<Permission>[];
     vertices:
-      | Array<{ resource_id: string; is_resource: boolean; path?: string }>
+      | readonly { resource_id: string; is_resource: boolean; path?: string }[]
       | [null];
     edges:
-      | Array<{ _to: string; _from: string; name: string; versioned: boolean }>
+      | readonly {
+          _to: string;
+          _from: string;
+          name: string;
+          versioned: boolean;
+        }[]
       | [null];
   } = (await (await db.query(query)).next()) as {
     rev: number;
     type: string | null;
     permissions: Nullable<Permission>[];
     vertices:
-      | Array<{ resource_id: string; is_resource: boolean; path?: string }>
+      | readonly { resource_id: string; is_resource: boolean; path?: string }[]
       | [null];
     edges:
-      | Array<{ _to: string; _from: string; name: string; versioned: boolean }>
+      | readonly {
+          _to: string;
+          _from: string;
+          name: string;
+          versioned: boolean;
+        }[]
       | [null];
   };
 
@@ -208,49 +221,53 @@ export async function lookupFromUrl(
       type: type ?? undefined,
       resourceExists: false,
     };
+  } else {
+    const [lastv] = result.vertices.slice(-1);
     // A dangling edge indicates uncreated resource; return graph lookup
     // starting at this uncreated resource
-  } else if (!result.vertices[result.vertices.length - 1]) {
-    const lastEdge = result.edges[result.edges.length - 1]!._to;
-    path_leftover = '';
-    resource_id = 'resources/' + lastEdge.split('graphNodes/resources:')[1]!;
-    trace('graph-lookup traversal uncreated resource %s', resource_id);
-    rev = 0;
-    const fromv = result.vertices[result.vertices.length - 2];
-    const edge = result.edges[result.edges.length - 1];
-    from = {
-      resourceExists: !!fromv,
-      permissions,
-      resource_id: fromv?.['resource_id'] || '',
-      path_leftover: (fromv?.['path'] || '') + (edge ? '/' + edge.name : ''),
-    };
-    resourceExists = false;
-  } else {
-    resource_id = result.vertices[result.vertices.length - 1]!['resource_id'];
-    trace('graph-lookup traversal found resource %s', resource_id);
-    const fromv = result.vertices[result.vertices.length - 2]!;
-    const edge = result.edges[result.edges.length - 1];
-    // If the desired url has more pieces than the longest path, the
-    // pathLeftover is the extra pieces
-    if (result.vertices.length - 1 < pieces.length) {
-      const revVertices = cloneDeep(result.vertices).reverse();
-      const lastResource =
-        result.vertices.length -
-        1 -
-        revVertices.findIndex((v) => v?.is_resource);
-      // Slice a negative value to take the last n pieces of the array
-      path_leftover = pointer.compile(
-        pieces.slice(lastResource - pieces.length)
-      );
+    if (!lastv) {
+      const lastEdge = result.edges[result.edges.length - 1]?._to;
+      path_leftover = '';
+      resource_id =
+        'resources/' + (lastEdge?.split('graphNodes/resources:')[1] ?? '');
+      trace('graph-lookup traversal uncreated resource %s', resource_id);
+      rev = 0;
+      const fromv = result.vertices[result.vertices.length - 2];
+      const edge = result.edges[result.edges.length - 1];
+      from = {
+        resourceExists: !!fromv,
+        permissions,
+        resource_id: fromv?.['resource_id'] || '',
+        path_leftover: (fromv?.['path'] || '') + (edge ? '/' + edge.name : ''),
+      };
+      resourceExists = false;
     } else {
-      path_leftover = result.vertices[result.vertices.length - 1]!.path || '';
+      resource_id = lastv['resource_id'];
+      trace('graph-lookup traversal found resource %s', resource_id);
+      const fromv = result.vertices[result.vertices.length - 2];
+      const edge = result.edges[result.edges.length - 1];
+      // If the desired url has more pieces than the longest path, the
+      // pathLeftover is the extra pieces
+      if (result.vertices.length - 1 < pieces.length) {
+        const revVertices = Array.from(cloneDeep(result.vertices)).reverse();
+        const lastResource =
+          result.vertices.length -
+          1 -
+          revVertices.findIndex((v) => v?.is_resource);
+        // Slice a negative value to take the last n pieces of the array
+        path_leftover = pointer.compile(
+          pieces.slice(lastResource - pieces.length)
+        );
+      } else {
+        path_leftover = lastv.path || '';
+      }
+      from = {
+        permissions,
+        resourceExists: !!fromv,
+        resource_id: fromv?.['resource_id'] || '',
+        path_leftover: (fromv?.['path'] || '') + (edge ? '/' + edge.name : ''),
+      };
     }
-    from = {
-      permissions,
-      resourceExists: !!fromv,
-      resource_id: fromv?.['resource_id'] || '',
-      path_leftover: (fromv?.['path'] || '') + (edge ? '/' + edge.name : ''),
-    };
   }
 
   return {
@@ -339,7 +356,9 @@ export async function getResourceOwnerIdRev(
     ); // Treat non-existing path has not-found
 }
 
-export async function getParents(id: string): Promise<Array<{
+export async function getParents(
+  id: string
+): Promise<Array<{
   resource_id: string;
   path: string;
   contentType: string;
@@ -370,7 +389,10 @@ export async function getParents(id: string): Promise<Array<{
     ); // Treat non-existing path has not-found
 }
 
-export async function getNewDescendants(id: string, rev: string | number) {
+export async function getNewDescendants(
+  id: string,
+  rev: string | number
+): Promise<{ id: string; changed: boolean }[]> {
   // TODO: Better way to compare the revs?
   return (await (
     await db.query(
@@ -395,7 +417,10 @@ export async function getNewDescendants(id: string, rev: string | number) {
   ).all()) as Array<{ id: string; changed: boolean }>;
 }
 
-export async function getChanges(id: string, rev: string | number) {
+export async function getChanges(
+  id: string,
+  rev: string | number
+): Promise<{ id: string; changes: string }[]> {
   // Currently utilizes fixed depth search "7..7" to get data points down
   return (await (
     await db.query(
@@ -438,7 +463,7 @@ export async function putResource(
   trace(`Adding links for resource ${id}...`);
 
   const links = checkLinks ? await addLinks(obj) : [];
-  info('Upserting resource %s', obj._key!);
+  info('Upserting resource %s', obj._key);
   trace(links, 'Upserting links');
 
   // TODO: Should it check that graphNodes exist but are wrong?
@@ -639,8 +664,8 @@ export async function deletePartialResource(
   // TODO: Less gross way to check existence of JSON pointer in AQL??
   let pathA = apath.slice(0, apath.length - 1).join("']['");
   pathA = pathA ? "['" + pathA + "']" : pathA;
-  const pathB = apath[apath.length - 1];
-  const stringA = `(res${pathA}, '${pathB!}')`;
+  const [pathB] = apath.slice(-1) as [string];
+  const stringA = `(res${pathA}, '${pathB}')`;
   const hasStr = `HAS${stringA}`;
 
   const rev = doc['_rev'];

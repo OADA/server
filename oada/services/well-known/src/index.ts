@@ -24,7 +24,6 @@
 import https from 'https';
 
 import { middleware as formats } from '@oada/formats-server';
-// @ts-ignore
 import well_known_json from '@oada/well-known-json';
 
 import config from './config';
@@ -36,7 +35,6 @@ import debuglib from 'debug';
 import express from 'express';
 import helmet from 'helmet';
 import type { ServerOptions } from 'http';
-// @ts-ignore
 import oada_error from 'oada-error';
 
 function run() {
@@ -54,8 +52,7 @@ function run() {
   // Setup express:
   const app = express();
 
-  // @ts-ignore
-  app.use(helmet());
+  app.use(helmet() as (...args: unknown[]) => void);
 
   //-----------------------------------------------------------------
   // Log all requests before anything else gets them for debugging:
@@ -73,8 +70,7 @@ function run() {
       exposedHeaders: ['x-oada-rev', 'location'],
     })
   );
-  // @ts-ignore
-  app.options('*', cors());
+  app.options('*', cors() as (...args: unknown[]) => void);
 
   // TODO: Less gross fix for Content-Types?
   app.get('/.well-known/oada-configuration', (_, res, next) => {
@@ -187,17 +183,13 @@ function run() {
   app.use(function (req) {
     throw new oada_error.OADAError(
       'Route not found: ' + req.url,
-      // @ts-ignore
       oada_error.codes.NOT_FOUND
     );
   });
 
   //---------------------------------------------------
   // Use OADA middleware to catch errors and respond
-  app.use(
-    // @ts-ignore
-    oada_error.middleware(log.error)
-  );
+  app.use(oada_error.middleware(log.error));
 
   app.set('port', config.get('wellKnown.server.port'));
 

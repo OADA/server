@@ -62,7 +62,7 @@ responder.on<WriteResponse>('request', async function handleReq(req) {
   trace('Saw change for resource %s', id);
 
   //let rev = req['_rev'];
-  const orev = req['_orev']!;
+  const orev = req['_orev'] ?? 0;
   // TODO: Add AQL query for just syncs and newest change?
   const syncs = Object.entries(
     ((await resources.getResource(id, `/_meta/${META_KEY}`)).syncs ??
