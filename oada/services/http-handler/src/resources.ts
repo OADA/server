@@ -122,7 +122,8 @@ const plugin: FastifyPluginAsync<Options> = function (fastify, opts) {
    * Has to run after graph lookup.
    * @todo Should this just be in each methods implenting function?
    */
-  fastify.addHook('preHandler', function checkScope(request, reply) {
+  // eslint-disable-next-line @typescript-eslint/require-await
+  fastify.addHook('preHandler', async function checkScope(request, reply) {
     const oadaGraph = request.requestContext.get('oadaGraph')!;
     const user = request.requestContext.get('user')!;
 
@@ -136,7 +137,7 @@ const plugin: FastifyPluginAsync<Options> = function (fastify, opts) {
       //requestType: request.method.toLowerCase(),
     });
 
-    request.log.trace('permissions response: %o', response);
+    request.log.trace(response, 'permissions response');
     switch (request.method) {
       case 'PUT':
       case 'POST':
@@ -183,7 +184,8 @@ const plugin: FastifyPluginAsync<Options> = function (fastify, opts) {
   /**
    * Return "path leftover" in a header if token/scope passes
    */
-  fastify.addHook('preHandler', function pathLeftover(request, reply) {
+  // eslint-disable-next-line @typescript-eslint/require-await
+  fastify.addHook('preHandler', async function pathLeftover(request, reply) {
     const oadaGraph = request.requestContext.get('oadaGraph')!;
     // TODO: Better header name?
     void reply.header('X-OADA-Path-Leftover', oadaGraph['path_leftover']);
@@ -413,8 +415,9 @@ const plugin: FastifyPluginAsync<Options> = function (fastify, opts) {
       request.log.trace('RESOURCE EXISTS %O', oadaGraph);
       request.log.trace('RESOURCE EXISTS %O', resourceExists);
       const ignoreLinks =
-        ((request.headers['x-oada-ignore-links'] ??
-          '') as string).toLowerCase() == 'true';
+        (
+          (request.headers['x-oada-ignore-links'] ?? '') as string
+        ).toLowerCase() == 'true';
       const ifmatch = request.headers['if-match'];
       const ifnonematch = request.headers['if-none-match'];
       const resp = (await requester.send(

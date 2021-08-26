@@ -41,7 +41,7 @@ class DatabaseWrapper extends Database {
         // warn(`Retrying query due to deadlock (retry #${tries})`, err);
         // There is no eval here...
         // eslint-disable-next-line @typescript-eslint/no-implied-eval
-        await setTimeout(deadlockDelay)
+        await setTimeout(deadlockDelay);
         return await tryquery();
       });
     };

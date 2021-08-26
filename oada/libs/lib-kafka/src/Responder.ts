@@ -39,7 +39,10 @@ export type Response<R = KafkaBase> = R | Iterable<R> | AsyncIterable<R> | void;
 function isIterable<T>(
   val: T | Iterable<T> | AsyncIterable<T>
 ): val is Iterable<T> | AsyncIterable<T> {
-  return typeof val === 'object' && Symbol.iterator in val
+  return (
+    typeof val === 'object' &&
+    (Symbol.iterator in val || Symbol.asyncIterator in val)
+  );
 }
 
 export interface ConstructorOpts extends BaseConstructorOpts {
@@ -91,7 +94,7 @@ export class Responder extends Base {
       return super.on(DATA, async (req, data) => {
         const { domain, group, resp_partition: part = null } = req;
         const id = req[REQ_ID_KEY] as string;
-        trace('Received request %s', id);
+        trace(req, 'Received request');
 
         // Check for old messages
         if (!this.old && Date.now() - req.time! >= this.timeout) {
@@ -123,9 +126,10 @@ export class Responder extends Base {
           this.requests.set(id, it as Generator<KafkaBase, void>);
 
           for await (const resp of it) {
+            trace(resp, 'received response');
             if (resp[REQ_ID_KEY] === null) {
               // TODO: Remove once everything migrated
-              resp[REQ_ID_KEY] = ksuid.randomSync().string;
+              resp[REQ_ID_KEY] = (await ksuid.random()).string;
               util.deprecate(() => {
                 return;
               }, 'Please use ReResponder instead')();
@@ -137,8 +141,10 @@ export class Responder extends Base {
               }
             }
 
+            const mesg = { ...resp, domain, group };
+            trace(mesg, 'responding');
             return this.produce({
-              mesg: { ...resp, domain, group },
+              mesg,
               part,
             });
           }
@@ -156,7 +162,10 @@ export class Responder extends Base {
             // Catch and communciate errors over kafka?
             error(err);
             const { code } = (err ?? {}) as { code?: string };
-            await respond({ code: (code ?? err ?? 'error') as string });
+            await respond({
+              // eslint-disable-next-line
+              code: code ?? err + '',
+            });
           }
           this.requests.delete(id);
         }

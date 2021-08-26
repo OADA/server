@@ -183,13 +183,13 @@ export class Base extends EventEmitter {
         await this.consumer.subscribe({ topic });
       }
       await this.consumer.run({
-        eachMessage: (payload) => {
+        // eslint-disable-next-line
+        eachMessage: async (payload) => {
           // Assume all messages are JSON
           const resp: unknown =
             payload.message.value &&
             JSON.parse(payload.message.value.toString());
           super.emit(DATA, resp, payload);
-          return Promise.resolve();
         },
       });
     } catch (err) {

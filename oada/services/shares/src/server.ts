@@ -14,7 +14,7 @@
  */
 
 import { changes, users } from '@oada/lib-arangodb';
-import { KafkaBase, Responder } from '@oada/lib-kafka';
+import { KafkaBase, ReResponder } from '@oada/lib-kafka';
 
 import type { WriteRequest, WriteResponse } from '@oada/write-handler';
 
@@ -27,7 +27,7 @@ const trace = debug('shares:trace');
 
 //---------------------------------------------------------
 // Kafka intializations:
-const responder = new Responder({
+const responder = new ReResponder({
   consumeTopic: config.get('kafka.topics.httpResponse'),
   produceTopic: config.get('kafka.topics.writeRequest'),
   group: 'shares',

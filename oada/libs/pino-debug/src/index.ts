@@ -1,8 +1,10 @@
+// eslint-disable-next-line -- needs to be first import
+import pinoDebug, { Options } from 'pino-debug';
+
 import { resolve } from 'path';
 
-import debug from 'debug';
 import _pino from 'pino';
-import pinoDebug, { Options } from 'pino-debug';
+import debug from 'debug';
 
 /**
  * Default mappings of debug namespaces to pino levels
@@ -56,11 +58,9 @@ export function pino({
   ...opts
 }: _pino.LoggerOptions = {}): _pino.Logger {
   const p = _pino({ level, ...opts });
-  return (
-    process.env.NODE_ENV === 'development'
-      ? require('pino-caller')(p) // eslint-disable-line
-      : p
-  ) as _pino.Logger;
+  return (process.env.NODE_ENV === 'development'
+    ? require('pino-caller')(p) // eslint-disable-line
+    : p) as _pino.Logger;
 }
 
 /**

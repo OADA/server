@@ -32,10 +32,8 @@ import ksuid from 'ksuid';
 export { ConstructorOpts };
 export class Requester extends Base {
   private timeouts: Record<string, number>;
-  protected requests: Map<
-    string,
-    (err: Error | null, res: KafkaBase) => void
-  > = new Map();
+  protected requests: Map<string, (err: Error | null, res: KafkaBase) => void> =
+    new Map();
 
   constructor({ consumeTopic, produceTopic, group, ...opts }: ConstructorOpts) {
     super({ consumeTopic, produceTopic, group, ...opts });
