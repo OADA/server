@@ -13,10 +13,14 @@
  * limitations under the License.
  */
 
+/**
+ * @todo clean up this mess
+ */
 export function sanitizeResult<T extends {}>(
   res: T
 ): Omit<T & { _rev?: number }, '_key' | '_oada_rev'> {
-  if (res === undefined || res === null) {
+  if (!(res && typeof res === 'object')) {
+    // @ts-ignore
     return res;
   }
 
