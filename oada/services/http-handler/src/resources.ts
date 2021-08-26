@@ -267,7 +267,7 @@ const plugin: FastifyPluginAsync<Options> = function (fastify, opts) {
           oadaGraph['resource_id'],
           oadaGraph['path_leftover']
         );
-        request.log.trace('DOC IS %O', doc);
+        request.log.trace(doc, 'DOC IS');
 
         // TODO: Allow null values in OADA?
         if (doc === undefined || doc === null) {
@@ -415,9 +415,8 @@ const plugin: FastifyPluginAsync<Options> = function (fastify, opts) {
       request.log.trace('RESOURCE EXISTS %O', oadaGraph);
       request.log.trace('RESOURCE EXISTS %O', resourceExists);
       const ignoreLinks =
-        (
-          (request.headers['x-oada-ignore-links'] ?? '') as string
-        ).toLowerCase() == 'true';
+        ((request.headers['x-oada-ignore-links'] ??
+          '') as string).toLowerCase() == 'true';
       const ifmatch = request.headers['if-match'];
       const ifnonematch = request.headers['if-none-match'];
       const resp = (await requester.send(

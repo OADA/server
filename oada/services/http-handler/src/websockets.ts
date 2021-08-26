@@ -348,8 +348,8 @@ const plugin: FastifyPluginAsync = async function (fastify) {
               resourceId,
               request.headers['x-oada-rev']
             );
-            const rev = await resources.getResource(resourceId, '_rev');
-            const revInt = parseInt(rev as unknown as string, 10);
+            const rev = await resources.getResource(resourceId, '/_rev');
+            const revInt = parseInt((rev as unknown) as string, 10);
             // If the requested rev is behind by revLimit, simply
             // re-GET the entire resource
             trace(

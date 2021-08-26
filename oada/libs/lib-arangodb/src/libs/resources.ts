@@ -283,7 +283,7 @@ export async function lookupFromUrl(
 
 export function getResource(id: string, path = ''): Promise<Partial<Resource>> {
   // TODO: Escaping stuff?
-  const parts = path.split('/').filter((x) => !!x);
+  const parts = pointer.parse(path);
 
   if (parts[0] === '_rev') {
     // Get OADA rev, not arango one
@@ -356,7 +356,9 @@ export async function getResourceOwnerIdRev(
     ); // Treat non-existing path has not-found
 }
 
-export async function getParents(id: string): Promise<Array<{
+export async function getParents(
+  id: string
+): Promise<Array<{
   resource_id: string;
   path: string;
   contentType: string;
@@ -591,7 +593,7 @@ async function addLinks(res: Record<string, unknown>) {
     }
 
     if ('_rev' in link) {
-      const rev = await getResource(link['_id'], '_oada_rev');
+      const rev = await getResource(link['_id'], '/_oada_rev');
       link['_rev'] = typeof rev === 'number' ? rev : 0;
     }
 
