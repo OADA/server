@@ -60,5 +60,6 @@
     "**/node_modules": true,
     "**/.npm": true,
     "**/.node_repl_history": true
-  }
+  },
+  "cSpell.words": ["arangodb", "fastify", "Kafkajs"]
 }

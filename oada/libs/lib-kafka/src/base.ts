@@ -115,7 +115,7 @@ export class Base extends EventEmitter {
   protected consumer;
   protected producer;
   protected ready: Bluebird<void>;
-  #done!: (err?: Error) => void;
+  #done!: (err?: unknown) => void;
 
   constructor({
     consumeTopic,
@@ -192,7 +192,7 @@ export class Base extends EventEmitter {
           super.emit(DATA, resp, payload);
         },
       });
-    } catch (err) {
+    } catch (err: unknown) {
       return this.#done(err);
     }
     this.#done();

@@ -40,7 +40,7 @@ import { is } from 'type-is';
 import type WebSocket from 'ws';
 
 /**
- * @todo Actually figure out how "foregtting history" should work...
+ * @todo Actually figure out how "forgetting history" should work...
  */
 const revLimit = Infinity;
 
@@ -106,7 +106,7 @@ const plugin: FastifyPluginAsync = async function (fastify) {
         const requests =
           watches.get(resourceId)?.requests ?? new Map<string, string>();
 
-        const mesg = {
+        const message = {
           resourceId,
           change,
           requestId: [] as string[],
@@ -122,11 +122,11 @@ const plugin: FastifyPluginAsync = async function (fastify) {
             continue;
           }
 
-          mesg.requestId.push(requestId);
-          mesg.path_leftover.push(path_leftover);
+          message.requestId.push(requestId);
+          message.path_leftover.push(path_leftover);
         }
 
-        sendChange(mesg as SocketChange);
+        sendChange(message as SocketChange);
       }
       return handler;
     }
@@ -153,7 +153,7 @@ const plugin: FastifyPluginAsync = async function (fastify) {
       let msg: SocketRequest;
       try {
         msg = parseRequest(data);
-      } catch (e) {
+      } catch (e: unknown) {
         const err: SocketResponse = {
           status: 400,
           /**
@@ -166,7 +166,7 @@ const plugin: FastifyPluginAsync = async function (fastify) {
             400,
             'Invalid socket message format',
             null,
-            e
+            e as string
           ) as Record<string, unknown>,
         };
         sendResponse(err);
@@ -349,7 +349,7 @@ const plugin: FastifyPluginAsync = async function (fastify) {
               request.headers['x-oada-rev']
             );
             const rev = await resources.getResource(resourceId, '/_rev');
-            const revInt = parseInt((rev as unknown) as string, 10);
+            const revInt = parseInt(rev as unknown as string, 10);
             // If the requested rev is behind by revLimit, simply
             // re-GET the entire resource
             trace(

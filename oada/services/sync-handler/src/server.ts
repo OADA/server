@@ -36,7 +36,7 @@ const error = debug('sync-handler:error');
 const META_KEY = '_remote_syncs';
 
 //---------------------------------------------------------
-// Kafka intializations:
+// Kafka initializations:
 const responder = new Responder({
   consumeTopic: config.get('kafka.topics.httpResponse'),
   group: 'sync-handlers',
@@ -89,7 +89,7 @@ responder.on<WriteResponse>('request', async function handleReq(req) {
   const puts = Bluebird.map(syncs, async ([key, { url, domain, token }]) => {
     info('Running sync %s for resource %s', key, id);
     trace('Sync %s: %O', key, { url, domain, token });
-    // Need separate changes map for each sync since they run concurently
+    // Need separate changes map for each sync since they run concurrently
     const lchanges = Object.assign({}, changes); // Shallow copy
 
     if (process.env.NODE_ENV !== 'production') {
@@ -216,7 +216,7 @@ responder.on<WriteResponse>('request', async function handleReq(req) {
         url: `${await apiroot}${rid}`,
         data: body,
         headers: {
-          'content-type': type,
+          'content-type': type!,
           'authorization': token,
         },
       });
