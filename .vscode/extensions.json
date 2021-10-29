@@ -1,0 +1,11 @@
+{
+  "recommendations": [
+    "arcanis.vscode-zipfs",
+    "esbenp.prettier-vscode",
+    "dbaeumer.vscode-eslint",
+    "gamunu.vscode-yarn",
+    "editorconfig.editorconfig",
+    "ms-azuretools.vscode-docker",
+    "loiane.ts-extension-pack"
+  ]
+}

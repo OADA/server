@@ -8,6 +8,3 @@ dist/
 !/.yarn/plugins/
 !/.yarn/versions/
 .pnp.*
-# ignore sdk stuff
-.vim
-.vscode

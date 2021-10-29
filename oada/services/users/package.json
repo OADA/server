@@ -20,13 +20,13 @@
     "@oada/lib-config": "^3.0.1",
     "@oada/lib-kafka": "^3.0.1",
     "@oada/pino-debug": "^3.0.1",
-    "chalk": "^4.1.1",
+    "chalk": "^4.1.2",
     "clone-deep": "^4.0.1",
     "debug": "^4.3.2",
     "ksuid": "^2.0.0",
     "minimist": "^1.2.5",
     "promptly": "^3.2.0",
-    "tslib": "^2.3.0"
+    "tslib": "^2.3.1"
   },
   "devDependencies": {
     "@types/clone-deep": "^4.0.1",

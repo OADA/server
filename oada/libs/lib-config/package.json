@@ -27,12 +27,12 @@
   },
   "homepage": "https://github.com/oada/@oada/lib-config#readme",
   "dependencies": {
-    "convict": "^6.2.0",
+    "convict": "^6.2.1",
     "convict-format-with-moment": "^6.2.0",
     "convict-format-with-validator": "^6.2.0",
     "dotenv": "^10.0.0",
     "json5": "^2.2.0",
-    "tslib": "^2.3.0",
+    "tslib": "^2.3.1",
     "yaml": "^1.10.2"
   },
   "devDependencies": {
