@@ -43,32 +43,32 @@ module.exports = {
       users: {
         name: 'users',
         indexes: ['username', { name: 'oadaid', sparse: true }],
-        defaults: './libs/exampledocs/users',
+        defaults: './libs/exampledocs/users.js',
       },
       clients: {
         name: 'clients',
         indexes: ['clientId'],
-        defaults: './libs/exampledocs/clients',
+        defaults: './libs/exampledocs/clients.js',
       },
       authorizations: {
         name: 'authorizations',
         indexes: ['token', { name: 'user', unique: false }],
-        defaults: './libs/exampledocs/authorizations',
+        defaults: './libs/exampledocs/authorizations.js',
       },
       changes: {
         name: 'changes',
         indexes: [{ name: ['resource_id', 'number'], unique: false }],
-        defaults: './libs/exampledocs/changes',
+        defaults: './libs/exampledocs/changes.js',
       },
       codes: {
         name: 'codes',
         indexes: ['code'],
-        defaults: './libs/exampledocs/codes',
+        defaults: './libs/exampledocs/codes.js',
       },
       resources: {
         name: 'resources',
         indexes: [],
-        defaults: './libs/exampledocs/resources',
+        defaults: './libs/exampledocs/resources.js',
       },
       remoteResources: {
         name: 'remoteResources',
@@ -77,13 +77,13 @@ module.exports = {
       graphNodes: {
         name: 'graphNodes',
         indexes: [{ name: 'resource_id', unique: false }],
-        defaults: './libs/exampledocs/graphNodes',
+        defaults: './libs/exampledocs/graphNodes.js',
       },
       changeEdges: {
         name: 'changeEdges',
         indexes: [],
         edgeCollection: true,
-        defaults: './libs/exampledocs/changeEdges',
+        defaults: './libs/exampledocs/changeEdges.js',
       },
       edges: {
         name: 'edges',
@@ -92,13 +92,13 @@ module.exports = {
           { name: 'name', unique: false },
           { name: ['_from', 'name'], unique: true },
         ],
-        defaults: './libs/exampledocs/edges',
+        defaults: './libs/exampledocs/edges.js',
         edgeCollection: true,
       },
       putBodies: {
         name: 'putBodies',
         indexes: [],
-        defaults: './libs/exampledocs/putBodies',
+        defaults: './libs/exampledocs/putBodies.js',
         createOptions: { isVolatile: false },
       },
       sessions: {

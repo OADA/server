@@ -1,6 +1,7 @@
 {
   "name": "@oada/shares",
   "version": "3.0.1",
+  "type": "module",
   "description": "",
   "author": "",
   "license": "Apache-2.0",

@@ -1,4 +1,5 @@
-/* Copyright 2021 Open Ag Data Alliance
+/**
+ * Copyright 2021 Open Ag Data Alliance
  *
  * Licensed under the Apache License, Version 2.0 (the 'License');
  * you may not use this file except in compliance with the License.
@@ -11,6 +12,8 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
+ *
+ * @license
  */
 
 import { KafkaError } from '@oada/lib-kafka';
@@ -18,13 +21,14 @@ import { pino } from '@oada/pino-debug';
 
 import { plugin as formats } from '@oada/formats-server';
 
-import authorizations from './authorizations';
-import config from './config';
-import resources from './resources';
-import tokenLookup, { TokenResponse } from './tokenLookup';
-import users from './users';
-import websockets from './websockets';
+import authorizations from './authorizations.js';
+import config from './config.js';
+import resources from './resources.js';
+import tokenLookup, { TokenResponse } from './tokenLookup.js';
+import users from './users.js';
+import websockets from './websockets.js';
 
+import esMain from 'es-main';
 import fastify, { FastifyRequest } from 'fastify';
 import fastifyAccepts from 'fastify-accepts';
 import bearerAuth from 'fastify-bearer-auth';
@@ -209,7 +213,7 @@ async function init(): Promise<void> {
     });
   });
 
-  if (require.main === module) {
+  if (esMain(import.meta)) {
     try {
       await start();
     } catch (err) {

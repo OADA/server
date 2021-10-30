@@ -20,8 +20,8 @@
  * with `npm run init`.
  */
 
-import * as users from './libs/users';
-import config from './config';
+import * as users from './libs/users.js';
+import config from './config.js';
 
 import arangojs from 'arangojs';
 import debug from 'debug';
@@ -33,13 +33,13 @@ const info = debug('arango:init:info');
 
 //------------------------------------------------------------
 // First setup some shorter variable names:
-const dbname = config.get('arangodb.database');
+const dbName = config.get('arangodb.database');
 const cols = config.get('arangodb.collections');
 const colsarr = Object.values(cols);
 
 export async function run(): Promise<void> {
   // Can't use ./db because we're creating the actual database
-  const systemdb = arangojs({
+  const systemDB = arangojs({
     url: config.get('arangodb.connectionString'),
   });
 
@@ -55,7 +55,7 @@ export async function run(): Promise<void> {
     trace('Checking if database exists');
     //---------------------------------------------------------------------
     // Start the show: Figure out if the database exists
-    const dbs = (await systemdb.listDatabases()).filter((d) => d === dbname);
+    const dbs = (await systemDB.listDatabases()).filter((d) => d === dbName);
     if (dbs.length > 0) {
       if (
         (!config.get('isProduction') && process.env.RESETDATABASE === 'yes') ||
@@ -65,8 +65,8 @@ export async function run(): Promise<void> {
           'isProduction is false and process.env.RESETDATABASE is "yes"' +
             'dropping database and recreating'
         );
-        await systemdb.dropDatabase(dbname);
-        await systemdb.createDatabase(dbname);
+        await systemDB.dropDatabase(dbName);
+        await systemDB.createDatabase(dbName);
       }
       info(
         'isProduction is %s and process.env.RESETDATABASE is %s, not dropping database.',
@@ -74,21 +74,21 @@ export async function run(): Promise<void> {
         process.env.RESETDATABASE
       );
       // otherwise, not test so don't drop database
-      trace('database %s exists', dbname);
+      trace('database %s exists', dbName);
     } else {
-      trace('Database %s does not exist. Creating...', dbname);
-      await systemdb.createDatabase(dbname);
-      trace('Now %s database exists', dbname);
+      trace('Database %s does not exist. Creating...', dbName);
+      await systemDB.createDatabase(dbName);
+      trace('Now %s database exists', dbName);
     }
     //---------------------------------------------------------------------
     // Use that database, then check that all the collections exist
-    trace('Using database %s', dbname);
-    const db = systemdb.database(dbname);
+    trace('Using database %s', dbName);
+    const db = systemDB.database(dbName);
     try {
-      const dbcols = await db.listCollections();
+      const dbCols = await db.listCollections();
       trace('Found collections, looking for the ones we need');
       for (const c of colsarr) {
-        if (dbcols.find((d) => d.name === c.name)) {
+        if (dbCols.find((d) => d.name === c.name)) {
           trace('Collection %s exists', c.name);
           continue;
         }
@@ -106,13 +106,13 @@ export async function run(): Promise<void> {
       //---------------------------------------------------------------------
       // Now check if the proper indexes exist on each collection:
       for (const c of colsarr) {
-        const dbindexes = await db.collection(c.name).indexes();
+        const dbIndexes = await db.collection(c.name).indexes();
         // for each index in this collection, check and create
         for (const ci of c.indexes) {
           const indexname = typeof ci === 'string' ? ci : ci.name;
           const unique = typeof ci === 'string' ? true : ci.unique;
           const sparse = typeof ci === 'string' ? true : ci.sparse;
-          if (dbindexes.find((dbi) => equal(dbi.fields, [indexname]))) {
+          if (dbIndexes.find((dbi) => equal(dbi.fields, [indexname]))) {
             trace('Index %s exists on collection %s', indexname, c.name);
             continue;
           }
@@ -175,7 +175,7 @@ export async function run(): Promise<void> {
             }
           }
           try {
-            const dbdoc: unknown = await db
+            const dbDoc: unknown = await db
               .collection(colname)
               .document(doc._id);
             if (colSpecificEnsureDefaults) {
@@ -194,7 +194,7 @@ export async function run(): Promise<void> {
                 'Before deleting, its value in the database was: %O',
               doc._id,
               colname,
-              dbdoc
+              dbDoc
             );
             try {
               await db.collection(colname).remove(doc._key);
@@ -233,14 +233,14 @@ export async function run(): Promise<void> {
       db.close();
     }
   } finally {
-    systemdb.close();
+    systemDB.close();
   }
 }
 
 // cleanup will delete the test database if in test mode
 export async function cleanup(): Promise<void> {
   // Can't use ./db because we're creating the actual database
-  const systemdb = arangojs({
+  const systemDB = arangojs({
     url: config.get('arangodb.connectionString'),
   });
 
@@ -256,10 +256,10 @@ export async function cleanup(): Promise<void> {
       'Cleaning up by dropping test database %s',
       config.get('arangodb.database')
     );
-    await systemdb.dropDatabase(config.get('arangodb.database'));
+    await systemDB.dropDatabase(config.get('arangodb.database'));
     trace('Database %s dropped successfully', config.get('arangodb.database'));
   } finally {
-    systemdb.close();
+    systemDB.close();
   }
 }
 

@@ -24,7 +24,7 @@ import {
   KafkaBase,
   REQ_ID_KEY,
   topicTimeout,
-} from './base';
+} from './base.js';
 
 import Bluebird from 'bluebird';
 import ksuid from 'ksuid';

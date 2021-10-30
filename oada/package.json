@@ -6,6 +6,7 @@
     "libs/**"
   ],
   "scripts": {
+    "build": "yarn build",
     "g:tsc": "cd $INIT_CWD && tsc -b",
     "g:pretty": "pino-pretty"
   },

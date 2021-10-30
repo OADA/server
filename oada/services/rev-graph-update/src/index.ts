@@ -19,7 +19,7 @@ import { KafkaBase, Requester, Responder } from '@oada/lib-kafka';
 // Import message format from write-handler
 import type { WriteRequest, WriteResponse } from '@oada/write-handler';
 
-import config from './config';
+import config from './config.js';
 
 import Ajv, { JTDSchemaType } from 'ajv/dist/jtd';
 import debug from 'debug';
@@ -39,7 +39,7 @@ const requestPromises = new PQueue({ concurrency: 1 });
 const requests = new Map<string, SetRequired<WriteRequest, 'from_change_id'>>();
 
 //---------------------------------------------------------
-// Kafka intializations:
+// Kafka initializations:
 const responder = new Responder({
   consumeTopic: config.get('kafka.topics.httpResponse'),
   group: 'rev-graph-update',
@@ -136,8 +136,8 @@ responder.on<WriteRequest>('request', async function handleReq(req) {
     }
 
     const uniqueKey = parent.resource_id + parent.path + '/_rev';
-    const qreq = requests.get(uniqueKey);
-    if (qreq) {
+    const qReq = requests.get(uniqueKey);
+    if (qReq) {
       // Write request exists in the pending queue.
       // Add change ID to the request.
       info(
@@ -145,9 +145,9 @@ responder.on<WriteRequest>('request', async function handleReq(req) {
         uniqueKey
       );
       if (req.change_id) {
-        qreq.from_change_id.push(req.change_id);
+        qReq.from_change_id.push(req.change_id);
       }
-      qreq.body = req['_rev'];
+      qReq.body = req['_rev'];
     } else {
       info(
         'Writing new child link rev (%d) to %s%s/_rev',

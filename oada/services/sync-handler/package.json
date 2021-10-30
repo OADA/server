@@ -1,6 +1,7 @@
 {
   "name": "@oada/sync-handler",
   "version": "3.0.1",
+  "type": "module",
   "description": "",
   "main": "dist/server.js",
   "engines": {

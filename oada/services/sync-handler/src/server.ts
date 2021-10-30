@@ -20,7 +20,7 @@ import { KafkaBase, Responder } from '@oada/lib-kafka';
 
 import type { WriteResponse } from '@oada/write-handler';
 
-import config from './config';
+import config from './config.js';
 
 import axios from 'axios';
 import Bluebird from 'bluebird';
@@ -62,7 +62,7 @@ responder.on<WriteResponse>('request', async function handleReq(req) {
   trace('Saw change for resource %s', id);
 
   //let rev = req['_rev'];
-  const orev = req['_orev'] ?? 0;
+  const oRev = req['_orev'] ?? 0;
   // TODO: Add AQL query for just syncs and newest change?
   const syncs = Object.entries(
     ((await resources.getResource(id, `/_meta/${META_KEY}`)).syncs ??
@@ -77,7 +77,7 @@ responder.on<WriteResponse>('request', async function handleReq(req) {
   }
   trace('Processing syncs for resource %s', id);
 
-  const desc = await resources.getNewDescendants(id, orev);
+  const desc = await resources.getNewDescendants(id, oRev);
   trace('New descendants for %s: %O', id, desc);
   // TODO: Figure out just what changed
   const changes = desc
@@ -90,7 +90,7 @@ responder.on<WriteResponse>('request', async function handleReq(req) {
     info('Running sync %s for resource %s', key, id);
     trace('Sync %s: %O', key, { url, domain, token });
     // Need separate changes map for each sync since they run concurrently
-    const lchanges = Object.assign({}, changes); // Shallow copy
+    const lChanges = Object.assign({}, changes); // Shallow copy
 
     if (process.env.NODE_ENV !== 'production') {
       /*
@@ -137,12 +137,12 @@ responder.on<WriteResponse>('request', async function handleReq(req) {
         );
 
         // TODO: Less gross way of create new remote resources?
-        lchanges[id] = resources.getResource(id);
+        lChanges[id] = resources.getResource(id);
 
         // Parse resource ID from Location header
-        const newid = new URL(loc, url).toString().replace(url, 'resources/');
+        const newID = new URL(loc, url).toString().replace(url, 'resources/');
         return {
-          rid: newid,
+          rid: newID,
           id: id,
         };
       }
@@ -163,11 +163,11 @@ responder.on<WriteResponse>('request', async function handleReq(req) {
 
     rids = rids.filter(({ rid }) => rid).concat(newrids);
     // Create mapping of IDs here to IDs there
-    const idmapping = rids
+    const idMapping = rids
       .map(({ id, rid }) => ({ [id]: rid }))
       .reduce((a, b) => ({ ...a, ...b }), {});
     const docs = Bluebird.map(rids, async ({ id, rid }) => {
-      const change = await lchanges[id];
+      const change = await lChanges[id];
       if (!change) {
         return Promise.resolve();
       }
@@ -198,8 +198,8 @@ responder.on<WriteResponse>('request', async function handleReq(req) {
               return undefined;
             }
             // TODO: Better link detection?
-            if (idmapping[v as string]) {
-              return idmapping[v as string];
+            if (idMapping[v as string]) {
+              return idMapping[v as string];
             }
             warn('Could not resolve link to %s at %s', v, domain);
             // TODO: What to do in this case?

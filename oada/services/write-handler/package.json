@@ -1,6 +1,7 @@
 {
   "name": "@oada/write-handler",
   "version": "3.0.1",
+  "type": "module",
   "description": "",
   "repository": {
     "type": "git",

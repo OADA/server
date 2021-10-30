@@ -15,8 +15,8 @@
 
 import type Change from '@oada/types/oada/change/v2';
 
-import config from '../config';
-import { db } from '../db';
+import config from '../config.js';
+import { db } from '../db.js';
 
 import { aql } from 'arangojs';
 import debug from 'debug';

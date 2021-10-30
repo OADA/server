@@ -74,7 +74,7 @@ convict.addParser([
  * @param schema Config schema for your application
  * @see Schema
  */
-export default function libConfig<S>(schema: Schema<S>): Config<S & D> {
+export function libConfig<S>(schema: Schema<S>): Config<S & D> {
   // Merge input schema with default schema and create config
   const config = convict({ ...defaults, ...schema } as Schema<S & D>);
 
@@ -105,3 +105,5 @@ export default function libConfig<S>(schema: Schema<S>): Config<S & D> {
 }
 
 export { convict };
+
+export default libConfig;

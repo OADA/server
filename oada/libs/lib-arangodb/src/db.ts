@@ -15,7 +15,7 @@
 
 import { setTimeout } from 'timers/promises';
 
-import config from './config';
+import config from './config.js';
 
 import { Database } from 'arangojs';
 import type { AqlQuery } from 'arangojs/aql';

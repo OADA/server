@@ -2,6 +2,7 @@
   "name": "@oada/permissions-handler",
   "description": "",
   "version": "3.0.1",
+  "type": "module",
   "author": "",
   "license": "Apache-2.0",
   "main": "dist/server.js",
@@ -10,7 +11,7 @@
   },
   "scripts": {
     "build": "yarn g:tsc",
-    "start": "node -r @oada/pino-debug --unhandled-rejections=strict --enable-source-maps server.js",
+    "start": "node -r @oada/pino-debug --unhandled-rejections=strict --enable-source-maps dist/server.js",
     "test": "mocha"
   },
   "mocha": {
@@ -24,6 +25,7 @@
     "@oada/lib-kafka": "^3.0.1",
     "@oada/pino-debug": "^3.0.1",
     "debug": "^4.3.2",
+    "es-main": "^1.0.2",
     "tslib": "^2.3.1",
     "type-is": "^1.6.18"
   },

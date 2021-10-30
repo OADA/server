@@ -27,9 +27,9 @@ import { handleResponse } from '@oada/formats-server';
 import type { Resource } from '@oada/types/oada/resource';
 import type { WriteRequest, WriteResponse } from '@oada/write-handler';
 
-import config from './config';
-import requester from './requester';
-import type {} from './server';
+import config from './config.js';
+import requester from './requester.js';
+import type {} from './server.js';
 
 import cacache from 'cacache';
 import type { FastifyPluginAsync, FastifyReply, FastifyRequest } from 'fastify';
@@ -211,9 +211,9 @@ const plugin: FastifyPluginAsync<Options> = function (fastify, opts) {
        * Check preconditions before actually getting the body
        */
 
-      const ifmatch = request.headers['if-match'];
-      if (ifmatch) {
-        const rev = parseETag(ifmatch);
+      const ifMatch = request.headers['if-match'];
+      if (ifMatch) {
+        const rev = parseETag(ifMatch);
         if (rev !== oadaGraph.rev) {
           return reply.preconditionFailed(
             'If-Match header does not match current resource _rev'
@@ -221,9 +221,9 @@ const plugin: FastifyPluginAsync<Options> = function (fastify, opts) {
         }
       }
 
-      const ifnonematch = request.headers['if-none-match'];
-      if (ifnonematch) {
-        const revs = ifnonematch.split(',').map(parseETag);
+      const ifNoneMatch = request.headers['if-none-match'];
+      if (ifNoneMatch) {
+        const revs = ifNoneMatch.split(',').map(parseETag);
         if (revs.includes(oadaGraph.rev)) {
           return reply.preconditionFailed(
             'If-None-Match header contains current resource _rev'
@@ -415,10 +415,11 @@ const plugin: FastifyPluginAsync<Options> = function (fastify, opts) {
       request.log.trace('RESOURCE EXISTS %O', oadaGraph);
       request.log.trace('RESOURCE EXISTS %O', resourceExists);
       const ignoreLinks =
-        ((request.headers['x-oada-ignore-links'] ??
-          '') as string).toLowerCase() == 'true';
-      const ifmatch = request.headers['if-match'];
-      const ifnonematch = request.headers['if-none-match'];
+        (
+          (request.headers['x-oada-ignore-links'] ?? '') as string
+        ).toLowerCase() == 'true';
+      const ifMatch = request.headers['if-match'];
+      const ifNoneMatch = request.headers['if-none-match'];
       const resp = (await requester.send(
         {
           'connection_id': request.id as unknown,
@@ -433,14 +434,14 @@ const plugin: FastifyPluginAsync<Options> = function (fastify, opts) {
           'client_id': user['client_id'],
           'contentType': request.headers['content-type'],
           'bodyid': bodyid,
-          'if-match': ifmatch && parseETag(ifmatch),
-          'if-none-match': ifnonematch?.split(',').map(parseETag),
+          'if-match': ifMatch && parseETag(ifMatch),
+          'if-none-match': ifNoneMatch?.split(',').map(parseETag),
           ignoreLinks,
         } as WriteRequest,
         config.get('kafka.topics.writeRequest')
       )) as WriteResponse;
 
-      request.log.trace('Recieved write response');
+      request.log.trace('Received write response');
       switch (resp.code) {
         case 'success':
           break;
@@ -493,8 +494,8 @@ const plugin: FastifyPluginAsync<Options> = function (fastify, opts) {
     if (oadaGraph.from?.['path_leftover'] && !oadaGraph['path_leftover']) {
       // Switch to DELETE on parent resource
       const id = oadaGraph.from['resource_id'];
-      const pathlo = oadaGraph.from['path_leftover'];
-      path = '/' + id + pathlo;
+      const pathLO = oadaGraph.from['path_leftover'];
+      path = '/' + id + pathLO;
       oadaGraph = oadaGraph.from;
       // parent resource DOES exist,
       // but linked resource may or may not have existed
@@ -502,8 +503,8 @@ const plugin: FastifyPluginAsync<Options> = function (fastify, opts) {
     }
 
     request.log.trace('Sending DELETE request');
-    const ifmatch = request.headers['if-match'];
-    const ifnonematch = request.headers['if-none-match'];
+    const ifMatch = request.headers['if-match'];
+    const ifNoneMatch = request.headers['if-none-match'];
     const resp = (await requester.send(
       {
         resourceExists,
@@ -516,8 +517,8 @@ const plugin: FastifyPluginAsync<Options> = function (fastify, opts) {
         'user_id': user['user_id'],
         'authorizationid': user['authorizationid'],
         'client_id': user['client_id'],
-        'if-match': ifmatch && parseETag(ifmatch),
-        'if-none-match': ifnonematch?.split(',').map(parseETag),
+        'if-match': ifMatch && parseETag(ifMatch),
+        'if-none-match': ifNoneMatch?.split(',').map(parseETag),
         //'bodyid': bodyid, // No body means delete?
         //body: req.body
         'contentType': '',
@@ -525,7 +526,7 @@ const plugin: FastifyPluginAsync<Options> = function (fastify, opts) {
       config.get('kafka.topics.writeRequest')
     )) as WriteResponse;
 
-    request.log.trace('Recieved delete response');
+    request.log.trace('Received delete response');
     switch (resp.code) {
       case 'success':
         break;

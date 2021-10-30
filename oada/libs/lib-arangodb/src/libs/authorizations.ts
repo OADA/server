@@ -13,10 +13,10 @@
  * limitations under the License.
  */
 
-import config from '../config';
-import { db } from '../db';
-import * as util from '../util';
-import * as users from './users';
+import config from '../config.js';
+import { db } from '../db.js';
+import * as util from '../util.js';
+import * as users from './users.js';
 
 import { aql } from 'arangojs';
 import debug from 'debug';

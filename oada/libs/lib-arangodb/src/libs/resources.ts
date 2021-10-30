@@ -16,10 +16,10 @@
 import type { Link } from '@oada/types/oada/link/v1';
 import type { Resource } from '@oada/types/oada/resource';
 
-import config from '../config';
-import { db } from '../db';
-import * as util from '../util';
-import * as users from './users';
+import config from '../config.js';
+import { db } from '../db.js';
+import * as util from '../util.js';
+import * as users from './users.js';
 
 import { aql } from 'arangojs';
 import Bluebird from 'bluebird';
@@ -356,9 +356,7 @@ export async function getResourceOwnerIdRev(
     ); // Treat non-existing path has not-found
 }
 
-export async function getParents(
-  id: string
-): Promise<Array<{
+export async function getParents(id: string): Promise<Array<{
   resource_id: string;
   path: string;
   contentType: string;

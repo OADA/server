@@ -26,7 +26,7 @@ import https from 'https';
 import { middleware as formats } from '@oada/formats-server';
 import well_known_json from '@oada/well-known-json';
 
-import config from './config';
+import config from './config.js';
 
 import axios from 'axios';
 import Bluebird from 'bluebird';
@@ -194,7 +194,7 @@ function run() {
   app.set('port', config.get('wellKnown.server.port'));
 
   //---------------------------------------------------
-  // In oada-srvc-docker, the proxy provides the https for us,
+  // In oada/server, the proxy provides the https for us,
   // but this service could also have its own certs and run https
   if (config.get('wellKnown.server.mode') === 'https') {
     const s = https.createServer(

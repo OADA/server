@@ -1,6 +1,7 @@
 {
   "name": "@oada/users",
   "version": "3.0.1",
+  "type": "module",
   "description": "",
   "author": "Alex Layton <alex@layton.in>",
   "license": "Apache-2.0",

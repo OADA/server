@@ -18,7 +18,7 @@ import { KafkaBase, ReResponder } from '@oada/lib-kafka';
 
 import type { WriteRequest, WriteResponse } from '@oada/write-handler';
 
-import config from './config';
+import config from './config.js';
 
 import debug from 'debug';
 
@@ -26,7 +26,7 @@ const error = debug('shares:error');
 const trace = debug('shares:trace');
 
 //---------------------------------------------------------
-// Kafka intializations:
+// Kafka initializations:
 const responder = new ReResponder({
   consumeTopic: config.get('kafka.topics.httpResponse'),
   produceTopic: config.get('kafka.topics.writeRequest'),

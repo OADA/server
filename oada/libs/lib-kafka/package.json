@@ -1,6 +1,7 @@
 {
   "name": "@oada/lib-kafka",
   "version": "3.0.1",
+  "type": "module",
   "description": "OADA Kafka library",
   "main": "dist/index.js",
   "engines": {

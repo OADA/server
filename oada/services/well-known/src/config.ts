@@ -13,12 +13,13 @@
  * limitations under the License.
  */
 
-import libConfig from '@oada/lib-config';
+import { libConfig } from '@oada/lib-config';
 
 const config = libConfig({
   wellKnown: {
     'forceProtocol': {
-      doc: 'use this to force https prefixes on URLs. Useful when behind a proxy.',
+      doc:
+        'use this to force https prefixes on URLs. Useful when behind a proxy.',
       format: ['https', 'http'],
       nullable: true,
       default: null,

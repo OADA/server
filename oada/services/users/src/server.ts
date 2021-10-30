@@ -14,10 +14,9 @@
  */
 
 import { users } from '@oada/lib-arangodb';
-import type { User } from '@oada/lib-arangodb/dist/libs/users';
 import { ResponderRequester } from '@oada/lib-kafka';
 
-import config from './config';
+import config from './config.js';
 
 import cloneDeep from 'clone-deep';
 import debug from 'debug';
@@ -48,7 +47,7 @@ export function stopResp(): Promise<void> {
   return responder.disconnect();
 }
 
-async function createNewUser(req: UserRequest): Promise<User> {
+async function createNewUser(req: UserRequest): Promise<users.User> {
   const _id =
     req.userid &&
     (/^users/.exec(req.userid) ? req.userid : 'users/' + req.userid);
@@ -61,25 +60,25 @@ async function createNewUser(req: UserRequest): Promise<User> {
     _id,
     _key,
     ...req.user,
-  } as Omit<User, '_rev'>);
+  } as Omit<users.User, '_rev'>);
   // Create empty resources for user
   for (const res of <const>['bookmarks', 'shares']) {
     if (!user[res]?._id) {
-      const resid = 'resources/' + (await ksuid.random()).string;
+      const resID = 'resources/' + (await ksuid.random()).string;
 
       trace(
         'Creating %s for %s of %s as _type = %s',
-        resid,
+        resID,
         res,
         user._id,
         contentTypes[res]
       );
       const resp = await responder.send({
         msgtype: 'write-request',
-        url: '/' + resid,
-        resource_id: '/' + resid,
+        url: '/' + resID,
+        resource_id: '/' + resID,
         path_leftover: '',
-        meta_id: resid + '/_meta',
+        meta_id: resID + '/_meta',
         user_id: user['_id'],
         // TODO: What to put for these?
         //'authorizationid': ,
@@ -92,7 +91,7 @@ async function createNewUser(req: UserRequest): Promise<User> {
         trace(resp.code);
         throw new Error(`Failed to create ${res}`);
       }
-      user[res] = { _id: resid };
+      user[res] = { _id: resID };
     }
   }
 
@@ -120,7 +119,7 @@ export interface UserRequest {
 export interface UserResponse {
   code: string;
   new: boolean;
-  user: User & { _id: string };
+  user: users.User & { _id: string };
 }
 responder.on<UserResponse, UserRequest>('request', handleReq);
 
@@ -206,6 +205,6 @@ export async function handleReq(req: UserRequest): Promise<UserResponse> {
     code: 'success',
     new: created_a_new_user,
     // TODO: figure out what cur_user is supposed to be??
-    user: cur_user as User,
+    user: cur_user as users.User,
   };
 }

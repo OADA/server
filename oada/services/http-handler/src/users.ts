@@ -19,8 +19,8 @@ import { users } from '@oada/lib-arangodb';
 
 import type { UserRequest, UserResponse } from '@oada/users';
 
-import config from './config';
-import requester from './requester';
+import config from './config.js';
+import requester from './requester.js';
 
 import type { FastifyPluginAsync, FastifyReply, FastifyRequest } from 'fastify';
 import ksuid from 'ksuid';
@@ -75,15 +75,15 @@ const plugin: FastifyPluginAsync<Options> = function (fastify, opts) {
     request.log.info('Users POST, body = %O', request.body);
     // Note: if the username already exists, the ksuid() below will end up
     // silently discarded and replaced in the response with the real one.
-    const { string: newid } = await ksuid.random(); // generate a random string for ID
+    const { string: newID } = await ksuid.random(); // generate a random string for ID
     // generate an ID for this particular request
     if (!request.id) {
       request.id = (await ksuid.random()).string;
     }
-    const resp = await requestUserWrite(request, newid);
+    const resp = await requestUserWrite(request, newID);
     // TODO: Better status code choices?
     // if db didn't send back a user, it was an update so use id from URL
-    const id = resp?.user?._id?.replace(/^users\//, '') ?? newid;
+    const id = resp?.user?._id?.replace(/^users\//, '') ?? newID;
     // return res.redirect(201, req.baseUrl + '/' + id)
     void reply.header('content-location', join(opts.prefix, id));
     return reply.code(201).send();

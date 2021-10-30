@@ -18,8 +18,8 @@
 import { users } from '@oada/lib-arangodb';
 import { Requester } from '@oada/lib-kafka';
 
-import config from './config';
-import type { UserRequest, UserResponse } from './server';
+import config from './config.js';
+import type { UserRequest, UserResponse } from './server.js';
 
 import chalk from 'chalk';
 import debug from 'debug';
@@ -45,7 +45,7 @@ async function run() {
     if (argv.h || argv.help) {
       console.log(
         chalk.yellow(
-          'useradd [-u username] [-p password] [ -a (if you want user to have admin priviledges to create other users)]'
+          'useradd [-u username] [-p password] [ -a (if you want user to have admin privileges to create other users)]'
         )
       );
       return;

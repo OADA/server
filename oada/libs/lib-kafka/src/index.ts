@@ -15,10 +15,10 @@
 
 // eslint-disable-next-line
 // @ts-ignore
-export { KafkaJSError as KafkaError } from 'kafkajs/src/errors';
+export { KafkaJSError as KafkaError } from 'kafkajs/src/errors.js';
 
-export { KafkaBase } from './base';
-export { Responder } from './Responder';
-export { ReResponder } from './ReResponder';
-export { Requester } from './Requester';
-export { ResponderRequester } from './ResponderRequester';
+export { KafkaBase } from './base.js';
+export { Responder } from './Responder.js';
+export { ReResponder } from './ReResponder.js';
+export { Requester } from './Requester.js';
+export { ResponderRequester } from './ResponderRequester.js';

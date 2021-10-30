@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-import libConfig from '@oada/lib-config';
+import { libConfig } from '@oada/lib-config';
 
 const config = libConfig({
   kafka: {

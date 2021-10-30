@@ -1,6 +1,7 @@
 {
   "name": "@oada/rev-graph-update",
   "version": "3.0.1",
+  "type": "module",
   "description": "",
   "author": "",
   "license": "Apache-2.0",
@@ -26,7 +27,7 @@
     "@oada/pino-debug": "^3.0.1",
     "ajv": "^8.6.3",
     "debug": "^4.3.2",
-    "p-queue": "^6.6.2",
+    "p-queue": "^7.1.0",
     "randomstring": "^1.2.1",
     "tslib": "^2.3.1"
   },

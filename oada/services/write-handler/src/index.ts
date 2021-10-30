@@ -19,7 +19,7 @@ import { KafkaBase, Responder } from '@oada/lib-kafka';
 import type Change from '@oada/types/oada/change/v2';
 import type { Resource } from '@oada/types/oada/resource';
 
-import config from './config';
+import config from './config.js';
 
 import Bluebird from 'bluebird';
 import debug from 'debug';
@@ -171,10 +171,10 @@ export async function handleReq(req: WriteRequest): Promise<WriteResponse> {
     ): Promise<{ rev?: number; orev?: number; changeId?: string }> {
       trace(body, 'FIRST BODY');
       if (req['if-match']) {
-        const rev = ((await resources.getResource(
+        const rev = (await resources.getResource(
           req['resource_id'],
           '/_rev'
-        )) as unknown) as number;
+        )) as unknown as number;
         if (req['if-match'] !== rev) {
           error(rev);
           error(req['if-match']);
@@ -183,10 +183,10 @@ export async function handleReq(req: WriteRequest): Promise<WriteResponse> {
         }
       }
       if (req['if-none-match']) {
-        const rev = ((await resources.getResource(
+        const rev = (await resources.getResource(
           req['resource_id'],
           '/_rev'
-        )) as unknown) as number;
+        )) as unknown as number;
         if (req['if-none-match'].includes(rev)) {
           error(rev);
           error(req['if-none-match']);
@@ -196,10 +196,10 @@ export async function handleReq(req: WriteRequest): Promise<WriteResponse> {
       }
       let cacheRev = cache.get(req['resource_id']);
       if (!cacheRev) {
-        cacheRev = ((await resources.getResource(
+        cacheRev = (await resources.getResource(
           req['resource_id'],
           '/_rev'
-        )) as unknown) as number;
+        )) as unknown as number;
       }
       if (req.rev) {
         if (cacheRev !== req.rev) {
@@ -218,12 +218,12 @@ export async function handleReq(req: WriteRequest): Promise<WriteResponse> {
         if (path.length > 0) {
           trace('Delete path = %s', path);
           // TODO: This is gross
-          const ppath = Array.from(path);
-          method = (id, obj) => resources.deletePartialResource(id, ppath, obj);
+          const aPath = Array.from(path);
+          method = (id, obj) => resources.deletePartialResource(id, aPath, obj);
           trace(
             'Setting method = deletePartialResource(%s, %o, %O)',
             id,
-            ppath,
+            aPath,
             obj
           );
           body = null;
@@ -275,8 +275,8 @@ export async function handleReq(req: WriteRequest): Promise<WriteResponse> {
 
       // Create object to recursively merge into the resource
       trace(path, 'Recursively merging path into arango object');
-      const endk = path.pop();
-      if (endk !== undefined) {
+      const endK = path.pop();
+      if (endK !== undefined) {
         let o = obj as Record<string, unknown>;
         path.forEach((k) => {
           trace('Adding path for key %s', k);
@@ -286,7 +286,7 @@ export async function handleReq(req: WriteRequest): Promise<WriteResponse> {
           }
           o = o[k] as Record<string, unknown>;
         });
-        o[endk] = body as DeepPartial<Resource>;
+        o[endK] = body as DeepPartial<Resource>;
       } else {
         objectAssignDeep(obj, body);
       }

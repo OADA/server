@@ -13,9 +13,9 @@
  * limitations under the License.
  */
 
-import config from '../config';
-import { db } from '../db';
-import * as util from '../util';
+import config from '../config.js';
+import { db } from '../db.js';
+import * as util from '../util.js';
 
 import { aql } from 'arangojs';
 import type { CollectionReadOptions } from 'arangojs/collection';

@@ -13,8 +13,8 @@
  * limitations under the License.
  */
 
-import config from '../config';
-import { db } from '../db';
+import config from '../config.js';
+import { db } from '../db.js';
 
 const collection = db.collection(
   config.get('arangodb.collections.putBodies.name')

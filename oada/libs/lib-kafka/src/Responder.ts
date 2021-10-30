@@ -24,7 +24,7 @@ import {
   KafkaBase,
   REQ_ID_KEY,
   topicTimeout,
-} from './base';
+} from './base.js';
 
 import debug from 'debug';
 import type { EachMessagePayload } from 'kafkajs';
@@ -90,7 +90,7 @@ export class Responder extends Base {
     listener: L
   ): this {
     if (event === 'request') {
-      // TODO: Probably a better way to hande this event...
+      // TODO: Probably a better way to handle this event...
       return super.on(DATA, async (req, data) => {
         const { domain, group, resp_partition: part = null } = req;
         const id = req[REQ_ID_KEY] as string;
@@ -159,7 +159,7 @@ export class Responder extends Base {
             const resp = (await listener(req, data)) as Response;
             await respond(resp);
           } catch (err: unknown) {
-            // Catch and communciate errors over kafka?
+            // Catch and communicate errors over kafka?
             error(err);
             const { code } = (err ?? {}) as { code?: string };
             await respond({

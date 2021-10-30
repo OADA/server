@@ -1,7 +1,8 @@
 {
   "name": "@oada/tests",
   "version": "1.0.0",
-  "description": "Generate dummy messages to test different oada-srvc micro services.",
+  "type": "module",
+  "description": "Generate dummy messages to test different oada microservices.",
   "main": "",
   "dependencies": {
     "axios": "^0.21.1",

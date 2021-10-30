@@ -15,7 +15,7 @@
 
 import { Requester } from '@oada/lib-kafka';
 
-import config from './config';
+import config from './config.js';
 
 // TODO: Is it better to have one requester per topic?
 export default new Requester({

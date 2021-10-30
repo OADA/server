@@ -16,7 +16,7 @@
 import EventEmitter from 'events';
 import process from 'process';
 
-import config from './config';
+import config from './config.js';
 
 import Bluebird from 'bluebird';
 import debug from 'debug';

@@ -14,13 +14,14 @@
  */
 
 import fs from 'fs';
-import { join } from 'path';
+import { URL } from 'url';
 
 import { Responder } from '@oada/lib-kafka';
 
-import config from './config';
-import scopeTypes from './scopes';
+import config from './config.js';
+import scopeTypes from './scopes.js';
 
+import esMain from 'es-main';
 import debug from 'debug';
 import typeis from 'type-is';
 
@@ -33,9 +34,9 @@ export type Scope = `${string}:${Perm}`;
 export type Scopes = typeof scopeTypes;
 
 // Listen on Kafka if we are running this file
-if (require.main === module) {
+if (esMain(import.meta)) {
   //---------------------------------------------------------
-  // Kafka intializations:
+  // Kafka initializations:
   const responder = new Responder({
     consumeTopic: config.get('kafka.topics.permissionsRequest'),
     produceTopic: config.get('kafka.topics.httpResponse'),
@@ -48,7 +49,7 @@ if (require.main === module) {
 trace(scopeTypes, 'Parsed builtin scopes');
 // Augment scopeTypes by merging in anything in /scopes/additional-scopes
 const additionalScopesFiles = fs
-  .readdirSync(join(__dirname, '../scopes/additional-scopes'))
+  .readdirSync(new URL('../scopes/additional-scopes', import.meta.url))
   .filter(
     (f) => !/^\./.exec(f) // remove hidden files
   );
@@ -177,7 +178,7 @@ export function handleReq(req: PermissionsRequest): PermissionsResponse {
       write: true,
       owner: true,
     };
-    //Check permissions. 2. Check if resouce does not exist
+    //Check permissions. 2. Check if resource does not exist
   } else if (!req.oadaGraph.resourceExists) {
     response.permissions = {
       read: true,

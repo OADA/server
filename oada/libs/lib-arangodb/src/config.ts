@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-import libConfig from '@oada/lib-config';
+import { libConfig } from '@oada/lib-config';
 
 import type { CreateCollectionOptions } from 'arangojs/collection';
 
@@ -65,7 +65,7 @@ const config = libConfig({
         default: {
           name: 'users',
           indexes: ['username'],
-          defaults: './libs/exampledocs/users',
+          defaults: './libs/exampledocs/users.js',
         },
       },
       clients: {
@@ -73,7 +73,7 @@ const config = libConfig({
         default: {
           name: 'clients',
           indexes: ['clientId'],
-          defaults: './libs/exampledocs/clients',
+          defaults: './libs/exampledocs/clients.js',
         },
       },
       authorizations: {
@@ -81,7 +81,7 @@ const config = libConfig({
         default: {
           name: 'authorizations',
           indexes: ['token', { name: 'user', unique: false }],
-          defaults: './libs/exampledocs/authorizations',
+          defaults: './libs/exampledocs/authorizations.js',
         },
       },
       codes: {
@@ -89,7 +89,7 @@ const config = libConfig({
         default: {
           name: 'codes',
           indexes: ['code'],
-          defaults: './libs/exampledocs/codes',
+          defaults: './libs/exampledocs/codes.js',
         },
       },
       resources: {
@@ -97,7 +97,7 @@ const config = libConfig({
         default: {
           name: 'resources',
           indexes: [],
-          defaults: './libs/exampledocs/resources',
+          defaults: './libs/exampledocs/resources.js',
         },
       },
       graphNodes: {
@@ -105,7 +105,7 @@ const config = libConfig({
         default: {
           name: 'graphNodes',
           indexes: [],
-          defaults: './libs/exampledocs/graphNodes',
+          defaults: './libs/exampledocs/graphNodes.js',
         },
       },
       changes: {
@@ -113,7 +113,7 @@ const config = libConfig({
         default: {
           name: 'changes',
           indexes: [],
-          defaults: './libs/exampledocs/changes',
+          defaults: './libs/exampledocs/changes.js',
         },
       },
       changeEdges: {
@@ -121,7 +121,7 @@ const config = libConfig({
         default: {
           name: 'changeEdges',
           indexes: [{ name: 'name', unique: false }],
-          defaults: './libs/exampledocs/changeEdges',
+          defaults: './libs/exampledocs/changeEdges.js',
           edgeCollection: true,
         },
       },
@@ -130,7 +130,7 @@ const config = libConfig({
         default: {
           name: 'edges',
           indexes: [{ name: 'name', unique: false }],
-          defaults: './libs/exampledocs/edges',
+          defaults: './libs/exampledocs/edges.js',
           edgeCollection: true,
         },
       },
@@ -139,7 +139,7 @@ const config = libConfig({
         default: {
           name: 'putBodies',
           indexes: [],
-          defaults: './libs/exampledocs/putBodies',
+          defaults: './libs/exampledocs/putBodies.js',
           createOptions: { isVolatile: false },
         },
       },
@@ -158,7 +158,7 @@ const config = libConfig({
           createOptions: { isVolatile: false },
         },
       },
-      // Gross hack because convict types don't undertand assert
+      // Gross hack because convict types don't understand assert
     } as Record<string, { default: Collection }>,
     retry: {
       deadlock: {

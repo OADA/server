@@ -1,0 +1,144 @@
+// Open this file to use the monorepo in vscode
+{
+  "folders": [
+    {
+      "name": "✨ root",
+      "path": "."
+    },
+    {
+      "name": "oada",
+      "path": "oada"
+    },
+    {
+      "name": "📦 @oada/lib-arangodb",
+      "path": "oada/libs/lib-arangodb"
+    },
+    {
+      "name": "📦 @oada/lib-config",
+      "path": "oada/libs/lib-config"
+    },
+    {
+      "name": "📦 @oada/lib-kafka",
+      "path": "oada/libs/lib-kafka"
+    },
+    {
+      "name": "📦 @oada/pino-debug",
+      "path": "oada/libs/pino-debug"
+    },
+    {
+      "name": "@oada/auth",
+      "path": "oada/services/auth"
+    },
+    {
+      "name": "@oada/http-handler",
+      "path": "oada/services/http-handler"
+    },
+    {
+      "name": "@oada/permissions-handler",
+      "path": "oada/services/permissions-handler"
+    },
+    {
+      "name": "@oada/rev-graph-update",
+      "path": "oada/services/rev-graph-update"
+    },
+    {
+      "name": "@oada/shares",
+      "path": "oada/services/shares"
+    },
+    {
+      "name": "@oada/startup",
+      "path": "oada/services/startup"
+    },
+    {
+      "name": "@oada/sync-handler",
+      "path": "oada/services/sync-handler"
+    },
+    {
+      "name": "@oada/users",
+      "path": "oada/services/users"
+    },
+    {
+      "name": "@oada/webhooks",
+      "path": "oada/services/webhooks"
+    },
+    {
+      "name": "@oada/well-known",
+      "path": "oada/services/well-known"
+    },
+    {
+      "name": "@oada/write-handler",
+      "path": "oada/services/write-handler"
+    }
+  ],
+  "settings": {
+    "search.exclude": {
+      ".actrc": true,
+      "**/.DS_Store": true,
+      "**/.grunt": true,
+      "**/.lock-wscript": true,
+      "**/.node_repl_history": true,
+      "**/.npm": true,
+      "**/.nyc_output": true,
+      "**/.pnp.*": true,
+      "**/.vim": true,
+      "**/.yarn": true,
+      "**/*.log": true,
+      "**/*.pid": true,
+      "**/*.seed": true,
+      "**/*.tsbuildinfo": true,
+      "**/coverage": true,
+      "**/dist": true,
+      "**/lib-cov": true,
+      "**/logs": true,
+      "**/node_modules": true,
+      "**/pids": true,
+      "**/tags.*": true,
+      "act/": true,
+      "oada/.yarn/cache/.gitignore": true,
+      "oada/.yarn/cache/*.flock": true,
+      "oada/.yarn/cache/*.tmp": true,
+      "oada/services/auth/public/domains/*": true
+    },
+    "prettier.prettierPath": "oada/.yarn/sdks/prettier/index.js",
+    "typescript.tsdk": "oada/.yarn/sdks/typescript/lib",
+    "typescript.enablePromptUseWorkspaceTsdk": true,
+    "eslint.nodePath": "oada/.yarn/sdks",
+    "files.exclude": {
+      ".actrc": true,
+      "**/.DS_Store": true,
+      "**/.grunt": true,
+      "**/.lock-wscript": true,
+      "**/.node_repl_history": true,
+      "**/.npm": true,
+      "**/.nyc_output": true,
+      "**/.pnp.*": true,
+      "**/.vim": true,
+      "**/.yarn": true,
+      "**/*.log": true,
+      "**/*.pid": true,
+      "**/*.seed": true,
+      "**/*.tsbuildinfo": true,
+      "**/coverage": true,
+      "**/dist": true,
+      "**/lib-cov": true,
+      "**/logs": true,
+      "**/node_modules": true,
+      "**/pids": true,
+      "**/tags.*": true,
+      "act/": true,
+      "oada/.yarn/cache/.gitignore": true,
+      "oada/.yarn/cache/*.flock": true,
+      "oada/.yarn/cache/*.tmp": true,
+      "oada/services/auth/public/domains/*": true
+    },
+    "cSpell.words": [
+      "arango",
+      "arangodb",
+      "arangojs",
+      "fastify",
+      "Kafkajs",
+      "oada",
+      "pino"
+    ]
+  }
+}

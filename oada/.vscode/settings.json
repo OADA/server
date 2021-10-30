@@ -1,0 +1,10 @@
+{
+  "files.exclude": {
+    "libs": true,
+    "services": true
+  },
+  "search.exclude": {
+    "libs": true,
+    "services": true
+  }
+}

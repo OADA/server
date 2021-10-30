@@ -19,7 +19,7 @@ import { KafkaBase, Responder } from '@oada/lib-kafka';
 import type Resource from '@oada/types/oada/resource';
 import type { WriteResponse } from '@oada/write-handler';
 
-import config from './config';
+import config from './config.js';
 
 import axios from 'axios';
 import Bluebird from 'bluebird';
@@ -29,7 +29,7 @@ const trace = debug('webhooks:trace');
 const error = debug('webhooks:error');
 
 //---------------------------------------------------------
-// Kafka intializations:
+// Kafka initializations:
 const responder = new Responder({
   consumeTopic: config.get('kafka.topics.httpResponse'),
   group: 'webhooks',

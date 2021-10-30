@@ -13,13 +13,13 @@
  * limitations under the License.
  */
 
-import { Base, CONNECT, DATA, KafkaBase } from './base';
-import { ConstructorOpts as RequesterOpts, Requester } from './Requester';
+import { Base, CONNECT, DATA, KafkaBase } from './base.js';
+import { ConstructorOpts as RequesterOpts, Requester } from './Requester.js';
 import {
   ConstructorOpts as ResponderOpts,
   Responder,
   Response,
-} from './Responder';
+} from './Responder.js';
 
 import type Bluebird from 'bluebird';
 import debug from 'debug';
@@ -59,7 +59,7 @@ export type ConstructorOpts = Omit<
   requestTopics: { consumeTopic: string; produceTopic: string };
   respondTopics: { consumeTopic: string; produceTopic: string };
 };
-// Class for when responding to reuqests requires making other requests
+// Class for when responding to requests requires making other requests
 // TODO: Better class name?
 export class ResponderRequester extends Base {
   private responder: DummyResponder;
