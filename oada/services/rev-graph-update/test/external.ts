@@ -49,7 +49,7 @@ describe('External tests of rev-graph-update, run from admin', () => {
       data: { change1: 'isdone' },
       contentType,
     });
-    await Bluebird.delay(500); // give it a second to update the parent
+    await Bluebird.delay(500); // Give it a second to update the parent
     const newtoprev = await con
       .get({ path: `/${topid}/_rev` })
       .then((r) => r.data);
@@ -59,7 +59,7 @@ describe('External tests of rev-graph-update, run from admin', () => {
   it('Should set _rev to 0 on parent when child resource is deleted', async function () {
     this.timeout(5000);
     await con.delete({ path: `/${bottomid}` });
-    await Bluebird.delay(500); // give it a second to update the parent
+    await Bluebird.delay(500); // Give it a second to update the parent
     const middle = (await con
       .get({ path: `/${middleid}` })
       .then((r) => r.data)) as any;
@@ -70,7 +70,7 @@ describe('External tests of rev-graph-update, run from admin', () => {
     await con.put({
       path: `/${bottomid}`,
       data: { middle: { _id: middleid, _rev: 0 } },
-    }); // cycle middle -> bottom -> middle -> bottom -> ...
+    }); // Cycle middle -> bottom -> middle -> bottom -> ...
     // Write again to bottom just for good measure
     await con.put({ path: `/${bottomid}`, data: { change2: 'isdone' } });
     await Bluebird.delay(500);
@@ -98,9 +98,9 @@ async function buildTree() {
       data: { iam: 'top', middle: { _id: middleid, _rev: 0 } },
       contentType,
     });
-  } catch (e) {
-    console.log('FAILED TO BUILD TREE.  ERROR = ', e);
-    throw e;
+  } catch (error) {
+    console.log('FAILED TO BUILD TREE.  ERROR =', error);
+    throw error;
   }
 }
 
@@ -108,7 +108,7 @@ async function cleanup() {
   await Bluebird.each([topid, middleid, bottomid], async (id) => {
     await con
       .get({ path: `/${id}` })
-      .then(async () => con.delete({ path: `/${id}` })) // delete it
-      .catch(() => {}); // do nothing, didn't exist
+      .then(async () => con.delete({ path: `/${id}` })) // Delete it
+      .catch(() => {}); // Do nothing, didn't exist
   });
 }

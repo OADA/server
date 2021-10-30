@@ -14,16 +14,16 @@
  */
 
 import { Base, CONNECT, DATA, KafkaBase } from './base.js';
-import { ConstructorOpts as RequesterOpts, Requester } from './Requester.js';
+import { Requester, ConstructorOpts as RequesterOptions } from './Requester.js';
 import {
-  ConstructorOpts as ResponderOpts,
   Responder,
+  ConstructorOpts as ResponderOptions,
   Response,
 } from './Responder.js';
 
 import type Bluebird from 'bluebird';
 import debug from 'debug';
-import type EventEmitter from 'events';
+import type EventEmitter from 'node:events';
 import type { EachMessagePayload } from 'kafkajs';
 
 const trace = debug('@oada/lib-kafka:trace');
@@ -31,28 +31,30 @@ const trace = debug('@oada/lib-kafka:trace');
 export { EventEmitter };
 
 class DummyResponder extends Responder {
-  constructor(opts: ResponderOpts, ready: Bluebird<void>) {
-    super(opts);
+  constructor(options: ResponderOptions, ready: Bluebird<void>) {
+    super(options);
     this.ready = ready;
   }
-  override [CONNECT](): Promise<void> {
+
+  override async [CONNECT](): Promise<void> {
     // Don't connect to Kafka
     return Promise.resolve();
   }
 }
 class DummyRequester extends Requester {
-  constructor(opts: RequesterOpts, ready: Bluebird<void>) {
-    super(opts);
+  constructor(options: RequesterOptions, ready: Bluebird<void>) {
+    super(options);
     this.ready = ready;
   }
-  override [CONNECT](): Promise<void> {
+
+  override async [CONNECT](): Promise<void> {
     // Don't connect to Kafka
     return Promise.resolve();
   }
 }
 
 export type ConstructorOpts = Omit<
-  ResponderOpts & RequesterOpts,
+  ResponderOptions & RequesterOptions,
   'consumeTopic' | 'produceTopic'
 > & {
   respondOwn?: boolean;
@@ -62,21 +64,21 @@ export type ConstructorOpts = Omit<
 // Class for when responding to requests requires making other requests
 // TODO: Better class name?
 export class ResponderRequester extends Base {
-  private responder: DummyResponder;
-  private requester: DummyRequester;
-  private respondOwn;
+  private readonly responder: DummyResponder;
+  private readonly requester: DummyRequester;
+  private readonly respondOwn;
 
   constructor({
     requestTopics,
     respondTopics,
     group,
     respondOwn = false,
-    ...opts
+    ...options
   }: ConstructorOpts) {
     super({
       consumeTopic: [requestTopics.consumeTopic, respondTopics.consumeTopic],
       group,
-      ...opts,
+      ...options,
     });
 
     this.respondOwn = respondOwn;
@@ -88,7 +90,7 @@ export class ResponderRequester extends Base {
         producer: this.producer,
         group,
         ...respondTopics,
-        ...opts,
+        ...options,
       },
       this.ready
     );
@@ -98,25 +100,27 @@ export class ResponderRequester extends Base {
         producer: this.producer,
         group,
         ...requestTopics,
-        ...opts,
+        ...options,
       },
       this.ready
     );
 
     // Mux the consumer between requester and responder
-    this.on(DATA, (val: KafkaBase, data, ...rest) => {
-      trace(data, 'Received data: %o', val);
+    this.on(DATA, (value: KafkaBase, data, ...rest) => {
+      trace(data, 'Received data: %o', value);
       if (data.topic === this.requester.consumeTopic) {
         trace('Muxing data to requester');
-        this.requester.emit(DATA, val, data, ...rest);
+        this.requester.emit(DATA, value, data, ...rest);
       }
+
       if (data.topic === this.responder.consumeTopic) {
-        if (!this.respondOwn && val.group === this.group) {
+        if (!this.respondOwn && value.group === this.group) {
           // Don't respond to own requests
           return;
         }
+
         trace('Muxing data to responder');
-        this.responder.emit(DATA, val, data, ...rest);
+        this.responder.emit(DATA, value, data, ...rest);
       }
     });
 
@@ -126,9 +130,11 @@ export class ResponderRequester extends Base {
   /**
    * @todo Maybe rearrange type parameters? Maybe make them class params?
    */
-  override on<Res, Req = KafkaBase>(
+  override on<Res, Request = KafkaBase>(
     event: 'request',
-    listener: (reg: Req & KafkaBase) => Response<Res> | Promise<Response<Res>>
+    listener: (
+      reg: Request & KafkaBase
+    ) => Response<Res> | Promise<Response<Res>>
   ): this;
   override on(
     event: typeof DATA,
@@ -140,11 +146,11 @@ export class ResponderRequester extends Base {
   ): this;
   override on(
     event: string | symbol,
-    listener: (...args: any[]) => unknown
+    listener: (...arguments_: any[]) => unknown
   ): this;
   override on(
     event: string | symbol,
-    listener: (...args: any[]) => unknown
+    listener: (...arguments_: any[]) => unknown
   ): this {
     switch (event) {
       case 'ready':
@@ -158,14 +164,16 @@ export class ResponderRequester extends Base {
         this.responder.on(event, listener);
         break;
     }
+
     return this;
   }
 
   // TODO: Is it better to just extend Requester?
-  send(...args: Parameters<Requester['send']>): Promise<KafkaBase> {
-    return this.requester.send(...args);
+  async send(...arguments_: Parameters<Requester['send']>): Promise<KafkaBase> {
+    return this.requester.send(...arguments_);
   }
-  async emitter(...args: Parameters<Requester['emitter']>) {
-    return await this.requester.emitter(...args);
+
+  async emitter(...arguments_: Parameters<Requester['emitter']>) {
+    return this.requester.emitter(...arguments_);
   }
 }

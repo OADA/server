@@ -15,14 +15,14 @@
 
 import config from '../src/config';
 
-// @ts-ignore
-config.set('isTest', true);
-
 import { expect } from 'chai';
-import * as init from '../src/init';
+import { run } from '../src/init';
 import { lookupFromUrl } from '../src/libs/resources';
 
-// library under test:
+// @ts-expect-error
+config.set('isTest', true);
+
+// Library under test:
 
 // Tests for the arangodb driver:
 
@@ -45,42 +45,39 @@ describe('graph-lookup service', () => {
   before(async () => {
     // Create the test database (with necessary collections and dummy data)
     try {
-      await init.run();
-    } catch (err: unknown) {
+      await run();
+    } catch (error: unknown) {
       console.error(
         'FAILED to initialize graph-lookup tests by creating database'
       );
-      console.error('The error = ', err);
+      console.error('The error =', error);
     }
   });
 
-  //--------------------------------------------------
+  // --------------------------------------------------
   // The tests!
-  //--------------------------------------------------
+  // --------------------------------------------------
 
-  it('should be able to return the resource id from a url', async () => {
-    return lookupFromUrl(rockUrl, userid).then((result) => {
+  it('should be able to return the resource id from a url', async () =>
+    lookupFromUrl(rockUrl, userid).then((result) => {
       expect(result.resource_id).to.equal(rockResourceId);
-    });
-  });
-  it('should also return the leftover path for non-resource URLs', async () => {
-    return lookupFromUrl(rockPickedUrl, userid).then((result) => {
+    }));
+  it('should also return the leftover path for non-resource URLs', async () =>
+    lookupFromUrl(rockPickedUrl, userid).then((result) => {
       expect(result.resource_id).to.equal(rockResourceId);
       expect(result.path_leftover).to.equal(rockPickedPathLeft);
-    });
-  });
-  it('should also return the leftover path for non-resource URLs', async () => {
-    return lookupFromUrl(rocksIndexUrl, userid).then((result) => {
+    }));
+  it('should also return the leftover path for non-resource URLs', async () =>
+    lookupFromUrl(rocksIndexUrl, userid).then((result) => {
       expect(result.resource_id).to.equal(rocksIndexResourceId);
       expect(result.path_leftover).to.equal(rocksIndexPathLeft);
-    });
-  });
+    }));
 
-  //-------------------------------------------------------
+  // -------------------------------------------------------
   // After tests are done, get rid of our temp database
-  //-------------------------------------------------------
+  // -------------------------------------------------------
   after(async () => {
-    //    db.useDatabase('_system') // arango only lets you drop a database from the _system db
+    //    Db.useDatabase('_system') // arango only lets you drop a database from the _system db
     //   return db.dropDatabase(dbname)
     //   .then(() => { console.log('Successfully cleaned up test database '+dbname) })
     //   .catch(err => console.log('Could not drop test database '+dbname+' after the tests! err = ', err))

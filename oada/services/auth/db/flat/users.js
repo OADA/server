@@ -17,23 +17,23 @@
 const cloneDeep = require('clone-deep');
 const users = require('./users.json');
 
-function findByUsername(username, cb) {
+function findByUsername(username, callback) {
   if (users[username]) {
-    return cb(null, cloneDeep(users[username]));
+    return callback(null, cloneDeep(users[username]));
   }
 
-  return cb(null, false);
+  return callback(null, false);
 }
 
-function findByUsernamePassword(username, password, cb) {
+function findByUsernamePassword(username, password, callback) {
   if (users[username] && users[username].password === password) {
-    return cb(null, cloneDeep(users[username]));
+    return callback(null, cloneDeep(users[username]));
   }
 
-  return cb(null, false);
+  return callback(null, false);
 }
 
 module.exports = {
-  findByUsername: findByUsername,
-  findByUsernamePassword: findByUsernamePassword,
+  findByUsername,
+  findByUsernamePassword,
 };

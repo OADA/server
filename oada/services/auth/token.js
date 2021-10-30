@@ -60,18 +60,17 @@ async function run() {
 
   if (argv.h || argv.help || !argv._[0]) {
     trace('Help:');
-    return usage();
+    usage();
+    return;
   }
 
-  const getNow = () => {
-    return new Date().getTime() / 1000.0;
-  };
+  const getNow = () => Date.now() / 1000;
 
   const extend = async () => {
     trace('Running extend');
-    const expiresIn = argv.e ? +argv.e : 0;
+    const expiresIn = argv.e ? Number(argv.e) : 0;
     const createTime = argv.n ? getNow() : argv.c ? argv.c : false;
-    const token = argv._[argv._.length - 1]; // last argument is token
+    const token = argv._[argv._.length - 1]; // Last argument is token
 
     const auth = await authorizations.findByToken(token);
     trace('Found auth, it is ', auth);
@@ -81,7 +80,8 @@ async function run() {
     if (createTime) {
       update.createTime = createTime;
     }
-    update.user = { _id: update.user._id }; // library filled this in, replace with just _id
+
+    update.user = { _id: update.user._id }; // Library filled this in, replace with just _id
     return update;
   };
 
@@ -91,17 +91,20 @@ async function run() {
       console.error(
         'You must provide a userid (users/123) or a username (bob)'
       );
-      return usage();
+      usage();
+      return;
     }
+
     let userid = argv.u;
     // If there is not a slash in the -u argument's value, assume we need to lookup userid for this username
-    if (!userid.match(/\//)) {
+    if (!/\//.test(userid)) {
       const u = await users.findByUsername(userid);
       userid = u._id;
       if (!userid) {
-        console.error('Unable to find username ' + argv.u + '.  Aborting.');
+        console.error(`Unable to find username ${argv.u}.  Aborting.`);
         return;
       }
+
       console.info(`Looked up username ${argv.u} and found userid ${userid}`);
     }
 
@@ -121,7 +124,7 @@ async function run() {
   };
 
   const disable = async () => {
-    const token = argv._[argv._.length - 1]; // last argument is token
+    const token = argv._[argv._.length - 1]; // Last argument is token
 
     const auth = await authorizations.findByToken(token);
     trace('Found auth, it is ', auth);
@@ -144,13 +147,17 @@ async function run() {
     case 'disable':
       update = await disable();
       break;
-    default:
-      return usage();
+    default: {
+      usage();
+      return;
+    }
   }
+
   if (update) {
     trace('Sending updated token as ', update);
     await authorizations.save(update);
     console.info(chalk.green(`Successfully wrote token ${update.token}`));
   }
 }
+
 run();

@@ -17,17 +17,17 @@
 const cloneDeep = require('clone-deep');
 const codes = require('./codes.json');
 
-function findByCode(code, cb) {
-  cb(null, cloneDeep(codes[code]));
+function findByCode(code, callback) {
+  callback(null, cloneDeep(codes[code]));
 }
 
-function save(code, cb) {
+function save(code, callback) {
   codes[code.code] = JSON.parse(JSON.stringify(code));
 
-  findByCode(code.code, cb);
+  findByCode(code.code, callback);
 }
 
 module.exports = {
-  findByCode: findByCode,
-  save: save,
+  findByCode,
+  save,
 };

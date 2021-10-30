@@ -25,12 +25,12 @@ const error = debug('oada-ref-auth#dynReg:error');
 const info = debug('oada-ref-auth#dynReg:info');
 const trace = debug('oada-ref-auth#dynReg:trace');
 
-function dynReg(req, res) {
-  return Bluebird.try(function () {
-    if (!req.body || !req.body.software_statement) {
+function dynReg(request, res) {
+  return Bluebird.try(() => {
+    if (!request.body || !request.body.software_statement) {
       info(
         'request body does not have software_statement key.  Did you remember content-type=application/json?  Body = %O',
-        req.body
+        request.body
       );
       res.status(400).json({
         error: 'invalid_client_registration_body',
@@ -41,7 +41,7 @@ function dynReg(req, res) {
     }
 
     return oadacerts
-      .validate(req.body.software_statement, {
+      .validate(request.body.software_statement, {
         timeout: config.get(
           'auth.dynamicRegistration.trustedListLookupTimeout'
         ),
@@ -51,6 +51,7 @@ function dynReg(req, res) {
         if (typeof payload === 'string') {
           clientcert = JSON.parse(clientcert);
         }
+
         // Set the "trusted" status based on JWS library return value
         clientcert.trusted = trusted;
         clientcert.valid = valid;
@@ -72,61 +73,57 @@ function dynReg(req, res) {
         if (!valid) {
           res.status(400).json({
             error: 'invalid_software_statement',
-            error_description:
-              'Software statement was not a valid JWT.  Details on rejection = ' +
-              JSON.stringify(details, false, '  '),
+            error_description: `Software statement was not a valid JWT.  Details on rejection = ${JSON.stringify(
+              details,
+              false,
+              '  '
+            )}`,
           });
           return;
         }
 
         // If scopes is listed in the body, check them to make sure they are in the software_statement, then
         // replace the signed ones with the subset given in the body
-        if (req.body.scopes && typeof scopes === 'string') {
+        if (request.body.scopes && typeof scopes === 'string') {
           const possiblescopes = (clientcert.scopes || '').split(' ');
-          const subsetscopes = req.body.scopes.split();
+          const subsetscopes = request.body.scopes.split();
           const finalscopes = subsetscopes.filter((s) =>
             possiblescopes.find(s)
           );
           clientcert.scopes = finalscopes.join(' ');
         }
 
-        //------------------------------------------
+        // ------------------------------------------
         // Save client to database, return client_id for their future OAuth2 requests
         trace(
-          'Saving client ' +
-            clientcert.client_name +
-            ' registration, trusted = %s',
+          `Saving client ${clientcert.client_name} registration, trusted = %s`,
           trusted
         );
         return clients
           .saveAsync(clientcert)
-          .then(function (client) {
+          .then((client) => {
             clientcert.client_id = client.clientId;
             delete clientcert.clientId;
             info(
-              'Saved new client ID ' +
-                clientcert.client_id +
-                ' to DB, client_name = %s',
+              `Saved new client ID ${clientcert.client_id} to DB, client_name = %s`,
               clientcert.client_name
             );
             res.status(201).json(clientcert);
           })
-          .catch(function (err) {
-            error('Failed to save new dynReg client. err = %O', err);
+          .catch((error_) => {
+            error('Failed to save new dynReg client. err = %O', error_);
             res.status(400).json({
               error: 'invalid_client_registration',
-              error_description:
-                'Unexpected error - Client registration could not be stored.  Err = ' +
-                err.toString(),
+              error_description: `Unexpected error - Client registration could not be stored.  Err = ${error_.toString()}`,
             });
           });
 
         // If oadacerts fails
       })
-      .catch(function (e) {
+      .catch((error_) => {
         error(
           'Failed to validate client registration, oada-certs threw error: %O',
-          e
+          error_
         );
         res.status(400).json({
           error: 'invalid_client_registration',
@@ -139,7 +136,7 @@ function dynReg(req, res) {
 
 // Add a test fixture to mock the database:
 dynReg.test = {
-  mockClientsDatabase: function (mockdb) {
+  mockClientsDatabase(mockdb) {
     clients = mockdb;
   },
   oadacerts,

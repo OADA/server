@@ -13,8 +13,8 @@
  * limitations under the License.
  */
 
-import fs from 'fs';
-import { URL } from 'url';
+import fs from 'node:fs';
+import { URL } from 'node:url';
 
 import { Responder } from '@oada/lib-kafka';
 
@@ -35,7 +35,7 @@ export type Scopes = typeof scopeTypes;
 
 // Listen on Kafka if we are running this file
 if (esMain(import.meta)) {
-  //---------------------------------------------------------
+  // ---------------------------------------------------------
   // Kafka initializations:
   const responder = new Responder({
     consumeTopic: config.get('kafka.topics.permissionsRequest'),
@@ -51,20 +51,20 @@ trace(scopeTypes, 'Parsed builtin scopes');
 const additionalScopesFiles = fs
   .readdirSync(new URL('../scopes/additional-scopes', import.meta.url))
   .filter(
-    (f) => !/^\./.exec(f) // remove hidden files
+    (f) => !f.startsWith('.') // Remove hidden files
   );
-additionalScopesFiles.forEach((af) => {
+for (const af of additionalScopesFiles) {
   try {
     trace('Trying to add additional scope %s', af);
-    const newscope = require('../scopes/additional-scopes/' + af) as Scopes; // nosemgrep: javascript.lang.security.detect-non-literal-require.detect-non-literal-require
-    Object.entries(newscope).forEach(([k, scope]) => {
+    const newscope = require(`../scopes/additional-scopes/${af}`) as Scopes; // Nosemgrep: javascript.lang.security.detect-non-literal-require.detect-non-literal-require
+    for (const [k, scope] of Object.entries(newscope)) {
       trace('Setting scopeTypes[%s] to new scope %s', k, scope);
-      scopeTypes[k] = scope; // overwrite entire scope, or create new if doesn't exist
-    });
-  } catch (e) {
-    error(e, `Failed to require(scopes/additional-scopes/${af}})`);
+      scopeTypes[k] = scope; // Overwrite entire scope, or create new if doesn't exist
+    }
+  } catch (error_) {
+    error(error_, `Failed to require(scopes/additional-scopes/${af}})`);
   }
-});
+}
 
 function scopePerm(perm: Perm, has: Perm): boolean {
   return perm === has || perm === 'all';
@@ -91,7 +91,7 @@ export interface PermissionsResponse {
   permissions: { read?: boolean; write?: boolean; owner?: boolean };
 }
 
-export function handleReq(req: PermissionsRequest): PermissionsResponse {
+export function handleReq(request: PermissionsRequest): PermissionsResponse {
   const response: PermissionsResponse = {
     scopes: {
       read: false,
@@ -103,34 +103,36 @@ export function handleReq(req: PermissionsRequest): PermissionsResponse {
       owner: false,
     },
   };
-  trace('inside permissions handler %s', req.oadaGraph.resource_id);
-  //    return oadaLib.resources.getResource(req.oadaGraph.resource_id, '').then((resource) => {
-  trace(req, 'request');
-  //        trace('Resource is', req.oadaGraph.resource_id, resource);
-  //Check scopes
+  trace('inside permissions handler %s', request.oadaGraph.resource_id);
+  //    Return oadaLib.resources.getResource(req.oadaGraph.resource_id, '').then((resource) => {
+  trace(request, 'request');
+  //        Trace('Resource is', req.oadaGraph.resource_id, resource);
+  // Check scopes
   if (process.env.IGNORE_SCOPE === 'yes') {
     trace('IGNORE_SCOPE environment variable is true');
     response.scopes = { read: true, write: true };
   } else {
     // Check for read permission
-    if (!Array.isArray(req.scope)) {
-      error(req.scope, 'Scope is not an array');
-      req.scope = [];
+    if (!Array.isArray(request.scope)) {
+      error(request.scope, 'Scope is not an array');
+      request.scope = [];
     }
-    response.scopes.read = req.scope.some(function chkScope(scope) {
+
+    response.scopes.read = request.scope.some(function chkScope(scope) {
       const [type, perm] = scope.split(':') as [string, Perm];
 
       if (!scopeTypes[type]) {
         warn('Unsupported scope type "%s"', type);
         return false;
       }
+
       trace('User scope: %s', type);
-      const contentType = req.oadaGraph.permissions?.type || undefined;
+      const contentType = request.oadaGraph.permissions?.type || undefined;
       const is = contentType
         ? typeis.is(contentType, scopeTypes[type] ?? [])
         : false;
-      //let contentType = req.requestType === 'put' ? req.contentType : (resource ? resource._type : undefined);
-      //trace('contentType = ', 'is put:', req.requestType === 'put', 'req.contentType:', req.contentType, 'resource:', resource);
+      // Let contentType = req.requestType === 'put' ? req.contentType : (resource ? resource._type : undefined);
+      // trace('contentType = ', 'is put:', req.requestType === 'put', 'req.contentType:', req.contentType, 'resource:', resource);
       trace(
         'Does user have scope? resulting contentType: %s typeis check: %s',
         contentType,
@@ -141,17 +143,18 @@ export function handleReq(req: PermissionsRequest): PermissionsResponse {
     });
 
     // Check for write permission
-    response.scopes.write = req.scope.some(function chkScope(scope) {
+    response.scopes.write = request.scope.some(function chkScope(scope) {
       const [type, perm] = scope.split(':') as [string, Perm];
 
       if (!scopeTypes[type]) {
         warn('Unsupported scope type "%s"', type);
         return false;
       }
-      //let contentType = req.requestType === 'put' ? req.contentType : (resource ? resource._type : undefined);
-      trace('contentType is %s', req.contentType);
+
+      // Let contentType = req.requestType === 'put' ? req.contentType : (resource ? resource._type : undefined);
+      trace('contentType is %s', request.contentType);
       const contentType =
-        req.contentType || req.oadaGraph.permissions?.type || undefined;
+        request.contentType || request.oadaGraph.permissions?.type || undefined;
       const is = contentType
         ? typeis.is(contentType, scopeTypes[type] ?? [])
         : false;
@@ -163,23 +166,24 @@ export function handleReq(req: PermissionsRequest): PermissionsResponse {
       return is && write;
     });
   }
-  //Check permissions. 1. Check if owner.
+
+  // Check permissions. 1. Check if owner.
   // First check if we're putting to resources
-  trace('resource exists %s', req.oadaGraph.resourceExists);
+  trace('resource exists %s', request.oadaGraph.resourceExists);
   if (
-    req.oadaGraph.permissions &&
-    req.oadaGraph.permissions.owner &&
-    req.oadaGraph.permissions.owner === req.user_id
+    request.oadaGraph.permissions &&
+    request.oadaGraph.permissions.owner &&
+    request.oadaGraph.permissions.owner === request.user_id
   ) {
-    //if (resource && resource._meta && resource._meta._owner === req.user_id) {
+    // If (resource && resource._meta && resource._meta._owner === req.user_id) {
     trace('Resource requested by owner.');
     response.permissions = {
       read: true,
       write: true,
       owner: true,
     };
-    //Check permissions. 2. Check if resource does not exist
-  } else if (!req.oadaGraph.resourceExists) {
+    // Check permissions. 2. Check if resource does not exist
+  } else if (!request.oadaGraph.resourceExists) {
     response.permissions = {
       read: true,
       write: true,
@@ -187,11 +191,12 @@ export function handleReq(req: PermissionsRequest): PermissionsResponse {
     };
   } else {
     response.permissions = {
-      ...req.oadaGraph.permissions,
-      owner: !!req.oadaGraph.permissions?.owner,
+      ...request.oadaGraph.permissions,
+      owner: Boolean(request.oadaGraph.permissions?.owner),
     };
   }
+
   trace(response, 'END RESULT');
   return response;
-  //});
+  // });
 }

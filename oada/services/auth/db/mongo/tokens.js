@@ -14,50 +14,50 @@
  */
 'use strict';
 
-var db = require('./mongo.js');
+const database = require('./mongo.js');
 
-var config = require('../../config');
-var users = config.get('datastores:users');
+const config = require('../../config');
+const users = config.get('datastores:users');
 
-function findByToken(token, cb) {
-  db.tokens.findOne({ token: token }, function (err, token) {
-    if (err) {
-      return cb(err);
+function findByToken(token, callback) {
+  database.tokens.findOne({ token }, (error, token) => {
+    if (error) {
+      return callback(error);
     }
 
     if (token) {
       token.id = token._id;
 
       // Populate user
-      users.findById(token.user._id, function (err, user) {
-        if (err) {
-          return cb(err);
+      users.findById(token.user._id, (error, user) => {
+        if (error) {
+          return callback(error);
         }
 
         token.user = user;
 
-        cb(null, token);
+        callback(null, token);
       });
     } else {
-      cb(null);
+      callback(null);
     }
   });
 }
 
-function save(token, cb) {
+function save(token, callback) {
   // Link user
   token.user = { _id: token.user._id };
 
-  db.tokens.save(token, function (err) {
-    if (err) {
-      return cb(err);
+  database.tokens.save(token, (error) => {
+    if (error) {
+      return callback(error);
     }
 
-    findByToken(token.token, cb);
+    findByToken(token.token, callback);
   });
 }
 
 module.exports = {
-  findByToken: findByToken,
-  save: save,
+  findByToken,
+  save,
 };

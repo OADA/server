@@ -20,10 +20,9 @@ import type { CreateCollectionOptions } from 'arangojs/collection';
 interface Collection {
   name: string;
   createOptions?: CreateCollectionOptions;
-  indexes: (
-    | string
-    | { name: string | string[]; unique?: boolean; sparse?: boolean }
-  )[];
+  indexes: Array<
+    string | { name: string | string[]; unique?: boolean; sparse?: boolean }
+  >;
   defaults?: string;
   edgeCollection?: boolean;
   ensureDefaults?: boolean;
@@ -32,9 +31,7 @@ interface Collection {
 /**
  * @todo actually validate format?
  */
-export function collection(_val: unknown): asserts _val is Collection {
-  return;
-}
+export function collection(_value: unknown): asserts _value is Collection {}
 
 const config = libConfig({
   arangodb: {
@@ -61,7 +58,7 @@ const config = libConfig({
     },
     collections: {
       users: {
-        format: Object, //collection,,
+        format: Object, // Collection,,
         default: {
           name: 'users',
           indexes: ['username'],
@@ -69,7 +66,7 @@ const config = libConfig({
         },
       },
       clients: {
-        format: Object, //collection,,
+        format: Object, // Collection,,
         default: {
           name: 'clients',
           indexes: ['clientId'],
@@ -77,7 +74,7 @@ const config = libConfig({
         },
       },
       authorizations: {
-        format: Object, //collection,,
+        format: Object, // Collection,,
         default: {
           name: 'authorizations',
           indexes: ['token', { name: 'user', unique: false }],
@@ -85,7 +82,7 @@ const config = libConfig({
         },
       },
       codes: {
-        format: Object, //collection,,
+        format: Object, // Collection,,
         default: {
           name: 'codes',
           indexes: ['code'],
@@ -93,7 +90,7 @@ const config = libConfig({
         },
       },
       resources: {
-        format: Object, //collection,,
+        format: Object, // Collection,,
         default: {
           name: 'resources',
           indexes: [],
@@ -101,7 +98,7 @@ const config = libConfig({
         },
       },
       graphNodes: {
-        format: Object, //collection,,
+        format: Object, // Collection,,
         default: {
           name: 'graphNodes',
           indexes: [],
@@ -109,7 +106,7 @@ const config = libConfig({
         },
       },
       changes: {
-        format: Object, //collection,,
+        format: Object, // Collection,,
         default: {
           name: 'changes',
           indexes: [],
@@ -117,7 +114,7 @@ const config = libConfig({
         },
       },
       changeEdges: {
-        format: Object, //collection,,
+        format: Object, // Collection,,
         default: {
           name: 'changeEdges',
           indexes: [{ name: 'name', unique: false }],
@@ -126,7 +123,7 @@ const config = libConfig({
         },
       },
       edges: {
-        format: Object, //collection,,
+        format: Object, // Collection,,
         default: {
           name: 'edges',
           indexes: [{ name: 'name', unique: false }],
@@ -135,7 +132,7 @@ const config = libConfig({
         },
       },
       putBodies: {
-        format: Object, //collection,,
+        format: Object, // Collection,,
         default: {
           name: 'putBodies',
           indexes: [],
@@ -144,14 +141,14 @@ const config = libConfig({
         },
       },
       remoteResources: {
-        format: Object, //collection,,
+        format: Object, // Collection,,
         default: {
           name: 'remoteResources',
           indexes: [{ name: ['domain', 'resource_id'], unique: true }],
         },
       },
       sessions: {
-        format: Object, //collection,,
+        format: Object, // Collection,,
         default: {
           name: 'sessions',
           indexes: [],

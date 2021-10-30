@@ -25,7 +25,7 @@ import debug from 'debug';
 const error = debug('shares:error');
 const trace = debug('shares:trace');
 
-//---------------------------------------------------------
+// ---------------------------------------------------------
 // Kafka initializations:
 const responder = new ReResponder({
   consumeTopic: config.get('kafka.topics.httpResponse'),
@@ -33,28 +33,29 @@ const responder = new ReResponder({
   group: 'shares',
 });
 
-export function stopResp(): Promise<void> {
+export async function stopResp(): Promise<void> {
   return responder.disconnect();
 }
 
 /**
  * Filter for successful write responses
  */
-function checkReq(req: KafkaBase): req is WriteResponse {
-  return req?.msgtype === 'write-response' && req?.code === 'success';
+function checkRequest(request: KafkaBase): request is WriteResponse {
+  return request?.msgtype === 'write-response' && request?.code === 'success';
 }
 
-responder.on<WriteRequest>('request', async function* handleReq(req) {
-  if (!checkReq(req)) {
+responder.on<WriteRequest>('request', async function* handleRequest(request) {
+  if (!checkRequest(request)) {
     return;
   }
-  //TODO: CHECK FOR OTHER ITERATIONS OF _meta/_permissions as it might occur in a request
+
+  // TODO: CHECK FOR OTHER ITERATIONS OF _meta/_permissions as it might occur in a request
   if (
-    /_meta\/?$/.test(req.path_leftover) ||
-    /_meta\/_permissions\/?/.test(req.path_leftover)
+    /_meta\/?$/.test(request.path_leftover) ||
+    /_meta\/_permissions\/?/.test(request.path_leftover)
   ) {
-    //get user's /shares and add this
-    const change = await changes.getChange(req.resource_id, req._rev);
+    // Get user's /shares and add this
+    const change = await changes.getChange(request.resource_id, request._rev);
     if (
       change?.type === 'merge' &&
       typeof change.body?._meta === 'object' &&
@@ -71,6 +72,7 @@ responder.on<WriteRequest>('request', async function* handleReq(req) {
           error('Failed to find user by id %s', id);
           continue;
         }
+
         trace('making a write request to /shares for user - %s %s', id, user);
         yield {
           resource_id: user.shares._id,
@@ -81,8 +83,8 @@ responder.on<WriteRequest>('request', async function* handleReq(req) {
           //			     'client_id': req.user.doc['client_id'],
           contentType: 'application/vnd.oada.permission.1+json',
           body: {
-            [req.resource_id.replace(/^resources\//, '')]: {
-              _id: req.resource_id,
+            [request.resource_id.replace(/^resources\//, '')]: {
+              _id: request.resource_id,
             },
           },
         };

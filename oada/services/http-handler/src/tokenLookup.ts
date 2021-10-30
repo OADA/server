@@ -40,14 +40,14 @@ export interface TokenResponse {
 }
 
 export default async function tokenLookup(
-  req: TokenRequest
+  request: TokenRequest
 ): Promise<TokenResponse> {
   const res: TokenResponse = {
-    //type: 'http_response',
-    token: req.token,
+    // Type: 'http_response',
+    token: request.token,
     token_exists: false,
-    //partition: req.resp_partition,
-    //connection_id: req.connection_id,
+    // Partition: req.resp_partition,
+    // connection_id: req.connection_id,
     doc: {
       expired: false,
       authorizationid: '',
@@ -60,18 +60,19 @@ export default async function tokenLookup(
     },
   };
 
-  if (typeof req.token === 'undefined') {
+  if (typeof request.token === 'undefined') {
     trace('No token supplied with the request.');
     return res;
   }
+
   // Get token from db.  Later on, we should speed this up
   // by getting everything in one query.
   const t = await authorizations.findByToken(
-    req.token.trim().replace(/^Bearer /, '')
+    request.token.trim().replace(/^Bearer /, '')
   );
 
   if (!t) {
-    warn('Token %s does not exist.', req.token);
+    warn('Token %s does not exist.', request.token);
     res.token = undefined;
     return res;
   }
@@ -91,11 +92,12 @@ export default async function tokenLookup(
 
   let expired = false;
   if (t.expiresIn && t.createTime) {
-    const now = +new Date();
+    const now = Date.now();
     if (now > t.createTime + t.expiresIn) {
       info('Token is expired');
       expired = true;
     }
+
     trace(
       'token.createTime = %s, t.expiresIn = %s, now = %s',
       t.createTime,
@@ -103,6 +105,7 @@ export default async function tokenLookup(
       now
     );
   }
+
   trace('token expired? %s', expired);
 
   res.token_exists = true;

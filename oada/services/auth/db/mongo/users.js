@@ -14,51 +14,48 @@
  */
 'use strict';
 
-var bcrypt = require('bcryptjs');
+const bcrypt = require('bcryptjs');
 
-var config = require('../../config');
-var db = require('./mongo.js');
+const config = require('../../config');
+const database = require('./mongo.js');
 
-function findByUsername(username, cb) {
-  db.users.findOne({ username: username }, function (err, user) {
-    if (err) {
-      return cb(err);
+function findByUsername(username, callback) {
+  database.users.findOne({ username }, (error, user) => {
+    if (error) {
+      return callback(error);
     }
 
     if (user) {
       // Rename mongo's _id
       user.id = user._id;
 
-      cb(null, user);
+      callback(null, user);
     } else {
-      cb(err, false);
+      callback(error, false);
     }
   });
 }
 
-function findByUsernamePassword(username, password, cb) {
-  var passwd = bcrypt.hashSync(password, config.get('server:passwordSalt'));
+function findByUsernamePassword(username, password, callback) {
+  const passwd = bcrypt.hashSync(password, config.get('server:passwordSalt'));
 
-  db.users.findOne(
-    { username: username, password: passwd },
-    function (err, user) {
-      if (err) {
-        return cb(err);
-      }
-
-      if (user) {
-        // Rename mongo's _id
-        user.id = user._id;
-
-        cb(null, user);
-      } else {
-        cb(err, false);
-      }
+  database.users.findOne({ username, password: passwd }, (error, user) => {
+    if (error) {
+      return callback(error);
     }
-  );
+
+    if (user) {
+      // Rename mongo's _id
+      user.id = user._id;
+
+      callback(null, user);
+    } else {
+      callback(error, false);
+    }
+  });
 }
 
 module.exports = {
   findById: findByUsername,
-  findByUsernamePassword: findByUsernamePassword,
+  findByUsernamePassword,
 };

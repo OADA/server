@@ -20,7 +20,7 @@
  * with `npm run init`.
  */
 
-import * as users from './libs/users.js';
+import { hashPw } from './libs/users.js';
 import config from './config.js';
 
 import arangojs from 'arangojs';
@@ -31,9 +31,9 @@ const trace = debug('arango:init:trace');
 const warn = debug('arango:init:warn');
 const info = debug('arango:init:info');
 
-//------------------------------------------------------------
+// ------------------------------------------------------------
 // First setup some shorter variable names:
-const dbName = config.get('arangodb.database');
+const databaseName = config.get('arangodb.database');
 const cols = config.get('arangodb.collections');
 const colsarr = Object.values(cols);
 
@@ -53,9 +53,11 @@ export async function run(): Promise<void> {
     );
 
     trace('Checking if database exists');
-    //---------------------------------------------------------------------
+    // ---------------------------------------------------------------------
     // Start the show: Figure out if the database exists
-    const dbs = (await systemDB.listDatabases()).filter((d) => d === dbName);
+    const dbs = (await systemDB.listDatabases()).filter(
+      (d) => d === databaseName
+    );
     if (dbs.length > 0) {
       if (
         (!config.get('isProduction') && process.env.RESETDATABASE === 'yes') ||
@@ -65,63 +67,69 @@ export async function run(): Promise<void> {
           'isProduction is false and process.env.RESETDATABASE is "yes"' +
             'dropping database and recreating'
         );
-        await systemDB.dropDatabase(dbName);
-        await systemDB.createDatabase(dbName);
+        await systemDB.dropDatabase(databaseName);
+        await systemDB.createDatabase(databaseName);
       }
+
       info(
         'isProduction is %s and process.env.RESETDATABASE is %s, not dropping database.',
         config.get('isProduction'),
         process.env.RESETDATABASE
       );
-      // otherwise, not test so don't drop database
-      trace('database %s exists', dbName);
+      // Otherwise, not test so don't drop database
+      trace('database %s exists', databaseName);
     } else {
-      trace('Database %s does not exist. Creating...', dbName);
-      await systemDB.createDatabase(dbName);
-      trace('Now %s database exists', dbName);
+      trace('Database %s does not exist. Creating...', databaseName);
+      await systemDB.createDatabase(databaseName);
+      trace('Now %s database exists', databaseName);
     }
-    //---------------------------------------------------------------------
+
+    // ---------------------------------------------------------------------
     // Use that database, then check that all the collections exist
-    trace('Using database %s', dbName);
-    const db = systemDB.database(dbName);
+    trace('Using database %s', databaseName);
+    const database = systemDB.database(databaseName);
     try {
-      const dbCols = await db.listCollections();
+      const databaseCols = await database.listCollections();
       trace('Found collections, looking for the ones we need');
       for (const c of colsarr) {
-        if (dbCols.find((d) => d.name === c.name)) {
+        if (databaseCols.find((d) => d.name === c.name)) {
           trace('Collection %s exists', c.name);
           continue;
         }
+
         if (c.edgeCollection) {
-          await db.createEdgeCollection(c.name);
+          await database.createEdgeCollection(c.name);
           trace('Edge collection %s has been created', c.name);
         } else {
           if (!c.createOptions) {
             c.createOptions = {};
           }
-          await db.createCollection(c.name, c.createOptions);
+
+          await database.createCollection(c.name, c.createOptions);
           trace('Document collection %s has been created', c.name);
         }
       }
-      //---------------------------------------------------------------------
+
+      // ---------------------------------------------------------------------
       // Now check if the proper indexes exist on each collection:
       for (const c of colsarr) {
-        const dbIndexes = await db.collection(c.name).indexes();
-        // for each index in this collection, check and create
+        const databaseIndexes = await database.collection(c.name).indexes();
+        // For each index in this collection, check and create
         for (const ci of c.indexes) {
           const indexname = typeof ci === 'string' ? ci : ci.name;
           const unique = typeof ci === 'string' ? true : ci.unique;
           const sparse = typeof ci === 'string' ? true : ci.sparse;
-          if (dbIndexes.find((dbi) => equal(dbi.fields, [indexname]))) {
+          if (databaseIndexes.find((dbi) => equal(dbi.fields, [indexname]))) {
             trace('Index %s exists on collection %s', indexname, c.name);
             continue;
           }
+
           // Otherwise, create the index
           trace('Creating %s index on %s', indexname, c.name);
           const fields = Array.isArray(indexname) ? indexname : [indexname];
           // IDK what this line is...
           if ('collection' in c) {
-            await db.collection(c.name).ensureIndex({
+            await database.collection(c.name).ensureIndex({
               type: 'hash',
               fields,
               unique,
@@ -129,7 +137,7 @@ export async function run(): Promise<void> {
             });
             trace('Created %s index on %s', indexname, c.name);
           } else {
-            await db.collection(c.name).ensureIndex({
+            await database.collection(c.name).ensureIndex({
               type: 'hash',
               fields,
               unique,
@@ -139,90 +147,96 @@ export async function run(): Promise<void> {
           }
         }
 
-        //----------------------------------------------------------------------
+        // ----------------------------------------------------------------------
         // Finally, import default data if they want some:
       }
+
       for (const [colname, colinfo] of Object.entries(
         config.get('arangodb.collections')
       )) {
         trace('Setting up collection %s: %O', colname, colinfo);
         if (typeof colinfo.defaults !== 'string') {
-          continue; // nothing to import for this colname
+          continue; // Nothing to import for this colname
         }
+
         const { default: data } = (await import(colinfo.defaults)) as {
-          default: { _id: string; _key: string; password?: string }[];
+          default: Array<{ _id: string; _key: string; password?: string }>;
         };
-        // override global ensureDefaults if this column explicitly specifies a value for it:
+        // Override global ensureDefaults if this column explicitly specifies a value for it:
         const colSpecificEnsureDefaults =
           typeof colinfo.ensureDefaults !== 'undefined'
             ? colinfo.ensureDefaults
             : ensureDefaults;
 
         // TODO: clean up this any nonsense
-        for (const doc of data) {
-          if (!doc || !doc._id) {
+        for (const document of data) {
+          if (!document || !document._id) {
             warn('doc is undefined for collection %s', colinfo.name);
           }
+
           // Have to use _key if we want the key to be our key:
-          if (!doc._key) {
+          if (!document._key) {
             // This line is valid, it just confuses the highlighter
-            doc._key = doc._id.replace(/^[^/]*\//, '');
+            document._key = document._id.replace(/^[^/]*\//, '');
           }
-          if (colname === 'users') {
-            // oidc users don't have password, so you need to check for existence
-            if (doc.password) {
-              doc.password = users.hashPw(doc.password);
-            }
+
+          if (
+            colname === 'users' && // Oidc users don't have password, so you need to check for existence
+            document.password
+          ) {
+            document.password = hashPw(document.password);
           }
+
           try {
-            const dbDoc: unknown = await db
+            const databaseDocument: unknown = await database
               .collection(colname)
-              .document(doc._id);
+              .document(document._id);
             if (colSpecificEnsureDefaults) {
               trace(
                 'Default data document %s already exists on collection %s, ' +
                   'leaving it alone because ensureDefaults is truthy',
-                doc._id,
+                document._id,
                 colname
               );
               continue;
             }
+
             info(
               'Default data document %s exists on collection %s' +
                 ', and ensureDefaults is falsy, ' +
                 'so we are DELETING THIS DOCUMENT FROM THE DATABASE! ' +
                 'Before deleting, its value in the database was: %O',
-              doc._id,
+              document._id,
               colname,
-              dbDoc
+              databaseDocument
             );
             try {
-              await db.collection(colname).remove(doc._key);
-            } catch (e) {
+              await database.collection(colname).remove(document._key);
+            } catch (error) {
               warn(
                 'Failed to remove default doc %s from collection %s. Error was: %O',
-                doc._key,
+                document._key,
                 colname,
-                e
+                error
               );
             }
           } catch {
             if (colSpecificEnsureDefaults) {
               info(
                 'Document %s does not exist in collection %s. Creating...',
-                doc._key,
+                document._key,
                 colname
               );
-              await db.collection(colname).save(doc);
+              await database.collection(colname).save(document);
               trace(
                 'Document %s successfully created in collection %s',
-                doc._id,
+                document._id,
                 colname
               );
             } else {
               trace(
                 'Default document %s does not exist in collection %s so there is nothing else to do for this one.',
-                doc._key,
+                document._key,
                 colname
               );
             }
@@ -230,14 +244,14 @@ export async function run(): Promise<void> {
         }
       }
     } finally {
-      db.close();
+      database.close();
     }
   } finally {
     systemDB.close();
   }
 }
 
-// cleanup will delete the test database if in test mode
+// Cleanup will delete the test database if in test mode
 export async function cleanup(): Promise<void> {
   // Can't use ./db because we're creating the actual database
   const systemDB = arangojs({
@@ -251,7 +265,8 @@ export async function cleanup(): Promise<void> {
           ' Cleanup only deletes the database when testing.'
       );
     }
-    // arango only lets you drop databases from _system
+
+    // Arango only lets you drop databases from _system
     trace(
       'Cleaning up by dropping test database %s',
       config.get('arangodb.database')

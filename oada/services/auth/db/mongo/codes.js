@@ -14,13 +14,13 @@
  */
 'use strict';
 
-var db = require('./mongo.js');
-var users = require('../models/user');
+const database = require('./mongo.js');
+const users = require('../models/user');
 
-function findByCode(code, cb) {
-  db.codes.findOne({ code: code }, function (err, code) {
-    if (err) {
-      return cb(err);
+function findByCode(code, callback) {
+  database.codes.findOne({ code }, (error, code) => {
+    if (error) {
+      return callback(error);
     }
 
     if (code) {
@@ -28,35 +28,35 @@ function findByCode(code, cb) {
       code.id = code._id;
 
       // Populate user
-      users.findById(code.user._id, function (err, user) {
-        if (err) {
-          return cb(err);
+      users.findById(code.user._id, (error, user) => {
+        if (error) {
+          return callback(error);
         }
 
         code.user = user;
 
-        cb(null, code);
+        callback(null, code);
       });
     } else {
-      cb(null);
+      callback(null);
     }
   });
 }
 
-function save(code, cb) {
+function save(code, callback) {
   // Link user
   code.user = { _id: code.user._id };
 
-  db.codes.save(code, function (err) {
-    if (err) {
-      return cb(err);
+  database.codes.save(code, (error) => {
+    if (error) {
+      return callback(error);
     }
 
-    findByCode(code.code, cb);
+    findByCode(code.code, callback);
   });
 }
 
 module.exports = {
-  findByCode: findByCode,
-  save: save,
+  findByCode,
+  save,
 };

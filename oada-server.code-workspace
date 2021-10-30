@@ -102,7 +102,7 @@
     "prettier.prettierPath": "oada/.yarn/sdks/prettier/index.js",
     "typescript.tsdk": "oada/.yarn/sdks/typescript/lib",
     "typescript.enablePromptUseWorkspaceTsdk": true,
-    "eslint.nodePath": "oada/.yarn/sdks",
+    "eslint.nodePath": "../../.yarn/sdks",
     "files.exclude": {
       ".actrc": true,
       "**/.DS_Store": true,
@@ -139,6 +139,8 @@
       "Kafkajs",
       "oada",
       "pino"
-    ]
+    ],
+    "eslint.packageManager": "yarn",
+    "eslint.useESLintClass": true
   }
 }

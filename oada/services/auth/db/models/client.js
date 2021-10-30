@@ -21,7 +21,7 @@ const OADAError = require('oada-error');
 const config = require('../../config');
 const debug = require('debug')('info');
 const path = require('path');
-const db = require(// nosemgrep: javascript.lang.security.detect-non-literal-require.detect-non-literal-require
+const database = require(// Nosemgrep: javascript.lang.security.detect-non-literal-require.detect-non-literal-require
 path.join(
   __dirname,
   '/../../db',
@@ -34,28 +34,28 @@ function makeClient(client) {
   return client;
 }
 
-function findById(id, cb) {
-  db.findById(id, function (err, c) {
-    var client;
-    if (!err) {
+function findById(id, callback) {
+  database.findById(id, (error, c) => {
+    let client;
+    if (!error) {
       client = makeClient(c);
     }
 
-    cb(err, client);
+    callback(error, client);
   });
 }
 
-function save(client, cb) {
+function save(client, callback) {
   client.clientId = uuid();
 
-  db.findById(client.clientId, function (err, c) {
-    if (err) {
-      debug(err);
-      return cb(err);
+  database.findById(client.clientId, (error, c) => {
+    if (error) {
+      debug(error);
+      return callback(error);
     }
 
     if (c) {
-      return cb(
+      return callback(
         new OADAError(
           'Client Id already exists',
           OADAError.codes.BAD_REQUEST,
@@ -64,18 +64,18 @@ function save(client, cb) {
       );
     }
 
-    db.save(client, function (err) {
-      if (err) {
-        debug(err);
-        return cb(err);
+    database.save(client, (error) => {
+      if (error) {
+        debug(error);
+        return callback(error);
       }
 
-      findById(client.clientId, cb);
+      findById(client.clientId, callback);
     });
   });
 }
 
 module.exports = {
-  findById: findById,
-  save: save,
+  findById,
+  save,
 };

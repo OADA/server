@@ -36,6 +36,7 @@ async function findUserByUsername(username: string) {
     trace(user, 'findUserByUsername: Finished users.like');
     return user;
   }
+
   return false;
 }
 
@@ -51,7 +52,7 @@ async function run() {
       return;
     }
 
-    //-------------------------------------
+    // -------------------------------------
     // Talk to user service over Kafka...
     trace('Creating kafka requester...');
     // Produce a request to the user service to create one for us:
@@ -60,23 +61,24 @@ async function run() {
       consumeTopic: config.get('kafka.topics.httpResponse'),
       // Topic to send request on (produce):
       produceTopic: config.get('kafka.topics.userRequest'),
-      // group name
+      // Group name
       group: 'useradd',
     });
 
-    //-----------------------------------------------------
+    // -----------------------------------------------------
     // Ensure we have a username and password...
     const username = (argv.u ||
       argv.username ||
       (await promptly.prompt('Username: '))) as string;
     if (await findUserByUsername(username)) {
-      console.error(chalk.red('Username ' + username + ' already exists'));
+      console.error(chalk.red(`Username ${username} already exists`));
       process.exit(1);
     }
+
     const password = (argv.p ||
       argv.password ||
       (await promptly.prompt('Password: '))) as string;
-    const isadmin = !!(argv.a || argv.isadmin || argv.isAdmin);
+    const isadmin = Boolean(argv.a || argv.isadmin || argv.isAdmin);
 
     trace('Sending request to kafka');
     const response = (await kafkareq.send({
@@ -85,7 +87,7 @@ async function run() {
       authorization: {
         scope: ['oada.admin.user:all'],
       },
-      // the "user" key is what goes into the DB
+      // The "user" key is what goes into the DB
       user: {
         username,
         password,
@@ -95,7 +97,7 @@ async function run() {
     } as UserRequest)) as unknown as UserResponse;
 
     trace('Finished kafka.send, have our response = %O', response);
-    // no need to keep hearing messages
+    // No need to keep hearing messages
     trace('Disconnecting from kafka');
     await kafkareq.disconnect();
 
@@ -117,10 +119,11 @@ async function run() {
         chalk.green(' now exists: ') +
         su?._id
     );
-  } catch (err) {
-    console.error(err);
+  } catch (error) {
+    console.error(error);
     process.exit(1);
   }
+
   process.exit(0);
 }
 

@@ -13,7 +13,7 @@ declare module 'pino-debug' {
     skip?: readonly string[];
   }
 
-  function pinoDebug(logger: Logger, opts: Options);
+  function pinoDebug(logger: Logger, options: Options);
 
   export = pinoDebug;
 }

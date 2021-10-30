@@ -14,14 +14,14 @@
  */
 
 import config from '../config.js';
-import { db } from '../db.js';
+import { db as database } from '../db.js';
 
 import { aql } from 'arangojs';
 import debug from 'debug';
 
 const trace = debug('arangodb#remoteResources:trace');
 
-const remoteResources = db.collection(
+const remoteResources = database.collection(
   config.get('arangodb.collections.remoteResources.name')
 );
 
@@ -44,7 +44,7 @@ export async function getRemoteId(
 
   trace('Looking up remote IDs for %s at %s', ids, domain);
   const rids = (await (
-    await db.query(
+    await database.query(
       aql`
         FOR id IN ${ids}
           LET rid = FIRST(
@@ -71,7 +71,7 @@ export async function addRemoteId(
   const rids = Array.isArray(rid) ? rid : [rid];
 
   trace('Adding remote IDs: %O', rids);
-  await db.query(aql`
+  await database.query(aql`
     FOR rid IN ${rids}
       INSERT {
         domain: ${domain},

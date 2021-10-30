@@ -16,21 +16,21 @@
 import Bluebird, { TimeoutError } from 'bluebird';
 import chai from 'chai';
 import chaiAsPromised from 'chai-as-promised';
-const expect = chai.expect;
-import { Kafka, Producer, Consumer } from 'kafkajs';
+import { Consumer, Kafka, Producer } from 'kafkajs';
 import { v4 as uuid } from 'uuid';
 import debug from 'debug';
 
 import config from '../src/config';
 
+import { Responder } from '../src/Responder';
+import { Requester } from '../src/Requester';
+import type { KafkaBase } from '../src/base';
+const { expect } = chai;
+
 chai.use(chaiAsPromised);
 
 const info = debug('@oada/lib-kafka:tests:info');
 const error = debug('@oada/lib-kafka:tests:error');
-
-import { Responder } from '../src/Responder';
-import { Requester } from '../src/Requester';
-import type { KafkaBase } from '../src/base';
 
 const REQ_TOPIC = 'test_requests';
 const RES_TOPIC = 'test_responses';
@@ -39,23 +39,23 @@ const GROUP = 'test_group';
 const kafka = new Kafka({ brokers: config.get('kafka.broker') });
 
 describe('@oada/lib-kafka', () => {
-  let prod: Producer;
-  before(async function makeTestProd() {
-    this.timeout(10000);
+  let production: Producer;
+  before(async function makeTestProduction() {
+    this.timeout(10_000);
 
-    prod = kafka.producer({});
+    production = kafka.producer({});
 
-    await prod.connect();
+    await production.connect();
   });
 
-  after(async function killTestProd() {
-    this.timeout(60000);
-    await prod.disconnect();
+  after(async function killTestProduction() {
+    this.timeout(60_000);
+    await production.disconnect();
   });
 
   let cons: Consumer;
   before(async function makeTestCons() {
-    this.timeout(10000);
+    this.timeout(10_000);
 
     cons = kafka.consumer({
       groupId: GROUP,
@@ -65,7 +65,7 @@ describe('@oada/lib-kafka', () => {
   });
 
   after(async function killTestCons() {
-    this.timeout(10000);
+    this.timeout(10_000);
     await cons.disconnect();
   });
 
@@ -73,20 +73,20 @@ describe('@oada/lib-kafka', () => {
     before(async function consumerResponses() {
       await cons.stop();
       await cons.subscribe({ topic: RES_TOPIC });
-      //cons.consume();
+      // Cons.consume();
     });
 
     let res: Responder;
     beforeEach(async function createResponder() {
       info('start create responder');
-      const group = GROUP + '_' + uuid();
+      const group = `${GROUP}_${uuid()}`;
 
       res = new Responder({
         produceTopic: REQ_TOPIC,
         consumeTopic: RES_TOPIC,
         group,
       });
-      // @ts-ignore
+      // @ts-expect-error
       await res.ready;
     });
 
@@ -101,22 +101,22 @@ describe('@oada/lib-kafka', () => {
 
     it('should receive a request', async () => {
       info('start');
-      const obj = {
+      const object = {
         connection_id: uuid(),
         foo: 'baz',
         time: Date.now(),
       };
-      const value = JSON.stringify(obj);
+      const value = JSON.stringify(object);
 
-      const req = Bluebird.fromCallback((done) => {
-        res.on('request', (req) => {
+      const request = Bluebird.fromCallback((done) => {
+        res.on('request', (request_) => {
           info('request');
-          done(null, req);
+          done(null, request_);
         });
       });
 
-      await prod.send({ topic: REQ_TOPIC, messages: [{ value }] });
-      await expect(req).to.eventually.deep.equal(obj);
+      await production.send({ topic: REQ_TOPIC, messages: [{ value }] });
+      await expect(request).to.eventually.deep.equal(object);
     });
 
     it('should not receive timed-out requests', async () => {
@@ -134,21 +134,27 @@ describe('@oada/lib-kafka', () => {
 
       const reqs: KafkaBase[] = [];
       const p = Bluebird.fromCallback<KafkaBase[]>((done) => {
-        res.on('request', (req) => {
+        res.on('request', (request) => {
           info('request');
-          reqs.push(req);
+          reqs.push(request);
 
-          if (req['connection_id'] === id2) {
+          if (request.connection_id === id2) {
             done(null, reqs);
           }
         });
-      }).each((req) => {
+      }).each((request) => {
         // Make sure we didn't recieve the "old" request
-        expect(req['connection_id']).to.not.equal(id1);
+        expect(request.connection_id).to.not.equal(id1);
       });
 
-      await prod.send({ topic: REQ_TOPIC, messages: [{ value: value1 }] });
-      await prod.send({ topic: REQ_TOPIC, messages: [{ value: value2 }] });
+      await production.send({
+        topic: REQ_TOPIC,
+        messages: [{ value: value1 }],
+      });
+      await production.send({
+        topic: REQ_TOPIC,
+        messages: [{ value: value2 }],
+      });
 
       return p;
     });
@@ -156,15 +162,17 @@ describe('@oada/lib-kafka', () => {
     it('should respond to a request', () => {
       info('start');
       const id = 'DEADBEEF';
-      const obj = { foo: 'bar', connection_id: id };
-      const value = JSON.stringify(obj);
+      const object = { foo: 'bar', connection_id: id };
+      const value = JSON.stringify(object);
 
-      res.on('ready', () => info('ready'));
+      res.on('ready', () => {
+        info('ready');
+      });
 
       const robj = { a: 'c' };
-      res.on('request', (req) => {
+      res.on('request', (request) => {
         info('request');
-        return Object.assign(req, robj);
+        return Object.assign(request, robj);
       });
 
       const resp = Bluebird.fromCallback<KafkaBase>((done) => {
@@ -173,19 +181,19 @@ describe('@oada/lib-kafka', () => {
             // Assume all messages are JSON
             const resp = value && JSON.parse(value.toString());
 
-            if (resp['connection_id'] === id) {
+            if (resp.connection_id === id) {
               done(null, resp);
             }
           },
         });
       }).then((resp) => {
-        // @ts-ignore
+        // @ts-expect-error
         delete resp.time;
         return resp;
       });
 
-      prod.send({ topic: REQ_TOPIC, messages: [{ value }] });
-      return expect(resp).to.eventually.deep.equal(Object.assign(obj, robj));
+      production.send({ topic: REQ_TOPIC, messages: [{ value }] });
+      return expect(resp).to.eventually.deep.equal(Object.assign(object, robj));
     });
   });
 
@@ -193,21 +201,21 @@ describe('@oada/lib-kafka', () => {
     before(async function consumerRequests() {
       await cons.stop();
       await cons.subscribe({ topic: REQ_TOPIC });
-      //cons.consume();
+      // Cons.consume();
     });
 
-    let req: Requester;
+    let request: Requester;
     beforeEach(function createRequester(done) {
       info('start create requester');
-      const group = GROUP + '_' + uuid();
+      const group = `${GROUP}_${uuid()}`;
 
-      req = new Requester({
+      request = new Requester({
         consumeTopic: RES_TOPIC,
         produceTopic: REQ_TOPIC,
         group,
       });
-      req.on('error', error);
-      req.on('ready', () => {
+      request.on('error', error);
+      request.on('ready', () => {
         info('finish create requester');
         done();
       });
@@ -215,7 +223,7 @@ describe('@oada/lib-kafka', () => {
 
     afterEach(function destroyRequester(done) {
       info('start destroy requester');
-      req.disconnect().finally(() => {
+      request.disconnect().finally(() => {
         info('finish destroy requester');
         done();
       });
@@ -223,7 +231,7 @@ describe('@oada/lib-kafka', () => {
 
     it('should make a request', () => {
       const id = uuid();
-      const obj: KafkaBase = { connection_id: id, msgtype: 'test' };
+      const object: KafkaBase = { connection_id: id, msgtype: 'test' };
 
       const resp = Bluebird.fromCallback<KafkaBase>((done) => {
         cons.run({
@@ -231,23 +239,23 @@ describe('@oada/lib-kafka', () => {
             // Assume all messages are JSON
             const resp = value && JSON.parse(value.toString());
 
-            if (resp['connection_id'] === id) {
+            if (resp.connection_id === id) {
               done(null, resp);
             }
           },
         });
       }).then(async (resp) => {
         const value = JSON.stringify(resp);
-        await prod.send({ topic: RES_TOPIC, messages: [{ value }] });
+        await production.send({ topic: RES_TOPIC, messages: [{ value }] });
       });
 
-      req.send(obj).catch(() => {}); // Ignore response
+      request.send(object).catch(() => {}); // Ignore response
       return resp;
     });
 
-    it('should receive a response', () => {
+    it('should receive a response', async () => {
       const id = uuid();
-      const obj: KafkaBase = { connection_id: id, msgtype: 'test' };
+      const object: KafkaBase = { connection_id: id, msgtype: 'test' };
 
       const resp = Bluebird.fromCallback<KafkaBase>((done) => {
         cons.run({
@@ -255,25 +263,25 @@ describe('@oada/lib-kafka', () => {
             // Assume all messages are JSON
             const resp = value && JSON.parse(value.toString());
 
-            if (resp['connection_id'] === id) {
+            if (resp.connection_id === id) {
               done(null, resp);
             }
           },
         });
       }).then(async (resp) => {
         const value = JSON.stringify(resp);
-        await prod.send({ topic: RES_TOPIC, messages: [{ value }] });
+        await production.send({ topic: RES_TOPIC, messages: [{ value }] });
       });
 
-      return Promise.all([req.send(obj), resp]);
+      return Promise.all([request.send(object), resp]);
     });
 
     it('should timeout when no response', function () {
-      this.timeout(10000);
+      this.timeout(10_000);
       const id = uuid();
-      const obj: KafkaBase = { connection_id: id, msgtype: 'test' };
+      const object: KafkaBase = { connection_id: id, msgtype: 'test' };
 
-      return expect(req.send(obj)).to.be.rejectedWith(TimeoutError);
+      return expect(request.send(object)).to.be.rejectedWith(TimeoutError);
     });
   });
 });

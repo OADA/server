@@ -1,4 +1,4 @@
-/* copyright 2021 Open Ag Data Alliance
+/* Copyright 2021 Open Ag Data Alliance
  *
  * licensed under the apache license, version 2.0 (the 'license');
  * you may not use this file except in compliance with the license.
@@ -13,7 +13,7 @@
  * limitations under the license.
  */
 
-import { extname } from 'path';
+import { extname } from 'node:path';
 
 import convict, { Config, Schema } from 'convict';
 // eslint-disable-next-line
@@ -62,7 +62,7 @@ convict.addFormats(moment);
 
 // Add support for JSON, JSON5, and yaml config files
 convict.addParser([
-  //{ extension: 'js', parse: require },
+  // { extension: 'js', parse: require },
   { extension: 'json', parse: JSON.parse },
   { extension: 'json5', parse: json5.parse },
   { extension: ['yml', 'yaml'], parse: yaml.parse },
@@ -85,7 +85,7 @@ export function libConfig<S>(schema: Schema<S>): Config<S & D> {
       // Allow requiring a js config?
       // TODO: Probably remove this later
       // eslint-disable-next-line  @typescript-eslint/no-var-requires
-      config.load(require(file)); // nosemgrep: javascript.lang.security.detect-non-literal-require.detect-non-literal-require
+      config.load(require(file)); // Nosemgrep: javascript.lang.security.detect-non-literal-require.detect-non-literal-require
     } else {
       config.loadFile(file);
     }
@@ -96,9 +96,7 @@ export function libConfig<S>(schema: Schema<S>): Config<S & D> {
     // Allow extra items
     allowed: 'warn',
     // Do not actually output warnings about extra items?
-    output: () => {
-      return;
-    },
+    output: () => {},
   });
 
   return config;

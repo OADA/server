@@ -4,7 +4,7 @@
 // with `npm run init` in oada-ref-auth-js
 
 const debug = require('debug')('arango/init');
-const Database = require('arangojs').Database;
+const { Database } = require('arangojs');
 const Promise = (global.Promise = require('bluebird'));
 const bcrypt = require('bcryptjs');
 
@@ -12,9 +12,9 @@ const bcrypt = require('bcryptjs');
 module.exports = (config) => {
   debug('Checking for db setup');
 
-  //------------------------------------------------------------
+  // ------------------------------------------------------------
   // First setup some shorter variable names:
-  const db = new Database(config.get('arango:connectionString'));
+  const database = new Database(config.get('arango:connectionString'));
   const dbname = config.get('arango:database');
   const cols = config.get('arango:collections');
   const colnames = Object.values(cols);
@@ -30,74 +30,77 @@ module.exports = (config) => {
     { collection: 'codes', index: 'code' },
   ];
 
-  //---------------------------------------------------------------------
+  // ---------------------------------------------------------------------
   // Start the show: Figure out if the database exists: if not, make it
-  return db
+  return database
     .get()
-    .then(() => db.listDatabases())
+    .then(async () => database.listDatabases())
     .then((dbs) => {
       dbs = dbs.filter((d) => d === dbname);
-      if (dbs.length > 0) return debug('database ' + dbname + ' exists');
-      debug('database ' + dbname + ' does not exist.  Creating...');
-      return db
+      if (dbs.length > 0) return debug(`database ${dbname} exists`);
+      debug(`database ${dbname} does not exist.  Creating...`);
+      return database
         .createDatabase(dbname)
-        .then(() => debug('Now ' + dbname + ' database exists'));
+        .then(() => debug(`Now ${dbname} database exists`));
 
-      //---------------------------------------------------------------------
+      // ---------------------------------------------------------------------
       // Use that database, then check that all the collections exist
     })
-    .then(() => {
-      db.useDatabase(dbname);
-      return db.listCollections();
+    .then(async () => {
+      database.useDatabase(dbname);
+      return database.listCollections();
     })
-    .then((dbcols) => {
-      return Promise.each(colnames, (c) => {
-        if (dbcols.find((d) => d.name === c)) {
-          return debug('Collection ' + c + ' exists');
-        }
-        return db
-          .collection(c)
-          .create()
-          .then(() => debug('Collection ' + c + ' has been created'));
-      });
+    .then(
+      (dbcols) =>
+        Promise.each(colnames, (c) => {
+          if (dbcols.find((d) => d.name === c)) {
+            return debug(`Collection ${c} exists`);
+          }
 
-      //---------------------------------------------------------------------
+          return database
+            .collection(c)
+            .create()
+            .then(() => debug(`Collection ${c} has been created`));
+        })
+
+      // ---------------------------------------------------------------------
       // Now check if the proper indexes exist on each collection:
-    })
+    )
     .then(() => indexes)
-    .map((ind) => db.collection(ind.collection).indexes())
-    .map((dbindexes, i) => {
-      // dbindexes looks like [ { fields: [ 'token' ], sparse: true, unique: true },... ]
-      const index = indexes[i]; // { collection: 'tokens', index: 'index' }
+    .map(async (ind) => database.collection(ind.collection).indexes())
+    .map((dbindexes, index_) => {
+      // Dbindexes looks like [ { fields: [ 'token' ], sparse: true, unique: true },... ]
+      const index = indexes[index_]; // { collection: 'tokens', index: 'index' }
       const hasindex = dbindexes.find(
-        (i) => i.fields.includes(index.index) && i.sparse && i.unique
+        (index_) =>
+          index_.fields.includes(index.index) && index_.sparse && index_.unique
       );
       if (hasindex)
         return debug(
-          'Index ' + index.index + ' exists on collection ' + index.collection
+          `Index ${index.index} exists on collection ${index.collection}`
         );
-      return db
+      return database
         .collection(index.collection)
         .createHashIndex(index.index, { unique: true, sparse: true })
         .then(() =>
-          debug('Created ' + index.index + ' index on ' + index.collection)
+          debug(`Created ${index.index} index on ${index.collection}`)
         );
 
-      //----------------------------------------------------------------------
+      // ----------------------------------------------------------------------
       // Finally, insert default users if they want some:
     })
     .then(() => defaultusers || [])
-    .map((u) =>
-      db
+    .map(async (u) =>
+      database
         .collection('users')
         .firstExample({ username: u.username })
-        .then(() => debug('User ' + u.username + ' exists.'))
-        .catch(() => {
-          debug('saving user ' + u);
-          return db
+        .then(() => debug(`User ${u.username} exists.`))
+        .catch(async () => {
+          debug(`saving user ${u}`);
+          return database
             .collection('users')
             .save(u)
-            .then(() => debug('Created user ' + u.username));
+            .then(() => debug(`Created user ${u.username}`));
         })
     );
 };

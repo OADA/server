@@ -18,7 +18,7 @@
 const domain = process.env.DOMAIN || 'localhost';
 
 module.exports = {
-  domainsDir: '/oada/services/auth/domains', // served by auth for login pages, software statements, keys, etc.
+  domainsDir: '/oada/services/auth/domains', // Served by auth for login pages, software statements, keys, etc.
 
   server: {
     port: 8080,
@@ -119,7 +119,7 @@ module.exports = {
       graphRequest: 'graph_request',
       writeRequest: 'write_request',
       userRequest: 'user_request',
-      permissionsRequest: 'permissions_request', //show bobs
+      permissionsRequest: 'permissions_request', // Show bobs
       httpResponse: 'http_response',
       websocketsRequest: 'websockets_request',
     },
@@ -134,7 +134,7 @@ module.exports = {
       decision: '/decision',
       login: '/login',
       loginConnect: '/id-login', // POST URL for OpenIDConnect domain web form
-      redirectConnect: '/id-redirect', // redirect URL for OpenIDConnect
+      redirectConnect: '/id-redirect', // Redirect URL for OpenIDConnect
       logout: '/logout',
       certs: '/certs',
       userinfo: '/userinfo',
@@ -148,9 +148,9 @@ module.exports = {
       'port-http': 8080,
       'mode': 'http',
       'proxy': 'uniquelocal',
-      'domain': domain, // in docker it's port 80 localhost
+      domain, // In docker it's port 80 localhost
       // but to nginx proxy, it's https://localhost in dev
-      'publicUri': 'https://' + domain,
+      'publicUri': `https://${domain}`,
     },
     keys: {
       signPems: '/oada/services/auth/sign/',
@@ -167,11 +167,11 @@ module.exports = {
     },
   },
   wellKnown: {
-    // forceProtocol: 'https', // use this to force URL's to have https prefix.  Useful when behind a proxy.
+    // ForceProtocol: 'https', // use this to force URL's to have https prefix.  Useful when behind a proxy.
     'server': {
       port: 8080,
       mode: 'http',
-      domain: domain,
+      domain,
     },
     'mergeSubServices': [
       { resource: 'oada-configuration', base: 'http://auth:8080' },
@@ -183,9 +183,9 @@ module.exports = {
       oada_base_uri: './',
       scopes_supported: [
         {
-          'name': 'oada.all.1', // can do anything the user can do
+          'name': 'oada.all.1', // Can do anything the user can do
           /* pattern: /oada\..*\.1/  */
-          'read+write': true, // can read/write anything the user can read/write
+          'read+write': true, // Can read/write anything the user can read/write
         },
       ],
     },

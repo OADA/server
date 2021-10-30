@@ -13,9 +13,9 @@
  * limitations under the License.
  */
 'use strict';
-var mongojs = require('mongojs');
+const mongojs = require('mongojs');
 
-var config = require('../../config');
+const config = require('../../config');
 
 module.exports = mongojs(config.get('mongo:connectionString'), [
   'users',

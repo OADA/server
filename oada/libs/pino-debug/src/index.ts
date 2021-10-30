@@ -1,7 +1,7 @@
 // eslint-disable-next-line -- needs to be first import
 import pinoDebug, { Options } from 'pino-debug';
 
-import { resolve } from 'path';
+import { resolve } from 'node:path';
 
 import _pino from 'pino';
 import debug from 'debug';
@@ -37,7 +37,7 @@ export function logLevel(): string {
 
   // Guess level based on OADA debug namespaces (e.g., *:info -> info log level)
   const levels = Object.entries(_pino.levels.values).sort(
-    // ensure levels are sorted by value
+    // Ensure levels are sorted by value
     ([_1, v1], [_2, v2]) => v1 - v2
   );
   for (const [label] of levels) {
@@ -55,12 +55,14 @@ export function logLevel(): string {
  */
 export function pino({
   level = logLevel(),
-  ...opts
+  ...options
 }: _pino.LoggerOptions = {}): _pino.Logger {
-  const p = _pino({ level, ...opts });
-  return (process.env.NODE_ENV === 'development'
+  const p = _pino({ level, ...options });
+  return (
+    process.env.NODE_ENV === 'development'
     ? require('pino-caller')(p) // eslint-disable-line
-    : p) as _pino.Logger;
+      : p
+  ) as _pino.Logger;
 }
 
 /**
@@ -77,11 +79,11 @@ export default function oadaDebug(
 ): void {
   // Load mappings from files
   const fmap = (process.env.OADA_PINO_MAP &&
-    require(resolve(process.cwd(), process.env.OADA_PINO_MAP))) as  // nosemgrep: javascript.lang.security.detect-non-literal-require.detect-non-literal-require
+    require(resolve(process.cwd(), process.env.OADA_PINO_MAP))) as  // Nosemgrep: javascript.lang.security.detect-non-literal-require.detect-non-literal-require
     | undefined
     | Record<string, string>;
   // Merge in mappings
-  const map = Object.assign({}, defaultMap, fmap, mmap);
+  const map = { ...defaultMap, ...fmap, ...mmap };
   return void pinoDebug(logger, { auto, map, ...rest });
 }
 
@@ -90,6 +92,6 @@ if (
   module.parent.parent === null &&
   module.parent.filename === null
 ) {
-  // preloaded with -r flag
+  // Preloaded with -r flag
   oadaDebug();
 }

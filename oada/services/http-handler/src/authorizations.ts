@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-import { join } from 'path';
+import { join } from 'node:path';
 
 import { authorizations, clients } from '@oada/lib-arangodb';
 
@@ -24,26 +24,26 @@ export interface Options {
   prefix: string;
 }
 
-const plugin: FastifyPluginAsync<Options> = function (fastify, opts) {
+const plugin: FastifyPluginAsync<Options> = async function (fastify, options) {
   async function addClientToAuth(
-    req: FastifyRequest,
+    request: FastifyRequest,
     auth: authorizations.Authorization | null
   ) {
     if (auth?.clientId) {
-      req.log.trace(
+      request.log.trace(
         'GET /%s: authorization has a client, retrieving',
         auth._id
       );
       try {
         const client = await clients.findById(auth.clientId);
-        // store client from db into authorization object
+        // Store client from db into authorization object
         return { client, ...auth };
-      } catch (err) {
-        req.log.error('ERROR: authorization clientId not found in DB');
-        throw err;
+      } catch (error) {
+        request.log.error('ERROR: authorization clientId not found in DB');
+        throw error;
       }
     } else {
-      req.log.trace(
+      request.log.trace(
         'GET /%s: authorization DOES NOT have a clientId',
         auth?._id
       );
@@ -53,27 +53,28 @@ const plugin: FastifyPluginAsync<Options> = function (fastify, opts) {
 
   // Authorizations routes
   // TODO: How the heck should this work??
-  fastify.get('/', async function (request, reply) {
+  fastify.get('/', async (request, reply) => {
     const { user_id: userid } = request.requestContext.get('user')!;
     const auths = await authorizations.findByUser(userid);
 
     const res: Record<string, authorizations.Authorization | null> = {};
     for await (const auth of auths) {
-      const k = auth['_id'].replace(/^authorizations\//, '');
+      const k = auth._id.replace(/^authorizations\//, '');
       res[k] = await addClientToAuth(request, auth);
     }
 
     return reply.send(res);
   });
 
-  fastify.get('/:authId', async function (request, reply) {
+  fastify.get('/:authId', async (request, reply) => {
     const { authId } = request.params as { authId: string };
     const { user_id: userid } = request.requestContext.get('user')!;
 
     const auth = await authorizations.findById(authId);
     // Only let users see their own authorizations
-    if (auth?.user['_id'] !== userid) {
-      return reply.forbidden();
+    if (auth?.user._id !== userid) {
+      reply.forbidden();
+      return;
     }
 
     // Get the full client out of the DB to send out with this auth document
@@ -87,42 +88,43 @@ const plugin: FastifyPluginAsync<Options> = function (fastify, opts) {
     ['json', '+json'],
     {
       // 20 MB
-      bodyLimit: 20 * 1048576,
+      bodyLimit: 20 * 1_048_576,
     },
-    (_, body, done) => done(null, body)
+    (_, body, done) => {
+      done(null, body);
+    }
   );
 
-  fastify.post('/', async function (request, reply) {
+  fastify.post('/', async (request, reply) => {
     const user = request.requestContext.get('user')!;
 
     // TODO: Most of this could be done inside an Arango query...
     // TODO: Check scope of current token
-    const auth = Object.assign(
-      {
-        // TODO: Which fields should be selectable by the client?
-        user: {
-          _id: user['user_id'],
-        },
-        clientId: user['client_id'],
-        createTime: Date.now(),
-        expiresIn: 3600,
-        // TODO: How to generate token?
-        token: uuid(),
+    const auth = {
+      // TODO: Which fields should be selectable by the client?
+      user: {
+        _id: user.user_id,
       },
-      request.body
-    );
+      clientId: user.client_id,
+      createTime: Date.now(),
+      expiresIn: 3600,
+      // TODO: How to generate token?
+      token: uuid(),
+      ...request.body,
+    };
 
     // Don't allow making tokens for other users unless admin.user
-    if (auth.user['_id'] !== user['user_id']) {
+    if (auth.user._id !== user.user_id) {
       if (
         !user.scope.find(
           (s) => s === 'oada.admin.user:all' || 'oada.admin.user:write'
         )
       ) {
-        return reply.forbidden();
+        reply.forbidden();
+        return;
       }
 
-      // otherwise, token has admin scope so allow it (check user too?)
+      // Otherwise, token has admin scope so allow it (check user too?)
       request.log.debug(
         'Posted authorization for a different user, but token has admin.user scope so we are allowing it'
       );
@@ -133,22 +135,26 @@ const plugin: FastifyPluginAsync<Options> = function (fastify, opts) {
       return null;
     }
 
-    const { _rev, user: u, ...ret } = result;
+    const { _rev, user: u, ...returnValue } = result;
 
-    void reply.header('Content-Location', join(opts.prefix, ret._id));
-    return reply.send({ ...ret, user: u ? { _id: u._id } : undefined });
+    void reply.header(
+      'Content-Location',
+      join(options.prefix, returnValue._id)
+    );
+    return reply.send({ ...returnValue, user: u ? { _id: u._id } : undefined });
   });
 
   // TODO: Should another microservice revoke authorizations?
-  fastify.delete('/:authId', async function (request, reply) {
+  fastify.delete('/:authId', async (request, reply) => {
     const { authId } = request.params as { authId: string };
     const user = request.requestContext.get('user')!;
 
     const auth = await authorizations.findById(authId);
 
     // Only let users see their own authorizations
-    if (auth?.user['_id'] !== user['user_id']) {
-      return reply.forbidden();
+    if (auth?.user._id !== user.user_id) {
+      reply.forbidden();
+      return;
     }
 
     await authorizations.revoke(authId);

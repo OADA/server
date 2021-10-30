@@ -14,9 +14,9 @@
  */
 
 import config from '../config.js';
-import { db } from '../db.js';
+import { db as database } from '../db.js';
 
-const collection = db.collection(
+const collection = database.collection(
   config.get('arangodb.collections.putBodies.name')
 );
 
@@ -24,8 +24,8 @@ const collection = db.collection(
  * Give string of JSON rather than object
  */
 export async function savePutBody(body: string): Promise<{ _id: string }> {
-  // the _id comes back in the response to save
-  return await collection.save(`{"body":${body}}`);
+  // The _id comes back in the response to save
+  return collection.save(`{"body":${body}}`);
 }
 
 export async function getPutBody(id: string): Promise<unknown> {

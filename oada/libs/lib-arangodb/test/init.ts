@@ -20,49 +20,48 @@ import chaiAsPromised from 'chai-as-promised';
 import _ from 'lodash';
 import Bluebird from 'bluebird';
 
-// @ts-ignore
-config.set('isTest', true);
+import { cleanup, run } from '../src/init';
 
-import * as init from '../src/init';
+// @ts-expect-error
+config.set('isTest', true);
 
 const dbname = config.get('arangodb.database');
 
 chai.use(chaiAsPromised);
 
-const db = new Database({
+const database = new Database({
   url: config.get('arangodb.connectionString'),
 });
-//const cleanup = init.cleanup; // set this to an empty function if you don't want db to be deleted
+// Const cleanup = init.cleanup; // set this to an empty function if you don't want db to be deleted
 
 describe('init', () => {
   it('should drop test database if it already exists', () => {
-    db.database('_system');
-    return Bluebird.resolve(db.listDatabases())
+    database.database('_system');
+    return Bluebird.resolve(database.listDatabases())
       .then((dbs) => {
-        console.log('dbs = ', dbs);
+        console.log('dbs =', dbs);
         return dbs;
       })
-      .each((d) => (d === dbname ? db.dropDatabase(dbname) : null))
-      .then(() => db.createDatabase(dbname))
-      .then(() => {
-        db.database(dbname);
-        return db.collection('dummycollection').create();
+      .each((d) => (d === dbname ? database.dropDatabase(dbname) : null))
+      .then(async () => database.createDatabase(dbname))
+      .then(async () => {
+        database.database(dbname);
+        return database.collection('dummycollection').create();
       })
-      .then(init.run)
-      .then(() => db.listCollections())
+      .then(run)
+      .then(async () => database.listCollections())
       .then((cols) => {
         expect(_.map(cols, 'name')).to.not.contain('dummycollection');
       })
-      .finally(init.cleanup);
+      .finally(cleanup);
   });
 
-  it('should create test database' + dbname, () => {
-    return init
-      .run()
-      .then(() => {
-        db.database('_system');
+  it(`should create test database${dbname}`, async () =>
+    run()
+      .then(async () => {
+        database.database('_system');
         return (
-          db
+          database
             .listDatabases()
             // Expect one of the database names returned to be the database name
             .then((dbs) => {
@@ -70,78 +69,72 @@ describe('init', () => {
             })
         );
       })
-      .finally(init.cleanup);
-  });
+      .finally(cleanup));
 
-  it('should have created all the collections', () => {
-    return init
-      .run()
+  it('should have created all the collections', async () =>
+    run()
       .then(async () => {
-        db.database(dbname);
-        return db.listCollections().then((dbcols) => {
+        database.database(dbname);
+        return database.listCollections().then((dbcols) => {
           const cols = config.get('arangodb.collections');
           _.each(cols, (c) => {
-            // expect the returned list of db collections to contain each name
-            const hasname = !!_.find(dbcols, (d) => d.name === c.name);
+            // Expect the returned list of db collections to contain each name
+            const hasname = Boolean(_.find(dbcols, (d) => d.name === c.name));
             expect(hasname).to.equal(true);
           });
         });
       })
-      .finally(init.cleanup);
-  });
+      .finally(cleanup));
 
-  it('should create all the indexes on the collections', () => {
-    return init
-      .run()
+  it('should create all the indexes on the collections', async () =>
+    run()
       .then(() => {
-        db.database(dbname);
+        database.database(dbname);
         const colsarr = _.values(config.get('arangodb.collections'));
-        return Bluebird.map(colsarr, async (c) => {
-          // dbindexes looks like [ { fields: [ 'token' ], sparse: true, unique: true },... ]
-          return db
+        return Bluebird.map(colsarr, async (c) =>
+          // Dbindexes looks like [ { fields: [ 'token' ], sparse: true, unique: true },... ]
+          database
             .collection(c.name)
             .indexes()
-            .then((dbindexes) => {
-              return _.map(c.indexes, (ci) => {
-                // for each index in collection, check if exists
+            .then((dbindexes) =>
+              _.map(c.indexes, (ci) => {
+                // For each index in collection, check if exists
                 const indexname = typeof ci === 'string' ? ci : ci.name;
-                const hasindex = !!_.find(dbindexes, (dbi) =>
-                  _.includes(dbi.fields, indexname)
+                const hasindex = Boolean(
+                  _.find(dbindexes, (dbi) => _.includes(dbi.fields, indexname))
                 );
                 expect(hasindex).to.equal(true);
-              });
-            });
-        });
+              })
+            )
+        );
       })
-      .finally(init.cleanup);
-  });
+      .finally(cleanup));
 
-  it('should create any requested default data', () => {
-    return init
-      .run()
+  it('should create any requested default data', async () =>
+    run()
       .then(() => {
-        db.database(dbname);
+        database.database(dbname);
         const defaultdata: Record<string, unknown[]> = _.mapValues(
           config.get('arangodb.init.defaultData'),
-          (p) => require('../' + p)
+          (p) => require(`../${p}`)
         );
         return Bluebird.each(
           _.keys(defaultdata),
           (colname: keyof typeof defaultdata) => {
             const data = defaultdata[colname]!;
-            return Bluebird.each(data, (doc) => {
+            return Bluebird.each(data, (document) => {
               if (colname === 'users') {
-                // @ts-ignore
-                delete doc.password; // don't bother to check hashed password
+                // @ts-expect-error
+                delete document.password; // Don't bother to check hashed password
               }
+
               return expect(
-                // @ts-ignore
-                _.keys(db.collection(colname).firstExample(doc))
-              ).to.eventually.include(_.keys(doc));
+                // @ts-expect-error
+                _.keys(database.collection(colname).firstExample(document))
+              ).to.eventually.include(_.keys(document));
             });
           }
         );
       })
-      .finally(init.cleanup);
-  });
+      .finally(cleanup));
 });

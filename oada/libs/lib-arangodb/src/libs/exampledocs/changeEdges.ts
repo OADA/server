@@ -1,5 +1,5 @@
 export default [
-  //-------------------------------------------------------
+  // -------------------------------------------------------
   // /bookmarks/rocks
   {
     _id: 'changeEdges/default:changeEdges_rocks_123',
@@ -8,7 +8,7 @@ export default [
     _to: 'changes/resources:default:resources_rocks_123',
   },
 
-  //--------------------------------------------------------
+  // --------------------------------------------------------
   // /bookmarks/rocks/rocks-index
   {
     _id: 'changeEdges/default:changeEdges_rocks-index_123',
@@ -17,7 +17,7 @@ export default [
     _to: 'changes/resources:default:resources_rocks_123:rocks-index',
   },
 
-  //--------------------------------------------------------
+  // --------------------------------------------------------
   // /bookmarks/rocks/rocks-index/90j2klfdjss
   {
     _id: 'changeEdges/default:changeEdges_90j2klfdjss_123',
@@ -26,7 +26,7 @@ export default [
     _to: 'changes/resources:default:resources_rock_123',
   },
 
-  //-------------------------------------------------------
+  // -------------------------------------------------------
   // /bookmarks/trellisfw
   {
     _id: 'changeEdges/default:changeEdges_trellisfw_123',
@@ -34,7 +34,7 @@ export default [
     _from: 'changes/resources:default:resources_bookmarks_999',
     _to: 'changes/resources:default:resources_trellisfw_999',
   },
-  //--------------------------------------------------------
+  // --------------------------------------------------------
   // /bookmarks/trellisfw/clients
   {
     _id: 'changeEdges/default:changeEdges_clients_123',

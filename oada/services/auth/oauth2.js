@@ -30,19 +30,20 @@ const oadaLookup = require('@oada/oada-lookup');
 const utils = require('./utils');
 const clients = require('./db/models/client');
 
-var server;
+let server;
 module.exports = function (_server, config) {
-  //-----------------------------------------------------------------------
+  // -----------------------------------------------------------------------
   // Load all the domain configs at startup
   const ddir = config.get('domainsDir');
-  const domainConfigs = fs.readdirSync(ddir).reduce((acc, dirname) => {
-    if (dirname.startsWith('.') == false) {
+  const domainConfigs = fs.readdirSync(ddir).reduce((accumulator, dirname) => {
+    if (!dirname.startsWith('.')) {
       const fname = join(ddir, dirname, 'config');
       // Should be safe because fname is from "admin" input not "user" input
-      const config = require(fname); // nosemgrep: javascript.lang.security.detect-non-literal-require.detect-non-literal-require
-      acc[config.domain] = config;
+      const config = require(fname); // Nosemgrep: javascript.lang.security.detect-non-literal-require.detect-non-literal-require
+      accumulator[config.domain] = config;
     }
-    return acc;
+
+    return accumulator;
   }, {});
 
   server = _server;
@@ -70,74 +71,74 @@ module.exports = function (_server, config) {
     return false;
   }
 
-  //////
+  /// ///
   // Middleware
-  //////
+  /// ///
   return {
     authorize: [
       // If the redirecting domain sets the "domain_hint", save it in the session so that the login page
       // can fill it in as the default choice:
-      function (req, _res, next) {
+      function (request, _res, next) {
         debug('oauth2#authorize: checking for domain_hint');
-        if (req && req.query && req.query.domain_hint) {
-          req.session.domain_hint = req.query.domain_hint;
+        if (request && request.query && request.query.domain_hint) {
+          request.session.domain_hint = request.query.domain_hint;
         }
+
         next();
       },
-      // can access it to pre-fill the domain box
+      // Can access it to pre-fill the domain box
       // ensureLoggedIn fills in req.session.returnTo to let you redirect
       // back after logging in
       login.ensureLoggedIn(config.get('auth.endpoints.login')),
-      server.authorization(function (clientId, redirectURI, done) {
-        clients.findById(clientId, function (err, client) {
-          if (err) {
-            return done(err);
+      server.authorization((clientId, redirectURI, done) => {
+        clients.findById(clientId, (error, client) => {
+          if (error) {
+            return done(error);
           }
+
           if (!client) {
             return done(null, false);
           }
 
           // Compare the given redirectUrl to all the clients redirectUrls
-          for (var i = 0; i < client['redirect_uris'].length; i++) {
-            if (URI(client['redirect_uris'][i]).equals(redirectURI)) {
+          for (let index = 0; index < client.redirect_uris.length; index++) {
+            if (URI(client.redirect_uris[index]).equals(redirectURI)) {
               return done(null, client, redirectURI);
             }
           }
+
           debug(
-            'oauth2#authorize: redirect_uri from URL (' +
-              redirectURI +
-              ') does not match any on client cert: %O',
+            `oauth2#authorize: redirect_uri from URL (${redirectURI}) does not match any on client cert: %O`,
             client.redirect_uris
           );
           return done(null, false);
         });
       }),
-      function (req, res) {
-        oadaLookup.trustedCDP(function () {
+      function (request, res) {
+        oadaLookup.trustedCDP(() => {
           // Load the login info for this domain from the public directory:
           const domain_config =
-            domainConfigs[req.hostname] || domainConfigs.localhost;
+            domainConfigs[request.hostname] || domainConfigs.localhost;
           res.render(config.get('auth.views.approvePage'), {
-            transactionID: req.oauth2.transactionID,
-            client: req.oauth2.client,
-            scope: req.oauth2.req.scope,
-            nonce: req.oauth2.req.nonce,
-            trusted: req.oauth2.client.trusted,
+            transactionID: request.oauth2.transactionID,
+            client: request.oauth2.client,
+            scope: request.oauth2.req.scope,
+            nonce: request.oauth2.req.nonce,
+            trusted: request.oauth2.client.trusted,
             decision_url: config.get('auth.endpoints.decision'),
             user: {
-              name: req.user && req.user.name ? req.user.name : '',
+              name: request.user && request.user.name ? request.user.name : '',
               username:
-                req.user && req.user.username ? req.user.username : 'nobody',
+                request.user && request.user.username
+                  ? request.user.username
+                  : 'nobody',
             },
-            autoaccept: scopeIsOnlyOpenid(req.oauth2.req.scope) ? true : false,
+            autoaccept: Boolean(scopeIsOnlyOpenid(request.oauth2.req.scope)),
             logout: config.get('auth.endpoints.logout'),
             name: domain_config.name,
-            logo_url:
-              config.get('auth.endpointsPrefix') +
-              '/domains/' +
-              domain_config.domain +
-              '/' +
-              domain_config.logo,
+            logo_url: `${config.get('auth.endpointsPrefix')}/domains/${
+              domain_config.domain
+            }/${domain_config.logo}`,
             tagline: domain_config.tagline,
             color: domain_config.color || '#FFFFFF',
           });
@@ -146,15 +147,15 @@ module.exports = function (_server, config) {
       server.errorHandler({ mode: 'indirect' }),
     ],
     decision: [
-      function (_req, _res, next) {
+      function (_request, _res, next) {
         debug('oauth2#decision: Received decision POST from form');
         next();
       },
       login.ensureLoggedIn(config.get('auth.endpoints.login')),
-      server.decision(function parseDecision(req, done) {
-        var validScope = req.body.scope.every(function (el) {
-          return req.oauth2.req.scope.indexOf(el) != -1;
-        });
+      server.decision(function parseDecision(request, done) {
+        const validScope = request.body.scope.every((element) =>
+          request.oauth2.req.scope.includes(element)
+        );
 
         if (!validScope) {
           return done(
@@ -166,42 +167,38 @@ module.exports = function (_server, config) {
         }
 
         debug(
-          'decision: allow = ' +
-            req.allow +
-            ', scope = ' +
-            req.body.scope +
-            ', nonce = ' +
-            req.oauth2.req.nonce
+          `decision: allow = ${request.allow}, scope = ${request.body.scope}, nonce = ${request.oauth2.req.nonce}`
         );
         done(null, {
-          allow: req.allow,
-          scope: req.body.scope,
-          nonce: req.oauth2.req.nonce,
+          allow: request.allow,
+          scope: request.body.scope,
+          nonce: request.oauth2.req.nonce,
         });
       }),
       server.errorHandler({ mode: 'indirect' }),
     ],
     token: [
-      function (req, _res, next) {
-        // have to keep req.hostname in res to hack around oauth2orize so that issuer can be checked in openidconnect
+      function (request, _res, next) {
+        // Have to keep req.hostname in res to hack around oauth2orize so that issuer can be checked in openidconnect
         debug('oauth2#token: setting client_secret = client_assertion');
-        // todo: hack to use passport-oauth2-client-password
-        req.body['client_secret'] = req.body['client_assertion'];
+        // Todo: hack to use passport-oauth2-client-password
+        request.body.client_secret = request.body.client_assertion;
 
         return next();
       },
       passport.authenticate(['oauth2-client-password'], { session: false }),
-      function (req, _res, next) {
-        if (!req.user) {
+      function (request, _res, next) {
+        if (!request.user) {
           debug(
             'oauth2#token: there is no req.user after passport.authenticate should have put the client there.'
           );
           next();
         }
-        const domain_cfg = domainConfigs[req.hostname] || {
+
+        const domain_cfg = domainConfigs[request.hostname] || {
           baseuri: 'https://localhost/',
         };
-        req.user.reqdomain = domain_cfg.baseuri;
+        request.user.reqdomain = domain_cfg.baseuri;
         next();
       },
       server.token(),

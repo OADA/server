@@ -5,7 +5,7 @@ export default [
     scope: [],
     nonce: '',
     user: { _id: 'users/123frank' },
-    createTime: 1413831649937,
+    createTime: 1_413_831_649_937,
     expiresIn: 60,
     redeemed: true,
     clientId: 'jf93caauf3uzud7f308faesf3@provider.oada-dev.com',

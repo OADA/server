@@ -21,7 +21,7 @@ import debug from 'debug';
 // DO NOT include ../ because we are testing externally.  Including here will cause admin copy of it
 // to receive some of the kafka responses.
 
-import { connect, OADAClient, Change } from '@oada/client';
+import { Change, OADAClient, connect } from '@oada/client';
 
 const trace = debug('trace:write-handler#test');
 
@@ -40,7 +40,7 @@ describe('External tests of write-handler, run from admin', () => {
     await buildTree();
   });
 
-  //    after(async () => cleanup());
+  //    After(async () => cleanup());
 
   it('Should include the link key in the change document when deleting a link to a non-existent resource', async function () {
     this.timeout(2000);
@@ -52,15 +52,15 @@ describe('External tests of write-handler, run from admin', () => {
     const firstrev = (await con
       .get({ path: `/${topid}/_rev` })
       .then((r) => r.data)) as number;
-    await con
-      .delete({ path: `/${topid}/nonexistentlink` })
-      .catch((e) => trace('FAILED DELETE: e = ', e));
+    await con.delete({ path: `/${topid}/nonexistentlink` }).catch((error) => {
+      trace('FAILED DELETE: e = ', error);
+    });
     const changedocs = (await con
       .get({ path: `/${topid}/_meta/_changes/${firstrev + 1}` })
       .then((r) => r.data)
-      .catch((e) =>
-        trace('FAILED GET CHANGE DOC, e = ', e)
-      )) as unknown as Change[];
+      .catch((error) => {
+        trace('FAILED GET CHANGE DOC, e = ', error);
+      })) as unknown as Change[];
     const thechange = _.find(changedocs, (c) => c.type === 'delete');
 
     expect(_.get(thechange, 'type')).to.equal('delete');
@@ -86,9 +86,9 @@ async function buildTree() {
       data: { iam: 'top', middle: { _id: middleid, _rev: 0 } },
       contentType: 'application/json',
     });
-  } catch (e) {
-    console.log('FAILED TO BUILD TREE.  ERROR = ', e);
-    throw e;
+  } catch (error) {
+    console.log('FAILED TO BUILD TREE.  ERROR =', error);
+    throw error;
   }
 }
 
@@ -96,7 +96,7 @@ async function cleanup() {
   await Bluebird.each([topid, middleid, bottomid], async (id) => {
     await con
       .get({ path: `/${id}` })
-      .then(async () => con.delete({ path: `/${id}` })) // delete it
-      .catch(() => {}); // do nothing, didn't exist
+      .then(async () => con.delete({ path: `/${id}` })) // Delete it
+      .catch(() => {}); // Do nothing, didn't exist
   });
 }

@@ -8,49 +8,49 @@
  * the graphNode key for a resource, user, authorization, etc.
  */
 export default [
-  //------------------------------------------------
+  // ------------------------------------------------
   // Bookmarks document (for user frank):
   {
     _id: 'graphNodes/resources:default:resources_bookmarks_123',
     resource_id: 'resources/default:resources_bookmarks_123',
     is_resource: true,
   },
-  //------------------------------------------------
+  // ------------------------------------------------
   // Bookmarks document (for user servio):
   {
     _id: 'graphNodes/resources:default:resources_bookmarks_012',
     resource_id: 'resources/default:resources_bookmarks_012',
     is_resource: true,
   },
-  //------------------------------------------------
+  // ------------------------------------------------
   // Bookmarks document (for user pete):
   {
     _id: 'graphNodes/resources:default:resources_bookmarks_444',
     resource_id: 'resources/default:resources_bookmarks_444',
     is_resource: true,
   },
-  //------------------------------------------------
+  // ------------------------------------------------
   // Bookmarks document (for user rick):
   {
     _id: 'graphNodes/resources:default:resources_bookmarks_555',
     resource_id: 'resources/default:resources_bookmarks_555',
     is_resource: true,
   },
-  //------------------------------------------------
+  // ------------------------------------------------
   // Bookmarks document (for user diane):
   {
     _id: 'graphNodes/resources:default:resources_bookmarks_666',
     resource_id: 'resources/default:resources_bookmarks_666',
     is_resource: true,
   },
-  //------------------------------------------------
+  // ------------------------------------------------
   // Bookmarks document (for user sam):
   {
     _id: 'graphNodes/resources:default:resources_bookmarks_321',
     resource_id: 'resources/default:resources_bookmarks_321',
     is_resource: true,
   },
-  //------------------------------------------------
+  // ------------------------------------------------
   // Bookmarks document (for user sam-proxy):
   {
     _id: 'graphNodes/resources:default:resources_bookmarks_321-proxy',
@@ -58,98 +58,98 @@ export default [
     is_resource: true,
   },
 
-  //------------------------------------------------
+  // ------------------------------------------------
   // Bookmarks document (for user audrey):
   {
     _id: 'graphNodes/resources:default:resources_bookmarks_999',
     resource_id: 'resources/default:resources_bookmarks_999',
     is_resource: true,
   },
-  //------------------------------------------------
+  // ------------------------------------------------
   // Bookmarks document (for user gary at growersync):
   {
     _id: 'graphNodes/resources:default:resources_bookmarks_777',
     resource_id: 'resources/default:resources_bookmarks_777',
     is_resource: true,
   },
-  //------------------------------------------------
+  // ------------------------------------------------
   // Shares document (for user frank):
   {
     _id: 'graphNodes/resources:default:resources_shares_123',
     resource_id: 'resources/default:resources_shares_123',
     is_resource: true,
   },
-  //------------------------------------------------
+  // ------------------------------------------------
   // Shares document (for user servio):
   {
     _id: 'graphNodes/resources:default:resources_shares_012',
     resource_id: 'resources/default:resources_shares_012',
     is_resource: true,
   },
-  //------------------------------------------------
+  // ------------------------------------------------
   // Shares document (for user audrey):
   {
     _id: 'graphNodes/resources:default:resources_shares_999',
     resource_id: 'resources/default:resources_shares_999',
     is_resource: true,
   },
-  //------------------------------------------------
+  // ------------------------------------------------
   // Shares document (for user sam):
   {
     _id: 'graphNodes/resources:default:resources_shares_321',
     resource_id: 'resources/default:resources_shares_321',
     is_resource: true,
   },
-  //------------------------------------------------
+  // ------------------------------------------------
   // Shares document (for user sam-proxy):
   {
     _id: 'graphNodes/resources:default:resources_shares_321-proxy',
     resource_id: 'resources/default:resources_shares_321-proxy',
     is_resource: true,
   },
-  //------------------------------------------------
+  // ------------------------------------------------
   // Shares document (for user gary):
   {
     _id: 'graphNodes/resources:default:resources_shares_777',
     resource_id: 'resources/default:resources_shares_777',
     is_resource: true,
   },
-  //------------------------------------------------
+  // ------------------------------------------------
   // Shares document (for user pete):
   {
     _id: 'graphNodes/resources:default:resources_shares_444',
     resource_id: 'resources/default:resources_shares_444',
     is_resource: true,
   },
-  //------------------------------------------------
+  // ------------------------------------------------
   // Shares document (for user rick):
   {
     _id: 'graphNodes/resources:default:resources_shares_555',
     resource_id: 'resources/default:resources_shares_555',
     is_resource: true,
   },
-  //------------------------------------------------
+  // ------------------------------------------------
   // Shares document (for user diane):
   {
     _id: 'graphNodes/resources:default:resources_shares_666',
     resource_id: 'resources/default:resources_shares_666',
     is_resource: true,
   },
-  //------------------------------------------------------
+  // ------------------------------------------------------
   // Rocks document:
   {
     _id: 'graphNodes/resources:default:resources_rocks_123',
     resource_id: 'resources/default:resources_rocks_123',
     is_resource: true,
   },
-  //------------------------------------------------------
+  // ------------------------------------------------------
   // trellisfw document:
   {
     _id: 'graphNodes/resources:default:resources_trellisfw_999',
     resource_id: 'resources/default:resources_trellisfw_999',
     is_resource: true,
   },
-  //------------------------------------------------------
+  // ------------------------------------------------------
   // clients document:
   {
     _id: 'graphNodes/resources:default:resources_clients_999',
@@ -164,7 +164,7 @@ export default [
     path: '/rocks-index',
   },
 
-  //-----------------------------------------------------------------
+  // -----------------------------------------------------------------
   // Rock document
   {
     _id: 'graphNodes/resources:default:resources_rock_123',

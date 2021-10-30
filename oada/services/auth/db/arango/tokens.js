@@ -20,7 +20,7 @@ const cloneDeep = require('clone-deep');
 const trace = require('debug')('arango:token:trace');
 const oadaLib = require('@oada/lib-arangodb');
 
-function findByToken(token, cb) {
+function findByToken(token, callback) {
   trace('findByToken: searching for token ', token);
   return Bluebird.resolve(oadaLib.authorizations.findByToken(token))
     .then((t) => t && Object.assign(t, { id: t._id, _id: undefined }))
@@ -32,19 +32,21 @@ function findByToken(token, cb) {
 
       return t;
     })
-    .asCallback(cb);
+    .asCallback(callback);
 }
 
-function save(token, cb) {
+function save(token, callback) {
   token = cloneDeep(token);
   Object.assign(token, { _id: token.id, id: undefined });
   // Link user
   token.user = { _id: token.user._id };
   trace('save: saving token ', token);
-  return Bluebird.resolve(oadaLib.authorizations.save(token)).asCallback(cb);
+  return Bluebird.resolve(oadaLib.authorizations.save(token)).asCallback(
+    callback
+  );
 }
 
 module.exports = {
-  findByToken: findByToken,
-  save: save,
+  findByToken,
+  save,
 };

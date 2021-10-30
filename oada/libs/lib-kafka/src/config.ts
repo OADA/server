@@ -20,12 +20,12 @@ const config = libConfig({
   kafka: {
     healthInterval: {
       format: 'duration',
-      default: 5 * 60 * 1000, // ms
+      default: 5 * 60 * 1000, // Ms
     },
     producer: {
       pollInterval: {
         format: 'duration',
-        default: 500, // ms
+        default: 500, // Ms
       },
     },
     broker: {
@@ -39,8 +39,8 @@ const config = libConfig({
       doc: 'Mapping of topic to timeouts (ms)',
       default: {
         default: 5000,
-        writeRequest: 45000,
-        websocketsRequest: Infinity,
+        writeRequest: 45_000,
+        websocketsRequest: Number.POSITIVE_INFINITY,
       } as Record<string, number>,
     },
     topics: {

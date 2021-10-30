@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-import { URL } from 'url';
+import { URL } from 'node:url';
 
 import { remoteResources, resources } from '@oada/lib-arangodb';
 import { KafkaBase, Responder } from '@oada/lib-kafka';
@@ -35,34 +35,34 @@ const error = debug('sync-handler:error');
 // I feel like putting webhooks in _syncs was a poor choice
 const META_KEY = '_remote_syncs';
 
-//---------------------------------------------------------
+// ---------------------------------------------------------
 // Kafka initializations:
 const responder = new Responder({
   consumeTopic: config.get('kafka.topics.httpResponse'),
   group: 'sync-handlers',
 });
 
-export function stopResp(): Promise<void> {
+export async function stopResp(): Promise<void> {
   return responder.disconnect();
 }
 
 /**
  * Filter for successful write responses
  */
-function checkReq(req: KafkaBase): req is WriteResponse {
-  return req?.msgtype === 'write-response' && req?.code === 'success';
+function checkRequest(request: KafkaBase): request is WriteResponse {
+  return request?.msgtype === 'write-response' && request?.code === 'success';
 }
 
-responder.on<WriteResponse>('request', async function handleReq(req) {
-  if (!checkReq(req)) {
+responder.on<WriteResponse>('request', async function handleRequest(request) {
+  if (!checkRequest(request)) {
     return;
   }
 
-  const id = req['resource_id'];
+  const id = request.resource_id;
   trace('Saw change for resource %s', id);
 
-  //let rev = req['_rev'];
-  const oRev = req['_orev'] ?? 0;
+  // Let rev = req['_rev'];
+  const oRev = request._orev ?? 0;
   // TODO: Add AQL query for just syncs and newest change?
   const syncs = Object.entries(
     ((await resources.getResource(id, `/_meta/${META_KEY}`)).syncs ??
@@ -75,6 +75,7 @@ responder.on<WriteResponse>('request', async function handleReq(req) {
     // Nothing for us to do
     return;
   }
+
   trace('Processing syncs for resource %s', id);
 
   const desc = await resources.getNewDescendants(id, oRev);
@@ -90,7 +91,7 @@ responder.on<WriteResponse>('request', async function handleReq(req) {
     info('Running sync %s for resource %s', key, id);
     trace('Sync %s: %O', key, { url, domain, token });
     // Need separate changes map for each sync since they run concurrently
-    const lChanges = Object.assign({}, changes); // Shallow copy
+    const lChanges = { ...changes }; // Shallow copy
 
     if (process.env.NODE_ENV !== 'production') {
       /*
@@ -143,7 +144,7 @@ responder.on<WriteResponse>('request', async function handleReq(req) {
         const newID = new URL(loc, url).toString().replace(url, 'resources/');
         return {
           rid: newID,
-          id: id,
+          id,
         };
       }
     );
@@ -166,7 +167,7 @@ responder.on<WriteResponse>('request', async function handleReq(req) {
     const idMapping = rids
       .map(({ id, rid }) => ({ [id]: rid }))
       .reduce((a, b) => ({ ...a, ...b }), {});
-    const docs = Bluebird.map(rids, async ({ id, rid }) => {
+    return Bluebird.map(rids, async ({ id, rid }) => {
       const change = await lChanges[id];
       if (!change) {
         return Promise.resolve();
@@ -174,7 +175,7 @@ responder.on<WriteResponse>('request', async function handleReq(req) {
 
       trace('PUTing change for %s to %s at %s', id, rid, domain);
 
-      const type = change['_meta']?.['_type'];
+      const type = change._meta?._type;
 
       // Fix links etc.
       const body = JSON.stringify(change, function (k, v: unknown) {
@@ -182,25 +183,29 @@ responder.on<WriteResponse>('request', async function handleReq(req) {
         switch (k) {
           case '_meta': // Don't send resources's _meta
             if (this === change) {
-              return undefined;
-            } else {
-              return v;
+              return;
             }
+
+            return v;
+
           case '_rev': // Don't send resource's _rev
             if (this === change) {
-              return undefined;
-            } else {
-              return v;
+              return;
             }
+
+            return v;
+
           case '_id':
             if (this === change) {
               // Don't send resource's _id
-              return undefined;
+              return;
             }
+
             // TODO: Better link detection?
             if (idMapping[v as string]) {
               return idMapping[v as string];
             }
+
             warn('Could not resolve link to %s at %s', v, domain);
             // TODO: What to do in this case?
             return '';
@@ -231,8 +236,6 @@ responder.on<WriteResponse>('request', async function handleReq(req) {
       );
       return put;
     });
-
-    return docs;
   });
 
   await puts;

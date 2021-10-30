@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-import { setTimeout } from 'timers/promises';
+import { setTimeout } from 'node:timers/promises';
 
 import config from './config.js';
 
@@ -27,30 +27,32 @@ const trace = debug('arangodb#aql:trace');
 
 const { profile } = config.get('arangodb.aql');
 class DatabaseWrapper extends Database {
-  // @ts-ignore
+  // @ts-expect-error
   override async query(query: AqlQuery, options: QueryOptions = {}) {
     let tries = 0;
-    const tryquery: () => ReturnType<Database['query']> = async () => {
-      return await Bluebird.resolve(
-        super.query(query, { profile, ...options })
-      ).catch(DeadlockError, async (err: unknown) => {
-        if (++tries >= deadlockRetries) {
-          throw err;
-        }
+    const tryquery: () => ReturnType<Database['query']> = async () =>
+      Bluebird.resolve(super.query(query, { profile, ...options })).catch(
+        DeadlockError,
+        async (error: unknown) => {
+          if (++tries >= deadlockRetries) {
+            throw error;
+          }
 
-        // warn(`Retrying query due to deadlock (retry #${tries})`, err);
-        // There is no eval here...
-        // eslint-disable-next-line @typescript-eslint/no-implied-eval
-        await setTimeout(deadlockDelay);
-        return await tryquery();
-      });
-    };
+          // Warn(`Retrying query due to deadlock (retry #${tries})`, err);
+          // There is no eval here...
+          // eslint-disable-next-line @typescript-eslint/no-implied-eval
+          await setTimeout(deadlockDelay);
+          return tryquery();
+        }
+      );
+
     const res = await tryquery();
     // TODO: Less gross way to do this?
     if (trace.enabled) {
       const { query: aql, ...rest } = query;
       trace({ ...rest, ...res.extra }, aql);
     }
+
     return res;
   }
 }
@@ -59,7 +61,7 @@ if (config.get('isTest')) {
   config.set('arangodb.database', 'oada-test');
 }
 
-const db = new DatabaseWrapper({
+const database = new DatabaseWrapper({
   url: config.get('arangodb.connectionString'),
   databaseName: config.get('arangodb.database'),
 });
@@ -72,4 +74,4 @@ const DeadlockError = {
   errorNum: 29,
 };
 
-export { db };
+export { database as db };

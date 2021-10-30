@@ -13,14 +13,14 @@
  * limitations under the License.
  */
 
-import { join } from 'path';
-import { pipeline } from 'stream/promises';
+import { join } from 'node:path';
+import { pipeline } from 'node:stream/promises';
 
 import { changes, putBodies, resources } from '@oada/lib-arangodb';
 
 import {
-  handleReq as permissionsRequest,
   Scope,
+  handleReq as permissionsRequest,
 } from '@oada/permissions-handler';
 
 import { handleResponse } from '@oada/formats-server';
@@ -63,7 +63,7 @@ declare module 'cacache' {
 /**
  * Fastify plugin for OADA /resources
  */
-const plugin: FastifyPluginAsync<Options> = function (fastify, opts) {
+const plugin: FastifyPluginAsync<Options> = async function (fastify, options) {
   /**
    * Try to cleanup our stuff on close
    */
@@ -78,7 +78,10 @@ const plugin: FastifyPluginAsync<Options> = function (fastify, opts) {
    * @todo Better way to handle oada path with fastify?
    */
   fastify.addHook('preParsing', async (request) => {
-    const url = request.url.replace(opts.prefix, opts.prefixPath(request));
+    const url = request.url.replace(
+      options.prefix,
+      options.prefixPath(request)
+    );
     const path =
       request.method === 'POST'
         ? // Treat POST as PUT put append random id
@@ -97,21 +100,22 @@ const plugin: FastifyPluginAsync<Options> = function (fastify, opts) {
     const fullpath = request.requestContext.get('oadaPath')!;
 
     const resp = await resources.lookupFromUrl(
-      '/' + fullpath,
+      `/${fullpath}`,
       request.requestContext.get('user')!.user_id
     );
     request.log.trace('GRAPH LOOKUP RESULT %O', resp);
-    if (resp['resource_id']) {
+    if (resp.resource_id) {
       // Rewire URL to resource found by graph
-      const url = `${resp['resource_id']}${resp['path_leftover']}`;
-      // log
+      const url = `${resp.resource_id}${resp.path_leftover}`;
+      // Log
       request.log.info('Graph lookup: %s => %s', fullpath, url);
       // Remove `/resources`? idek
       request.requestContext.set('oadaPath', url);
-      void reply.header('Content-Location', '/' + url);
+      void reply.header('Content-Location', `/${url}`);
     } else {
-      void reply.header('Content-Location', '/' + fullpath);
+      void reply.header('Content-Location', `/${fullpath}`);
     }
+
     request.requestContext.set('oadaGraph', resp);
     request.requestContext.set('resourceExists', resp.resourceExists);
   });
@@ -128,13 +132,13 @@ const plugin: FastifyPluginAsync<Options> = function (fastify, opts) {
     const user = request.requestContext.get('user')!;
 
     const response = permissionsRequest({
-      //connection_id: request.id,
-      //domain: request.headers.host,
+      // Connection_id: request.id,
+      // domain: request.headers.host,
       oadaGraph,
-      user_id: user['user_id'],
+      user_id: user.user_id,
       scope: user.scope as Scope[],
       contentType: request.headers['content-type'],
-      //requestType: request.method.toLowerCase(),
+      // RequestType: request.method.toLowerCase(),
     });
 
     request.log.trace(response, 'permissions response');
@@ -142,7 +146,7 @@ const plugin: FastifyPluginAsync<Options> = function (fastify, opts) {
       case 'PUT':
       case 'POST':
       case 'DELETE':
-        if (!oadaGraph['resource_id']) {
+        if (!oadaGraph.resource_id) {
           // PUTing non-existant resource
           break;
         } else if (!response.permissions.owner && !response.permissions.write) {
@@ -150,13 +154,14 @@ const plugin: FastifyPluginAsync<Options> = function (fastify, opts) {
             '%s tried to PUT resource without proper permissions',
             user.user_id
           );
-          return reply.forbidden(
+          reply.forbidden(
             'User does not have write permission for this resource'
           );
+          return;
         }
 
         if (!response.scopes.write) {
-          return reply.forbidden('Token does not have required scope');
+          reply.forbidden('Token does not have required scope');
         }
 
         break;
@@ -168,13 +173,14 @@ const plugin: FastifyPluginAsync<Options> = function (fastify, opts) {
             '%s tried to GET resource without proper permissions',
             user.user_id
           );
-          return reply.forbidden(
+          reply.forbidden(
             'User does not have read permission for this resource'
           );
+          return;
         }
 
         if (!response.scopes.read) {
-          return reply.forbidden('Token does not have required scope');
+          reply.forbidden('Token does not have required scope');
         }
 
         break;
@@ -188,7 +194,7 @@ const plugin: FastifyPluginAsync<Options> = function (fastify, opts) {
   fastify.addHook('preHandler', async function pathLeftover(request, reply) {
     const oadaGraph = request.requestContext.get('oadaGraph')!;
     // TODO: Better header name?
-    void reply.header('X-OADA-Path-Leftover', oadaGraph['path_leftover']);
+    void reply.header('X-OADA-Path-Leftover', oadaGraph.path_leftover);
   });
 
   fastify.get(
@@ -215,9 +221,10 @@ const plugin: FastifyPluginAsync<Options> = function (fastify, opts) {
       if (ifMatch) {
         const rev = parseETag(ifMatch);
         if (rev !== oadaGraph.rev) {
-          return reply.preconditionFailed(
+          reply.preconditionFailed(
             'If-Match header does not match current resource _rev'
           );
+          return;
         }
       }
 
@@ -225,9 +232,10 @@ const plugin: FastifyPluginAsync<Options> = function (fastify, opts) {
       if (ifNoneMatch) {
         const revs = ifNoneMatch.split(',').map(parseETag);
         if (revs.includes(oadaGraph.rev)) {
-          return reply.preconditionFailed(
+          reply.preconditionFailed(
             'If-None-Match header contains current resource _rev'
           );
+          return;
         }
       }
 
@@ -237,19 +245,17 @@ const plugin: FastifyPluginAsync<Options> = function (fastify, opts) {
       if (oadaGraph.path_leftover === '/_meta/_changes') {
         const ch = await changes.getChanges(oadaGraph.resource_id);
         return ch
-          .map((item) => {
-            return {
-              [item]: {
-                _id: `${oadaGraph.resource_id}/_meta/_changes/${item}`,
-                _rev: item,
-              },
-            };
-          })
-          .reduce((a, b) => {
-            return { ...a, ...b };
-          });
-      } else if (/^\/_meta\/_changes\/.*?/.test(oadaGraph.path_leftover)) {
-        const rev = +oadaGraph.path_leftover.split('/')[3]!;
+          .map((item) => ({
+            [item]: {
+              _id: `${oadaGraph.resource_id}/_meta/_changes/${item}`,
+              _rev: item,
+            },
+          }))
+          .reduce((a, b) => ({ ...a, ...b }));
+      }
+
+      if (/^\/_meta\/_changes\/.*?/.test(oadaGraph.path_leftover)) {
+        const rev = Number(oadaGraph.path_leftover.split('/')[3]!);
         const ch = await changes.getChangeArray(oadaGraph.resource_id, rev);
         request.log.trace('CHANGE %O', ch);
         return ch;
@@ -261,27 +267,28 @@ const plugin: FastifyPluginAsync<Options> = function (fastify, opts) {
 
       if (
         is(type, ['json', '+json']) ||
-        /\/_meta$/.exec(oadaGraph['path_leftover'])
+        oadaGraph.path_leftover.endsWith('/_meta')
       ) {
-        const doc = await resources.getResource(
-          oadaGraph['resource_id'],
-          oadaGraph['path_leftover']
+        const document = await resources.getResource(
+          oadaGraph.resource_id,
+          oadaGraph.path_leftover
         );
-        request.log.trace(doc, 'DOC IS');
+        request.log.trace(document, 'DOC IS');
 
         // TODO: Allow null values in OADA?
-        if (doc === undefined || doc === null) {
+        if (document === undefined || document === null) {
           request.log.error('Resource not found');
-          return reply.notFound();
-        } else {
-          request.log.info(
-            'Resource: %s, Rev: %d',
-            oadaGraph.resource_id,
-            oadaGraph.rev
-          );
+          reply.notFound();
+          return;
         }
 
-        const res: unknown = unflattenMeta(doc);
+        request.log.info(
+          'Resource: %s, Rev: %d',
+          oadaGraph.resource_id,
+          oadaGraph.rev
+        );
+
+        const res: unknown = unflattenMeta(document);
 
         // TODO: Support non-JSON accept? (e.g., YAML)
         const accept = request.accepts();
@@ -291,21 +298,23 @@ const plugin: FastifyPluginAsync<Options> = function (fastify, opts) {
           case type:
             // TODO: Better way to ensure string gets JSON serialized?
             return reply.serializer(JSON.stringify).send(res);
-          default:
-            return reply.notAcceptable();
+          default: {
+            reply.notAcceptable();
+          }
         }
       } else {
-        // get binary
-        if (oadaGraph['path_leftover']) {
-          request.log.trace(oadaGraph['path_leftover']);
+        // Get binary
+        if (oadaGraph.path_leftover) {
+          request.log.trace(oadaGraph.path_leftover);
           // TODO: What error code to use here?
-          return reply.notImplemented('Path Leftover on Binary GET');
+          reply.notImplemented('Path Leftover on Binary GET');
+          return;
         }
 
         // Look up file size before streaming
         const { integrity, size } = await cacache.get.info(
           CACHE_PATH,
-          oadaGraph['resource_id']
+          oadaGraph.resource_id
         );
 
         // Stream file to client
@@ -316,26 +325,28 @@ const plugin: FastifyPluginAsync<Options> = function (fastify, opts) {
   );
 
   // TODO: This was a quick make it work. Do what you want with it.
-  function unflattenMeta(doc: Partial<Resource>) {
-    if (!doc) {
+  function unflattenMeta(document: Partial<Resource>) {
+    if (!document) {
       // Object.keys does not like null
-      return doc;
+      return document;
     }
-    if ('_meta' in doc) {
-      doc._meta = {
-        _id: doc._meta!._id,
-        _rev: doc._meta!._rev,
+
+    if ('_meta' in document) {
+      document._meta = {
+        _id: document._meta!._id,
+        _rev: document._meta!._rev,
       };
     }
-    return doc;
+
+    return document;
   }
 
   // Don't let users modify their shares?
   function noModifyShares(request: FastifyRequest, reply: FastifyReply) {
     const path = request.requestContext.get('oadaPath')!;
     const user = request.requestContext.get('user')!;
-    if (RegExp(`^/${user['shares_id']}`).exec(path)) {
-      return reply.forbidden('User cannot modify their shares document');
+    if (new RegExp(`^/${user.shares_id}`).test(path)) {
+      reply.forbidden('User cannot modify their shares document');
     }
   }
 
@@ -346,9 +357,11 @@ const plugin: FastifyPluginAsync<Options> = function (fastify, opts) {
       // TODO: Stream process the body instead
       parseAs: 'string',
       // 20 MB
-      bodyLimit: 20 * 1048576,
+      bodyLimit: 20 * 1_048_576,
     },
-    (_, body, done) => done(null, body)
+    (_, body, done) => {
+      done(null, body);
+    }
   );
 
   // Allow unknown contentType but don't parse?
@@ -370,7 +383,7 @@ const plugin: FastifyPluginAsync<Options> = function (fastify, opts) {
     const { rev } = r.exec(etag)?.groups ?? {};
 
     // If parse fails, assume `123` format (for legacy code)
-    return rev ? +rev : +etag;
+    return rev ? Number(rev) : Number(etag);
   }
 
   /**
@@ -384,7 +397,8 @@ const plugin: FastifyPluginAsync<Options> = function (fastify, opts) {
       reply: FastifyReply
     ) {
       if (!request.headers['content-type']) {
-        return reply.badRequest('No content type specified');
+        reply.badRequest('No content type specified');
+        return;
       }
 
       // Don't let users modify their shares?
@@ -426,14 +440,14 @@ const plugin: FastifyPluginAsync<Options> = function (fastify, opts) {
           resourceExists,
           'domain': request.hostname,
           'url': path,
-          'resource_id': oadaGraph['resource_id'],
-          'path_leftover': oadaGraph['path_leftover'],
-          //'meta_id': oadaGraph['meta_id'],
-          'user_id': user['user_id'],
-          'authorizationid': user['authorizationid'],
-          'client_id': user['client_id'],
+          'resource_id': oadaGraph.resource_id,
+          'path_leftover': oadaGraph.path_leftover,
+          // 'meta_id': oadaGraph['meta_id'],
+          'user_id': user.user_id,
+          'authorizationid': user.authorizationid,
+          'client_id': user.client_id,
           'contentType': request.headers['content-type'],
-          'bodyid': bodyid,
+          bodyid,
           'if-match': ifMatch && parseETag(ifMatch),
           'if-none-match': ifNoneMatch?.split(',').map(parseETag),
           ignoreLinks,
@@ -445,25 +459,35 @@ const plugin: FastifyPluginAsync<Options> = function (fastify, opts) {
       switch (resp.code) {
         case 'success':
           break;
-        case 'permission':
-          return reply.forbidden('User does not own this resource');
-        case 'if-match failed':
-          return reply.preconditionFailed(
+        case 'permission': {
+          reply.forbidden('User does not own this resource');
+          return;
+        }
+
+        case 'if-match failed': {
+          reply.preconditionFailed(
             'If-Match header does not match current resource _rev'
           );
-        case 'if-none-match failed':
-          return reply.preconditionFailed(
+          return;
+        }
+
+        case 'if-none-match failed': {
+          reply.preconditionFailed(
             'If-None-Match header contains current resource _rev'
           );
+          return;
+        }
+
         default:
           throw new Error(`Write failed with code "${resp.code || ''}"`);
       }
+
       return (
         reply
-          .header('X-OADA-Rev', resp['_rev'])
-          .header('ETag', `"${resp['_rev']}"`)
+          .header('X-OADA-Rev', resp._rev)
+          .header('ETag', `"${resp._rev}"`)
           // TODO: What is the right thing to return here?
-          //.redirect(204, req.baseUrl + req.url)
+          // .redirect(204, req.baseUrl + req.url)
           .send()
       );
     },
@@ -485,19 +509,20 @@ const plugin: FastifyPluginAsync<Options> = function (fastify, opts) {
     noModifyShares(request, reply);
     // Don't let users DELETE their bookmarks?
     if (path === user.bookmarks_id) {
-      return reply.forbidden('User cannot delete their bookmarks');
+      reply.forbidden('User cannot delete their bookmarks');
+      return;
     }
 
     /**
      * Check if followed a link and are at the root of the linked resource
      */
-    if (oadaGraph.from?.['path_leftover'] && !oadaGraph['path_leftover']) {
+    if (oadaGraph.from?.path_leftover && !oadaGraph.path_leftover) {
       // Switch to DELETE on parent resource
-      const id = oadaGraph.from['resource_id'];
-      const pathLO = oadaGraph.from['path_leftover'];
-      path = '/' + id + pathLO;
+      const id = oadaGraph.from.resource_id;
+      const pathLO = oadaGraph.from.path_leftover;
+      path = `/${id}${pathLO}`;
       oadaGraph = oadaGraph.from;
-      // parent resource DOES exist,
+      // Parent resource DOES exist,
       // but linked resource may or may not have existed
       resourceExists = true;
     }
@@ -511,16 +536,16 @@ const plugin: FastifyPluginAsync<Options> = function (fastify, opts) {
         'connection_id': request.id as unknown,
         'domain': request.hostname,
         'url': path,
-        'resource_id': oadaGraph['resource_id'],
-        'path_leftover': oadaGraph['path_leftover'],
-        //'meta_id': oadaGraph['meta_id'],
-        'user_id': user['user_id'],
-        'authorizationid': user['authorizationid'],
-        'client_id': user['client_id'],
+        'resource_id': oadaGraph.resource_id,
+        'path_leftover': oadaGraph.path_leftover,
+        // 'meta_id': oadaGraph['meta_id'],
+        'user_id': user.user_id,
+        'authorizationid': user.authorizationid,
+        'client_id': user.client_id,
         'if-match': ifMatch && parseETag(ifMatch),
         'if-none-match': ifNoneMatch?.split(',').map(parseETag),
-        //'bodyid': bodyid, // No body means delete?
-        //body: req.body
+        // 'bodyid': bodyid, // No body means delete?
+        // body: req.body
         'contentType': '',
       } as WriteRequest,
       config.get('kafka.topics.writeRequest')
@@ -531,25 +556,34 @@ const plugin: FastifyPluginAsync<Options> = function (fastify, opts) {
       case 'success':
         break;
       case 'not_found':
-      // fall-through
+      // Fall-through
       // TODO: Is 403 a good response for DELETE on non-existent?
-      case 'permission':
-        return reply.forbidden('User does not own this resource');
-      case 'if-match failed':
-        return reply.preconditionFailed(
+      case 'permission': {
+        reply.forbidden('User does not own this resource');
+        return;
+      }
+
+      case 'if-match failed': {
+        reply.preconditionFailed(
           'If-Match header does not match current resource _rev'
         );
-      case 'if-none-match failed':
-        return reply.preconditionFailed(
+        return;
+      }
+
+      case 'if-none-match failed': {
+        reply.preconditionFailed(
           'If-None-Match header contains current resource _rev'
         );
+        return;
+      }
+
       default:
         throw new Error(`Delete failed with code "${resp.code || ''}"`);
     }
 
     return reply
-      .header('X-OADA-Rev', resp['_rev'])
-      .header('ETag', `"${resp['_rev']}"`)
+      .header('X-OADA-Rev', resp._rev)
+      .header('ETag', `"${resp._rev}"`)
       .code(204)
       .send();
   });

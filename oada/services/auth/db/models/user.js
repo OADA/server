@@ -20,7 +20,7 @@ const debug = require('debug')('model-user');
 
 const config = require('../../config');
 const path = require('path');
-const db = require(// nosemgrep: javascript.lang.security.detect-non-literal-require.detect-non-literal-require
+const database = require(// Nosemgrep: javascript.lang.security.detect-non-literal-require.detect-non-literal-require
 path.join(
   __dirname,
   '/../../db',
@@ -33,31 +33,33 @@ function makeUser(user) {
   return user;
 }
 
-function findById(id, cb) {
-  return Bluebird.fromCallback((done) => db.findById(id, done))
+function findById(id, callback) {
+  return Bluebird.fromCallback((done) => database.findById(id, done))
     .then((u) => makeUser(u))
     .tapCatch(debug)
-    .asCallback(cb);
+    .asCallback(callback);
 }
 
-function findByUsername(id, cb) {
-  return Bluebird.fromCallback((done) => db.findByUsername(id, done))
+function findByUsername(id, callback) {
+  return Bluebird.fromCallback((done) => database.findByUsername(id, done))
     .then((u) => makeUser(u))
     .tapCatch(debug)
-    .asCallback(cb);
+    .asCallback(callback);
 }
 
-function findByUsernamePassword(username, password, cb) {
-  return Bluebird.fromCallback((done) => {
-    return db.findByUsernamePassword(username, password, done);
-  })
+function findByUsernamePassword(username, password, callback) {
+  return Bluebird.fromCallback((done) =>
+    database.findByUsernamePassword(username, password, done)
+  )
     .tap(debug)
     .then((u) => makeUser(u))
-    .asCallback(cb);
+    .asCallback(callback);
 }
 
-function findByOIDCToken(idtoken, cb) {
-  return Bluebird.fromCallback((done) => db.findByOIDCToken(idtoken, done))
+function findByOIDCToken(idtoken, callback) {
+  return Bluebird.fromCallback((done) =>
+    database.findByOIDCToken(idtoken, done)
+  )
     .tap((u) => {
       debug(
         'findByOIDCToken: searched for idtoken sub=',
@@ -69,26 +71,28 @@ function findByOIDCToken(idtoken, cb) {
       );
     })
     .then((u) => makeUser(u))
-    .asCallback(cb);
+    .asCallback(callback);
 }
 
-function findByOIDCUsername(username, iss, cb) {
+function findByOIDCUsername(username, iss, callback) {
   return Bluebird.fromCallback((done) =>
-    db.findByOIDCUsername(username, iss, done)
+    database.findByOIDCUsername(username, iss, done)
   )
     .then((u) => makeUser(u))
-    .asCallback(cb);
+    .asCallback(callback);
 }
 
-function update(user, cb) {
-  return Bluebird.fromCallback((done) => db.update(user, done)).asCallback(cb);
+function update(user, callback) {
+  return Bluebird.fromCallback((done) =>
+    database.update(user, done)
+  ).asCallback(callback);
 }
 
 module.exports = {
-  findById: findById,
-  findByUsername: findByUsername,
-  findByUsernamePassword: findByUsernamePassword,
-  findByOIDCToken: findByOIDCToken,
+  findById,
+  findByUsername,
+  findByUsernamePassword,
+  findByOIDCToken,
   findByOIDCUsername,
   update,
 };

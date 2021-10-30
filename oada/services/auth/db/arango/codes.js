@@ -21,7 +21,7 @@ const trace = require('debug')('arango:codes:trace');
 
 const oadaLib = require('@oada/lib-arangodb');
 
-function findByCode(code, cb) {
+function findByCode(code, callback) {
   trace('findByCode: searching for code ', code);
   return Bluebird.resolve(oadaLib.codes.findByCode(code))
     .then((c) => c && Object.assign(c, { id: c._id, _id: undefined }))
@@ -32,10 +32,10 @@ function findByCode(code, cb) {
 
       return c;
     })
-    .asCallback(cb);
+    .asCallback(callback);
 }
 
-function save(in_code, cb) {
+function save(in_code, callback) {
   const code = cloneDeep(in_code);
   Object.assign(code, { _id: code.id, id: undefined });
   // Link user
@@ -44,10 +44,10 @@ function save(in_code, cb) {
     code.user = { _id: in_code.user.id };
   }
 
-  return Bluebird.resolve(oadaLib.codes.save(code)).asCallback(cb);
+  return Bluebird.resolve(oadaLib.codes.save(code)).asCallback(callback);
 }
 
 module.exports = {
-  findByCode: findByCode,
-  save: save,
+  findByCode,
+  save,
 };

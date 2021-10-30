@@ -16,7 +16,7 @@
 import type Change from '@oada/types/oada/change/v2';
 
 import config from '../config.js';
-import { db } from '../db.js';
+import { db as database } from '../db.js';
 
 import { aql } from 'arangojs';
 import debug from 'debug';
@@ -24,8 +24,10 @@ import pointer from 'json-pointer';
 
 const trace = debug('arangodb#resources:trace');
 
-const changes = db.collection(config.get('arangodb.collections.changes.name'));
-const changeEdges = db.collection(
+const changes = database.collection(
+  config.get('arangodb.collections.changes.name')
+);
+const changeEdges = database.collection(
   config.get('arangodb.collections.changeEdges.name')
 );
 
@@ -53,7 +55,7 @@ export type ChangeVertex = Change[0] & {
 
 export async function getChanges(resourceId: string): Promise<number[]> {
   const result = (await (
-    await db.query(
+    await database.query(
       aql`
         FOR change in ${changes}
           FILTER change.resource_id == ${resourceId}
@@ -61,13 +63,13 @@ export async function getChanges(resourceId: string): Promise<number[]> {
     )
   ).all()) as number[];
 
-  // idk what this is about but it was here before...
+  // Idk what this is about but it was here before...
   return result || undefined;
 }
 
 export async function getMaxChangeRev(resourceId: string): Promise<number> {
   const result = (await (
-    await db.query(
+    await database.query(
       aql`
         RETURN FIRST(
           FOR change in ${changes}
@@ -93,7 +95,7 @@ export async function getChange(
   resourceId: string,
   changeRev: string | number
 ): Promise<Change[0] | undefined> {
-  //TODO: This is meant to handle when resources are deleted directly. Edge
+  // TODO: This is meant to handle when resources are deleted directly. Edge
   // cases remain to be tested. Does this suffice regarding the need send down a
   // bare tree?
   if (!changeRev) {
@@ -106,12 +108,12 @@ export async function getChange(
   }
 
   const result = (await (
-    await db.query(
+    await database.query(
       aql`
         LET change = FIRST(
           FOR change in ${changes}
           FILTER change.resource_id == ${resourceId}
-          FILTER change.number == ${parseInt(changeRev as string, 10)}
+          FILTER change.number == ${Number.parseInt(changeRev as string, 10)}
           RETURN change
         )
         LET path = LAST(
@@ -121,14 +123,15 @@ export async function getChange(
         RETURN path`
     )
   ).next()) as {
-    vertices: Change[0][];
-    edges: { path: string }[];
+    vertices: Array<Change[0]>;
+    edges: Array<{ path: string }>;
   };
 
   const firstv = result?.vertices[0];
   if (!firstv) {
     return undefined;
   }
+
   const change = {
     resource_id: resourceId,
     path: '',
@@ -137,13 +140,14 @@ export async function getChange(
     wasDelete: result.vertices[result.vertices.length - 1]?.type === 'delete',
   };
   let path = '';
-  for (let i = 0; i < result.vertices.length - 1; i++) {
-    path += result.edges[i]?.path;
+  for (let index = 0; index < result.vertices.length - 1; index++) {
+    path += result.edges[index]?.path;
     if (change.body) {
-      const { body } = result.vertices[i + 1] ?? {};
+      const { body } = result.vertices[index + 1] ?? {};
       pointer.set(change.body, path, body);
     }
   }
+
   return change as Change[0];
 }
 
@@ -154,7 +158,7 @@ export async function getChangeArray(
   resourceId: string,
   changeRev: string | number
 ): Promise<Change> {
-  //TODO: This is meant to handle when resources are deleted directly. Edge
+  // TODO: This is meant to handle when resources are deleted directly. Edge
   // cases remain to be tested. Does this suffice regarding the need send down a
   // bare tree?
   if (!changeRev) {
@@ -168,41 +172,44 @@ export async function getChangeArray(
     ];
   }
 
-  return db
+  return database
     .query(
       aql`
         LET change = FIRST(
           FOR change in ${changes}
           FILTER change.resource_id == ${resourceId}
-          FILTER change.number == ${parseInt(changeRev as string, 10)}
+          FILTER change.number == ${Number.parseInt(changeRev as string, 10)}
           RETURN change
         )
         FOR v, e, p IN 0..${MAX_DEPTH} OUTBOUND change ${changeEdges}
           SORT LENGTH(p.edges), v.number
           RETURN p`
     )
-    .then(async (cursor) => {
-      // iterate over the graph
-      return cursor.map((doc) => toChangeObj(doc)); // convert to change object
-    });
+    .then(
+      async (cursor) =>
+        // Iterate over the graph
+        cursor.map((document) => toChangeObject(document)) // Convert to change object
+    );
 }
 
-function toChangeObj(arangoPathObj: {
+function toChangeObject(arangoPathObject: {
   edges: readonly ChangeEdge[];
   vertices: readonly ChangeVertex[];
 }): Change[0] {
-  // get path
+  // Get path
   let path = '';
-  for (const edge of arangoPathObj.edges) {
+  for (const edge of arangoPathObject.edges) {
     path += edge.path;
   }
-  // get body
-  const [lastv] = arangoPathObj.vertices.slice(-1);
+
+  // Get body
+  const [lastv] = arangoPathObject.vertices.slice(-1);
   if (!lastv) {
     throw new Error('No vertices in arangoPathObj');
   }
+
   const { body, resource_id, type } = lastv;
-  // return change object
+  // Return change object
   trace(body, 'toChangeObj: returning change object with body');
   return {
     resource_id,
@@ -217,12 +224,12 @@ export async function getRootChange(
   changeRev: string | number
 ): Promise<{ edges: ChangeEdge[]; vertices: ChangeVertex[] }> {
   return (await (
-    await db.query(
+    await database.query(
       aql`
         LET change = FIRST(
           FOR change in ${changes}
           FILTER change.resource_id == ${resourceId}
-          FILTER change.number == ${parseInt(changeRev as string, 10)}
+          FILTER change.number == ${Number.parseInt(changeRev as string, 10)}
           RETURN change
         )
         LET path = LAST(
@@ -254,13 +261,13 @@ export async function putChange({
   authorizationId?: string;
 }): Promise<string> {
   if (!Array.isArray(children)) {
-    throw new Error('children must be an array.');
+    throw new TypeError('children must be an array.');
   }
 
-  const number = parseInt(rev as string, 10);
+  const number = Number.parseInt(rev as string, 10);
   trace('putChange: inserting change with body %O', change);
   return (await (
-    await db.query(
+    await database.query(
       aql`
         LET doc = FIRST(
           INSERT {

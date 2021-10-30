@@ -14,8 +14,8 @@
  */
 
 import config from '../config.js';
-import { db } from '../db.js';
-import * as util from '../util.js';
+import { db as database } from '../db.js';
+import { sanitizeResult } from '../util.js';
 
 import { aql } from 'arangojs';
 import type { CollectionReadOptions } from 'arangojs/collection';
@@ -26,7 +26,9 @@ import flatten from 'flat';
 
 const info = debug('arangodb#resources:info');
 
-const users = db.collection(config.get('arangodb.collections.users.name'));
+const users = database.collection(
+  config.get('arangodb.collections.users.name')
+);
 
 /**
  * @todo fix this?
@@ -58,31 +60,31 @@ export interface User {
   nickname?: string;
   email?: string;
   oidc?: {
-    sub?: string; // subject, i.e. unique ID for this user
-    iss?: string; // issuer: the domain that gave out this ID
-    username?: string; // can be used to pre-link this account to openidconnect identity
+    sub?: string; // Subject, i.e. unique ID for this user
+    iss?: string; // Issuer: the domain that gave out this ID
+    username?: string; // Can be used to pre-link this account to openidconnect identity
   };
   bookmarks: { _id: string };
   shares: { _id: string };
   scope: readonly string[];
 }
 
-export function findById(
+export async function findById(
   id: string,
   options?: CollectionReadOptions
 ): Promise<User | null> {
   return Bluebird.resolve(users.document(id, options))
-    .then(util.sanitizeResult)
+    .then(sanitizeResult)
     .catch({ code: 404 }, () => null);
 }
 
 export async function exists(id: string): Promise<boolean> {
-  return await users.documentExists(id);
+  return users.documentExists(id);
 }
 
 export async function findByUsername(username: string): Promise<User | null> {
   const user = (await (
-    await db.query(
+    await database.query(
       aql`
         FOR u IN ${users}
           FILTER u.username == ${username}
@@ -94,7 +96,7 @@ export async function findByUsername(username: string): Promise<User | null> {
     return null;
   }
 
-  return util.sanitizeResult(user);
+  return sanitizeResult(user);
 }
 
 export async function findByOIDCUsername(
@@ -102,7 +104,7 @@ export async function findByOIDCUsername(
   oidcdomain: string
 ): Promise<User | null> {
   const user = (await (
-    await db.query(
+    await database.query(
       aql`
         FOR u IN ${users}
           FILTER u.oidc.username == ${oidcusername}
@@ -115,11 +117,11 @@ export async function findByOIDCUsername(
     return null;
   }
 
-  return util.sanitizeResult(user);
+  return sanitizeResult(user);
 }
 
 /**
- * expects idtoken to be at least
+ * Expects idtoken to be at least
  * { sub: "fkj2o", iss: "https://localhost/example" }
  */
 export async function findByOIDCToken(idtoken: {
@@ -127,7 +129,7 @@ export async function findByOIDCToken(idtoken: {
   iss: string;
 }): Promise<User | null> {
   const user = (await (
-    await db.query(
+    await database.query(
       aql`
         FOR u IN ${users}
           FILTER u.oidc.sub == ${idtoken.sub}
@@ -140,7 +142,7 @@ export async function findByOIDCToken(idtoken: {
     return null;
   }
 
-  return util.sanitizeResult(user);
+  return sanitizeResult(user);
 }
 
 export async function findByUsernamePassword(
@@ -187,7 +189,7 @@ export async function update(
 export async function like(
   u: Partial<User>
 ): Promise<AsyncIterableIterator<User>> {
-  return await users.byExample(flatten(u));
+  return users.byExample(flatten(u));
 }
 
 export function hashPw(pw: string): string {

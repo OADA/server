@@ -14,24 +14,19 @@
  */
 
 import { expect } from 'chai';
-import * as oadaLib from '../src';
+import { init, resources } from '../src';
 
 describe('resources lib', () => {
-  before(() => oadaLib.init.run());
+  before(async () => init.run());
 
-  it('should find parents based on resource id', async () => {
-    return oadaLib.resources
-      .getParents('/resources:default:resources_rock_123')
-      .then((p) => {
-        expect(p?.[0]?.path).to.equal('/rocks-index/90j2klfdjss');
-        expect(p?.[0]?.resource_id).to.equal(
-          'resources/default:resources_rocks_123'
-        );
-        expect(p?.[0]?.contentType).to.equal(
-          'application/vnd.oada.rocks.1+json'
-        );
-      });
-  });
+  it('should find parents based on resource id', async () =>
+    resources.getParents('/resources:default:resources_rock_123').then((p) => {
+      expect(p?.[0]?.path).to.equal('/rocks-index/90j2klfdjss');
+      expect(p?.[0]?.resource_id).to.equal(
+        'resources/default:resources_rocks_123'
+      );
+      expect(p?.[0]?.contentType).to.equal('application/vnd.oada.rocks.1+json');
+    }));
 
-  after(() => oadaLib.init.cleanup());
+  after(async () => init.cleanup());
 });

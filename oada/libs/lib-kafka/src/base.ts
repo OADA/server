@@ -13,8 +13,8 @@
  * limitations under the License.
  */
 
-import EventEmitter from 'events';
-import process from 'process';
+import EventEmitter from 'node:events';
+import process from 'node:process';
 
 import config from './config.js';
 
@@ -24,11 +24,11 @@ import {
   Consumer,
   EachMessagePayload,
   Kafka,
-  logLevel,
   Producer,
+  logLevel,
 } from 'kafkajs';
 
-//const info = debug('@oada/lib-kafka:info');
+// Const info = debug('@oada/lib-kafka:info');
 const error = debug('@oada/lib-kafka:error');
 
 const REQ_ID_KEY = 'connection_id';
@@ -41,30 +41,30 @@ function topicTimeout(topic: string): number {
   let timeout = config.get('kafka.timeouts.default');
 
   const topics = config.get('kafka.topics');
-  Object.keys(topics).forEach((topick) => {
+  for (const topick of Object.keys(topics)) {
     if (topics[topick] === topic) {
       timeout = config.get('kafka.timeouts')[topick] || timeout;
     }
-  });
+  }
 
   return timeout;
 }
 
 // Make it die on unhandled error
 // TODO: Figure out what is keeping node from dying on unhandled exception?
-function die(err: Error) {
-  error(err, 'Unhandled error');
+function die(error_: Error) {
+  error(error_, 'Unhandled error');
   process.abort();
 }
 
-export interface ConstructorOpts {
+export interface ConstructorOptions {
   consumeTopic: string | string[];
   produceTopic?: string | null;
   group: string;
   /**
    * @todo Document these opts
    */
-  opts?: { [key: string]: unknown };
+  opts?: Record<string, unknown>;
   /** @internal */
   producer?: Producer;
   /** @internal */
@@ -111,11 +111,11 @@ export class Base extends EventEmitter {
   readonly consumeTopic;
   readonly produceTopic;
   readonly group;
-  private kafka: Kafka;
+  private readonly kafka: Kafka;
   protected consumer;
   protected producer;
   protected ready: Bluebird<void>;
-  #done!: (err?: unknown) => void;
+  #done!: (error_?: unknown) => void;
 
   constructor({
     consumeTopic,
@@ -123,7 +123,7 @@ export class Base extends EventEmitter {
     produceTopic,
     producer,
     group,
-  }: ConstructorOpts) {
+  }: ConstructorOptions) {
     super();
 
     this.consumeTopic = consumeTopic;
@@ -138,7 +138,7 @@ export class Base extends EventEmitter {
         return ({ namespace, label, log: { message, ...extra } }) => {
           const l = label as keyof KafkajsDebug;
           const log = getKafkajsDebug(namespace)[l];
-          return log(extra, message);
+          log(extra, message);
         };
       },
       brokers: config.get('kafka.broker'),
@@ -151,20 +151,21 @@ export class Base extends EventEmitter {
       });
     this.producer = producer ?? this.kafka.producer();
 
-    // see: https://github.com/Blizzard/node-rdkafka/issues/222
+    // See: https://github.com/Blizzard/node-rdkafka/issues/222
     // says fixed, but seems to still be an issue for us.
     process.on('uncaughtExceptionMonitor', async () => {
       error('Disconnect kafka clients due to uncaught exception');
       // Disconnect kafka clients on uncaught exception
       try {
         await this.consumer.disconnect();
-      } catch (err) {
-        error(err);
+      } catch (error_) {
+        error(error_);
       }
+
       try {
         await this.producer.disconnect();
-      } catch (err) {
-        error(err);
+      } catch (error_) {
+        error(error_);
       }
     });
 
@@ -172,6 +173,7 @@ export class Base extends EventEmitter {
       this.#done = done;
     });
   }
+
   async [CONNECT](): Promise<void> {
     try {
       await this.consumer.connect();
@@ -182,6 +184,7 @@ export class Base extends EventEmitter {
         : [this.consumeTopic]) {
         await this.consumer.subscribe({ topic });
       }
+
       await this.consumer.run({
         // eslint-disable-next-line
         eachMessage: async (payload) => {
@@ -192,9 +195,11 @@ export class Base extends EventEmitter {
           super.emit(DATA, resp, payload);
         },
       });
-    } catch (err: unknown) {
-      return this.#done(err);
+    } catch (error_: unknown) {
+      this.#done(error_);
+      return;
     }
+
     this.#done();
   }
 
@@ -203,28 +208,29 @@ export class Base extends EventEmitter {
     listener: (
       resp: KafkaBase,
       payload: EachMessagePayload,
-      ...args: any[]
+      ...arguments_: any[]
     ) => unknown
   ): this;
   override on(
     event: string | symbol,
-    listener: (...args: any[]) => unknown
+    listener: (...arguments_: any[]) => unknown
   ): this;
   override on(
     event: string | symbol,
-    listener: (...args: any[]) => unknown
+    listener: (...arguments_: any[]) => unknown
   ): this {
     if (event === 'error') {
       // Remove our default error handler?
       super.removeListener('error', die);
     }
+
     return super.on(event, listener);
   }
 
   async produce({
     mesg,
     topic,
-  }: //part = null,
+  }: // Part = null,
   {
     mesg: Record<string, unknown>;
     topic?: string;

@@ -13,13 +13,13 @@
  * limitations under the License.
  */
 
-import EventEmitter from 'events';
+import EventEmitter from 'node:events';
 
 import {
   Base,
   CANCEL_KEY,
   CONNECT,
-  ConstructorOpts,
+  ConstructorOpts as ConstructorOptions,
   DATA,
   KafkaBase,
   REQ_ID_KEY,
@@ -29,20 +29,27 @@ import {
 import Bluebird from 'bluebird';
 import ksuid from 'ksuid';
 
-export { ConstructorOpts };
+export { ConstructorOptions as ConstructorOpts };
 export class Requester extends Base {
   private timeouts: Record<string, number>;
-  protected requests: Map<string, (err: Error | null, res: KafkaBase) => void> =
-    new Map();
+  protected requests: Map<
+    string,
+    (error: Error | null, res: KafkaBase) => void
+  > = new Map();
 
-  constructor({ consumeTopic, produceTopic, group, ...opts }: ConstructorOpts) {
-    super({ consumeTopic, produceTopic, group, ...opts });
+  constructor({
+    consumeTopic,
+    produceTopic,
+    group,
+    ...options
+  }: ConstructorOptions) {
+    super({ consumeTopic, produceTopic, group, ...options });
 
     super.on(DATA, (resp) => {
       const id = resp[REQ_ID_KEY];
       const done = id && this.requests.get(id);
 
-      return done && done(null, resp);
+      done && done(null, resp);
     });
 
     this.timeouts = {};
@@ -53,7 +60,7 @@ export class Requester extends Base {
     void this[CONNECT]();
 
     // Should this even be available?
-    super.on(DATA, (...args) => super.emit('response', ...args));
+    super.on(DATA, (...arguments_) => super.emit('response', ...arguments_));
   }
 
   // eslint-disable-next-line @typescript-eslint/ban-types
@@ -70,7 +77,7 @@ export class Requester extends Base {
     const timeout = this.timeouts[topic] ?? topicTimeout(topic);
     this.timeouts[topic] = timeout;
 
-    const reqDone = Bluebird.fromCallback((done) => {
+    const requestDone = Bluebird.fromCallback((done) => {
       this.requests.set(id, done);
     });
     try {
@@ -80,7 +87,10 @@ export class Requester extends Base {
         topic,
         part: null,
       });
-      return (await reqDone.timeout(timeout, topic + ' timeout')) as KafkaBase;
+      return (await requestDone.timeout(
+        timeout,
+        `${topic} timeout`
+      )) as KafkaBase;
     } finally {
       this.requests.delete(id);
     }
@@ -101,7 +111,7 @@ export class Requester extends Base {
 
     request[REQ_ID_KEY] = id;
     // TODO: Handle partitions?
-    request['resp_partition'] = 0;
+    request.resp_partition = 0;
 
     this.requests.set(id, (_e, res) => emitter.emit('response', res));
     const close = async () => {
@@ -124,7 +134,6 @@ export class Requester extends Base {
       part: null,
     });
 
-    const ret = { ...emitter, close };
-    return ret;
+    return { ...emitter, close };
   }
 }

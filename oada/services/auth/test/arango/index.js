@@ -1,5 +1,5 @@
 const _ = require('lodash');
-const expect = require('chai').expect;
+const { expect } = require('chai');
 const oadaLib = require('@oada/lib-arangodb');
 const libs = {
   users: require('../../db/arango/users'),
@@ -15,26 +15,26 @@ const codedocs = oadaLib.examples('codes');
 
 // Tests for the arangodb driver:
 
-let frankid = userdocs[0]._id;
+const frankid = userdocs[0]._id;
 
 describe('arango driver', () => {
   before(oadaLib.init.run);
 
-  //--------------------------------------------------
+  // --------------------------------------------------
   // The tests!
-  //--------------------------------------------------
+  // --------------------------------------------------
 
   describe('.users', () => {
     it('should be able to find frank by his id', (done) => {
-      libs.users.findById(frankid, (err, u) => {
-        expect(err).to.be.a('null');
+      libs.users.findById(frankid, (error, u) => {
+        expect(error).to.be.a('null');
         expect(u.username).to.equal('frank');
         done();
       });
     });
     it('should be able to find frank with his password', (done) => {
-      libs.users.findByUsernamePassword('frank', 'test', (err, u) => {
-        expect(err).to.be.a('null');
+      libs.users.findByUsernamePassword('frank', 'test', (error, u) => {
+        expect(error).to.be.a('null');
         expect(u.username).to.equal('frank');
         done();
       });
@@ -43,9 +43,9 @@ describe('arango driver', () => {
 
   describe('.clients', () => {
     it('should be able to find the initial test client', (done) => {
-      const clientId = clientdocs[0].clientId;
-      libs.clients.findById(clientId, (err, c) => {
-        expect(err).to.be.a('null');
+      const { clientId } = clientdocs[0];
+      libs.clients.findById(clientId, (error, c) => {
+        expect(error).to.be.a('null');
         expect(c.clientId).to.equal(clientId);
         done();
       });
@@ -56,8 +56,8 @@ describe('arango driver', () => {
       delete newclient._key;
       delete newclient._id;
       newclient.clientId = '12345abcd';
-      libs.clients.save(newclient, (err, c) => {
-        expect(err).to.be.a('null');
+      libs.clients.save(newclient, (error, c) => {
+        expect(error).to.be.a('null');
         expect(c.clientId).to.equal(newclient.clientId);
         done();
       });
@@ -66,8 +66,8 @@ describe('arango driver', () => {
 
   describe('.codes', () => {
     it('should be able to find the initial test code', (done) => {
-      libs.codes.findByCode('xyz', (err, c) => {
-        expect(err).to.be.a('null');
+      libs.codes.findByCode('xyz', (error, c) => {
+        expect(error).to.be.a('null');
         expect(c.code).to.equal('xyz');
         done();
       });
@@ -79,8 +79,8 @@ describe('arango driver', () => {
       delete newcode._id;
       newcode.code = '012345abcd';
       newcode.user = { _id: frankid };
-      libs.codes.save(newcode, (err, c) => {
-        expect(err).to.be.a('null');
+      libs.codes.save(newcode, (error, c) => {
+        expect(error).to.be.a('null');
         expect(c.code).to.equal(newcode.code);
         done();
       });
@@ -89,8 +89,8 @@ describe('arango driver', () => {
 
   describe('.tokens', () => {
     it('should be able to find the initial test token', (done) => {
-      libs.tokens.findByToken('xyz', (err, t) => {
-        expect(err).to.be.a('null');
+      libs.tokens.findByToken('xyz', (error, t) => {
+        expect(error).to.be.a('null');
         expect(t.token).to.equal('xyz');
         done();
       });
@@ -102,16 +102,16 @@ describe('arango driver', () => {
       delete newtoken._id;
       newtoken.token = '012345abcd';
       newtoken.user = { _id: frankid };
-      libs.tokens.save(newtoken, (err, t) => {
-        expect(err).to.be.a('null');
+      libs.tokens.save(newtoken, (error, t) => {
+        expect(error).to.be.a('null');
         expect(t.token).to.equal(newtoken.token);
         done();
       });
     });
   });
 
-  //-------------------------------------------------------
+  // -------------------------------------------------------
   // After tests are done, get rid of our temp database
-  //-------------------------------------------------------
+  // -------------------------------------------------------
   after(oadaLib.init.cleanup);
 });

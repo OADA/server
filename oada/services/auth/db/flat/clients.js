@@ -17,21 +17,21 @@
 const cloneDeep = require('clone-deep');
 const clients = require('./clients.json');
 
-function findById(id, cb) {
+function findById(id, callback) {
   if (clients[id]) {
-    cb(null, cloneDeep(clients[id]));
+    callback(null, cloneDeep(clients[id]));
   } else {
-    cb(null);
+    callback(null);
   }
 }
 
-function save(client, cb) {
+function save(client, callback) {
   clients[client.clientId] = cloneDeep(client);
 
-  findById(client.clientId, cb);
+  findById(client.clientId, callback);
 }
 
 module.exports = {
-  findById: findById,
-  save: save,
+  findById,
+  save,
 };

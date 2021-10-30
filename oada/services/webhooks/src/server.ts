@@ -28,22 +28,22 @@ import debug from 'debug';
 const trace = debug('webhooks:trace');
 const error = debug('webhooks:error');
 
-//---------------------------------------------------------
+// ---------------------------------------------------------
 // Kafka initializations:
 const responder = new Responder({
   consumeTopic: config.get('kafka.topics.httpResponse'),
   group: 'webhooks',
 });
 
-export function stopResp(): Promise<void> {
+export async function stopResp(): Promise<void> {
   return responder.disconnect();
 }
 
 /**
- * check for successful write request
+ * Check for successful write request
  */
-function checkReq(req: KafkaBase): req is WriteResponse {
-  return req?.msgtype === 'write-response' && req?.code === 'success';
+function checkRequest(request: KafkaBase): request is WriteResponse {
+  return request?.msgtype === 'write-response' && request?.code === 'success';
 }
 
 export interface Sync {
@@ -53,13 +53,13 @@ export interface Sync {
 }
 type Syncs = Record<string, Sync>;
 
-responder.on<void>('request', async function handleReq(req) {
-  if (!checkReq(req)) {
+responder.on<void>('request', async function handleRequest(request) {
+  if (!checkRequest(request)) {
     return;
   }
 
   // TODO: Add AQL query for just syncs and newest change?
-  const meta = (await resources.getResource(req.resource_id, '/_meta')) as {
+  const meta = (await resources.getResource(request.resource_id, '/_meta')) as {
     _syncs?: Syncs;
     _changes: Record<number, { _id: string }>;
   };
@@ -72,21 +72,30 @@ responder.on<void>('request', async function handleReq(req) {
          */
         sync.url = sync.url.replace('localhost', 'proxy');
       }
+
       if (sync['oada-put']) {
-        const change = await changes.getChange(req.resource_id, req._rev);
+        const change = await changes.getChange(
+          request.resource_id,
+          request._rev
+        );
         if (!change) {
-          error('Failed to get change %d for %s', req._rev, req.resource_id);
+          error(
+            'Failed to get change %d for %s',
+            request._rev,
+            request.resource_id
+          );
           return;
         }
 
         const { _meta, _rev, _id, _type, ...body } = (change.body ??
           {}) as Partial<Resource>;
-        //If change is only to _id, _rev, _meta, or _type, don't do put
-        if (Object.keys(body).length == 0) {
+        // If change is only to _id, _rev, _meta, or _type, don't do put
+        if (Object.keys(body).length === 0) {
           return;
         }
+
         if (change.type === 'delete') {
-          //Handle delete _changes
+          // Handle delete _changes
           const deletePath = [];
           let toDelete: unknown = body;
           trace('Sending oada-put to: %s', sync.url);
@@ -99,10 +108,12 @@ responder.on<void>('request', async function handleReq(req) {
             deletePath.push(key);
             toDelete = toDelete[key as keyof typeof toDelete];
           }
+
           if (toDelete !== null) {
             return;
           }
-          const deleteUrl = sync.url + '/' + deletePath.join('/');
+
+          const deleteUrl = `${sync.url}/${deletePath.join('/')}`;
           trace('Deleting: oada-put url changed to: %s', deleteUrl);
           await axios({
             method: 'delete',
@@ -110,22 +121,22 @@ responder.on<void>('request', async function handleReq(req) {
             headers: sync.headers,
           });
           return;
-        } else {
-          //Handle merge _changes
-          trace('Sending oada-put to: %s', sync.url);
-          trace('oada-put body: %O', body);
-          await axios({
-            method: 'put',
-            url: sync.url,
-            data: body as unknown,
-            headers: sync.headers,
-          });
-          return;
         }
+
+        // Handle merge _changes
+        trace('Sending oada-put to: %s', sync.url);
+        trace('oada-put body: %O', body);
+        await axios({
+          method: 'put',
+          url: sync.url,
+          data: body as unknown,
+          headers: sync.headers,
+        });
+        return;
       }
+
       trace('Sending to: %s', sync.url);
       await axios(sync);
-      return;
     });
   }
 });

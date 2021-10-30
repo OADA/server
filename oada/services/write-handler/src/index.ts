@@ -45,21 +45,19 @@ const responder = new Responder({
 // Per-resource write locks/queues
 const locks: Map<string, Bluebird<unknown>> = new Map();
 const cache = new Cache<number | string>({ defaultTtl: 60 * 1000 });
-responder.on<WriteResponse, WriteRequest>('request', (req) => {
+responder.on<WriteResponse, WriteRequest>('request', (request) => {
   if (counter++ > 500) {
     counter = 0;
     global.gc?.();
   }
 
-  const id = req['resource_id'].replace(/^\//, '');
+  const id = request.resource_id.replace(/^\//, '');
   const ps = locks.get(id) ?? Bluebird.resolve();
 
   // Run once last write finishes (whether it worked or not)
   const p = ps
-    .catch(() => {
-      return;
-    })
-    .then(() => handleReq(req))
+    .catch(() => {})
+    .then(async () => handleReq(request))
     .finally(() => {
       // Clean up if queue empty
       if (locks.get(id) === p) {
@@ -151,18 +149,20 @@ export interface WriteResponse extends KafkaBase, WriteContext {
   change_id?: string;
 }
 
-export async function handleReq(req: WriteRequest): Promise<WriteResponse> {
-  req.source = req.source || '';
-  req.resourceExists = req.resourceExists ? req.resourceExists : false; // Fixed bug if this is undefined
-  let id = req['resource_id'].replace(/^\//, '');
+export async function handleReq(request: WriteRequest): Promise<WriteResponse> {
+  request.source = request.source || '';
+  request.resourceExists = request.resourceExists
+    ? request.resourceExists
+    : false; // Fixed bug if this is undefined
+  let id = request.resource_id.replace(/^\//, '');
 
   // Get body and check permission in parallel
   info('Handling %s', id);
-  const body = req.bodyid
-    ? putBodies.getPutBody(req.bodyid)
-    : Promise.resolve(req.body);
+  const body = request.bodyid
+    ? putBodies.getPutBody(request.bodyid)
+    : Promise.resolve(request.body);
 
-  trace('PUTing to "%s" in "%s"', req['path_leftover'], id);
+  trace('PUTing to "%s" in "%s"', request.path_leftover, id);
 
   let changeType: Change[0]['type'];
   const upsert = Bluebird.resolve(body)
@@ -170,47 +170,48 @@ export async function handleReq(req: WriteRequest): Promise<WriteResponse> {
       body: unknown
     ): Promise<{ rev?: number; orev?: number; changeId?: string }> {
       trace(body, 'FIRST BODY');
-      if (req['if-match']) {
+      if (request['if-match']) {
         const rev = (await resources.getResource(
-          req['resource_id'],
+          request.resource_id,
           '/_rev'
         )) as unknown as number;
-        if (req['if-match'] !== rev) {
+        if (request['if-match'] !== rev) {
           error(rev);
-          error(req['if-match']);
-          error(req);
+          error(request['if-match']);
+          error(request);
           throw new Error('if-match failed');
         }
       }
-      if (req['if-none-match']) {
+
+      if (request['if-none-match']) {
         const rev = (await resources.getResource(
-          req['resource_id'],
+          request.resource_id,
           '/_rev'
         )) as unknown as number;
-        if (req['if-none-match'].includes(rev)) {
+        if (request['if-none-match'].includes(rev)) {
           error(rev);
-          error(req['if-none-match']);
-          error(req);
+          error(request['if-none-match']);
+          error(request);
           throw new Error('if-none-match failed');
         }
       }
-      let cacheRev = cache.get(req['resource_id']);
+
+      let cacheRev = cache.get(request.resource_id);
       if (!cacheRev) {
         cacheRev = (await resources.getResource(
-          req['resource_id'],
+          request.resource_id,
           '/_rev'
         )) as unknown as number;
       }
-      if (req.rev) {
-        if (cacheRev !== req.rev) {
-          throw new Error('rev mismatch');
-        }
+
+      if (request.rev && cacheRev !== request.rev) {
+        throw new Error('rev mismatch');
       }
 
-      let path = pointer.parse(req['path_leftover']);
+      let path = pointer.parse(request.path_leftover);
       let method = resources.putResource;
       changeType = 'merge';
-      const obj: DeepPartial<Resource> = {};
+      const object: DeepPartial<Resource> = {};
 
       // Perform delete
       if (body === undefined) {
@@ -219,20 +220,22 @@ export async function handleReq(req: WriteRequest): Promise<WriteResponse> {
           trace('Delete path = %s', path);
           // TODO: This is gross
           const aPath = Array.from(path);
-          method = (id, obj) => resources.deletePartialResource(id, aPath, obj);
+          method = async (id, object_) =>
+            resources.deletePartialResource(id, aPath, object_);
           trace(
             'Setting method = deletePartialResource(%s, %o, %O)',
             id,
             aPath,
-            obj
+            object
           );
           body = null;
           changeType = 'delete';
           trace(`Setting changeType = 'delete'`);
         } else {
-          if (!req.resourceExists) {
+          if (!request.resourceExists) {
             return { rev: undefined, orev: undefined, changeId: undefined };
           }
+
           trace('deleting resource altogether');
           const orev = await resources.deleteResource(id);
           return { orev };
@@ -244,63 +247,63 @@ export async function handleReq(req: WriteRequest): Promise<WriteResponse> {
 
       trace(
         '%s: Checking if resource exists (req.resourceExists = %o)',
-        req.resource_id,
-        req.resourceExists
+        request.resource_id,
+        request.resourceExists
       );
-      if (req.resourceExists === false) {
+      if (request.resourceExists === false) {
         trace(
-          'initializing arango: resource_id = ' +
-            req.resource_id +
-            ', path_leftover = ' +
-            req.path_leftover
+          `initializing arango: resource_id = ${request.resource_id}, path_leftover = ${request.path_leftover}`
         );
-        id = req.resource_id.replace(/^\//, '');
+        id = request.resource_id.replace(/^\//, '');
         path = path.slice(2);
 
         // Initialize resource stuff
-        Object.assign(obj, {
-          _type: req['contentType'],
+        Object.assign(object, {
+          _type: request.contentType,
           _meta: {
-            _id: id + '/_meta',
-            _type: req['contentType'],
-            _owner: req['user_id'],
+            _id: `${id}/_meta`,
+            _type: request.contentType,
+            _owner: request.user_id,
             stats: {
-              createdBy: req['user_id'],
+              createdBy: request.user_id,
               created: ts,
             },
           },
         });
-        trace(obj, 'Intializing resource');
+        trace(object, 'Intializing resource');
       }
 
       // Create object to recursively merge into the resource
       trace(path, 'Recursively merging path into arango object');
       const endK = path.pop();
       if (endK !== undefined) {
-        let o = obj as Record<string, unknown>;
-        path.forEach((k) => {
+        let o = object as Record<string, unknown>;
+        for (const k of path) {
           trace('Adding path for key %s', k);
           if (!(k in o)) {
             // TODO: Support arrays better?
             o[k] = {};
           }
+
           o = o[k] as Record<string, unknown>;
-        });
+        }
+
         o[endK] = body as DeepPartial<Resource>;
       } else {
-        objectAssignDeep(obj, body);
+        objectAssignDeep(object, body);
       }
-      trace(obj, 'Setting body on arango object');
+
+      trace(object, 'Setting body on arango object');
 
       // Update meta
       const meta: Partial<Resource['_meta']> & Record<string, unknown> = {
-        modifiedBy: req['user_id'],
+        modifiedBy: request.user_id,
         modified: ts,
       };
-      obj['_meta'] = objectAssignDeep(obj['_meta'] || {}, meta);
+      object._meta = objectAssignDeep(object._meta || {}, meta);
 
       // Increment rev number
-      let rev = parseInt((cacheRev || 0) as string, 10) + 1;
+      let rev = Number.parseInt((cacheRev || 0) as string, 10) + 1;
 
       // If rev is supposed to be set to 1, this is a "new" resource.  However,
       // change feed could still be around from an earlier delete, so check that
@@ -308,7 +311,7 @@ export async function handleReq(req: WriteRequest): Promise<WriteResponse> {
       if (rev === 1) {
         const changerev = await changes.getMaxChangeRev(id);
         if (changerev && changerev > 1) {
-          rev = +changerev + 1;
+          rev = Number(changerev) + 1;
           trace(
             'Found old changes (max rev %d) for new resource, setting initial _rev to %d include them',
             changerev,
@@ -317,31 +320,31 @@ export async function handleReq(req: WriteRequest): Promise<WriteResponse> {
         }
       }
 
-      obj['_rev'] = rev;
-      pointer.set(obj, '/_meta/_rev', rev);
+      object._rev = rev;
+      pointer.set(object, '/_meta/_rev', rev);
 
       // Compute new change
-      const children = req['from_change_id'] || [];
-      trace(obj, 'Putting change');
+      const children = request.from_change_id || [];
+      trace(object, 'Putting change');
       const changeId = await changes.putChange({
-        change: { ...obj, _rev: rev },
+        change: { ...object, _rev: rev },
         resId: id,
         rev,
         type: changeType,
         children,
-        path: req['change_path'],
-        userId: req['user_id'],
-        authorizationId: req['authorizationid'],
+        path: request.change_path,
+        userId: request.user_id,
+        authorizationId: request.authorizationid,
       });
-      pointer.set(obj, '/_meta/_changes', {
-        _id: id + '/_meta/_changes',
+      pointer.set(object, '/_meta/_changes', {
+        _id: `${id}/_meta/_changes`,
         _rev: rev,
       });
 
       // Update rev of meta?
-      obj['_meta']['_rev'] = rev;
+      object._meta._rev = rev;
 
-      return await method(id, obj, !req.ignoreLinks).then((orev) => ({
+      return method(id, object, !request.ignoreLinks).then((orev) => ({
         rev,
         orev,
         changeId,
@@ -367,42 +370,43 @@ export async function handleReq(req: WriteRequest): Promise<WriteResponse> {
         resource_id: id,
         _rev: typeof rev === 'number' ? rev : 0,
         _orev: orev,
-        user_id: req['user_id'],
-        authorizationid: req['authorizationid'],
-        path_leftover: req['path_leftover'],
-        contentType: req['contentType'],
-        indexer: req['indexer'],
+        user_id: request.user_id,
+        authorizationid: request.authorizationid,
+        path_leftover: request.path_leftover,
+        contentType: request.contentType,
+        indexer: request.indexer,
         change_id: changeId,
       };
-      // causechain comes from rev-graph-update
-      if (req.causechain) res.causechain = req.causechain; // pass through causechain if present
+      // Causechain comes from rev-graph-update
+      if (request.causechain) res.causechain = request.causechain; // Pass through causechain if present
       return res;
     })
-    .catch(resources.NotFoundError, function respondNotFound(err) {
-      error(err);
+    .catch(resources.NotFoundError, function respondNotFound(error_) {
+      error(error_);
       return {
         msgtype: 'write-response',
         code: 'not_found',
-        user_id: req['user_id'],
-        authorizationid: req['authorizationid'],
+        user_id: request.user_id,
+        authorizationid: request.authorizationid,
       };
     })
-    .catch(function respondErr(err: unknown) {
-      error(err);
-      const { message = 'error' } = err as { message?: string };
+    .catch(function respondError(error_: unknown) {
+      error(error_);
+      const { message = 'error' } = error_ as { message?: string };
       return {
         msgtype: 'write-response',
         code: message,
-        user_id: req['user_id'],
-        authorizationid: req['authorizationid'],
+        user_id: request.user_id,
+        authorizationid: request.authorizationid,
       };
     });
 
-  const cleanup = body.then(async () => {
-    // Remove putBody, if there was one
-    // const result = req.bodyid && putBodies.removePutBody(req.bodyid);
-    return req.bodyid && putBodies.removePutBody(req.bodyid);
-  });
+  const cleanup = body.then(
+    async () =>
+      // Remove putBody, if there was one
+      // const result = req.bodyid && putBodies.removePutBody(req.bodyid);
+      request.bodyid && putBodies.removePutBody(request.bodyid)
+  );
   await cleanup;
 
   // TODO: Better return type for this function

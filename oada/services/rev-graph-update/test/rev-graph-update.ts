@@ -35,61 +35,65 @@ const requester = new Requester({
 describe('rev graph update service', () => {
   before(init.run);
   before(function waitKafka(done) {
-    requester.on('ready', () => done());
+    requester.on('ready', () => {
+      done();
+    });
   });
 
-  //--------------------------------------------------
+  // --------------------------------------------------
   // The tests!
-  //--------------------------------------------------
+  // --------------------------------------------------
   describe('.rev-graph-update', () => {
     it('should be able to produce a correct write_request message', async (done) => {
-      // make http_response message
+      // Make http_response message
       const r = {
         msgtype: 'write-response',
         code: 'success',
         resource_id: '/resources:default:resources_rock_123',
-        connection_id: '123abc' + randomstring.generate(7),
+        connection_id: `123abc${randomstring.generate(7)}`,
         _rev: randomstring.generate(7),
         doc: {
-          user_id: 'franko123' + randomstring.generate(7),
+          user_id: `franko123${randomstring.generate(7)}`,
         },
-        authorizationid: 'tuco123' + randomstring.generate(7),
+        authorizationid: `tuco123${randomstring.generate(7)}`,
       };
 
-      console.log('http_response message is: ', r);
+      console.log('http_response message is:', r);
 
-      // now produce the message:
+      // Now produce the message:
       // create the listener:
 
-      const msg = (await requester.send(r)) as WriteRequest;
-      trace('received message: ', msg);
-      // @ts-ignore
-      expect(msg.type).to.equal('write_request');
-      expect(msg.path_leftover).to.equal('/rocks-index/90j2klfdjss/_rev');
-      expect(msg.resource_id).to.equal('resources/default:resources_rocks_123');
-      expect(msg.contentType).to.equal('application/vnd.oada.rocks.1+json');
-      expect(msg.user_id).to.equal(r.doc.user_id);
-      expect(msg.authorizationid).to.equal(r.authorizationid);
-      expect(msg.body).to.equal(r._rev);
-      // @ts-ignore
-      expect(msg.connection_id).to.equal(r.connection_id);
-      // @ts-ignore
-      expect(msg.url).to.equal('');
+      const message = (await requester.send(r)) as WriteRequest;
+      trace('received message: ', message);
+      // @ts-expect-error
+      expect(message.type).to.equal('write_request');
+      expect(message.path_leftover).to.equal('/rocks-index/90j2klfdjss/_rev');
+      expect(message.resource_id).to.equal(
+        'resources/default:resources_rocks_123'
+      );
+      expect(message.contentType).to.equal('application/vnd.oada.rocks.1+json');
+      expect(message.user_id).to.equal(r.doc.user_id);
+      expect(message.authorizationid).to.equal(r.authorizationid);
+      expect(message.body).to.equal(r._rev);
+      // @ts-expect-error
+      expect(message.connection_id).to.equal(r.connection_id);
+      // @ts-expect-error
+      expect(message.url).to.equal('');
 
       done();
-    }).timeout(10000);
+    }).timeout(10_000);
   });
 
-  //-------------------------------------------------------
+  // -------------------------------------------------------
   // After tests are done, get rid of our temp database
-  //-------------------------------------------------------
+  // -------------------------------------------------------
   after(init.cleanup);
   after(function rdis() {
-    this.timeout(10000);
+    this.timeout(10_000);
     requester.disconnect();
   });
   after(function revDis() {
-    this.timeout(10000);
+    this.timeout(10_000);
     revGraphUpdate.stopResp();
   });
 });

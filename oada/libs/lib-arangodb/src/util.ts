@@ -16,11 +16,11 @@
 /**
  * @todo clean up this mess
  */
-export function sanitizeResult<T extends {}>(
+export function sanitizeResult<T extends Record<string, unknown>>(
   res: T
 ): Omit<T & { _rev?: number }, '_key' | '_oada_rev'> {
   if (!(res && typeof res === 'object')) {
-    // @ts-ignore
+    // @ts-expect-error
     return res;
   }
 

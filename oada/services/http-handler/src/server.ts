@@ -77,8 +77,8 @@ async function init(): Promise<void> {
     // By default everything is off, so give numbers to under-pressure
     underPressureOptions: {
       maxEventLoopDelay: 5000,
-      //maxHeapUsedBytes: 100000000,
-      //maxRssBytes: 100000000,
+      // MaxHeapUsedBytes: 100000000,
+      // maxRssBytes: 100000000,
       maxEventLoopUtilization: 0.98,
     },
   });
@@ -89,13 +89,13 @@ async function init(): Promise<void> {
    * This is to handle an intermittent error on sending requests,
    * likely from tulios/kafkajs#979
    */
-  const errorHandler = app.errorHandler;
-  app.setErrorHandler(async (err, request, reply) => {
-    errorHandler(err, request, reply);
+  const { errorHandler } = app;
+  app.setErrorHandler(async (error, request, reply) => {
+    errorHandler(error, request, reply);
     // TODO: Make kafka plugin for server?
-    if (err instanceof KafkaError) {
+    if (error instanceof KafkaError) {
       // Kill the server on Kafka Errors?
-      await close(err);
+      await close(error);
     }
   });
 
@@ -143,24 +143,26 @@ async function init(): Promise<void> {
       async auth(token, request: FastifyRequest) {
         try {
           const tok = await tokenLookup({
-            //connection_id: request.id,
-            //domain: request.headers.host,
+            // Connection_id: request.id,
+            // domain: request.headers.host,
             token,
           });
 
-          if (!tok['token_exists']) {
+          if (!tok.token_exists) {
             request.log.debug('Token does not exist');
             return false;
           }
+
           if (tok.doc.expired) {
             request.log.debug('Token expired');
             return false;
           }
+
           request.requestContext.set('user', tok.doc);
 
           return true;
-        } catch (err) {
-          request.log.error(err);
+        } catch (error) {
+          request.log.error(error);
           return false;
         }
       },
@@ -216,8 +218,8 @@ async function init(): Promise<void> {
   if (esMain(import.meta)) {
     try {
       await start();
-    } catch (err) {
-      app.log.error(err);
+    } catch (error) {
+      app.log.error(error);
       process.exit(1);
     }
   }
@@ -226,9 +228,9 @@ async function init(): Promise<void> {
 /**
  * Try to cleanup and always die on unexpected error
  */
-async function close(err: Error): Promise<void> {
+async function close(error: Error): Promise<void> {
   try {
-    app.log.error(err, 'Attempting to cleanup server after error.');
+    app.log.error(error, 'Attempting to cleanup server after error.');
     // Try to close server nicely
     await app.close();
   } finally {
@@ -236,6 +238,7 @@ async function close(err: Error): Promise<void> {
     process.exit(1);
   }
 }
+
 process.on('uncaughtException', close);
 process.on('unhandledRejection', close);
 

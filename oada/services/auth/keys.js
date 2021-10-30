@@ -26,7 +26,7 @@ const config = require('./config');
  * PEMs filename (minus the .pem extension) becomes the key id.
  */
 // Initialize the keys objects
-var keys = {
+const keys = {
   jwks: {
     keys: [],
   },
@@ -34,20 +34,20 @@ var keys = {
 };
 
 // Load in all PEM files
-var files = fs.readdirSync(config.get('auth.keys.signPems'));
-for (var i = 0; i < files.length; i++) {
-  if (path.extname(files[i]).toLowerCase() === '.pem') {
-    var pem = fs.readFileSync(
-      path.join(config.get('auth.keys.signPems'), files[i])
+const files = fs.readdirSync(config.get('auth.keys.signPems'));
+for (const file of files) {
+  if (path.extname(file).toLowerCase() === '.pem') {
+    const pem = fs.readFileSync(
+      path.join(config.get('auth.keys.signPems'), file)
     );
 
-    var kid = path.basename(files[i], '.pem');
-    var jwkExtras = {
+    const kid = path.basename(file, '.pem');
+    const jwkExtras = {
       alg: 'RS256',
       use: 'sig',
-      kid: kid,
+      kid,
     };
-    var jwk = rsaPemToJwk(pem, jwkExtras, 'public');
+    const jwk = rsaPemToJwk(pem, jwkExtras, 'public');
 
     // Make sure PEM is valid
     if (jwk !== undefined) {
@@ -56,8 +56,8 @@ for (var i = 0; i < files.length; i++) {
         kty: 'PEM',
         alg: 'RS256',
         use: 'sig',
-        kid: kid,
-        pem: pem,
+        kid,
+        pem,
       };
     }
   }

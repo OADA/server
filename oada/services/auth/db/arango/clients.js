@@ -20,21 +20,21 @@ const Bluebird = require('bluebird');
 
 const oadaLib = require('@oada/lib-arangodb');
 
-async function findById(id, cb) {
-  debug('retrieving client { clientId: "' + id + '" }');
+async function findById(id, callback) {
+  debug(`retrieving client { clientId: "${id}" }`);
   const client = await oadaLib.clients.findById(id);
   client && Object.assign(client, { id: client._id, _id: undefined });
-  await Bluebird.resolve(client).asCallback(cb);
+  await Bluebird.resolve(client).asCallback(callback);
 }
 
-async function save(client, cb) {
+async function save(client, callback) {
   Object.assign(client, { _id: client.id, id: undefined });
   debug('saving clientId ', client.clientId);
   const c = await oadaLib.clients.save(client);
-  await Bluebird.resolve(c).asCallback(cb);
+  await Bluebird.resolve(c).asCallback(callback);
 }
 
 module.exports = {
-  findById: findById,
-  save: save,
+  findById,
+  save,
 };

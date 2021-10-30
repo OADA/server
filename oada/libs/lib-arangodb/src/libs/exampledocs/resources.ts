@@ -1,5 +1,5 @@
 export default [
-  //------------------------------------------------
+  // ------------------------------------------------
   // Bookmarks document (for frank):
   {
     _id: 'resources/default:resources_bookmarks_123',
@@ -11,12 +11,12 @@ export default [
       _type: 'application/vnd.oada.bookmarks.1+json',
       _owner: 'users/default:users_frank_123',
       stats: {
-        // stats on meta is exempt from _changes
+        // Stats on meta is exempt from _changes
         // because that would generate loop of rev updates with resource
         createdBy: 'users/default:users_frank_123',
-        created: 1494133055,
+        created: 1_494_133_055,
         modifiedBy: 'users/default:users_frank_123',
-        modified: 1494133055,
+        modified: 1_494_133_055,
       },
       _changes: {
         _id: 'resources/default:changes_bookmarks_123/_meta/_changes',
@@ -25,7 +25,7 @@ export default [
     },
     rocks: { _id: 'resources/default:resources_rocks_123', _rev: 1 },
   },
-  //------------------------------------------------
+  // ------------------------------------------------
   // Bookmarks document (for servio):
   {
     _id: 'resources/default:resources_bookmarks_012',
@@ -37,12 +37,12 @@ export default [
       _type: 'application/vnd.oada.bookmarks.1+json',
       _owner: 'users/default:users_servio_012',
       stats: {
-        // stats on meta is exempt from _changes
+        // Stats on meta is exempt from _changes
         // because that would generate loop of rev updates with resource
         createdBy: 'users/default:users_frank_012',
-        created: 1494133055,
+        created: 1_494_133_055,
         modifiedBy: 'users/default:users_frank_012',
-        modified: 1494133055,
+        modified: 1_494_133_055,
       },
       _changes: {
         _id: 'resources/default:changes_bookmarks_012/_meta/_changes',
@@ -60,12 +60,12 @@ export default [
       _type: 'application/vnd.oada.bookmarks.1+json',
       _owner: 'users/default:users_frank2_124',
       stats: {
-        // stats on meta is exempt from _changes
+        // Stats on meta is exempt from _changes
         // because that would generate loop of rev updates with resource
         createdBy: 'users/default:users_frank2_124',
-        created: 1494133055,
+        created: 1_494_133_055,
         modifiedBy: 'users/default:users_frank2_124',
-        modified: 1494133055,
+        modified: 1_494_133_055,
       },
       _changes: {
         _id: 'resources/default:resources_bookmarks_124/_meta/_changes',
@@ -75,8 +75,8 @@ export default [
     thisisopenidconnectexampleuser: true,
   },
 
-  //--------------------
-  //Bookmarks document (for sam):
+  // --------------------
+  // Bookmarks document (for sam):
   {
     _id: 'resources/default:resources_bookmarks_321',
     _oada_rev: 1,
@@ -87,12 +87,12 @@ export default [
       _type: 'application/vnd.oada.bookmarks.1+json',
       _owner: 'users/default:users_sam_321',
       stats: {
-        // stats on meta is exempt from _changes
+        // Stats on meta is exempt from _changes
         // because that would generate loop of rev updates with resource
         createdBy: 'users/default:users_sam_321',
-        created: 1494133055,
+        created: 1_494_133_055,
         modifiedBy: 'users/default:users_sam_321',
-        modified: 1494133055,
+        modified: 1_494_133_055,
       },
       _changes: {
         _id: 'resources/default:resources_bookmarks_321/_meta/_changes',
@@ -101,8 +101,8 @@ export default [
     },
   },
 
-  //--------------------
-  //Bookmarks document (for sam-proxy):
+  // --------------------
+  // Bookmarks document (for sam-proxy):
   {
     _id: 'resources/default:resources_bookmarks_321-proxy',
     _oada_rev: 1,
@@ -113,12 +113,12 @@ export default [
       _type: 'application/vnd.oada.bookmarks.1+json',
       _owner: 'users/default:users_sam_321-proxy',
       stats: {
-        // stats on meta is exempt from _changes
+        // Stats on meta is exempt from _changes
         // because that would generate loop of rev updates with resource
         createdBy: 'users/default:users_sam_321-proxy',
-        created: 1494133055,
+        created: 1_494_133_055,
         modifiedBy: 'users/default:users_sam_321-proxy',
-        modified: 1494133055,
+        modified: 1_494_133_055,
       },
       _changes: {
         _id: 'resources/default:resources_bookmarks_321-proxy/_meta/_changes',
@@ -127,8 +127,8 @@ export default [
     },
   },
 
-  //--------------------
-  //Bookmarks document (for audrey):
+  // --------------------
+  // Bookmarks document (for audrey):
   {
     _id: 'resources/default:resources_bookmarks_999',
     _oada_rev: 1,
@@ -139,12 +139,12 @@ export default [
       _type: 'application/vnd.oada.bookmarks.1+json',
       _owner: 'users/default:users_audrey_999',
       stats: {
-        // stats on meta is exempt from _changes
+        // Stats on meta is exempt from _changes
         // because that would generate loop of rev updates with resource
         createdBy: 'users/default:users_audrey_999',
-        created: 1494133055,
+        created: 1_494_133_055,
         modifiedBy: 'users/default:users_audrey_999',
-        modified: 1494133055,
+        modified: 1_494_133_055,
       },
       _changes: {
         _id: 'resources/default:resources_bookmarks_999/_meta/_changes',
@@ -154,8 +154,8 @@ export default [
     trellisfw: { _id: 'resources/default:resources_clients_999', _rev: 1 },
   },
 
-  //--------------------
-  //Bookmarks document (for gary at growersync):
+  // --------------------
+  // Bookmarks document (for gary at growersync):
   {
     _id: 'resources/default:resources_bookmarks_777',
     _oada_rev: 1,
@@ -166,12 +166,12 @@ export default [
       _type: 'application/vnd.oada.bookmarks.1+json',
       _owner: 'users/default:users_gary_growersync',
       stats: {
-        // stats on meta is exempt from _changes
+        // Stats on meta is exempt from _changes
         // because that would generate loop of rev updates with resource
         createdBy: 'users/default:users_gary_growersync',
-        created: 1494133055,
+        created: 1_494_133_055,
         modifiedBy: 'users/default:users_gary_growersync',
-        modified: 1494133055,
+        modified: 1_494_133_055,
       },
       _changes: {
         _id: 'resources/default:resources_bookmarks_777/_meta/_changes',
@@ -180,8 +180,8 @@ export default [
     },
   },
 
-  //--------------------
-  //Bookmarks document (for pete at pspperfection):
+  // --------------------
+  // Bookmarks document (for pete at pspperfection):
   {
     _id: 'resources/default:resources_bookmarks_444',
     _oada_rev: 1,
@@ -192,12 +192,12 @@ export default [
       _type: 'application/vnd.oada.bookmarks.1+json',
       _owner: 'users/default:users_pete_pspperfection',
       stats: {
-        // stats on meta is exempt from _changes
+        // Stats on meta is exempt from _changes
         // because that would generate loop of rev updates with resource
         createdBy: 'users/default:users_pete_pspperfection',
-        created: 1494133055,
+        created: 1_494_133_055,
         modifiedBy: 'users/default:users_pete_pspperfection',
-        modified: 1494133055,
+        modified: 1_494_133_055,
       },
       _changes: {
         _id: 'resources/default:resources_bookmarks_444/_meta/_changes',
@@ -206,8 +206,8 @@ export default [
     },
   },
 
-  //--------------------
-  //Bookmarks document (for rick at retailfresh):
+  // --------------------
+  // Bookmarks document (for rick at retailfresh):
   {
     _id: 'resources/default:resources_bookmarks_555',
     _oada_rev: 1,
@@ -218,12 +218,12 @@ export default [
       _type: 'application/vnd.oada.bookmarks.1+json',
       _owner: 'users/default:users_rick_retailfresh',
       stats: {
-        // stats on meta is exempt from _changes
+        // Stats on meta is exempt from _changes
         // because that would generate loop of rev updates with resource
         createdBy: 'users/default:users_rick_retailfresh',
-        created: 1494133055,
+        created: 1_494_133_055,
         modifiedBy: 'users/default:users_rick_retailfresh',
-        modified: 1494133055,
+        modified: 1_494_133_055,
       },
       _changes: {
         _id: 'resources/default:resources_bookmarks_555_meta/_changes',
@@ -232,8 +232,8 @@ export default [
     },
   },
 
-  //--------------------
-  //Bookmarks document (for diane at distributing excellence):
+  // --------------------
+  // Bookmarks document (for diane at distributing excellence):
   {
     _id: 'resources/default:resources_bookmarks_666',
     _oada_rev: 1,
@@ -244,12 +244,12 @@ export default [
       _type: 'application/vnd.oada.bookmarks.1+json',
       _owner: 'users/default:users_diane_distributingexcellence',
       stats: {
-        // stats on meta is exempt from _changes
+        // Stats on meta is exempt from _changes
         // because that would generate loop of rev updates with resource
         createdBy: 'users/default:users_diane_distributingexcellence',
-        created: 1494133055,
+        created: 1_494_133_055,
         modifiedBy: 'users/default:users_diane_distributingexcellence',
-        modified: 1494133055,
+        modified: 1_494_133_055,
       },
       _changes: {
         _id: 'resources/default:resources_bookmarks_666/_meta/_changes',
@@ -258,7 +258,7 @@ export default [
     },
   },
 
-  //------------------------------------------------
+  // ------------------------------------------------
   // Shares document (for user frank):
   {
     _id: 'resources/default:resources_shares_012',
@@ -270,12 +270,12 @@ export default [
       _type: 'application/vnd.oada.shares.1+json',
       _owner: 'users/default:users_servio_012', // TODO: Who "owns" /shares?
       stats: {
-        // stats on meta is exempt from _changes
+        // Stats on meta is exempt from _changes
         // because that would generate loop of rev updates with resource
         createdBy: 'system',
-        created: 1494133055,
+        created: 1_494_133_055,
         modifiedBy: 'system',
-        modified: 1494133055,
+        modified: 1_494_133_055,
       },
       _changes: {},
     },
@@ -290,12 +290,12 @@ export default [
       _type: 'application/vnd.oada.shares.1+json',
       _owner: 'users/default:users_frank_123', // TODO: Who "owns" /shares?
       stats: {
-        // stats on meta is exempt from _changes
+        // Stats on meta is exempt from _changes
         // because that would generate loop of rev updates with resource
         createdBy: 'system',
-        created: 1494133055,
+        created: 1_494_133_055,
         modifiedBy: 'system',
-        modified: 1494133055,
+        modified: 1_494_133_055,
       },
       _changes: {},
     },
@@ -310,18 +310,18 @@ export default [
       _type: 'application/vnd.oada.shares.1+json',
       _owner: 'users/default:users_frank2_124', // TODO: Who "owns" /shares?
       stats: {
-        // stats on meta is exempt from _changes
+        // Stats on meta is exempt from _changes
         // because that would generate loop of rev updates with resource
         createdBy: 'system',
-        created: 1494133055,
+        created: 1_494_133_055,
         modifiedBy: 'system',
-        modified: 1494133055,
+        modified: 1_494_133_055,
       },
       _changes: {},
     },
   },
 
-  //------------------------------------------------
+  // ------------------------------------------------
   // Shares document (for user gary growersync):
   {
     _id: 'resources/default:resources_shares_777',
@@ -332,18 +332,18 @@ export default [
       _type: 'application/vnd.oada.shares.1+json',
       _owner: 'users/default:users_gary_growersync', // TODO: Who "owns" /shares?
       stats: {
-        // stats on meta is exempt from _changes
+        // Stats on meta is exempt from _changes
         // because that would generate loop of rev updates with resource
         createdBy: 'system',
-        created: 1494133055,
+        created: 1_494_133_055,
         modifiedBy: 'system',
-        modified: 1494133055,
+        modified: 1_494_133_055,
       },
       _changes: {},
     },
   },
 
-  //------------------------------------------------
+  // ------------------------------------------------
   // Shares document (for user pete):
   {
     _id: 'resources/default:resources_shares_444',
@@ -355,18 +355,18 @@ export default [
       _type: 'application/vnd.oada.shares.1+json',
       _owner: 'users/default:users_pete_pspperfection', // TODO: Who "owns" /shares?
       stats: {
-        // stats on meta is exempt from _changes
+        // Stats on meta is exempt from _changes
         // because that would generate loop of rev updates with resource
         createdBy: 'system',
-        created: 1494133055,
+        created: 1_494_133_055,
         modifiedBy: 'system',
-        modified: 1494133055,
+        modified: 1_494_133_055,
       },
       _changes: {},
     },
   },
 
-  //------------------------------------------------
+  // ------------------------------------------------
   // Shares document (for user rick):
   {
     _id: 'resources/default:resources_shares_555',
@@ -378,18 +378,18 @@ export default [
       _type: 'application/vnd.oada.shares.1+json',
       _owner: 'users/default:users_rick_retailfresh', // TODO: Who "owns" /shares?
       stats: {
-        // stats on meta is exempt from _changes
+        // Stats on meta is exempt from _changes
         // because that would generate loop of rev updates with resource
         createdBy: 'system',
-        created: 1494133055,
+        created: 1_494_133_055,
         modifiedBy: 'system',
-        modified: 1494133055,
+        modified: 1_494_133_055,
       },
       _changes: {},
     },
   },
 
-  //------------------------------------------------
+  // ------------------------------------------------
   // Shares document (for user diane):
   {
     _id: 'resources/default:resources_shares_666',
@@ -401,18 +401,18 @@ export default [
       _type: 'application/vnd.oada.shares.1+json',
       _owner: 'users/default:users_diane_distributingexcellence', // TODO: Who "owns" /shares?
       stats: {
-        // stats on meta is exempt from _changes
+        // Stats on meta is exempt from _changes
         // because that would generate loop of rev updates with resource
         createdBy: 'system',
-        created: 1494133055,
+        created: 1_494_133_055,
         modifiedBy: 'system',
-        modified: 1494133055,
+        modified: 1_494_133_055,
       },
       _changes: {},
     },
   },
 
-  //------------------------------------------------
+  // ------------------------------------------------
   // Shares document (for user sam):
   {
     _id: 'resources/default:resources_shares_321',
@@ -424,18 +424,18 @@ export default [
       _type: 'application/vnd.oada.shares.1+json',
       _owner: 'users/default:users_sam_321', // TODO: Who "owns" /shares?
       stats: {
-        // stats on meta is exempt from _changes
+        // Stats on meta is exempt from _changes
         // because that would generate loop of rev updates with resource
         createdBy: 'system',
-        created: 1494133055,
+        created: 1_494_133_055,
         modifiedBy: 'system',
-        modified: 1494133055,
+        modified: 1_494_133_055,
       },
       _changes: {},
     },
   },
 
-  //------------------------------------------------
+  // ------------------------------------------------
   // Shares document (for user sam-proxy):
   {
     _id: 'resources/default:resources_shares_321-proxy',
@@ -447,12 +447,12 @@ export default [
       _type: 'application/vnd.oada.shares.1+json',
       _owner: 'users/default:users_sam_321-proxy', // TODO: Who "owns" /shares?
       stats: {
-        // stats on meta is exempt from _changes
+        // Stats on meta is exempt from _changes
         // because that would generate loop of rev updates with resource
         createdBy: 'system',
-        created: 1494133055,
+        created: 1_494_133_055,
         modifiedBy: 'system',
-        modified: 1494133055,
+        modified: 1_494_133_055,
       },
       _changes: {},
     },
@@ -468,17 +468,17 @@ export default [
       _type: 'application/vnd.oada.shares.1+json',
       _owner: 'users/default:users_audrey_999', // TODO: Who "owns" /shares?
       stats: {
-        // stats on meta is exempt from _changes
+        // Stats on meta is exempt from _changes
         // because that would generate loop of rev updates with resource
         createdBy: 'system',
-        created: 1494133055,
+        created: 1_494_133_055,
         modifiedBy: 'system',
-        modified: 1494133055,
+        modified: 1_494_133_055,
       },
       _changes: {},
     },
   },
-  //------------------------------------------------------
+  // ------------------------------------------------------
   // Rocks document:
   {
     '_id': 'resources/default:resources_rocks_123',
@@ -491,9 +491,9 @@ export default [
       _owner: 'users/default:users_frank_123',
       stats: {
         createdBy: 'users/default:users_frank_123',
-        created: 1494133055,
+        created: 1_494_133_055,
         modifiedBy: 'users/default:users_frank_123',
-        modified: 1494133055,
+        modified: 1_494_133_055,
       },
       _changes: {
         _id: 'resources/default:resources_rocks_123/_meta/_changes',
@@ -509,9 +509,9 @@ export default [
               _owner: 'users/default:users_frank_123',
               stats: {
                 createdBy: 'users/default:users_frank_123',
-                created: 1494133055,
+                created: 1_494_133_055,
                 modifiedBy: 'users/default:users_frank_123',
-                modified: 1494133055,
+                modified: 1_494_133_055,
               },
             },
             'rocks-index': {
@@ -533,7 +533,7 @@ export default [
       },
     },
   },
-  //------------------------------------------------------
+  // ------------------------------------------------------
   // trellisfw document (audrey):
   {
     _id: 'resources/default:resources_trellisfw_999',
@@ -546,9 +546,9 @@ export default [
       _owner: 'users/default:users_audrey_999',
       stats: {
         createdBy: 'users/default:users_audrey_999',
-        created: 1494133055,
+        created: 1_494_133_055,
         modifiedBy: 'users/default:users_audrey_999',
-        modified: 1494133055,
+        modified: 1_494_133_055,
       },
       _changes: {
         _id: 'resources/default:resources_trellisfw_999/_meta/_changes',
@@ -564,9 +564,9 @@ export default [
               _owner: 'users/default:users_audrey_999',
               stats: {
                 createdBy: 'users/default:users_audrey_999',
-                created: 1494133055,
+                created: 1_494_133_055,
                 modifiedBy: 'users/default:users_audrey_999',
-                modified: 1494133055,
+                modified: 1_494_133_055,
               },
             },
             clients: {
@@ -584,7 +584,7 @@ export default [
       _rev: 1,
     },
   },
-  //-----------------------------------------------------------------
+  // -----------------------------------------------------------------
   // Clients document (audrey)
   {
     _id: 'resources/default:resources_clients_999',
@@ -597,9 +597,9 @@ export default [
       _owner: 'users/default:users_audrey_999',
       stats: {
         createdBy: 'users/default:users_audrey_999',
-        created: 1494133055,
+        created: 1_494_133_055,
         modifiedBy: 'users/default:users_audrey_999',
-        modified: 1494133055,
+        modified: 1_494_133_055,
       },
 
       _changes: {
@@ -616,9 +616,9 @@ export default [
               _owner: 'users/default:users_audrey_999',
               stats: {
                 createdBy: 'users/default:users_audrey_999',
-                created: 1494133055,
+                created: 1_494_133_055,
                 modifiedBy: 'users/default:users_audrey_999',
-                modified: 1494133055,
+                modified: 1_494_133_055,
               },
             },
           },
@@ -629,7 +629,7 @@ export default [
     },
   },
 
-  //-----------------------------------------------------------------
+  // -----------------------------------------------------------------
   // Rock document (frank)
   {
     _id: 'resources/default:resources_rock_123',
@@ -642,9 +642,9 @@ export default [
       _owner: 'users/default:users_frank_123',
       stats: {
         createdBy: 'users/default:users_frank_123',
-        created: 1494133055,
+        created: 1_494_133_055,
         modifiedBy: 'users/default:users_frank_123',
-        modified: 1494133055,
+        modified: 1_494_133_055,
       },
 
       _changes: {
@@ -661,9 +661,9 @@ export default [
               _owner: 'users/default:users_frank_123',
               stats: {
                 createdBy: 'users/default:users_frank_123',
-                created: 1494133055,
+                created: 1_494_133_055,
                 modifiedBy: 'users/default:users_frank_123',
-                modified: 1494133055,
+                modified: 1_494_133_055,
               },
             },
             location: {

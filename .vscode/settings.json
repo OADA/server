@@ -4,5 +4,9 @@
   },
   "search.exclude": {
     "oada": true
-  }
+  },
+  "prettier.prettierPath": "oada/.yarn/sdks/prettier/index.js",
+  "typescript.tsdk": "oada/.yarn/sdks/typescript/lib",
+  "typescript.enablePromptUseWorkspaceTsdk": true,
+  "eslint.nodePath": "oada/.yarn/sdks"
 }

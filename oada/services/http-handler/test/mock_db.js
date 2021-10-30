@@ -1,39 +1,39 @@
 'use strict';
 
-var Promise = require('bluebird');
+const Promise = require('bluebird');
 const mock = require('mock-require');
 
-var resources = {};
+const resources = {};
 
-before(function mockDb() {
+before(function mockDatabase() {
   mock('@oada/lib-arangodb', {
     resources: {
       getResource: function mockGetResource(id, path) {
-        path = (path || '').split('/').filter((x) => !!x);
-        return Promise.try(function () {
-          var res = resources[id];
+        path = (path || '').split('/').filter((x) => Boolean(x));
+        return Promise.try(() => {
+          let res = resources[id];
 
-          path.forEach(function (part) {
+          for (const part of path) {
             res = res[part];
-          });
+          }
 
           return res;
         });
       },
 
-      setResource: function mockSetResource(id, path, val) {
-        return Promise.try(function () {
+      setResource: function mockSetResource(id, path, value) {
+        return Promise.try(() => {
           if (path) {
-            path = path.split('/').filter((x) => !!x);
-            var res = resources[id];
+            path = path.split('/').filter((x) => Boolean(x));
+            let res = resources[id];
 
-            path.slice(0, -1).forEach(function (part) {
+            for (const part of path.slice(0, -1)) {
               res = res[part];
-            });
+            }
 
-            res[path.pop()] = val;
+            res[path.pop()] = value;
           } else {
-            resources[id] = val;
+            resources[id] = value;
           }
         });
       },

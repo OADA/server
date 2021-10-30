@@ -17,7 +17,7 @@
 
 const crypto = require('crypto');
 
-const TokenError = require('oauth2orize').TokenError;
+const { TokenError } = require('oauth2orize');
 const jwt = require('jsonwebtoken');
 const objectAssign = require('object-assign');
 const debug = require('debug')('utils:trace');
@@ -37,17 +37,17 @@ function makeHash(length) {
     .replace(/=/g, '');
 }
 
-// iss is the domain of the issuer that is handing out the token
+// Iss is the domain of the issuer that is handing out the token
 function createIdToken(iss, aud, user, nonce, userinfoScope) {
   userinfoScope = userinfoScope || [];
 
-  var idToken = config.get('auth.idToken');
+  const idToken = config.get('auth.idToken');
   debug(
     'createIdToken: creating token, kid = %s, keys.sign = %O',
     idToken.signKid,
     keys.sign
   );
-  var options = {
+  const options = {
     header: {
       kid: idToken.signKid,
     },
@@ -58,50 +58,50 @@ function createIdToken(iss, aud, user, nonce, userinfoScope) {
     issuer: iss,
   };
 
-  var payload = {
-    iat: new Date().getTime(),
+  const payload = {
+    iat: Date.now(),
   };
 
   if (nonce !== undefined) {
     payload.nonce = nonce;
   }
 
-  var userinfo = createUserinfo(user, userinfoScope);
+  const userinfo = createUserinfo(user, userinfoScope);
 
   if (userinfo) {
     objectAssign(payload, userinfo);
   }
 
   debug('createIdToken: signing payload of id token');
-  var j = jwt.sign(payload, keys.sign[idToken.signKid].pem, options);
+  const index = jwt.sign(payload, keys.sign[idToken.signKid].pem, options);
   debug('createIdToken: done signing payload of id token');
 
-  return j;
+  return index;
 }
 
 function createToken(scope, user, clientId, done) {
-  var token = config.get('auth.token');
-  var tok = {
+  const token = config.get('auth.token');
+  const tok = {
     token: makeHash(token.length),
     expiresIn: token.expiresIn,
-    scope: scope,
-    user: user,
-    clientId: clientId,
+    scope,
+    user,
+    clientId,
   };
   debug('createToken: about to save token %O', tok);
   tokens.save(tok, done);
 }
 
 function createUserinfo(user, scopes) {
-  var userinfo = {};
+  const userinfo = {};
 
-  if (scopes.indexOf('profile') != -1) {
+  if (scopes.includes('profile')) {
     objectAssign(userinfo, {
       sub: user.id,
       name: user.name,
-      family_name: user['family_name'],
-      given_name: user['given_name'],
-      middle_name: user['middle_name'],
+      family_name: user.family_name,
+      given_name: user.given_name,
+      middle_name: user.middle_name,
       nickname: user.nickname,
       preferred_username: user.username,
       profile: user.profile,
@@ -111,44 +111,44 @@ function createUserinfo(user, scopes) {
       birthdate: user.birthdate,
       zoneinfo: user.zoneinfo,
       locale: user.locale,
-      updated_at: user['updated_at'],
+      updated_at: user.updated_at,
     });
   }
 
-  if (scopes.indexOf('email') != -1) {
+  if (scopes.includes('email')) {
     objectAssign(userinfo, {
       sub: user.id,
       email: user.email,
-      email_verified: user['email_verified'],
+      email_verified: user.email_verified,
     });
   }
 
-  if (scopes.indexOf('address') != -1) {
+  if (scopes.includes('address')) {
     objectAssign(userinfo, {
       sub: user.id,
       address: user.address,
     });
   }
 
-  if (scopes.indexOf('phone') != -1) {
+  if (scopes.includes('phone')) {
     objectAssign(userinfo, {
       sub: user.id,
-      phone_number: user['phone_number'],
-      phone_number_verified: user['phone_number_verified'],
+      phone_number: user.phone_number,
+      phone_number_verified: user.phone_number_verified,
     });
   }
 
   if (userinfo.sub === undefined) {
-    return undefined;
-  } else {
-    return userinfo;
+    return;
   }
+
+  return userinfo;
 }
 
 function issueToken(client, user, ares, done) {
-  createToken(ares.scope, user, client.clientId, function (err, token) {
-    if (err) {
-      return done(err);
+  createToken(ares.scope, user, client.clientId, (error, token) => {
+    if (error) {
+      return done(error);
     }
 
     done(null, token.token, { expires_in: token.expiresIn });
@@ -156,7 +156,7 @@ function issueToken(client, user, ares, done) {
 }
 
 function issueIdToken(client, user, ares, done) {
-  var userinfoScope = ares.userinfo ? ares.scope : [];
+  const userinfoScope = ares.userinfo ? ares.scope : [];
 
   done(
     null,
@@ -171,14 +171,14 @@ function issueIdToken(client, user, ares, done) {
 }
 
 function issueCode(client, redirectUri, user, ares, done) {
-  var code = config.get('auth.code');
-  var c = {
+  const code = config.get('auth.code');
+  const c = {
     code: makeHash(code.length),
     expiresIn: code.expiresIn,
     scope: ares.scope,
-    user: user,
+    user,
     clientId: client.clientId,
-    redirectUri: redirectUri,
+    redirectUri,
   };
 
   if (ares.nonce) {
@@ -186,9 +186,9 @@ function issueCode(client, redirectUri, user, ares, done) {
   }
 
   debug('Saving new code: %s', c.code);
-  codes.save(c, function (err, code) {
-    if (err) {
-      return done(err);
+  codes.save(c, (error, code) => {
+    if (error) {
+      return done(error);
     }
 
     done(null, code.code);
@@ -196,26 +196,28 @@ function issueCode(client, redirectUri, user, ares, done) {
 }
 
 function issueTokenFromCode(client, c, redirectUri, done) {
-  codes.findByCode(c, function (err, code) {
+  codes.findByCode(c, (error, code) => {
     debug(
       'issueTokenFromCode: findByCode returned, code = %O, err = %O',
       code,
-      err
+      error
     );
-    if (err) {
-      return done(err);
+    if (error) {
+      return done(error);
     }
 
     if (code.isRedeemed()) {
       return done(new TokenError('Code already redeemed', 'invalid_request'));
     }
+
     if (code.isExpired()) {
       return done(new TokenError('Code expired', 'invalid_request'));
     }
+
     if (!code.matchesClientId(client.clientId)) {
-      code.redeem(function (err) {
-        if (err) {
-          return done(err);
+      code.redeem((error) => {
+        if (error) {
+          return done(error);
         }
 
         return done(
@@ -226,10 +228,11 @@ function issueTokenFromCode(client, c, redirectUri, done) {
         );
       });
     }
+
     if (!code.matchesRedirectUri(redirectUri)) {
-      code.redeem(function (err) {
-        if (err) {
-          return done(err);
+      code.redeem((error) => {
+        if (error) {
+          return done(error);
         }
 
         return done(
@@ -241,18 +244,18 @@ function issueTokenFromCode(client, c, redirectUri, done) {
       });
     }
 
-    code.redeem(function (err, code) {
-      if (err) {
-        return done(err);
+    code.redeem((error, code) => {
+      if (error) {
+        return done(error);
       }
 
-      createToken(code.scope, code.user, code.clientId, function (_err, token) {
-        var extras = {
+      createToken(code.scope, code.user, code.clientId, (_error, token) => {
+        const extras = {
           expires_in: token.expiresIn,
         };
 
-        if (code.scope.indexOf('openid') != -1) {
-          extras['id_token'] = createIdToken(
+        if (code.scope.includes('openid')) {
+          extras.id_token = createIdToken(
             client.reqdomain,
             code.clientId,
             code.user,

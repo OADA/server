@@ -1,5 +1,5 @@
 export default [
-  //-------------------------------------------------------
+  // -------------------------------------------------------
   // /bookmarks/rocks
   {
     _id: 'edges/default:edges_bookmarks_rocks_123',
@@ -9,17 +9,17 @@ export default [
     versioned: true,
   },
 
-  //--------------------------------------------------------
+  // --------------------------------------------------------
   // /bookmarks/rocks/rocks-index
   {
     _id: 'edges/default:edges_rocks_rocks-index_123',
     _from: 'graphNodes/resources:default:resources_rocks_123',
     _to: 'graphNodes/resources:default:resources_rocks_123:rocks-index',
-    name: 'rocks-index', // this was internal to resource
+    name: 'rocks-index', // This was internal to resource
     versioned: true,
   },
 
-  //--------------------------------------------------------
+  // --------------------------------------------------------
   // /bookmarks/rocks/rocks-index/90j2klfdjss
   {
     _id: 'edges/default:edges_rocks-index_rock_123',
@@ -29,7 +29,7 @@ export default [
     versioned: true,
   },
 
-  //-------------------------------------------------------
+  // -------------------------------------------------------
   // /bookmarks/trellisfw
   {
     _id: 'edges/default:edges_bookmarks_trellisfw_999',
@@ -38,7 +38,7 @@ export default [
     name: 'trellisfw',
     versioned: true,
   },
-  //--------------------------------------------------------
+  // --------------------------------------------------------
   // /bookmarks/trellisfw/clients
   {
     _id: 'edges/default:edges_trellisfw_clients_999',

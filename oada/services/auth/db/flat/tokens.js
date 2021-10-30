@@ -17,17 +17,17 @@
 const cloneDeep = require('clone-deep');
 const tokens = require('./tokens.json');
 
-function findByToken(token, cb) {
-  cb(null, cloneDeep(tokens[token]));
+function findByToken(token, callback) {
+  callback(null, cloneDeep(tokens[token]));
 }
 
-function save(token, cb) {
+function save(token, callback) {
   tokens[token.token] = JSON.parse(JSON.stringify(token));
 
-  findByToken(token.token, cb);
+  findByToken(token.token, callback);
 }
 
 module.exports = {
-  findByToken: findByToken,
-  save: save,
+  findByToken,
+  save,
 };

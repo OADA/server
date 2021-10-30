@@ -14,8 +14,8 @@
  */
 
 import config from '../config.js';
-import { db } from '../db.js';
-import * as util from '../util.js';
+import { db as database } from '../db.js';
+import { sanitizeResult } from '../util.js';
 import * as users from './users.js';
 
 import { aql } from 'arangojs';
@@ -23,7 +23,7 @@ import debug from 'debug';
 
 const trace = debug('@oada/lib-arangodb#authorizations:trace');
 
-const authorizations = db.collection(
+const authorizations = database.collection(
   config.get('arangodb.collections.authorizations.name')
 );
 
@@ -41,7 +41,7 @@ export interface Authorization {
 
 export async function findById(id: string): Promise<Authorization | null> {
   return (await (
-    await db.query(aql`
+    await database.query(aql`
       FOR t IN ${authorizations}
         FILTER t._key == ${id}
         RETURN UNSET(t, '_key')`)
@@ -52,7 +52,7 @@ export async function findByToken(
   token: string
 ): Promise<(Authorization & { user: users.User }) | null> {
   const t = (await (
-    await db.query(
+    await database.query(
       aql`
       FOR t IN ${authorizations}
         FILTER t.token == ${token}
@@ -64,8 +64,8 @@ export async function findByToken(
     return null;
   }
 
-  // no longer needed with new _id scheme
-  //t._id = t._key;
+  // No longer needed with new _id scheme
+  // t._id = t._key;
 
   trace('Found authorization by token (%O), filling out user by user._id', t);
   const user = await users.findById(t.user._id);
@@ -73,14 +73,14 @@ export async function findByToken(
     throw new Error(`Invalid user ${t.user._id} for token ${token}`);
   }
 
-  return util.sanitizeResult({ ...t, user });
+  return sanitizeResult({ ...t, user });
 }
 
 // TODO: Add index on user id
 export async function findByUser(
   user: string
 ): Promise<AsyncIterableIterator<Authorization>> {
-  return await db.query(aql`
+  return database.query(aql`
     FOR t IN ${authorizations}
       FILTER t.user._id == ${user}
       FILTER t.revoked != true
@@ -91,21 +91,21 @@ export async function save({
   _id,
   ...t
 }: Partial<Authorization> & { token: string }): Promise<Authorization | null> {
-  // make sure nothing but id is in user info
+  // Make sure nothing but id is in user info
   const user = t.user && { _id: t.user._id };
   // Have to get rid of illegal document handle _id
   const _key = _id?.replace(/^authorizations\//, '');
 
   trace('save: Replacing/Inserting token %s', t);
 
-  // overwrite will replace the given token if it already exists
+  // Overwrite will replace the given token if it already exists
   await authorizations.save({ ...t, user, _key }, { overwrite: true });
 
-  return await findByToken(t.token);
+  return findByToken(t.token);
 }
 
 export async function revoke(token: Authorization | string): Promise<void> {
-  await db.query(aql`
+  await database.query(aql`
     UPDATE ${token} WITH { revoked: true } IN ${authorizations}
   `);
 }
@@ -114,5 +114,5 @@ export async function revoke(token: Authorization | string): Promise<void> {
  * Use with case: completely removes the authorization document from database:
  */
 export async function remove(a: Authorization): Promise<{ _id: string }> {
-  return await authorizations.remove(a);
+  return authorizations.remove(a);
 }

@@ -13,13 +13,13 @@
  * limitations under the License.
  */
 
-import util from 'util';
+import util from 'node:util';
 
 import {
   Base,
+  ConstructorOpts as BaseConstructorOptions,
   CANCEL_KEY,
   CONNECT,
-  ConstructorOpts as BaseConstructorOpts,
   DATA,
   KafkaBase,
   REQ_ID_KEY,
@@ -37,21 +37,21 @@ const error = debug('@oada/lib-kafka:error');
 export type Response<R = KafkaBase> = R | Iterable<R> | AsyncIterable<R> | void;
 
 function isIterable<T>(
-  val: T | Iterable<T> | AsyncIterable<T>
-): val is Iterable<T> | AsyncIterable<T> {
+  value: T | Iterable<T> | AsyncIterable<T>
+): value is Iterable<T> | AsyncIterable<T> {
   return (
-    typeof val === 'object' &&
-    (Symbol.iterator in val || Symbol.asyncIterator in val)
+    typeof value === 'object' &&
+    (Symbol.iterator in value || Symbol.asyncIterator in value)
   );
 }
 
-export interface ConstructorOpts extends BaseConstructorOpts {
+export interface ConstructorOptions extends BaseConstructorOptions {
   consumeTopic: string;
   old?: boolean;
 }
 export class Responder extends Base {
-  private timeout;
-  private old;
+  private readonly timeout;
+  private readonly old;
   protected requests: Map<string, Generator<KafkaBase, void> | true>;
 
   constructor({
@@ -59,9 +59,9 @@ export class Responder extends Base {
     produceTopic = null,
     group,
     old = false,
-    ...opts
-  }: ConstructorOpts) {
-    super({ consumeTopic, produceTopic, group, ...opts });
+    ...options
+  }: ConstructorOptions) {
+    super({ consumeTopic, produceTopic, group, ...options });
 
     this.old = old;
     this.requests = new Map();
@@ -74,36 +74,36 @@ export class Responder extends Base {
   /**
    * @todo Maybe rearrange type parameters? Maybe make them class params?
    */
-  override on<Res, Req = KafkaBase>(
+  override on<Res, Request = KafkaBase>(
     event: 'request',
     listener: (
-      reg: Req & KafkaBase,
+      reg: Request & KafkaBase,
       data: EachMessagePayload
     ) => Response<Res> | Promise<Response<Res>>
   ): this;
   override on(
     event: string | symbol,
-    listener: (...args: any[]) => unknown
+    listener: (...arguments_: any[]) => unknown
   ): this;
-  override on<L extends (...args: any[]) => unknown>(
+  override on<L extends (...arguments_: any[]) => unknown>(
     event: string | symbol,
     listener: L
   ): this {
     if (event === 'request') {
       // TODO: Probably a better way to handle this event...
-      return super.on(DATA, async (req, data) => {
-        const { domain, group, resp_partition: part = null } = req;
-        const id = req[REQ_ID_KEY] as string;
-        trace(req, 'Received request');
+      return super.on(DATA, async (request, data) => {
+        const { domain, group, resp_partition: part = null } = request;
+        const id = request[REQ_ID_KEY]!;
+        trace(request, 'Received request');
 
         // Check for old messages
-        if (!this.old && Date.now() - req.time! >= this.timeout) {
+        if (!this.old && Date.now() - request.time! >= this.timeout) {
           warn('Ignoring timed-out request');
           return;
         }
 
         // Check for cancelling request
-        if (CANCEL_KEY in req) {
+        if (CANCEL_KEY in request) {
           const gen = this.requests.get(id) as
             | Generator<KafkaBase, void>
             | undefined;
@@ -130,9 +130,7 @@ export class Responder extends Base {
             if (resp[REQ_ID_KEY] === null) {
               // TODO: Remove once everything migrated
               resp[REQ_ID_KEY] = (await ksuid.random()).string;
-              util.deprecate(() => {
-                return;
-              }, 'Please use ReResponder instead')();
+              util.deprecate(() => {}, 'Please use ReResponder instead')();
             } else {
               resp[REQ_ID_KEY] = id;
               // Check for cancelled requests
@@ -153,25 +151,26 @@ export class Responder extends Base {
         this.requests.set(id, true);
         await this.ready;
         if (listener.length === 3) {
-          listener(req, data, respond);
+          listener(request, data, respond);
         } else {
           try {
-            const resp = (await listener(req, data)) as Response;
+            const resp = (await listener(request, data)) as Response;
             await respond(resp);
-          } catch (err: unknown) {
+          } catch (error_: unknown) {
             // Catch and communicate errors over kafka?
-            error(err);
-            const { code } = (err ?? {}) as { code?: string };
+            error(error_);
+            const { code } = (error_ ?? {}) as { code?: string };
             await respond({
               // eslint-disable-next-line
-              code: code ?? err + '',
+              code: code ?? error_ + '',
             });
           }
+
           this.requests.delete(id);
         }
       });
-    } else {
-      return super.on(event, listener);
     }
+
+    return super.on(event, listener);
   }
 }

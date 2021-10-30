@@ -35,9 +35,9 @@ const config = libConfig({
     },
   },
   // Prefix should match nginx proxy's prefix for the auth service
-  //endpointsPrefix: '/oadaauth',
+  // endpointsPrefix: '/oadaauth',
   'http-handler': {
-    websockets: { maxWatches: { format: 'int', default: 100000 } },
+    websockets: { maxWatches: { format: 'int', default: 100_000 } },
   },
   'kafka': {
     topics: {

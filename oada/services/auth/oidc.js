@@ -24,7 +24,7 @@ module.exports = function (server) {
 
   // Implict flow (id_token)
   server.grant(
-    oauth2orizeOpenId.grant.idToken(function (client, user, ares, done) {
+    oauth2orizeOpenId.grant.idToken((client, user, ares, done) => {
       ares.userinfo = true;
       utils.issueIdToken(client, user, ares, done);
     })

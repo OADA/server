@@ -18,8 +18,7 @@ import { libConfig } from '@oada/lib-config';
 const config = libConfig({
   wellKnown: {
     'forceProtocol': {
-      doc:
-        'use this to force https prefixes on URLs. Useful when behind a proxy.',
+      doc: 'use this to force https prefixes on URLs. Useful when behind a proxy.',
       format: ['https', 'http'],
       nullable: true,
       default: null,
@@ -49,15 +48,15 @@ const config = libConfig({
       certs: {
         format: Object,
         default: {
-          // key: fs.readFileSync(path.join(__dirname, '../certs/ssl/server.key')),
+          // Key: fs.readFileSync(path.join(__dirname, '../certs/ssl/server.key')),
           key: null,
           /*
-          cert: fs.readFileSync(
+          Cert: fs.readFileSync(
             path.join(__dirname, '../certs/ssl/server.crt')
           ),
           */
           cert: null,
-          //ca: fs.readFileSync(path.join(__dirname, '../certs/ssl/ca.crt')),
+          // Ca: fs.readFileSync(path.join(__dirname, '../certs/ssl/ca.crt')),
           ca: null,
           requestCrt: true,
         },
@@ -65,7 +64,11 @@ const config = libConfig({
     },
     'mergeSubServices': {
       format: Array,
-      default: [] as { resource: string; base: string; addPrefix?: string }[],
+      default: [] as Array<{
+        resource: string;
+        base: string;
+        addPrefix?: string;
+      }>,
     },
     'oada-configuration': {
       format: Object,
@@ -75,9 +78,9 @@ const config = libConfig({
         oada_base_uri: null,
         scopes_supported: [
           {
-            'name': 'oada.all.1', // can do anything the user can do
+            'name': 'oada.all.1', // Can do anything the user can do
             /* pattern: /oada\..*\.1/  */
-            'read+write': true, // can read/write anything the user can read/write
+            'read+write': true, // Can read/write anything the user can read/write
           },
         ],
       },
@@ -94,11 +97,9 @@ const server = config.get('wellKnown.server');
 if (!config.get('wellKnown.oada-configuration.oada_base_uri')) {
   config.set(
     'wellKnown.wellKnown.server.oada-configuration.oada_base_uri',
-    server.mode +
-      '//' +
-      server.domain +
-      (server.port ? `:${server.port}` : '') +
-      (server.path_prefix ? server.path_prefix : '')
+    `${server.mode}//${server.domain}${server.port ? `:${server.port}` : ''}${
+      server.path_prefix ? server.path_prefix : ''
+    }`
   );
 }
 

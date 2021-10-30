@@ -14,7 +14,7 @@
  */
 
 import { expect } from 'chai';
-import * as oadaLib from '../src';
+import { authorizations, init } from '../src';
 
 // TODO: Would be nice to just expose these examples on oadaLib itself --- feel
 // like we will want them for all of the microservice tests
@@ -22,12 +22,12 @@ import exampleTokens from '../src/libs/exampledocs/authorizations';
 import exampleUsers from '../src/libs/exampledocs/users';
 
 describe('token lib', () => {
-  before(oadaLib.init.run);
+  before(init.run);
 
   it('should find a token', async () => {
     const token = exampleTokens[0]!;
 
-    return oadaLib.authorizations.findByToken(token.token).then((t) => {
+    return authorizations.findByToken(token.token).then((t) => {
       expect(t?.token).to.equal(token.token);
       expect(t?.createTime).to.equal(token.createTime);
       expect(t?.expiresIn).to.equal(token.expiresIn);
@@ -41,18 +41,16 @@ describe('token lib', () => {
     const token = exampleTokens[0]!;
     const user = exampleUsers[0]!;
 
-    return oadaLib.authorizations
-      .save(
-        Object.assign({}, token, {
-          // @ts-ignore
-          _key: token._key + '-no-duplicates',
-          token: 'abc-no-duplicates',
-          user: {
-            _id: user._id,
-          },
-        })
-      )
-      .then(() => oadaLib.authorizations.findByToken('abc-no-duplicates'))
+    return authorizations
+      .save({
+        ...token, // @ts-expect-error
+        _key: `${token._key}-no-duplicates`,
+        token: 'abc-no-duplicates',
+        user: {
+          _id: user._id,
+        },
+      })
+      .then(async () => authorizations.findByToken('abc-no-duplicates'))
       .then(function checkNewToken(t) {
         expect(t?.token).to.equal('abc-no-duplicates');
         expect(t?.createTime).to.equal(token.createTime);
@@ -63,5 +61,5 @@ describe('token lib', () => {
       });
   });
 
-  after(oadaLib.init.cleanup);
+  after(init.cleanup);
 });

@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-import http from 'http';
+import http from 'node:http';
 
 import { init } from '@oada/lib-arangodb';
 
@@ -24,14 +24,14 @@ const info = debug('startup:info');
 
 const port = process.env.PORT || 8080;
 
-const server = http.createServer((req, res) => {
-  trace('Request received: %O', req);
+const server = http.createServer((request, res) => {
+  trace('Request received: %O', request);
   res.write('Hello');
   res.end();
 });
-server.on('listening', () =>
-  info('Startup finished, listening on %o', server.address())
-);
+server.on('listening', () => {
+  info('Startup finished, listening on %o', server.address());
+});
 
 info('Startup is creating database');
 void init.run().then(() => {

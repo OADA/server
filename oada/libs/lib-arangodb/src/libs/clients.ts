@@ -14,8 +14,8 @@
  */
 
 import config from '../config.js';
-import { db } from '../db.js';
-import * as util from '../util.js';
+import { db as database } from '../db.js';
+import { sanitizeResult } from '../util.js';
 
 import { aql } from 'arangojs';
 
@@ -56,11 +56,13 @@ export interface Client {
   trusted?: boolean;
 }
 
-const clients = db.collection(config.get('arangodb.collections.clients.name'));
+const clients = database.collection(
+  config.get('arangodb.collections.clients.name')
+);
 
 export async function findById(id: string): Promise<Client | null> {
   const client = (await (
-    await db.query(
+    await database.query(
       aql`
       FOR c IN ${clients}
       FILTER c.clientId == ${id}
@@ -72,7 +74,7 @@ export async function findById(id: string): Promise<Client | null> {
     return null;
   }
 
-  return util.sanitizeResult(client);
+  return sanitizeResult(client);
 }
 
 export async function save(client: Client): Promise<Client['clientId']> {

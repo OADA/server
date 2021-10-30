@@ -1,7 +1,7 @@
 declare module 'timed-cache' {
   export = class Cache<T> {
-    constructor(opts: { defaultTtl: number });
+    constructor(options: { defaultTtl: number });
     get(key: string): T;
-    put(key: string, val: T): void;
+    put(key: string, value: T): void;
   };
 }

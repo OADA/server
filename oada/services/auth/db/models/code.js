@@ -14,13 +14,13 @@
  */
 'use strict';
 
-var debug = require('debug')('model-codes:trace');
-var URI = require('urijs');
+const debug = require('debug')('model-codes:trace');
+const URI = require('urijs');
 
-var OADAError = require('oada-error');
-var config = require('../../config');
-var path = require('path');
-var db = require(// nosemgrep: javascript.lang.security.detect-non-literal-require.detect-non-literal-require
+const OADAError = require('oada-error');
+const config = require('../../config');
+const path = require('path');
+const database = require(// Nosemgrep: javascript.lang.security.detect-non-literal-require.detect-non-literal-require
 path.join(
   __dirname,
   '/../../db',
@@ -38,13 +38,13 @@ function makeCode(code) {
       typeof code.redirectUri != 'string'
     ) {
       return false;
-    } else {
-      return true;
     }
+
+    return true;
   };
 
   code.isExpired = function () {
-    return this.createTime + this.expiresIn > new Date().getTime();
+    return this.createTime + this.expiresIn > Date.now();
   };
 
   code.matchesClientId = function (clientId) {
@@ -59,52 +59,48 @@ function makeCode(code) {
     return this.redeemed;
   };
 
-  code.redeem = function (cb) {
-    var self = this;
+  code.redeem = function (callback) {
+    const self = this;
     this.redeemed = true;
 
     debug('makeCode#redeem: saving redeemed code ', self.code);
-    db.save(this, function (err) {
-      if (err) {
-        debug(err);
-        return cb(err);
+    database.save(this, (error) => {
+      if (error) {
+        debug(error);
+        return callback(error);
       }
 
-      findByCode(self.code, cb);
+      findByCode(self.code, callback);
     });
   };
 
   return code;
 }
 
-function findByCode(code, cb) {
-  db.findByCode(code, function (err, c) {
-    var code;
+function findByCode(code, callback) {
+  database.findByCode(code, (error, c) => {
+    let code;
     if (c === undefined) {
-      err = 'Code not found';
+      error = 'Code not found';
     }
 
-    if (!err) {
+    if (!error) {
       code = makeCode(c);
     }
 
-    cb(err, code);
+    callback(error, code);
   });
 }
 
-function save(c, cb) {
-  var code;
+function save(c, callback) {
+  let code;
 
-  if (c.isValid === undefined) {
-    code = makeCode(c);
-  } else {
-    code = c;
-  }
+  code = c.isValid === undefined ? makeCode(c) : c;
 
   code.scope = code.scope || {};
 
   if (!code.isValid()) {
-    return cb(
+    return callback(
       new OADAError(
         'Invalid code',
         OADAError.codes.BAD_REQUEST,
@@ -113,14 +109,14 @@ function save(c, cb) {
     );
   }
 
-  db.findByCode(code.code, function (err, c) {
-    if (err) {
-      debug(err);
-      return cb(err);
+  database.findByCode(code.code, (error, c) => {
+    if (error) {
+      debug(error);
+      return callback(error);
     }
 
     if (c) {
-      return cb(
+      return callback(
         new OADAError(
           'Code already exists',
           OADAError.codes.BAD_REQUEST,
@@ -133,21 +129,21 @@ function save(c, cb) {
       code.expiresIn = 60;
     }
 
-    code.createTime = new Date().getTime();
+    code.createTime = Date.now();
     code.redeemed = false;
 
-    db.save(code, function (err) {
-      if (err) {
-        debug(err);
-        return cb(err);
+    database.save(code, (error) => {
+      if (error) {
+        debug(error);
+        return callback(error);
       }
 
-      findByCode(code.code, cb);
+      findByCode(code.code, callback);
     });
   });
 }
 
 module.exports = {
-  findByCode: findByCode,
-  save: save,
+  findByCode,
+  save,
 };

@@ -14,8 +14,8 @@
  */
 
 import config from '../config.js';
-import { db } from '../db.js';
-import * as util from '../util.js';
+import { db as database } from '../db.js';
+import { sanitizeResult } from '../util.js';
 import * as users from './users.js';
 
 import { aql } from 'arangojs';
@@ -32,13 +32,15 @@ export interface Code {
   redirectUri: string;
 }
 
-const codes = db.collection(config.get('arangodb.collections.codes.name'));
+const codes = database.collection(
+  config.get('arangodb.collections.codes.name')
+);
 
 export async function findByCode(
   code: string
 ): Promise<(Code & { user: users.User }) | null> {
   const c = (await (
-    await db.query(
+    await database.query(
       aql`
       FOR c IN ${codes}
       FILTER c.code == ${code}
@@ -50,28 +52,28 @@ export async function findByCode(
     return null;
   }
 
-  // removed this since we now have arango's _id === oada's _id
-  //c._id = c._key;
+  // Removed this since we now have arango's _id === oada's _id
+  // c._id = c._key;
 
   const user = await users.findById(c.user._id);
   if (!user) {
     throw new Error(`Invalid user ${c.user._id} for code ${code}`);
   }
 
-  return util.sanitizeResult({ ...c, user });
+  return sanitizeResult({ ...c, user });
 }
 
 export async function save(
   code: Code
 ): Promise<(Code & { user: users.User }) | null> {
-  await db.query(aql`
+  await database.query(aql`
     UPSERT { code: ${code.code} }
     INSERT ${code}
     UPDATE ${code}
     IN ${codes}
   `);
 
-  return await findByCode(code.code);
+  return findByCode(code.code);
   /* This old method doesn't work because it only inserts:
   return db.collection(config.get('arangodb:collections:codes:name'))
     .save(code)

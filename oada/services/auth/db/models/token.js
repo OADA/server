@@ -21,7 +21,7 @@ const debug = require('debug')('model-tokens');
 const OADAError = require('oada-error');
 
 const config = require('../../config');
-const db = require(// nosemgrep: javascript.lang.security.detect-non-literal-require.detect-non-literal-require
+const database = require(// Nosemgrep: javascript.lang.security.detect-non-literal-require.detect-non-literal-require
 path.join(
   __dirname,
   '/../../db',
@@ -38,52 +38,48 @@ function makeToken(token) {
       typeof token.clientId != 'string'
     ) {
       return false;
-    } else {
-      return true;
     }
+
+    return true;
   };
 
   token.isExpired = function () {
-    return this.createTime + this.expiresIn < new Date().getTime();
+    return this.createTime + this.expiresIn < Date.now();
   };
 
   return token;
 }
 
-function findByToken(token, cb) {
-  db.findByToken(token, function (err, t) {
-    var token;
+function findByToken(token, callback) {
+  database.findByToken(token, (error, t) => {
+    let token;
     if (t) {
       token = makeToken(t);
     }
 
-    cb(err, token);
+    callback(error, token);
   });
 }
 
-function save(t, cb) {
-  var token;
+function save(t, callback) {
+  let token;
 
-  if (t.isValid === undefined) {
-    token = makeToken(t);
-  } else {
-    token = t;
-  }
+  token = t.isValid === undefined ? makeToken(t) : t;
 
   token.scope = token.scope || [];
 
   if (!token.isValid()) {
-    return cb(new Error('Invalid token'));
+    return callback(new Error('Invalid token'));
   }
 
-  findByToken(token.token, function (err, t) {
-    if (err) {
-      debug(err);
-      return cb(err);
+  findByToken(token.token, (error, t) => {
+    if (error) {
+      debug(error);
+      return callback(error);
     }
 
     if (t) {
-      return cb(
+      return callback(
         new OADAError(
           'Token already exists',
           OADAError.codes.BAD_REQUEST,
@@ -96,21 +92,21 @@ function save(t, cb) {
       token.expiresIn = 60;
     }
 
-    token.createTime = new Date().getTime();
+    token.createTime = Date.now();
 
     debug('save: saving token ', token);
-    db.save(token, function (err) {
-      if (err) {
-        debug(err);
-        return cb(err);
+    database.save(token, (error) => {
+      if (error) {
+        debug(error);
+        return callback(error);
       }
 
-      findByToken(token.token, cb);
+      findByToken(token.token, callback);
     });
   });
 }
 
 module.exports = {
-  findByToken: findByToken,
-  save: save,
+  findByToken,
+  save,
 };

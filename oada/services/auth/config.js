@@ -18,19 +18,19 @@
 const fs = require('fs');
 const path = require('path');
 
-const { default: libConfig } = require('@oada/lib-config');
+const { default: libraryConfig } = require('@oada/lib-config');
 
-const config = libConfig({
+const config = libraryConfig({
   domainsDir: {
     format: String,
     default: '/oada/services/auth/domains',
   },
   auth: {
-    // this will run if you call npm run init.
+    // This will run if you call npm run init.
     // Replace in your own config with your own init.
-    //init: {
+    // init: {
     //  default: function () {},
-    //},
+    // },
     server: {
       'jsonSpaces': {
         format: 'int',
@@ -110,7 +110,7 @@ const config = libConfig({
         format: String,
         default: '/id-login',
       },
-      // redirect URL for OpenIDConnect
+      // Redirect URL for OpenIDConnect
       redirectConnect: {
         format: String,
         default: '/id-redirect',
@@ -191,15 +191,15 @@ const config = libConfig({
     certs: {
       // If you want to run in https mode you need certs here.
       key: {
-        //default: fs.readFileSync(path.join(__dirname, 'certs/ssl/server.key')),
+        // Default: fs.readFileSync(path.join(__dirname, 'certs/ssl/server.key')),
         default: null,
       },
       cert: {
-        //default: fs.readFileSync(path.join(__dirname, 'certs/ssl/server.crt')),
+        // Default: fs.readFileSync(path.join(__dirname, 'certs/ssl/server.crt')),
         default: null,
       },
       ca: {
-        //default: fs.readFileSync(path.join(__dirname, 'certs/ssl/ca.crt')),
+        // Default: fs.readFileSync(path.join(__dirname, 'certs/ssl/ca.crt')),
         default: null,
       },
       requestCrt: {

@@ -19,37 +19,37 @@ const Bluebird = require('bluebird');
 const { users } = require('@oada/lib-arangodb');
 const trace = require('debug')('arango:user:trace');
 
-function findById(id, cb) {
+function findById(id, callback) {
   trace('findById: searching for user ', id);
   return (
     Bluebird.resolve(users.findById(id))
       // Why replace the _id?
       //    .then(u => u && Object.assign(u, {id: u._id, _id: undefined}))
-      .asCallback(cb)
+      .asCallback(callback)
   );
 }
 
-function findByUsername(username, cb) {
+function findByUsername(username, callback) {
   trace('findByUsername: searching for user ', username);
   return (
     Bluebird.resolve(users.findByUsername(username))
       // Why replace the _id?
       //    .then(u => u && Object.assign(u, {id: u._id, _id: undefined}))
-      .asCallback(cb)
+      .asCallback(callback)
   );
 }
 
-function findByUsernamePassword(username, password, cb) {
+function findByUsernamePassword(username, password, callback) {
   trace('findByUsername: searching for user ', username, ' with a password');
   return (
     Bluebird.resolve(users.findByUsernamePassword(username, password))
       // Why replace the_id?
       //    .then(u => u && Object.assign(u, {id: u._id, _id: undefined}))
-      .asCallback(cb)
+      .asCallback(callback)
   );
 }
 
-function findByOIDCToken(idtoken, cb) {
+function findByOIDCToken(idtoken, callback) {
   trace(
     'findByOIDCToken: searching for oidc token sub=',
     idtoken.sub,
@@ -60,11 +60,11 @@ function findByOIDCToken(idtoken, cb) {
     Bluebird.resolve(users.findByOIDCToken(idtoken))
       // Why replace the_id?
       //    .then(u => u && Object.assign(u, {id: u._id, _id: undefined}))
-      .asCallback(cb)
+      .asCallback(callback)
   );
 }
 
-function findByOIDCUsername(username, domain, cb) {
+function findByOIDCUsername(username, domain, callback) {
   trace(
     'findByOIDCUsername: searching for oidc username',
     username,
@@ -75,20 +75,20 @@ function findByOIDCUsername(username, domain, cb) {
     Bluebird.resolve(users.findByOIDCUsername(username, domain))
       // Why replace the_id?
       //    .then(u => u && Object.assign(u, {id: u._id, _id: undefined}))
-      .asCallback(cb)
+      .asCallback(callback)
   );
 }
 
-function update(user, cb) {
-  const u = Object.assign({}, user, { _id: user.id, id: undefined });
-  return Bluebird.resolve(users.update(u)).asCallback(cb);
+function update(user, callback) {
+  const u = { ...user, _id: user.id, id: undefined };
+  return Bluebird.resolve(users.update(u)).asCallback(callback);
 }
 
 module.exports = {
-  findById: findById,
-  findByUsernamePassword: findByUsernamePassword,
-  findByUsername: findByUsername,
-  findByOIDCToken: findByOIDCToken,
+  findById,
+  findByUsernamePassword,
+  findByUsername,
+  findByOIDCToken,
   findByOIDCUsername,
   update,
 };

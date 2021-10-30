@@ -7,19 +7,19 @@ const trace = debug('trace:farmhack#init');
 const Promise = require('bluebird');
 
 // Can't use db.js's db because we're creating the actual database
-const db = require('arangojs')({
+const database = require('arangojs')({
   promise: Promise,
   url: config.get('arangodb.connectionString'),
 });
-db.useDatabase(config.get('arangodb.database'));
+database.useDatabase(config.get('arangodb.database'));
 
 const docs = [
-  // authorizations:
+  // Authorizations:
   {
     _id: 'authorizations/default:authorization-333',
     token: 'KwGmHSxxAWsgJlXEHDmN2Rn1yemKA_awmEzUoPZW',
     scope: ['farmhack.nl.agrivision2017:read'],
-    createTime: 1413831649937,
+    createTime: 1_413_831_649_937,
     expiresIn: 60,
     user: { _id: 'users/default:users_randy_333' },
     clientId: 'jf93caauf3uzud7f308faesf3@provider.oada-dev.com',
@@ -28,13 +28,13 @@ const docs = [
     _id: 'authorizations/default:authorization-123',
     token: 'WJWKWJFkdfjlejflwFWEOJFWEF__KFJiejflsEJfsjie',
     scope: ['farmhack.nl.agrivision2017:read'],
-    createTime: 1413831649937,
+    createTime: 1_413_831_649_937,
     expiresIn: 60,
     user: { _id: 'users/default:users_frank_123' },
     clientId: 'jf93caauf3uzud7f308faesf3@provider.oada-dev.com',
   },
 
-  // users:
+  // Users:
   {
     _id: 'users/default:users_frank_123',
     username: 'frank',
@@ -77,11 +77,11 @@ const docs = [
       _type: 'application/vnd.oada.bookmarks.1+json',
       _owner: 'users/default:users_randy_333',
       stats: {
-        // stats on meta is exempt from _changes because that would gen
+        // Stats on meta is exempt from _changes because that would gen
         createdBy: 'users/default:users_randy_333',
-        created: 1494133055,
+        created: 1_494_133_055,
         modifiedBy: 'users/default:users_randy_333',
-        modified: 1494133055,
+        modified: 1_494_133_055,
       },
       _changes: {
         '_id': 'resources/default:resources_bookmarks_333/_meta/_changes',
@@ -96,13 +96,13 @@ const docs = [
               _type: 'application/vnd.oada.bookmarks.1+json',
               _owner: 'users/default:users_randy_333',
               stats: {
-                // stats on meta is exempt from _changes because that w
+                // Stats on meta is exempt from _changes because that w
                 createdBy: 'users/default:users_randy_333',
-                created: 1494133055,
+                created: 1_494_133_055,
                 modifiedBy: 'users/default:users_randy_333',
-                modified: 1494133055,
+                modified: 1_494_133_055,
               },
-              // leave out _changes in the _changes itself
+              // Leave out _changes in the _changes itself
             },
           },
           userid: 'users/default:users_randy_333',
@@ -125,21 +125,23 @@ Promise.map(docs, (d) => {
   const id = d._id;
   delete d._id;
   d._key = key;
-  info('Checking for existence of id = ' + id);
-  return db
+  info(`Checking for existence of id = ${id}`);
+  return database
     .collection(collection)
     .document(id)
     .then(() => {
-      trace('document ' + id + ' exists: updating');
+      trace(`document ${id} exists: updating`);
       delete d._key;
-      return db.collection(collection).update(id, d);
+      return database.collection(collection).update(id, d);
     })
-    .catch((err) => {
-      if (err.code === 404) {
-        trace('document ' + id + ' does not exist, inserting.');
-        return db.collection(collection).save(d);
-      } else {
-        info('ERROR: ' + id + ' had a non-404 error.  err = ', err);
+    .catch((error) => {
+      if (error.code === 404) {
+        trace(`document ${id} does not exist, inserting.`);
+        return database.collection(collection).save(d);
       }
+
+      info(`ERROR: ${id} had a non-404 error.  err = `, error);
     });
-}).then(() => info('Done!'));
+}).then(() => {
+  info('Done!');
+});
