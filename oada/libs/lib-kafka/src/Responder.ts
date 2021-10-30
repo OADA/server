@@ -17,7 +17,7 @@ import util from 'node:util';
 
 import {
   Base,
-  ConstructorOpts as BaseConstructorOptions,
+  ConstructorOptions as BaseConstructorOptions,
   CANCEL_KEY,
   CONNECT,
   DATA,

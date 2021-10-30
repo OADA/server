@@ -201,9 +201,9 @@ module.exports = function (config_) {
     // If session already has a userid, then just use that.
     app.get(config.get('auth.endpoints.login'), (request, res) => {
       trace(
-        `GET ${ 
-          config.get('auth.endpoints.login') 
-          }: setting X-Frame-Options=SAMEORIGIN before rendering login`
+        `GET ${config.get(
+          'auth.endpoints.login'
+        )}: setting X-Frame-Options=SAMEORIGIN before rendering login`
       );
       trace('login endpoint: Session = %O', request.session);
       res.header('X-Frame-Options', 'SAMEORIGIN');
@@ -254,11 +254,14 @@ module.exports = function (config_) {
 
     // -----------------------------------------------------------------
     // Handle the POST from clicking the "login with OADA/trellisfw" button
-    app.post(config.get('auth.endpoints.loginConnect'), (request, res, next) => {
+    app.post(
+      config.get('auth.endpoints.loginConnect'),
+      (request, res, next) => {
         // First, get domain entered in the posted form
         // and strip protocol if they used it
         let destination_domain = request.body && request.body.dest_domain;
-        if (destination_domain) destination_domain = destination_domain.replace(/^https?:\/\//);
+        if (destination_domain)
+          destination_domain = destination_domain.replace(/^https?:\/\//);
         request.body.dest_domain = destination_domain;
         info(
           config.get('auth.endpoints.loginConnect') +
@@ -289,9 +292,13 @@ module.exports = function (config_) {
             ': calling getIDToken for dest_domain = %s',
           destination_domain
         );
-        return oadaidclient.getIDToken(destination_domain, options)(request, res, next);
-      );
-    });
+        return oadaidclient.getIDToken(destination_domain, options)(
+          request,
+          res,
+          next
+        );
+      }
+    );
 
     // -----------------------------------------------------
     // Handle the redirect for openid connect login:
@@ -300,10 +307,11 @@ module.exports = function (config_) {
       (request, _res, next) => {
         info(
           '+++++++++++++++++++=====================++++++++++++++++++++++++',
-          `${config.get('auth.endpoints.redirectConnect') 
-            }, req.user.reqdomain = ${ 
-            request.hostname 
-            }: OpenIDConnect request returned`
+          `${config.get(
+            'auth.endpoints.redirectConnect'
+          )}, req.user.reqdomain = ${
+            request.hostname
+          }: OpenIDConnect request returned`
         );
         next();
         // Get the token for the user
@@ -322,10 +330,9 @@ module.exports = function (config_) {
         //  If we do know it, don't worry about it
         info(
           '*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+**+*+*+*+*+*+*+*======',
-          `${config.get('auth.endpoints.redirectConnect') 
-            }, req.hostname = ${ 
-            request.hostname 
-            }: token is: %O`,
+          `${config.get('auth.endpoints.redirectConnect')}, req.hostname = ${
+            request.hostname
+          }: token is: %O`,
           idToken
         );
         try {
@@ -351,11 +358,7 @@ module.exports = function (config_) {
             if (!user) {
               // We don't have a user with this sub or username,
               // so they don't have an account
-              request.session.errormsg =
-                `There is no user ${ 
-                userinfo['preferred_username'] 
-                } from ${ 
-                idToken.iss}`;
+              request.session.errormsg = `There is no user ${userinfo['preferred_username']} from ${idToken.iss}`;
               info(
                 'Failed OIDC login: user not found.  Redirecting to %s',
                 request.session.returnTo
@@ -405,15 +408,10 @@ module.exports = function (config_) {
 
     // Statically serve all the domains-enabled/*/auth-www folders:
     for (const domain of Object.keys(domainConfigs)) {
-      const ondisk = `${config.get('domainsDir')  }/${  domain  }/auth-www`;
-      const webpath = `${config.get('auth.endpointsPrefix')  }/domains/${  domain}`;
+      const ondisk = `${config.get('domainsDir')}/${domain}/auth-www`;
+      const webpath = `${config.get('auth.endpointsPrefix')}/domains/${domain}`;
       trace(
-        `Serving domain ${ 
-          domain 
-          }/auth-www statically, on disk = ${ 
-          ondisk 
-          }, webpath = ${ 
-          webpath}`
+        `Serving domain ${domain}/auth-www statically, on disk = ${ondisk}, webpath = ${webpath}`
       );
       app.use(webpath, express.static(ondisk));
     }
@@ -452,7 +450,10 @@ module.exports = function (config_) {
       require('cors')(),
       passport.authenticate('bearer', { session: false }),
       (request, res) => {
-        let userinfo = utils.createUserinfo(request.user, request.authInfo.scope);
+        let userinfo = utils.createUserinfo(
+          request.user,
+          request.authInfo.scope
+        );
 
         if (userinfo && userinfo.sub !== undefined) {
           res.json(userinfo);

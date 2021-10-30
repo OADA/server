@@ -1,4 +1,5 @@
-/* Copyright 2021 Open Ag Data Alliance
+/**
+ * Copyright 2021 Open Ag Data Alliance
  *
  * Licensed under the Apache License, Version 2.0 (the 'License');
  * you may not use this file except in compliance with the License.
@@ -11,6 +12,8 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
+ *
+ * @license
  */
 
 import { join } from 'node:path';
@@ -23,18 +26,18 @@ import {
   handleReq as permissionsRequest,
 } from '@oada/permissions-handler';
 
-import { handleResponse } from '@oada/formats-server';
-import type { Resource } from '@oada/types/oada/resource';
 import type { WriteRequest, WriteResponse } from '@oada/write-handler';
+import type { Resource } from '@oada/types/oada/resource';
+import { handleResponse } from '@oada/formats-server';
 
+import type {} from './server.js';
 import config from './config.js';
 import requester from './requester.js';
-import type {} from './server.js';
 
-import cacache from 'cacache';
 import type { FastifyPluginAsync, FastifyReply, FastifyRequest } from 'fastify';
-import ksuid from 'ksuid';
+import cacache from 'cacache';
 import { is } from 'type-is';
+import ksuid from 'ksuid';
 
 const CACHE_PATH = config.get('storage.binary.cacache');
 
@@ -60,10 +63,53 @@ declare module 'cacache' {
   }
 }
 
+// * This was a quick make it work. Do what you want with it.
+function unflattenMeta(document: Partial<Resource>) {
+  if (!document) {
+    // Object.keys does not like null
+    return document;
+  }
+
+  if ('_meta' in document) {
+    document._meta = {
+      _id: document._meta!._id,
+      _rev: document._meta!._rev,
+    };
+  }
+
+  return document;
+}
+
+// Don't let users modify their shares?
+function noModifyShares(request: FastifyRequest, reply: FastifyReply) {
+  const path = request.requestContext.get('oadaPath')!;
+  const user = request.requestContext.get('user')!;
+  if (new RegExp(`^/${user.shares_id}`).test(path)) {
+    reply.forbidden('User cannot modify their shares document');
+  }
+}
+
+/**
+ * Parse the rev out of a resource's ETag
+ *
+ * @param {string} etag
+ * @returns {number} rev
+ */
+function parseETag(etag: string): number {
+  // Parse strong or weak ETags?
+  // e.g., `W/"123"` or `"123"`
+  const r = /(W\/)?"(?<rev>\d*)"/;
+
+  const { rev } = r.exec(etag)?.groups ?? {};
+
+  // If parse fails, assume `123` format (for legacy code)
+  return rev ? Number(rev) : Number(etag);
+}
+
 /**
  * Fastify plugin for OADA /resources
  */
-const plugin: FastifyPluginAsync<Options> = async function (fastify, options) {
+const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
   /**
    * Try to cleanup our stuff on close
    */
@@ -93,7 +139,7 @@ const plugin: FastifyPluginAsync<Options> = async function (fastify, options) {
   /**
    * Perform the OADA "graph lookup"
    */
-  fastify.addHook('preHandler', async function graphHandler(request, reply) {
+  fastify.addHook('preHandler', async (request, reply) => {
     /**
      * The whole path from the request (e.g., /resources/123/link/abc)
      */
@@ -109,7 +155,7 @@ const plugin: FastifyPluginAsync<Options> = async function (fastify, options) {
       const url = `${resp.resource_id}${resp.path_leftover}`;
       // Log
       request.log.info('Graph lookup: %s => %s', fullpath, url);
-      // Remove `/resources`? idek
+      // Remove `/resources`? IDK
       request.requestContext.set('oadaPath', url);
       void reply.header('Content-Location', `/${url}`);
     } else {
@@ -126,8 +172,7 @@ const plugin: FastifyPluginAsync<Options> = async function (fastify, options) {
    * Has to run after graph lookup.
    * @todo Should this just be in each methods implenting function?
    */
-  // eslint-disable-next-line @typescript-eslint/require-await
-  fastify.addHook('preHandler', async function checkScope(request, reply) {
+  fastify.addHook('preHandler', async (request, reply) => {
     const oadaGraph = request.requestContext.get('oadaGraph')!;
     const user = request.requestContext.get('user')!;
 
@@ -184,23 +229,25 @@ const plugin: FastifyPluginAsync<Options> = async function (fastify, options) {
         }
 
         break;
+      default:
+        reply.badRequest('Unsupported method');
+        break;
     }
   });
 
   /**
    * Return "path leftover" in a header if token/scope passes
    */
-  // eslint-disable-next-line @typescript-eslint/require-await
-  fastify.addHook('preHandler', async function pathLeftover(request, reply) {
+  fastify.addHook('preHandler', async (request, reply) => {
     const oadaGraph = request.requestContext.get('oadaGraph')!;
-    // TODO: Better header name?
+    // ? Better header name?
     void reply.header('X-OADA-Path-Leftover', oadaGraph.path_leftover);
   });
 
   fastify.get(
     '*',
     { exposeHeadRoute: true },
-    async function getResource(request: FastifyRequest, reply: FastifyReply) {
+    async (request: FastifyRequest, reply: FastifyReply) => {
       const oadaGraph = request.requestContext.get('oadaGraph')!;
 
       const type = oadaGraph.type ?? 'application/json';
@@ -230,7 +277,9 @@ const plugin: FastifyPluginAsync<Options> = async function (fastify, options) {
 
       const ifNoneMatch = request.headers['if-none-match'];
       if (ifNoneMatch) {
-        const revs = ifNoneMatch.split(',').map(parseETag);
+        const revs = ifNoneMatch
+          .split(',')
+          .map((element) => parseETag(element));
         if (revs.includes(oadaGraph.rev)) {
           reply.preconditionFailed(
             'If-None-Match header contains current resource _rev'
@@ -288,16 +337,16 @@ const plugin: FastifyPluginAsync<Options> = async function (fastify, options) {
           oadaGraph.rev
         );
 
-        const res: unknown = unflattenMeta(document);
+        const response: unknown = unflattenMeta(document);
 
-        // TODO: Support non-JSON accept? (e.g., YAML)
+        // ? Support non-JSON accept? (e.g., YAML)
         const accept = request.accepts();
         reply.vary('Accept');
         switch (accept.type(['json', type])) {
           case 'json':
           case type:
-            // TODO: Better way to ensure string gets JSON serialized?
-            return reply.serializer(JSON.stringify).send(res);
+            // ? Better way to ensure string gets JSON serialized?
+            return reply.serializer(JSON.stringify).send(response);
           default: {
             reply.notAcceptable();
           }
@@ -306,7 +355,6 @@ const plugin: FastifyPluginAsync<Options> = async function (fastify, options) {
         // Get binary
         if (oadaGraph.path_leftover) {
           request.log.trace(oadaGraph.path_leftover);
-          // TODO: What error code to use here?
           reply.notImplemented('Path Leftover on Binary GET');
           return;
         }
@@ -324,32 +372,6 @@ const plugin: FastifyPluginAsync<Options> = async function (fastify, options) {
     }
   );
 
-  // TODO: This was a quick make it work. Do what you want with it.
-  function unflattenMeta(document: Partial<Resource>) {
-    if (!document) {
-      // Object.keys does not like null
-      return document;
-    }
-
-    if ('_meta' in document) {
-      document._meta = {
-        _id: document._meta!._id,
-        _rev: document._meta!._rev,
-      };
-    }
-
-    return document;
-  }
-
-  // Don't let users modify their shares?
-  function noModifyShares(request: FastifyRequest, reply: FastifyReply) {
-    const path = request.requestContext.get('oadaPath')!;
-    const user = request.requestContext.get('user')!;
-    if (new RegExp(`^/${user.shares_id}`).test(path)) {
-      reply.forbidden('User cannot modify their shares document');
-    }
-  }
-
   // Parse JSON content types as text (but do not parse JSON yet)
   fastify.addContentTypeParser(
     ['json', '+json'],
@@ -360,31 +382,16 @@ const plugin: FastifyPluginAsync<Options> = async function (fastify, options) {
       bodyLimit: 20 * 1_048_576,
     },
     (_, body, done) => {
+      // eslint-disable-next-line unicorn/no-null
       done(null, body);
     }
   );
 
   // Allow unknown contentType but don't parse?
   fastify.addContentTypeParser('*', (_request, _payload, done) => {
+    // eslint-disable-next-line unicorn/no-null
     done(null);
   });
-
-  /**
-   * Parse the rev out of a resource's ETag
-   *
-   * @param {string} etag
-   * @returns {number} rev
-   */
-  function parseETag(etag: string): number {
-    // Parse strong or weak ETags?
-    // e.g., `W/"123"` or `"123"`
-    const r = /(W\/)?"(?<rev>\d*)"/;
-
-    const { rev } = r.exec(etag)?.groups ?? {};
-
-    // If parse fails, assume `123` format (for legacy code)
-    return rev ? Number(rev) : Number(etag);
-  }
 
   /**
    * Handle PUT/POST
@@ -392,10 +399,7 @@ const plugin: FastifyPluginAsync<Options> = async function (fastify, options) {
   fastify.route({
     url: '*',
     method: ['PUT', 'POST'],
-    handler: async function putResource(
-      request: FastifyRequest,
-      reply: FastifyReply
-    ) {
+    async handler(request: FastifyRequest, reply: FastifyReply) {
       if (!request.headers['content-type']) {
         reply.badRequest('No content type specified');
         return;
@@ -431,7 +435,7 @@ const plugin: FastifyPluginAsync<Options> = async function (fastify, options) {
       const ignoreLinks =
         (
           (request.headers['x-oada-ignore-links'] ?? '') as string
-        ).toLowerCase() == 'true';
+        ).toLowerCase() === 'true';
       const ifMatch = request.headers['if-match'];
       const ifNoneMatch = request.headers['if-none-match'];
       const resp = (await requester.send(
@@ -449,7 +453,9 @@ const plugin: FastifyPluginAsync<Options> = async function (fastify, options) {
           'contentType': request.headers['content-type'],
           bodyid,
           'if-match': ifMatch && parseETag(ifMatch),
-          'if-none-match': ifNoneMatch?.split(',').map(parseETag),
+          'if-none-match': ifNoneMatch
+            ?.split(',')
+            .map((element) => parseETag(element)),
           ignoreLinks,
         } as WriteRequest,
         config.get('kafka.topics.writeRequest')
@@ -479,14 +485,14 @@ const plugin: FastifyPluginAsync<Options> = async function (fastify, options) {
         }
 
         default:
-          throw new Error(`Write failed with code "${resp.code || ''}"`);
+          throw new Error(`Write failed with code "${resp.code ?? ''}"`);
       }
 
       return (
         reply
           .header('X-OADA-Rev', resp._rev)
           .header('ETag', `"${resp._rev}"`)
-          // TODO: What is the right thing to return here?
+          // ? What is the right thing to return here?
           // .redirect(204, req.baseUrl + req.url)
           .send()
       );
@@ -496,13 +502,10 @@ const plugin: FastifyPluginAsync<Options> = async function (fastify, options) {
   /**
    * Handle DELETE
    */
-  fastify.delete('*', async function deleteResource(request, reply) {
+  fastify.delete('*', async (request, reply) => {
     let path = request.requestContext.get('oadaPath')!;
     const user = request.requestContext.get('user')!;
-    let {
-      rev, // eslint-disable-line prefer-const
-      ...oadaGraph
-    } = request.requestContext.get('oadaGraph')!;
+    let { rev, ...oadaGraph } = request.requestContext.get('oadaGraph')!;
     let resourceExists = request.requestContext.get('resourceExists')!;
 
     // Don't let users delete their shares?
@@ -543,7 +546,9 @@ const plugin: FastifyPluginAsync<Options> = async function (fastify, options) {
         'authorizationid': user.authorizationid,
         'client_id': user.client_id,
         'if-match': ifMatch && parseETag(ifMatch),
-        'if-none-match': ifNoneMatch?.split(',').map(parseETag),
+        'if-none-match': ifNoneMatch
+          ?.split(',')
+          .map((element) => parseETag(element)),
         // 'bodyid': bodyid, // No body means delete?
         // body: req.body
         'contentType': '',
@@ -556,9 +561,8 @@ const plugin: FastifyPluginAsync<Options> = async function (fastify, options) {
       case 'success':
         break;
       case 'not_found':
-      // Fall-through
-      // TODO: Is 403 a good response for DELETE on non-existent?
       case 'permission': {
+        // ? Is 403 a good response for DELETE on non-existent?
         reply.forbidden('User does not own this resource');
         return;
       }
@@ -578,7 +582,7 @@ const plugin: FastifyPluginAsync<Options> = async function (fastify, options) {
       }
 
       default:
-        throw new Error(`Delete failed with code "${resp.code || ''}"`);
+        throw new Error(`Delete failed with code "${resp.code ?? ''}"`);
     }
 
     return reply

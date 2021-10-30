@@ -1,4 +1,5 @@
-/* Copyright 2021 Open Ag Data Alliance
+/**
+ *  Copyright 2021 Open Ag Data Alliance
  *
  * Licensed under the Apache License, Version 2.0 (the 'License');
  * you may not use this file except in compliance with the License.
@@ -11,16 +12,18 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
+ *
+ * @license
  */
 
 import config from '../config.js';
 import { db as database } from '../db.js';
 import { sanitizeResult } from '../util.js';
 
-import { aql } from 'arangojs';
-import type { CollectionReadOptions } from 'arangojs/collection';
-import bcrypt from 'bcryptjs';
 import Bluebird from 'bluebird';
+import type { CollectionReadOptions } from 'arangojs/collection';
+import { aql } from 'arangojs';
+import bcrypt from 'bcryptjs';
 import debug from 'debug';
 import flatten from 'flat';
 
@@ -73,9 +76,11 @@ export async function findById(
   id: string,
   options?: CollectionReadOptions
 ): Promise<User | null> {
-  return Bluebird.resolve(users.document(id, options))
-    .then(sanitizeResult)
-    .catch({ code: 404 }, () => null);
+  const result = await Bluebird.resolve(
+    users.document(id, options) as Promise<User>
+  ).catch({ code: 404 }, () => null);
+
+  return result && sanitizeResult(result);
 }
 
 export async function exists(id: string): Promise<boolean> {
@@ -124,7 +129,7 @@ export async function findByOIDCUsername(
  * Expects idtoken to be at least
  * { sub: "fkj2o", iss: "https://localhost/example" }
  */
-export async function findByOIDCToken(idtoken: {
+export async function findByOIDCToken(idToken: {
   sub: string;
   iss: string;
 }): Promise<User | null> {
@@ -132,8 +137,8 @@ export async function findByOIDCToken(idtoken: {
     await database.query(
       aql`
         FOR u IN ${users}
-          FILTER u.oidc.sub == ${idtoken.sub}
-          FILTER u.oidc.iss == ${idtoken.iss}
+          FILTER u.oidc.sub == ${idToken.sub}
+          FILTER u.oidc.iss == ${idToken.iss}
           RETURN u`
     )
   ).next()) as User;

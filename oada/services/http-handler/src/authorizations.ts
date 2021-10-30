@@ -110,7 +110,7 @@ const plugin: FastifyPluginAsync<Options> = async function (fastify, options) {
       expiresIn: 3600,
       // TODO: How to generate token?
       token: uuid(),
-      ...request.body,
+      ...(request.body as object),
     };
 
     // Don't allow making tokens for other users unless admin.user

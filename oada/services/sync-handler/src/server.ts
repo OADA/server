@@ -15,15 +15,15 @@
 
 import { URL } from 'node:url';
 
-import { remoteResources, resources } from '@oada/lib-arangodb';
 import { KafkaBase, Responder } from '@oada/lib-kafka';
+import { remoteResources, resources } from '@oada/lib-arangodb';
 
 import type { WriteResponse } from '@oada/write-handler';
 
 import config from './config.js';
 
-import axios from 'axios';
 import Bluebird from 'bluebird';
+import axios from 'axios';
 import debug from 'debug';
 
 const info = debug('sync-handler:info');
@@ -53,7 +53,7 @@ function checkRequest(request: KafkaBase): request is WriteResponse {
   return request?.msgtype === 'write-response' && request?.code === 'success';
 }
 
-responder.on<WriteResponse>('request', async function handleRequest(request) {
+responder.on<WriteResponse>('request', async (request) => {
   if (!checkRequest(request)) {
     return;
   }
@@ -65,7 +65,7 @@ responder.on<WriteResponse>('request', async function handleRequest(request) {
   const oRev = request._orev ?? 0;
   // TODO: Add AQL query for just syncs and newest change?
   const syncs = Object.entries(
-    ((await resources.getResource(id, `/_meta/${META_KEY}`)).syncs ??
+    ((await resources.getResource(id, `/_meta/${META_KEY}`))?.syncs ??
       {}) as Record<string, { url: string; domain: string; token: string }>
   )
     // Ignore sync entries that aren't objects

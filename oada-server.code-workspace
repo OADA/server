@@ -135,10 +135,17 @@
       "arango",
       "arangodb",
       "arangojs",
+      "authorizationid",
+      "cacache",
       "fastify",
       "Kafkajs",
+      "ksuid",
       "oada",
-      "pino"
+      "oidc",
+      "openidconnect",
+      "pino",
+      "sonarjs",
+      "unflatten"
     ],
     "eslint.packageManager": "yarn",
     "eslint.useESLintClass": true

@@ -41,6 +41,10 @@ parserOptions:
     - './lib/*/tsconfig.json'
 
 rules:
+  sonarjs/no-duplicate-string: [warn, 5]
+  eslint-comments/no-unused-disable: off
+  import/extensions: off
+  node/no-unpublished-import: off
   spaced-comment: [error, always, markers: [/, //]]
   filenames/match-regex: off
   unicorn/filename-case: off
@@ -61,6 +65,8 @@ rules:
     [
       error,
       { selector: default, format: [camelCase] },
+      { selector: objectLiteralProperty, format: null },
+      { selector: typeProperty, format: null },
 
       { selector: variable, format: [camelCase, UPPER_CASE] },
       { selector: parameter, format: [camelCase], leadingUnderscore: allow },

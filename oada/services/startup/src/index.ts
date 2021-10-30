@@ -22,19 +22,19 @@ import debug from 'debug';
 const trace = debug('startup:trace');
 const info = debug('startup:info');
 
-const port = process.env.PORT || 8080;
+const port = process.env.PORT ?? 8080;
 
-const server = http.createServer((request, res) => {
+const server = http.createServer((request, response) => {
   trace('Request received: %O', request);
-  res.write('Hello');
-  res.end();
+  response.write('Hello');
+  response.end();
 });
 server.on('listening', () => {
   info('Startup finished, listening on %o', server.address());
 });
 
 info('Startup is creating database');
-void init.run().then(() => {
-  info('Database created/ensured.');
-  server.listen(port);
-});
+await init.run();
+
+info('Database created/ensured.');
+server.listen(port);

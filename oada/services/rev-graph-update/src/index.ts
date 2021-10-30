@@ -21,10 +21,10 @@ import type { WriteRequest, WriteResponse } from '@oada/write-handler';
 
 import config from './config.js';
 
-import Ajv, { JTDSchemaType } from 'ajv/dist/jtd';
-import debug from 'debug';
+import Ajv, { JTDSchemaType } from 'ajv/dist/jtd.js';
 import PQueue from 'p-queue';
 import type { SetRequired } from 'type-fest';
+import debug from 'debug';
 
 const trace = debug('rev-graph-update:trace');
 const info = debug('rev-graph-update:info');

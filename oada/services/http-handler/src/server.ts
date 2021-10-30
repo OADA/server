@@ -21,23 +21,23 @@ import { pino } from '@oada/pino-debug';
 
 import { plugin as formats } from '@oada/formats-server';
 
+import tokenLookup, { TokenResponse } from './tokenLookup.js';
 import authorizations from './authorizations.js';
 import config from './config.js';
 import resources from './resources.js';
-import tokenLookup, { TokenResponse } from './tokenLookup.js';
 import users from './users.js';
 import websockets from './websockets.js';
 
-import esMain from 'es-main';
 import fastify, { FastifyRequest } from 'fastify';
-import fastifyAccepts from 'fastify-accepts';
 import bearerAuth from 'fastify-bearer-auth';
 import cors from 'fastify-cors';
+import esMain from 'es-main';
+import fastifyAccepts from 'fastify-accepts';
 import fastifyGracefulShutdown from 'fastify-graceful-shutdown';
 import fastifyHealthcheck from 'fastify-healthcheck';
-import helmet from 'fastify-helmet';
 import { fastifyRequestContextPlugin } from 'fastify-request-context';
 import fastifySensible from 'fastify-sensible';
+import helmet from 'fastify-helmet';
 
 const logger = pino({ name: 'http-handler' });
 export const app = fastify({
@@ -137,8 +137,8 @@ async function init(): Promise<void> {
   /**
    * Create context for authenticated stuff
    */
-  await app.register(async function tokenScope(app) {
-    await app.register(bearerAuth, {
+  await app.register(async (aApp) => {
+    await aApp.register(bearerAuth, {
       keys: new Set<string>(),
       async auth(token, request: FastifyRequest) {
         try {
@@ -161,7 +161,7 @@ async function init(): Promise<void> {
           request.requestContext.set('user', tok.doc);
 
           return true;
-        } catch (error) {
+        } catch (error: unknown) {
           request.log.error(error);
           return false;
         }
@@ -171,7 +171,7 @@ async function init(): Promise<void> {
     /**
      * Route /bookmarks to resources?
      */
-    await app.register(resources, {
+    await aApp.register(resources, {
       prefix: '/bookmarks',
       prefixPath(request) {
         const user = request.requestContext.get('user')!;
@@ -182,7 +182,7 @@ async function init(): Promise<void> {
     /**
      * Route /shares to resources?
      */
-    await app.register(resources, {
+    await aApp.register(resources, {
       prefix: '/shares',
       prefixPath(request) {
         const user = request.requestContext.get('user')!;
@@ -193,7 +193,7 @@ async function init(): Promise<void> {
     /**
      * Handle /resources
      */
-    await app.register(resources, {
+    await aApp.register(resources, {
       prefix: '/resources',
       prefixPath() {
         return 'resources';
@@ -203,14 +203,14 @@ async function init(): Promise<void> {
     /**
      * Handle /users
      */
-    await app.register(users, {
+    await aApp.register(users, {
       prefix: '/users',
     });
 
     /**
      * Handle /authorizations
      */
-    await app.register(authorizations, {
+    await aApp.register(authorizations, {
       prefix: '/authorizations',
     });
   });
@@ -218,8 +218,10 @@ async function init(): Promise<void> {
   if (esMain(import.meta)) {
     try {
       await start();
-    } catch (error) {
+    } catch (error: unknown) {
+      // eslint-disable-next-line unicorn/consistent-destructuring
       app.log.error(error);
+      // eslint-disable-next-line unicorn/no-process-exit
       process.exit(1);
     }
   }
@@ -235,6 +237,7 @@ async function close(error: Error): Promise<void> {
     await app.close();
   } finally {
     // Always exit
+    // eslint-disable-next-line unicorn/no-process-exit
     process.exit(1);
   }
 }

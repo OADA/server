@@ -19,7 +19,7 @@ import {
   Base,
   CANCEL_KEY,
   CONNECT,
-  ConstructorOpts as ConstructorOptions,
+  ConstructorOptions,
   DATA,
   KafkaBase,
   REQ_ID_KEY,
@@ -29,7 +29,7 @@ import {
 import Bluebird from 'bluebird';
 import ksuid from 'ksuid';
 
-export { ConstructorOptions as ConstructorOpts };
+export { ConstructorOptions };
 export class Requester extends Base {
   private timeouts: Record<string, number>;
   protected requests: Map<
@@ -107,7 +107,7 @@ export class Requester extends Base {
 
     const emitter = new EventEmitter();
 
-    const id = request[REQ_ID_KEY] || ksuid.randomSync().string;
+    const id = request[REQ_ID_KEY] ?? ksuid.randomSync().string;
 
     request[REQ_ID_KEY] = id;
     // TODO: Handle partitions?
@@ -134,6 +134,7 @@ export class Requester extends Base {
       part: null,
     });
 
-    return { ...emitter, close };
+    // @ts-ignore
+    return { close, ...emitter };
   }
 }

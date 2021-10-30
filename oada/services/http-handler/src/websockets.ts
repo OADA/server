@@ -1,4 +1,5 @@
-/* Copyright 2017 Open Ag Data Alliance
+/**
+ * Copyright 2017 Open Ag Data Alliance
  *
  * Licensed under the Apache License, Version 2.0 (the 'License');
  * you may not use this file except in compliance with the License.
@@ -11,33 +12,35 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
+ *
+ * @license
  */
 
-import { strict as assert } from 'node:assert';
 import { EventEmitter } from 'node:events';
+import { strict as assert } from 'node:assert';
 
-import { changes, resources } from '@oada/lib-arangodb';
 import { KafkaBase, Responder } from '@oada/lib-kafka';
+import { changes, resources } from '@oada/lib-arangodb';
 
-import type Change from '@oada/types/oada/change/v2.js';
-import type SocketChange from '@oada/types/oada/websockets/change.js';
 import SocketRequest, {
   // Runtime check for request type
   assert as assertRequest,
 } from '@oada/types/oada/websockets/request.js';
+import type Change from '@oada/types/oada/change/v2.js';
+import type SocketChange from '@oada/types/oada/websockets/change.js';
 import type SocketResponse from '@oada/types/oada/websockets/response.js';
 import type { WriteResponse } from '@oada/write-handler';
 
 import config from './config.js';
 
-import _debug from 'debug';
 import type { FastifyPluginAsync } from 'fastify';
-import fastifyWebsocket from 'fastify-websocket';
-import jsonpointer from 'jsonpointer';
 import type LightMyRequest from 'light-my-request';
 import { OADAError } from 'oada-error';
-import { is } from 'type-is';
 import type WebSocket from 'ws';
+import _debug from 'debug';
+import fastifyWebsocket from 'fastify-websocket';
+import { is } from 'type-is';
+import jsonpointer from 'jsonpointer';
 
 /**
  * @todo Actually figure out how "forgetting history" should work...
@@ -77,7 +80,7 @@ function parseRequest(data: WebSocket.Data): SocketRequest {
   return { ...message, headers };
 }
 
-const plugin: FastifyPluginAsync = async function (fastify) {
+const plugin: FastifyPluginAsync = async (fastify) => {
   await fastify.register(fastifyWebsocket);
 
   fastify.get('/*', { websocket: true }, ({ socket }) => {
@@ -86,7 +89,7 @@ const plugin: FastifyPluginAsync = async function (fastify) {
     const watches: Map<string, Watch> = new Map();
 
     // Set up periodic ping/pong and timeout on socket
-    const interval = setInterval(function ping() {
+    const interval = setInterval(() => {
       if (!isAlive) {
         socket.terminate();
         return;
@@ -95,7 +98,7 @@ const plugin: FastifyPluginAsync = async function (fastify) {
       isAlive = false;
       socket.ping();
     }, 30_000);
-    socket.on('pong', function heartbeat() {
+    socket.on('pong', () => {
       isAlive = true;
     });
     socket.on('close', () => {
@@ -115,18 +118,18 @@ const plugin: FastifyPluginAsync = async function (fastify) {
           requestId: [] as string[],
           path_leftover: [] as string[],
         };
-        for (const [requestId, path_leftover] of requests) {
+        for (const [requestId, pathLeftover] of requests) {
           // Find requests with changes
           const pathChange: unknown = jsonpointer.get(
             change?.[0]?.body ?? {},
-            path_leftover
+            pathLeftover
           );
           if (pathChange === undefined) {
             continue;
           }
 
           message.requestId.push(requestId);
-          message.path_leftover.push(path_leftover);
+          message.path_leftover.push(pathLeftover);
         }
 
         sendChange(message as SocketChange);
@@ -141,11 +144,11 @@ const plugin: FastifyPluginAsync = async function (fastify) {
     }: SocketResponse & { payload?: string }) {
       debug('Responding to request: %O', resp);
       // TODO: Remove this hack...
-      const string_ = JSON.stringify(resp);
+      const string = JSON.stringify(resp);
       if (payload) {
-        socket.send(`${string_.slice(0, -1)},"data":${payload}}`);
+        socket.send(`${string.slice(0, -1)},"data":${payload}}`);
       } else {
-        socket.send(string_);
+        socket.send(string);
       }
     }
 
@@ -155,12 +158,12 @@ const plugin: FastifyPluginAsync = async function (fastify) {
     }
 
     // Handle request
-    socket.on('message', async function message(data) {
-      let message_: SocketRequest;
+    socket.on('message', async (data) => {
+      let message: SocketRequest;
       try {
-        message_ = parseRequest(data);
+        message = parseRequest(data);
       } catch (error_: unknown) {
-        const error__: SocketResponse = {
+        const errorResponse: SocketResponse = {
           status: 400,
           /**
            * TODO: the heck??
@@ -171,27 +174,27 @@ const plugin: FastifyPluginAsync = async function (fastify) {
             'Bad Request',
             400,
             'Invalid socket message format',
-            null,
+            undefined,
             error_ as string
           ) as Record<string, unknown>,
         };
-        sendResponse(error__);
+        sendResponse(errorResponse);
         error(error_);
         return;
       }
 
       try {
-        await handleRequest(message_);
-      } catch {
+        await handleRequest(message);
+      } catch (error_: unknown) {
         error(error_);
-        error('Request was: %O', message_);
-        const error_ = {
+        error('Request was: %O', message);
+        const errorResponse = {
           status: 500,
-          requestId: message_.requestId,
+          requestId: message.requestId,
           headers: {},
           data: new OADAError('Internal Error', 500) as Record<string, unknown>,
         };
-        sendResponse(error_);
+        sendResponse(errorResponse);
       }
     });
 
@@ -225,24 +228,24 @@ const plugin: FastifyPluginAsync = async function (fastify) {
           debug('closing watch', message.requestId);
 
           // Find corresponding WATCH
-          let res: string | undefined;
+          let response: string | undefined;
           let watch: Watch | undefined;
           let found = false;
-          for ([res, watch] of watches) {
+          for ([response, watch] of watches) {
             if (watch?.requests.get(message.requestId)) {
               found = true;
               break;
             }
           }
 
-          if (!found || !watch || !res) {
+          if (!found || !watch || !response) {
             warn('Received UNWATCH for unknown WATCH %s', message.requestId);
           } else {
             watch.requests.delete(message.requestId);
             if (watch.requests.size === 0) {
               // No watches on this resource left
-              watches.delete(res);
-              emitter.removeListener(res, watch.handler);
+              watches.delete(response);
+              emitter.removeListener(response, watch.handler);
             }
           }
 
@@ -262,18 +265,19 @@ const plugin: FastifyPluginAsync = async function (fastify) {
         case 'put':
         case 'post':
           request.payload = JSON.stringify(message.data);
+        // eslint-disable-line no-fallthrough
         default:
           request.method = message.method;
           break;
       }
 
-      let res: LightMyRequest.Response;
+      let response: LightMyRequest.Response;
       try {
-        res = await fastify.inject(request);
+        response = await fastify.inject(request);
         // Treat any status above 2xx as error?
-        if (res.statusCode >= 300) {
+        if (response.statusCode >= 300) {
           const headers: Record<string, string> = {};
-          for (const [k, v] of Object.entries(res.headers)) {
+          for (const [k, v] of Object.entries(response.headers)) {
             // @oada/client gets very angry if a header is anything but a string
             if (v) {
               headers[k] = v.toString();
@@ -282,10 +286,10 @@ const plugin: FastifyPluginAsync = async function (fastify) {
 
           sendResponse({
             requestId: message.requestId,
-            status: res.statusCode,
-            statusText: res.statusMessage,
+            status: response.statusCode,
+            statusText: response.statusMessage,
             headers,
-            payload: res.payload,
+            payload: response.payload,
           });
           return;
         }
@@ -316,17 +320,17 @@ const plugin: FastifyPluginAsync = async function (fastify) {
       }
 
       const parts =
-        res.headers['content-location']?.toString().split('/') ?? [];
-      let path_leftover = '';
+        response.headers['content-location']?.toString().split('/') ?? [];
+      let pathLeftover = '';
       assert(parts.length >= 3);
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       const resourceId = `${parts[1]!}/${parts[2]!}`;
       if (parts.length > 3) {
-        path_leftover = parts.slice(3).join('/');
+        pathLeftover = parts.slice(3).join('/');
       }
 
-      if (path_leftover) {
-        path_leftover = `/${path_leftover}`;
+      if (pathLeftover) {
+        pathLeftover = `/${pathLeftover}`;
       }
 
       switch (message.method) {
@@ -334,54 +338,47 @@ const plugin: FastifyPluginAsync = async function (fastify) {
           debug('opening watch %s', message.requestId);
 
           const watch = watches.get(resourceId);
-          if (!watch) {
+          if (watch) {
+            // Already WATCHing this resource
+            watch.requests.set(message.requestId, pathLeftover);
+          } else {
             // No existing WATCH on this resource
             const newwatch = {
               handler: handleChange(resourceId),
               requests: new Map<string, string>().set(
                 message.requestId,
-                path_leftover
+                pathLeftover
               ),
             };
             watches.set(resourceId, newwatch);
 
             emitter.on(resourceId, newwatch.handler);
-            socket.on('close', function handleClose() {
+            socket.on('close', () => {
               emitter.removeListener(resourceId, newwatch.handler);
             });
-          } else {
-            // Already WATCHing this resource
-            watch.requests.set(message.requestId, path_leftover);
           }
 
           // Emit all new changes from the given rev in the request
-          if (request.headers?.['x-oada-rev'] !== undefined) {
+          const headerRev = request.headers?.['x-oada-rev'];
+          if (headerRev === undefined) {
+            sendResponse({
+              requestId: message.requestId,
+              status: 200,
+            });
+          } else {
             debug('Setting up watch on: %s', resourceId);
-            trace(
-              'RECEIVED THIS REV: %s %s',
-              resourceId,
-              request.headers['x-oada-rev']
-            );
+            trace('RECEIVED THIS REV: %s %s', resourceId, headerRev);
             const rev = await resources.getResource(resourceId, '/_rev');
             const revInt = Number.parseInt(rev as unknown as string, 10);
             // If the requested rev is behind by revLimit, simply
             // re-GET the entire resource
-            trace(
-              'REVS: %s %s %s',
-              resourceId,
-              rev,
-              request.headers['x-oada-rev']
-            );
-            if (
-              revInt -
-                Number.parseInt(request.headers['x-oada-rev'] as string, 10) >=
-              revLimit
-            ) {
+            trace('REVS: %s %s %s', resourceId, rev, headerRev);
+            if (revInt - Number.parseInt(headerRev as string, 10) >= revLimit) {
               trace(
                 'REV WAY OUT OF DATE %s: %s %s',
                 resourceId,
                 rev,
-                request.headers['x-oada-rev']
+                headerRev
               );
               const resource = await resources.getResource(resourceId);
               sendResponse({
@@ -396,17 +393,9 @@ const plugin: FastifyPluginAsync = async function (fastify) {
                 requestId: message.requestId,
                 status: 200,
               });
-              trace(
-                'REV NOT TOO OLD %s: %s %s',
-                resourceId,
-                rev,
-                request.headers['x-oada-rev']
-              );
+              trace('REV NOT TOO OLD %s: %s %s', resourceId, rev, headerRev);
               // Next, feed changes to client
-              const requestRevInt = Number.parseInt(
-                request.headers['x-oada-rev'] as string,
-                10
-              );
+              const requestRevInt = Number.parseInt(headerRev as string, 10);
               for (
                 let sendRev = requestRevInt + 1;
                 sendRev <= revInt;
@@ -417,23 +406,19 @@ const plugin: FastifyPluginAsync = async function (fastify) {
                   sendRev,
                   message.requestId
                 );
-                await changes
-                  .getChangeArray(resourceId, sendRev)
-                  .then((change) => {
-                    sendChange({
-                      requestId: [message.requestId],
-                      resourceId,
-                      path_leftover,
-                      change,
-                    });
-                  });
+                // eslint-disable-next-line no-await-in-loop
+                const change = await changes.getChangeArray(
+                  resourceId,
+                  sendRev
+                );
+                sendChange({
+                  requestId: [message.requestId],
+                  resourceId,
+                  path_leftover: pathLeftover,
+                  change,
+                });
               }
             }
-          } else {
-            sendResponse({
-              requestId: message.requestId,
-              status: 200,
-            });
           }
 
           break;
@@ -445,12 +430,13 @@ const plugin: FastifyPluginAsync = async function (fastify) {
             emitter.removeAllListeners(resourceId);
           }
 
+        // eslint-disable-next-line no-fallthrough
         case 'get': {
           // Can only send JSON over websockets
-          const type = res.headers['content-type']?.toString();
+          const type = response.headers['content-type']?.toString();
           if (type && !is(type, ['json', '+json'])) {
             const headers: Record<string, string> = {};
-            for (const [k, v] of Object.entries(res.headers)) {
+            for (const [k, v] of Object.entries(response.headers)) {
               if (v) {
                 headers[k] = v.toString();
               }
@@ -467,9 +453,10 @@ const plugin: FastifyPluginAsync = async function (fastify) {
           }
         }
 
+        // eslint-disable-next-line no-fallthrough
         default: {
           const headers: Record<string, string> = {};
-          for (const [k, v] of Object.entries(res.headers)) {
+          for (const [k, v] of Object.entries(response.headers)) {
             // @oada/client gets very angry if a header is anything but a string
             if (v) {
               headers[k] = v.toString();
@@ -478,10 +465,10 @@ const plugin: FastifyPluginAsync = async function (fastify) {
 
           sendResponse({
             requestId: message.requestId,
-            status: res.statusCode,
+            status: response.statusCode,
             headers,
             // TODO: why is there a payload for HEAD??
-            payload: message.method === 'head' ? undefined : res.payload,
+            payload: message.method === 'head' ? undefined : response.payload,
           });
         }
       }
@@ -497,14 +484,10 @@ const plugin: FastifyPluginAsync = async function (fastify) {
     await writeResponder.disconnect();
   });
 
-  function checkRequest(request: KafkaBase): request is WriteResponse {
-    return request.msgtype === 'write-response' && request.code === 'success';
-  }
-
   /**
    * Listen for successful write requests to resources of interest, then emit an event
    */
-  writeResponder.on('request', async function handleRequest(request) {
+  writeResponder.on('request', async (request) => {
     if (!checkRequest(request)) {
       return;
     }
@@ -526,10 +509,14 @@ const plugin: FastifyPluginAsync = async function (fastify) {
           emitter.removeAllListeners(request.resource_id);
         }
       }
-    } catch (error_) {
+    } catch (error_: unknown) {
       error(error_);
     }
   });
 };
+
+function checkRequest(request: KafkaBase): request is WriteResponse {
+  return request.msgtype === 'write-response' && request.code === 'success';
+}
 
 export default plugin;

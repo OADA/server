@@ -14,10 +14,13 @@
  */
 
 import { Base, CONNECT, DATA, KafkaBase } from './base.js';
-import { Requester, ConstructorOpts as RequesterOptions } from './Requester.js';
+import {
+  Requester,
+  ConstructorOptions as RequesterOptions,
+} from './Requester.js';
 import {
   Responder,
-  ConstructorOpts as ResponderOptions,
+  ConstructorOptions as ResponderOptions,
   Response,
 } from './Responder.js';
 

@@ -18,11 +18,11 @@ import type { Resource } from '@oada/types/oada/resource';
 
 import config from '../config.js';
 import { db as database } from '../db.js';
-import { sanitizeResult } from '../util.js';
 import { findById } from './users.js';
+import { sanitizeResult } from '../util.js';
 
-import { aql } from 'arangojs';
 import Bluebird from 'bluebird';
+import { aql } from 'arangojs';
 import cloneDeep from 'clone-deep';
 import debug from 'debug';
 import pointer from 'json-pointer';
@@ -306,7 +306,7 @@ export async function lookupFromUrl(
 export async function getResource(
   id: string,
   path = ''
-): Promise<Partial<Resource>> {
+): Promise<Partial<Resource> | undefined> {
   // TODO: Escaping stuff?
   const parts = pointer.parse(path);
 
@@ -341,14 +341,15 @@ export async function getResource(
       bindVars: bindVariables,
     })
   )
-    .then(async (result) => result.next())
+    .then(async (result) => result.next() as unknown as Partial<Resource>)
     .then(sanitizeResult)
     .catch(
       {
         isArangoError: true,
         errorMessage: 'invalid traversal depth (while instantiating plan)',
       },
-      () => null
+      // eslint-disable-next-line unicorn/no-useless-undefined
+      () => undefined
     ); // Treat non-existing path has not-found
 }
 
@@ -361,7 +362,7 @@ interface OwnerIdRev {
 }
 export async function getResourceOwnerIdRev(
   id: string
-): Promise<OwnerIdRev | null> {
+): Promise<OwnerIdRev | undefined> {
   return Bluebird.resolve(
     database.query(aql`
       WITH ${resources}
@@ -376,14 +377,15 @@ export async function getResourceOwnerIdRev(
     .then(async (result) => result.next())
     .then((object) => {
       trace('getResourceOwnerIdRev(%s): result = %O', id, object);
-      return object as OwnerIdRev | null;
+      return object as OwnerIdRev | undefined;
     })
     .catch(
       {
         isArangoError: true,
         errorMessage: 'invalid traversal depth (while instantiating plan)',
       },
-      () => null
+      // eslint-disable-next-line unicorn/no-useless-undefined
+      () => undefined
     ); // Treat non-existing path has not-found
 }
 
