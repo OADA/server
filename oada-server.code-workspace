@@ -148,6 +148,8 @@
       "unflatten"
     ],
     "eslint.packageManager": "yarn",
-    "eslint.useESLintClass": true
+    "eslint.useESLintClass": true,
+    "licenser.author": "Open Ag Data Alliance",
+    "licenser.license": "AL2"
   }
 }

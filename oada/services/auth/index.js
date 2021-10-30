@@ -1,13 +1,15 @@
-/* Copyright 2014 Open Ag Data Alliance
+/**
+ * @license
+ * Copyright 2017-2021 Open Ag Data Alliance
  *
- * Licensed under the Apache License, Version 2.0 (the 'License');
+ * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an 'AS IS' BASIS,
+ * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
@@ -264,11 +266,11 @@ module.exports = function (config_) {
           destination_domain = destination_domain.replace(/^https?:\/\//);
         request.body.dest_domain = destination_domain;
         info(
-          config.get('auth.endpoints.loginConnect') +
-            ': OpenIDConnect request to redirect from domain ' +
-            request.hostname +
-            ' to domain ' +
-            destination_domain
+          `${config.get(
+            'auth.endpoints.loginConnect'
+          )}: OpenIDConnect request to redirect from domain ${
+            request.hostname
+          } to domain ${destination_domain}`
         );
 
         // Next, get the info for the id client middleware based on main domain:
@@ -276,11 +278,10 @@ module.exports = function (config_) {
           domainConfigs[request.hostname] || domainConfigs.localhost;
         const options = {
           metadata: domain_config.software_statement,
-          redirect:
-            'https://' +
-            request.hostname +
-            // the config already has the pfx added
-            config.get('auth.endpoints.redirectConnect'),
+          redirect: `https://${
+            request.hostname
+            // The config already has the pfx added
+          }${config.get('auth.endpoints.redirectConnect')}`,
           scope: 'openid profile',
           prompt: 'consent',
           privateKey: domain_config.keys.private,
@@ -288,8 +289,9 @@ module.exports = function (config_) {
 
         // And call the middleware directly so we can use closure variables:
         trace(
-          config.get('auth.endpoints.loginConnect') +
-            ': calling getIDToken for dest_domain = %s',
+          `${config.get(
+            'auth.endpoints.loginConnect'
+          )}: calling getIDToken for dest_domain = %s`,
           destination_domain
         );
         return oadaidclient.getIDToken(destination_domain, options)(
@@ -343,7 +345,7 @@ module.exports = function (config_) {
             const cfg = (await axios.get(uri.toString())).data;
 
             const userinfo = (
-              await axios.get(cfg['userinfo_endpoint'], {
+              await axios.get(cfg.userinfo_endpoint, {
                 headers: {
                   Authorization: `Bearer ${token}`,
                 },
@@ -358,7 +360,7 @@ module.exports = function (config_) {
             if (!user) {
               // We don't have a user with this sub or username,
               // so they don't have an account
-              request.session.errormsg = `There is no user ${userinfo['preferred_username']} from ${idToken.iss}`;
+              request.session.errormsg = `There is no user ${userinfo.preferred_username} from ${idToken.iss}`;
               info(
                 'Failed OIDC login: user not found.  Redirecting to %s',
                 request.session.returnTo
@@ -450,7 +452,7 @@ module.exports = function (config_) {
       require('cors')(),
       passport.authenticate('bearer', { session: false }),
       (request, res) => {
-        let userinfo = utils.createUserinfo(
+        const userinfo = utils.createUserinfo(
           request.user,
           request.authInfo.scope
         );

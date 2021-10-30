@@ -3477,6 +3477,19 @@ __metadata:
   languageName: node
   linkType: hard
 
+"eslint-plugin-notice@npm:^0.9.10":
+  version: 0.9.10
+  resolution: "eslint-plugin-notice@npm:0.9.10"
+  dependencies:
+    find-root: ^1.1.0
+    lodash: ^4.17.15
+    metric-lcs: ^0.1.2
+  peerDependencies:
+    eslint: ">=3.0.0"
+  checksum: 0892ea3da8f31f57390941b6ae3472a34fe4037a21dfe73763c2e5011a08859bff4be6af50d1c54b04e16e43b10342458acb83874b806fcd5e2839be9f99c92e
+  languageName: node
+  linkType: hard
+
 "eslint-plugin-optimize-regex@npm:^1.2.1":
   version: 1.2.1
   resolution: "eslint-plugin-optimize-regex@npm:1.2.1"
@@ -4181,6 +4194,13 @@ __metadata:
     safe-regex2: ^2.0.0
     semver-store: ^0.3.0
   checksum: c5f212d2d2a5e76be91a86409b2de9391a1c3cf5210d357facf0fe91d1e46608865aa2396a98a8d4772116bfae2eb0b05abe4efa725d5cf3cc9b9554bb34e048
+  languageName: node
+  linkType: hard
+
+"find-root@npm:^1.1.0":
+  version: 1.1.0
+  resolution: "find-root@npm:1.1.0"
+  checksum: b2a59fe4b6c932eef36c45a048ae8f93c85640212ebe8363164814990ee20f154197505965f3f4f102efc33bfb1cbc26fd17c4a2fc739ebc51b886b137cbefaf
   languageName: node
   linkType: hard
 
@@ -5658,6 +5678,13 @@ fsevents@~2.3.2:
   languageName: node
   linkType: hard
 
+"metric-lcs@npm:^0.1.2":
+  version: 0.1.2
+  resolution: "metric-lcs@npm:0.1.2"
+  checksum: 9dbdedb904da1a4c0a21024df781427f7b23d7469fdf55275c790fef3471634ee64a7bde0813c6b035c7eff021957833249172180f4ca59e7b4c7b5e587950bc
+  languageName: node
+  linkType: hard
+
 "micromatch@npm:^4.0.2":
   version: 4.0.2
   resolution: "micromatch@npm:4.0.2"
@@ -6159,6 +6186,7 @@ fsevents@~2.3.2:
     eslint-plugin-no-only-tests: ^2.6.0
     eslint-plugin-no-secrets: ^0.8.9
     eslint-plugin-node: ^11.1.0
+    eslint-plugin-notice: ^0.9.10
     eslint-plugin-optimize-regex: ^1.2.1
     eslint-plugin-prettier: ^4.0.0
     eslint-plugin-promise: ^5.1.1

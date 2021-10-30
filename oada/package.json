@@ -35,6 +35,7 @@
     "eslint-plugin-no-only-tests": "^2.6.0",
     "eslint-plugin-no-secrets": "^0.8.9",
     "eslint-plugin-node": "^11.1.0",
+    "eslint-plugin-notice": "^0.9.10",
     "eslint-plugin-optimize-regex": "^1.2.1",
     "eslint-plugin-prettier": "^4.0.0",
     "eslint-plugin-promise": "^5.1.1",
