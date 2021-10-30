@@ -322,7 +322,6 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         response.headers['content-location']?.toString().split('/') ?? [];
       let pathLeftover = '';
       assert(parts.length >= 3);
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       const resourceId = `${parts[1]!}/${parts[2]!}`;
       if (parts.length > 3) {
         pathLeftover = parts.slice(3).join('/');

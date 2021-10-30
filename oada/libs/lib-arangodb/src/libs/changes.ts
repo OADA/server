@@ -174,9 +174,8 @@ export async function getChangeArray(
     ];
   }
 
-  return database
-    .query(
-      aql`
+  const cursor = await database.query(
+    aql`
         LET change = FIRST(
           FOR change in ${changes}
           FILTER change.resource_id == ${resourceId}
@@ -186,12 +185,9 @@ export async function getChangeArray(
         FOR v, e, p IN 0..${MAX_DEPTH} OUTBOUND change ${changeEdges}
           SORT LENGTH(p.edges), v.number
           RETURN p`
-    )
-    .then(
-      async (cursor) =>
-        // Iterate over the graph
-        cursor.map((document) => toChangeObject(document)) // Convert to change object
-    );
+  );
+  // Iterate over the graph
+  return cursor.map((document) => toChangeObject(document)); // Convert to change object
 }
 
 function toChangeObject(arangoPathObject: {
@@ -205,12 +201,12 @@ function toChangeObject(arangoPathObject: {
   }
 
   // Get body
-  const [lastv] = arangoPathObject.vertices.slice(-1);
-  if (!lastv) {
+  const [lastV] = arangoPathObject.vertices.slice(-1);
+  if (!lastV) {
     throw new Error('No vertices in arangoPathObj');
   }
 
-  const { body, resource_id, type } = lastv;
+  const { body, resource_id, type } = lastV;
   // Return change object
   trace(body, 'toChangeObj: returning change object with body');
   return {
@@ -277,8 +273,8 @@ export async function putChange({
             type: ${type},
             resource_id: ${resId},
             number: ${number},
-            authorization_id: ${authorizationId || null},
-            user_id: ${userId || null}
+            authorization_id: ${authorizationId ?? null},
+            user_id: ${userId ?? null}
           } IN ${changes}
           RETURN NEW
         )
@@ -288,7 +284,7 @@ export async function putChange({
             INSERT {
               _to: child,
               _from: doc._id,
-              path: ${path || null}
+              path: ${path ?? null}
             } in ${changeEdges}
         )
         RETURN doc._id`

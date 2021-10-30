@@ -45,6 +45,36 @@ overrides:
       - plugin:import/typescript
       - xo-typescript
       - prettier
+    rules:
+      '@typescript-eslint/naming-convention':
+        [
+          error,
+          { selector: default, format: [camelCase] },
+          { selector: objectLiteralProperty, format: null },
+          { selector: typeProperty, format: null },
+
+          {
+            selector: variableLike,
+            format: [camelCase, UPPER_CASE],
+            leadingUnderscore: allow,
+          },
+          {
+            selector: parameter,
+            format: [camelCase],
+            leadingUnderscore: allow,
+          },
+
+          {
+            selector: memberLike,
+            modifiers: [private],
+            format: [camelCase],
+            leadingUnderscore: require,
+          },
+
+          { selector: typeLike, format: [PascalCase] },
+        ]
+      '@typescript-eslint/restrict-template-expressions': off
+      '@typescript-eslint/no-shadow': warn
 
 rules:
   notice/notice:
@@ -69,6 +99,7 @@ rules:
       onNonMatchingHeader: append
       nonMatchingTolerance: 0.7
   sonarjs/no-duplicate-string: [warn, 5]
+  sonarjs/cognitive-complexity: warn
   eslint-comments/no-unused-disable: off
   import/extensions: off
   node/no-unpublished-import: off
@@ -86,24 +117,3 @@ rules:
   no-constructor-bind/no-constructor-bind: error
   no-constructor-bind/no-constructor-state: error
   sort-imports: [warn, { allowSeparatedGroups: true }]
-  '@typescript-eslint/restrict-template-expressions': off
-  '@typescript-eslint/no-shadow': warn
-  '@typescript-eslint/naming-convention':
-    [
-      error,
-      { selector: default, format: [camelCase] },
-      { selector: objectLiteralProperty, format: null },
-      { selector: typeProperty, format: null },
-
-      { selector: variable, format: [camelCase, UPPER_CASE] },
-      { selector: parameter, format: [camelCase], leadingUnderscore: allow },
-
-      {
-        selector: memberLike,
-        modifiers: [private],
-        format: [camelCase],
-        leadingUnderscore: require,
-      },
-
-      { selector: typeLike, format: [PascalCase] },
-    ]

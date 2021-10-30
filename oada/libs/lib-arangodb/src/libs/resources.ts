@@ -38,7 +38,7 @@ const resources = database.collection(
 const graphNodes = database.collection(
   config.get('arangodb.collections.graphNodes.name')
 );
-const edges = database.collection(
+const edgesCollection = database.collection(
   config.get('arangodb.collections.edges.name')
 );
 
@@ -104,9 +104,9 @@ export async function lookupFromUrl(
   }
 
   const query = aql`
-    WITH ${edges}, ${graphNodes}
+    WITH ${edgesCollection}, ${graphNodes}
     LET path = LAST(
-      FOR v, e, p IN 0..${pieces.length} OUTBOUND ${startNode} ${edges}
+      FOR v, e, p IN 0..${pieces.length} OUTBOUND ${startNode} ${edgesCollection}
         ${filters}
         RETURN p
     )
@@ -168,7 +168,7 @@ export async function lookupFromUrl(
   // Get rid of leading slash from json pointer
   let resource_id = pointer.compile(id.concat(pieces)).replace(/^\//, '');
 
-  let { rev, type } = result;
+  let { rev, type, edges, vertices } = result;
   let resourceExists = true;
 
   let path_leftover = '';
@@ -226,11 +226,13 @@ export async function lookupFromUrl(
         return true;
       }
     }
+
+    return false;
   });
   type = permissions.type ?? null;
 
   // Check for a traversal that did not finish (aka not found)
-  if (result.vertices[0] === null) {
+  if (vertices[0] === null) {
     trace('graph-lookup traversal did not finish');
     trace('2 return resource id %s', resource_id);
 
@@ -245,53 +247,51 @@ export async function lookupFromUrl(
     };
   }
 
-  const [lastv] = result.vertices.slice(-1);
+  const [lastv] = vertices.slice(-1);
   // A dangling edge indicates uncreated resource; return graph lookup
   // starting at this uncreated resource
-  if (!lastv) {
-    const lastEdge = result.edges[result.edges.length - 1]?._to;
+  if (lastv) {
+    resource_id = lastv.resource_id;
+    trace('graph-lookup traversal found resource %s', resource_id);
+    const fromv = vertices[vertices.length - 2];
+    const edge = edges[edges.length - 1];
+    // If the desired url has more pieces than the longest path, the
+    // pathLeftover is the extra pieces
+    if (vertices.length - 1 < pieces.length) {
+      const revVertices = Array.from(cloneDeep(vertices)).reverse();
+      const lastResource =
+        vertices.length - 1 - revVertices.findIndex((v) => v?.is_resource);
+      // Slice a negative value to take the last n pieces of the array
+      path_leftover = pointer.compile(
+        pieces.slice(lastResource - pieces.length)
+      );
+    } else {
+      path_leftover = lastv.path ?? '';
+    }
+
+    from = {
+      permissions,
+      resourceExists: Boolean(fromv),
+      resource_id: fromv?.resource_id ?? '',
+      path_leftover: (fromv?.path ?? '') + (edge ? `/${edge.name}` : ''),
+    };
+  } else {
+    const lastEdge = edges[edges.length - 1]?._to;
     path_leftover = '';
     resource_id = `resources/${
       lastEdge?.split('graphNodes/resources:')[1] ?? ''
     }`;
     trace('graph-lookup traversal uncreated resource %s', resource_id);
     rev = 0;
-    const fromv = result.vertices[result.vertices.length - 2];
-    const edge = result.edges[result.edges.length - 1];
+    const fromv = vertices[vertices.length - 2];
+    const edge = edges[edges.length - 1];
     from = {
       resourceExists: Boolean(fromv),
       permissions,
-      resource_id: fromv?.resource_id || '',
-      path_leftover: (fromv?.path || '') + (edge ? `/${edge.name}` : ''),
+      resource_id: fromv?.resource_id ?? '',
+      path_leftover: (fromv?.path ?? '') + (edge ? `/${edge.name}` : ''),
     };
     resourceExists = false;
-  } else {
-    resource_id = lastv.resource_id;
-    trace('graph-lookup traversal found resource %s', resource_id);
-    const fromv = result.vertices[result.vertices.length - 2];
-    const edge = result.edges[result.edges.length - 1];
-    // If the desired url has more pieces than the longest path, the
-    // pathLeftover is the extra pieces
-    if (result.vertices.length - 1 < pieces.length) {
-      const revVertices = Array.from(cloneDeep(result.vertices)).reverse();
-      const lastResource =
-        result.vertices.length -
-        1 -
-        revVertices.findIndex((v) => v?.is_resource);
-      // Slice a negative value to take the last n pieces of the array
-      path_leftover = pointer.compile(
-        pieces.slice(lastResource - pieces.length)
-      );
-    } else {
-      path_leftover = lastv.path || '';
-    }
-
-    from = {
-      permissions,
-      resourceExists: Boolean(fromv),
-      resource_id: fromv?.resource_id || '',
-      path_leftover: (fromv?.path || '') + (edge ? `/${edge.name}` : ''),
-    };
   }
 
   return {
@@ -332,6 +332,7 @@ export async function getResource(
     ''
   );
 
+  // eslint-disable-next-line promise/valid-params
   return Bluebird.resolve(
     database.query({
       // TODO: Fix this thing to use aql...
@@ -365,6 +366,7 @@ interface OwnerIdRev {
 export async function getResourceOwnerIdRev(
   id: string
 ): Promise<OwnerIdRev | undefined> {
+  // eslint-disable-next-line promise/valid-params
   return Bluebird.resolve(
     database.query(aql`
       WITH ${resources}
@@ -396,13 +398,14 @@ export async function getParents(id: string): Promise<Array<{
   path: string;
   contentType: string;
 }> | null> {
+  // eslint-disable-next-line promise/valid-params
   return Bluebird.resolve(
     database.query(
       aql`
-        WITH ${edges}, ${graphNodes}, ${resources}
+        WITH ${edgesCollection}, ${graphNodes}, ${resources}
         FOR v, e IN 0..1
           INBOUND ${`graphNodes/${id.replace(/\//, ':')}`}
-          ${edges}
+          ${edgesCollection}
           FILTER e.versioned == true
           LET res = DOCUMENT(v.resource_id)
           RETURN {
@@ -430,14 +433,14 @@ export async function getNewDescendants(
   return (await (
     await database.query(
       aql`
-        WITH ${graphNodes}, ${edges}, ${resources}
+        WITH ${graphNodes}, ${edgesCollection}, ${resources}
         LET node = FIRST(
           FOR node in ${graphNodes}
             FILTER node.resource_id == ${id}
             RETURN node
         )
 
-        FOR v, e, p IN 0..${MAX_DEPTH} OUTBOUND node ${edges}
+        FOR v, e, p IN 0..${MAX_DEPTH} OUTBOUND node ${edgesCollection}
           FILTER p.edges[*].versioned ALL == true
           FILTER v.is_resource
           LET ver = SPLIT(DOCUMENT(LAST(p.vertices).resource_id)._oada_rev, '-', 1)
@@ -458,14 +461,14 @@ export async function getChanges(
   return (await (
     await database.query(
       aql`
-        WITH ${graphNodes}, ${edges}, ${resources}
+        WITH ${graphNodes}, ${edgesCollection}, ${resources}
         LET node = FIRST(
           FOR node in ${graphNodes}
             FILTER node.resource_id == ${id}
             RETURN node
         )
 
-        LET objs = (FOR v, e, p IN 7..7 OUTBOUND node ${edges}
+        LET objs = (FOR v, e, p IN 7..7 OUTBOUND node ${edgesCollection}
           FILTER v.is_resource
           LET ver = SPLIT(DOCUMENT(v.resource_id)._oada_rev, '-', 1)
           FILTER TO_NUMBER(ver) >= ${Number.parseInt(rev as string, 10)}
@@ -560,7 +563,7 @@ export async function putResource(
               '_to': nodes[i+1]._id,
               'versioned': nodes[i+1].is_resource && HAS(l, '_rev')
             }
-            IN ${edges}
+            IN ${edgesCollection}
             RETURN NEW
         )
         RETURN resup.orev`;
@@ -594,11 +597,11 @@ export async function putResource(
 }
 
 async function forLinks(
-  res: Record<string, unknown>,
+  resource: Record<string, unknown>,
   callback: (link: Link, path: readonly string[]) => void | Promise<void>,
   path: string[] = []
 ): Promise<void> {
-  await Bluebird.map(Object.entries(res), async ([key, value]) => {
+  await Bluebird.map(Object.entries(resource), async ([key, value]) => {
     if (value && typeof value === 'object') {
       if ('_id' in value && key !== '_meta') {
         // If it has _id and is not _meta, treat as a link
@@ -616,11 +619,11 @@ async function forLinks(
 }
 
 // TODO: Remove links as well
-async function addLinks(res: Record<string, unknown>) {
+async function addLinks(resource: Record<string, unknown>) {
   // TODO: Use fewer queries or something?
   const links: Link[] = [];
 
-  await forLinks(res, async function processLinks(link, path) {
+  await forLinks(resource, async (link, path) => {
     // Ignore _changes "link"?
     if (path[0] === '_meta' && path[1] === '_changes') {
       return;
@@ -638,20 +641,20 @@ async function addLinks(res: Record<string, unknown>) {
 }
 
 export async function makeRemote<T extends Record<string, unknown>>(
-  res: T,
+  resource: T,
   domain: string
 ): Promise<T> {
-  await forLinks(res, (link) => {
+  await forLinks(resource, (link) => {
     // Change all links to remote links
     link._rid = link._id;
     link._rrev = link._rev;
-    // @ts-expect-error
+    // @ts-expect-error nonsense
     delete link._id;
     delete link._rev;
     link._rdomain = domain;
   });
 
-  return res;
+  return resource;
 }
 
 export async function deleteResource(id: string): Promise<number> {
@@ -659,7 +662,7 @@ export async function deleteResource(id: string): Promise<number> {
   /// resources, unlike everywhere else in this file
   const key = id.replace(/^\/?resources\//, '');
 
-  // Query deletes resouce, its nodes, and outgoing edges (but not incoming)
+  // Query deletes resource, its nodes, and outgoing edges (but not incoming)
   return (await (
     await database.query(
       aql`
@@ -675,9 +678,9 @@ export async function deleteResource(id: string): Promise<number> {
         )
         LET edges = (
           FOR node IN nodes
-            FOR edge IN ${edges}
+            FOR edge IN ${edgesCollection}
               FILTER edge['_from'] == node._id
-              REMOVE edge IN ${edges}
+              REMOVE edge IN ${edgesCollection}
         )
         RETURN res._oada_rev`
     )
@@ -693,20 +696,20 @@ export async function deletePartialResource(
   document: Partial<Resource> = {}
 ): Promise<number> {
   const key = id.replace(/^resources\//, '');
-  const apath = Array.isArray(path) ? path : pointer.parse(path);
+  const aPath = Array.isArray(path) ? path : pointer.parse(path);
 
   // TODO: Less gross way to check existence of JSON pointer in AQL??
-  let pathA = apath.slice(0, -1).join("']['");
+  let pathA = aPath.slice(0, -1).join("']['");
   pathA = pathA ? `['${pathA}']` : pathA;
-  const [pathB] = apath.slice(-1) as [string];
+  const [pathB] = aPath.slice(-1) as [string];
   const stringA = `(res${pathA}, '${pathB}')`;
   const hasString = `HAS${stringA}`;
 
   const rev = document._rev;
   pointer.set(document, path as string, null);
 
-  const name = apath.pop();
-  const spath = pointer.compile(apath) || null;
+  const name = aPath.pop();
+  const sPath = pointer.compile(aPath) || null;
   const hasObject = (await (
     await database.query({
       query: `
@@ -725,11 +728,11 @@ export async function deletePartialResource(
           LET start = FIRST(
             FOR node IN ${graphNodes}
               LET path = node.path || null
-              FILTER node['resource_id'] == ${id} AND path == ${spath || null}
+              FILTER node['resource_id'] == ${id} AND path == ${sPath ?? null}
               RETURN node._id
           )
           LET vs = (
-            FOR v, e, p IN 1..${MAX_DEPTH} OUTBOUND start ${edges}
+            FOR v, e, p IN 1..${MAX_DEPTH} OUTBOUND start ${edgesCollection}
               OPTIONS { bfs: true, uniqueVertices: 'global' }
               FILTER p.edges[0].name == ${name}
               FILTER p.vertices[*].resource_id ALL == ${id}
@@ -737,19 +740,19 @@ export async function deletePartialResource(
           )
 
           LET estart = (
-            FOR v, e IN 1..1 OUTBOUND start ${edges}
+            FOR v, e IN 1..1 OUTBOUND start ${edgesCollection}
               FILTER e.name == ${name}
               RETURN e
           )
           LET ev = (
             FOR vd IN vs
-              FOR v, e IN 1..1 ANY vd ${edges}
+              FOR v, e IN 1..1 ANY vd ${edgesCollection}
                 RETURN e
           )
 
           LET es = (
             FOR e IN APPEND(ev, estart)
-              REMOVE e IN ${edges}
+              REMOVE e IN ${edgesCollection}
           )
           LET vd = (
             FOR v IN vs
@@ -774,10 +777,12 @@ export async function deletePartialResource(
 
 // TODO: Better way to handler errors?
 // ErrorNum from: https://docs.arangodb.com/2.8/ErrorCodes/
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export const NotFoundError = {
   name: 'ArangoError',
   errorNum: 1202,
 };
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export const UniqueConstraintError = {
   name: 'ArangoError',
   errorNum: 1210,

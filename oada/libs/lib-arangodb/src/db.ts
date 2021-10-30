@@ -15,24 +15,27 @@
  * limitations under the License.
  */
 
+/* eslint-disable unicorn/prevent-abbreviations */
+
 import { setTimeout } from 'node:timers/promises';
 
 import config from './config.js';
 
-import { Database } from 'arangojs';
 import type { AqlQuery } from 'arangojs/aql';
-import type { QueryOptions } from 'arangojs/database';
 import Bluebird from 'bluebird';
+import { Database } from 'arangojs';
+import type { QueryOptions } from 'arangojs/database';
 import debug from 'debug';
 
 const trace = debug('arangodb#aql:trace');
 
 const { profile } = config.get('arangodb.aql');
 class DatabaseWrapper extends Database {
-  // @ts-expect-error
+  // @ts-expect-error nonsense
   override async query(query: AqlQuery, options: QueryOptions = {}) {
     let tries = 0;
     const tryquery: () => ReturnType<Database['query']> = async () =>
+      // eslint-disable-next-line github/no-then
       Bluebird.resolve(super.query(query, { profile, ...options })).catch(
         DeadlockError,
         async (error: unknown) => {
@@ -42,7 +45,6 @@ class DatabaseWrapper extends Database {
 
           // Warn(`Retrying query due to deadlock (retry #${tries})`, err);
           // There is no eval here...
-          // eslint-disable-next-line @typescript-eslint/no-implied-eval
           await setTimeout(deadlockDelay);
           return tryquery();
         }
@@ -71,6 +73,7 @@ const database = new DatabaseWrapper({
 // Automatically retry queries on deadlock?
 const deadlockRetries = config.get('arangodb.retry.deadlock.retries');
 const deadlockDelay = config.get('arangodb.retry.deadlock.delay');
+// eslint-disable-next-line @typescript-eslint/naming-convention
 const DeadlockError = {
   name: 'ArangoError',
   errorNum: 29,

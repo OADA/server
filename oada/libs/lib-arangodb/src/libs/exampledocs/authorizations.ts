@@ -15,6 +15,8 @@
  * limitations under the License.
  */
 
+/* eslint-disable sonarjs/no-duplicate-string */
+
 export default [
   {
     _id: 'authorizations/default:authorization-123',

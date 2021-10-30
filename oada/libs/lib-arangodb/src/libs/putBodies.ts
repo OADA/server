@@ -36,5 +36,5 @@ export async function getPutBody(id: string): Promise<unknown> {
 }
 
 export async function removePutBody(id: string): Promise<void> {
-  return void (await collection.remove(id));
+  await collection.remove(id);
 }

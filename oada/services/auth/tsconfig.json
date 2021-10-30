@@ -1,0 +1,8 @@
+{
+  "extends": "../../tsconfig.json",
+  "references": [
+    { "path": "../../libs/pino-debug" },
+    { "path": "../../libs/lib-config" },
+    { "path": "../../libs/lib-arangodb" }
+  ]
+}

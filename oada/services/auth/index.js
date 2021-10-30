@@ -15,8 +15,6 @@
  * limitations under the License.
  */
 
-'use strict';
-
 // The config needs to know whether to look for command-line arguments or not,
 // so set isLibrary in global scope before requiring.
 global.isLibrary = require.main !== module;
@@ -61,7 +59,7 @@ const axios = require('axios');
 const { middleware: oadaError } = require('oada-error');
 
 // Use the oada-id-client for the openidconnect code flow:
-const { middleware: oadaidclient } = require('@oada/oada-id-client');
+const { middleware: oadaIDClient } = require('@oada/oada-id-client');
 
 // -----------------------------------------------------------------------
 // Load all the domain configs at startup
@@ -126,7 +124,7 @@ module.exports = function (config_) {
 
   app.use(morgan('combined'));
   app.use(bodyParser.urlencoded({ extended: true }));
-  const arangourl = new URL(config.get('arangodb.connectionString'));
+  const arangoURL = new URL(config.get('arangodb.connectionString'));
   app.use(
     session({
       secret: config.get('auth.server.sessionSecret'),
@@ -134,9 +132,9 @@ module.exports = function (config_) {
       saveUninitialized: false,
       store: new ArangoSessionStore({
         db: {
-          host: arangourl.hostname,
-          schema: arangourl.protocol.replace(':', ''),
-          port: arangourl.port,
+          host: arangoURL.hostname,
+          schema: arangoURL.protocol.replace(':', ''),
+          port: arangoURL.port,
           collection: config.get('arangodb.collections.sessions.name'),
           database: config.get('arangodb.database'),
         },
@@ -209,7 +207,7 @@ module.exports = function (config_) {
       );
       trace('login endpoint: Session = %O', request.session);
       res.header('X-Frame-Options', 'SAMEORIGIN');
-      const iserror = Boolean(request.query.error) || request.session.errormsg;
+      const isError = Boolean(request.query.error) || request.session.errormsg;
       const errormsg = request.session.errormsg || 'Login failed.';
       if (request.session.errormsg) {
         // Reset for next time
@@ -235,7 +233,7 @@ module.exports = function (config_) {
         tagline: domain_config.tagline,
         color: domain_config.color || '#FFFFFF',
         idService: domain_config.idService, // Has .shortname, .longname
-        iserror,
+        iserror: isError,
         errormsg,
 
         // Domain_hint can be set when authorization server redirects to login
@@ -294,7 +292,7 @@ module.exports = function (config_) {
           )}: calling getIDToken for dest_domain = %s`,
           destination_domain
         );
-        return oadaidclient.getIDToken(destination_domain, options)(
+        return oadaIDClient.getIDToken(destination_domain, options)(
           request,
           res,
           next
@@ -318,7 +316,7 @@ module.exports = function (config_) {
         next();
         // Get the token for the user
       },
-      oadaidclient.handleRedirect(),
+      oadaIDClient.handleRedirect(),
       async (request, res, next) => {
         // "Token" is both an id token and an access token
         const { id_token: idToken, access_token: token } = request.token;
@@ -327,7 +325,7 @@ module.exports = function (config_) {
         // Actually log the user in here, maybe get user info as well
         // Get the user info:
         //  proper method is to ask again for profile permission
-        //  after getting the idtoken
+        //  after getting the idToken
         //  and determining we don't know this ID token.
         //  If we do know it, don't worry about it
         info(
@@ -410,12 +408,12 @@ module.exports = function (config_) {
 
     // Statically serve all the domains-enabled/*/auth-www folders:
     for (const domain of Object.keys(domainConfigs)) {
-      const ondisk = `${config.get('domainsDir')}/${domain}/auth-www`;
+      const onDisk = `${config.get('domainsDir')}/${domain}/auth-www`;
       const webpath = `${config.get('auth.endpointsPrefix')}/domains/${domain}`;
       trace(
-        `Serving domain ${domain}/auth-www statically, on disk = ${ondisk}, webpath = ${webpath}`
+        `Serving domain ${domain}/auth-www statically, on disk = ${onDisk}, webpath = ${webpath}`
       );
-      app.use(webpath, express.static(ondisk));
+      app.use(webpath, express.static(onDisk));
     }
   }
 

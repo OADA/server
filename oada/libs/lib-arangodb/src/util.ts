@@ -23,7 +23,7 @@ export function sanitizeResult<T extends {}>(
   result: T
 ): Omit<T & { _rev?: number }, '_key' | '_oada_rev'> {
   if (!(result && typeof result === 'object')) {
-    // @ts-expect-error
+    // @ts-expect-error nonsense
     return result;
   }
 

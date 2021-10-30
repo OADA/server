@@ -75,6 +75,7 @@ export async function findById(
   id: string,
   options?: CollectionReadOptions
 ): Promise<User | null> {
+  // eslint-disable-next-line promise/valid-params
   const result = await Bluebird.resolve(
     users.document(id, options) as Promise<User>
   ).catch({ code: 404 }, () => null);
@@ -86,7 +87,9 @@ export async function exists(id: string): Promise<boolean> {
   return users.documentExists(id);
 }
 
-export async function findByUsername(username: string): Promise<User | null> {
+export async function findByUsername(
+  username: string
+): Promise<User | undefined> {
   const user = (await (
     await database.query(
       aql`
@@ -97,22 +100,22 @@ export async function findByUsername(username: string): Promise<User | null> {
   ).next()) as User;
 
   if (!user) {
-    return null;
+    return;
   }
 
   return sanitizeResult(user);
 }
 
 export async function findByOIDCUsername(
-  oidcusername: string,
-  oidcdomain: string
+  oidcUsername: string,
+  oidcDomain: string
 ): Promise<User | null> {
   const user = (await (
     await database.query(
       aql`
         FOR u IN ${users}
-          FILTER u.oidc.username == ${oidcusername}
-          FILTER u.oidc.iss == ${oidcdomain}
+          FILTER u.oidc.username == ${oidcUsername}
+          FILTER u.oidc.iss == ${oidcDomain}
           RETURN u`
     )
   ).next()) as User;
@@ -125,7 +128,7 @@ export async function findByOIDCUsername(
 }
 
 /**
- * Expects idtoken to be at least
+ * Expects idToken to be at least
  * { sub: "fkj2o", iss: "https://localhost/example" }
  */
 export async function findByOIDCToken(idToken: {
@@ -174,7 +177,7 @@ export async function create(u: Omit<User, '_id' | '_rev'>): Promise<User> {
 
 // Use this with care because it will completely remove that user document.
 export async function remove(u: User): Promise<void> {
-  return void (await users.remove(u));
+  await users.remove(u);
 }
 
 export async function update(
@@ -202,10 +205,12 @@ export function hashPw(pw: string): string {
 
 // TODO: Better way to handler errors?
 // ErrorNum from: https://docs.arangodb.com/2.8/ErrorCodes/
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export const NotFoundError = {
   name: 'ArangoError',
   errorNum: 1202,
 };
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export const UniqueConstraintError = {
   name: 'ArangoError',
   errorNum: 1210,

@@ -62,7 +62,7 @@ const clients = database.collection(
   config.get('arangodb.collections.clients.name')
 );
 
-export async function findById(id: string): Promise<Client | null> {
+export async function findById(id: string): Promise<Client | undefined> {
   const client = (await (
     await database.query(
       aql`
@@ -70,10 +70,10 @@ export async function findById(id: string): Promise<Client | null> {
       FILTER c.clientId == ${id}
       RETURN c`
     )
-  ).next()) as Client | null;
+  ).next()) as Client | undefined;
 
   if (!client) {
-    return null;
+    return undefined;
   }
 
   return sanitizeResult(client);

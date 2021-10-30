@@ -22,8 +22,10 @@
  * with `npm run init`.
  */
 
-import { hashPw } from './libs/users.js';
+/* eslint-disable no-await-in-loop */
+
 import config from './config.js';
+import { hashPw } from './libs/users.js';
 
 import arangojs from 'arangojs';
 import debug from 'debug';
@@ -94,7 +96,7 @@ export async function run(): Promise<void> {
       const databaseCols = await database.listCollections();
       trace('Found collections, looking for the ones we need');
       for (const c of colsarr) {
-        if (databaseCols.find((d) => d.name === c.name)) {
+        if (databaseCols.some((d) => d.name === c.name)) {
           trace('Collection %s exists', c.name);
           continue;
         }
@@ -121,7 +123,7 @@ export async function run(): Promise<void> {
           const indexname = typeof ci === 'string' ? ci : ci.name;
           const unique = typeof ci === 'string' ? true : ci.unique;
           const sparse = typeof ci === 'string' ? true : ci.sparse;
-          if (databaseIndexes.find((dbi) => equal(dbi.fields, [indexname]))) {
+          if (databaseIndexes.some((dbi) => equal(dbi.fields, [indexname]))) {
             trace('Index %s exists on collection %s', indexname, c.name);
             continue;
           }
@@ -129,24 +131,13 @@ export async function run(): Promise<void> {
           // Otherwise, create the index
           trace('Creating %s index on %s', indexname, c.name);
           const fields = Array.isArray(indexname) ? indexname : [indexname];
-          // IDK what this line is...
-          if ('collection' in c) {
-            await database.collection(c.name).ensureIndex({
-              type: 'hash',
-              fields,
-              unique,
-              sparse,
-            });
-            trace('Created %s index on %s', indexname, c.name);
-          } else {
-            await database.collection(c.name).ensureIndex({
-              type: 'hash',
-              fields,
-              unique,
-              sparse,
-            });
-            trace('Created %s index on %s', indexname, c.name);
-          }
+          await database.collection(c.name).ensureIndex({
+            type: 'hash',
+            fields,
+            unique,
+            sparse,
+          });
+          trace('Created %s index on %s', indexname, c.name);
         }
 
         // ----------------------------------------------------------------------
@@ -166,9 +157,9 @@ export async function run(): Promise<void> {
         };
         // Override global ensureDefaults if this column explicitly specifies a value for it:
         const colSpecificEnsureDefaults =
-          typeof colinfo.ensureDefaults !== 'undefined'
-            ? colinfo.ensureDefaults
-            : ensureDefaults;
+          typeof colinfo.ensureDefaults === 'undefined'
+            ? ensureDefaults
+            : colinfo.ensureDefaults;
 
         // TODO: clean up this any nonsense
         for (const document of data) {
@@ -214,7 +205,7 @@ export async function run(): Promise<void> {
             );
             try {
               await database.collection(colname).remove(document._key);
-            } catch (error) {
+            } catch (error: unknown) {
               warn(
                 'Failed to remove default doc %s from collection %s. Error was: %O',
                 document._key,

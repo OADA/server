@@ -33,11 +33,12 @@ import ksuid from 'ksuid';
 
 export { ConstructorOptions };
 export class Requester extends Base {
-  private timeouts: Record<string, number>;
   protected requests: Map<
     string,
-    (error: Error | null, res: KafkaBase) => void
+    (error: Error | undefined, res: KafkaBase) => void
   > = new Map();
+
+  private timeouts: Record<string, number>;
 
   constructor({
     consumeTopic,
@@ -49,9 +50,9 @@ export class Requester extends Base {
 
     super.on(DATA, (resp) => {
       const id = resp[REQ_ID_KEY];
-      const done = id && this.requests.get(id);
+      const done = id ? this.requests.get(id) : undefined;
 
-      done && done(null, resp);
+      done?.(undefined, resp);
     });
 
     this.timeouts = {};

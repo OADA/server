@@ -44,7 +44,7 @@ export interface TokenResponse {
 export default async function tokenLookup(
   request: TokenRequest
 ): Promise<TokenResponse> {
-  const res: TokenResponse = {
+  const response: TokenResponse = {
     // Type: 'http_response',
     token: request.token,
     token_exists: false,
@@ -64,7 +64,7 @@ export default async function tokenLookup(
 
   if (typeof request.token === 'undefined') {
     trace('No token supplied with the request.');
-    return res;
+    return response;
   }
 
   // Get token from db.  Later on, we should speed this up
@@ -75,8 +75,8 @@ export default async function tokenLookup(
 
   if (!t) {
     warn('Token %s does not exist.', request.token);
-    res.token = undefined;
-    return res;
+    response.token = undefined;
+    return response;
   }
 
   if (!t._id) {
@@ -110,16 +110,16 @@ export default async function tokenLookup(
 
   trace('token expired? %s', expired);
 
-  res.token_exists = true;
+  response.token_exists = true;
   trace('received authorization, _id = %s', t._id);
-  res.doc.authorizationid = t._id;
-  res.doc.client_id = t.clientId;
-  res.doc.user_id = t.user._id || res.doc.user_id;
-  res.doc.user_scope = t.user.scope;
-  res.doc.bookmarks_id = t.user.bookmarks._id || res.doc.bookmarks_id;
-  res.doc.shares_id = t.user.shares._id || res.doc.shares_id;
-  res.doc.scope = t.scope || res.doc.scope;
-  res.doc.expired = expired;
+  response.doc.authorizationid = t._id;
+  response.doc.client_id = t.clientId;
+  response.doc.user_id = t.user._id || response.doc.user_id;
+  response.doc.user_scope = t.user.scope;
+  response.doc.bookmarks_id = t.user.bookmarks._id || response.doc.bookmarks_id;
+  response.doc.shares_id = t.user.shares._id || response.doc.shares_id;
+  response.doc.scope = t.scope || response.doc.scope;
+  response.doc.expired = expired;
 
-  return res;
+  return response;
 }

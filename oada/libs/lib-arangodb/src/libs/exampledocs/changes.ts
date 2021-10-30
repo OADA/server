@@ -15,10 +15,13 @@
  * limitations under the License.
  */
 
+/* eslint-disable sonarjs/no-duplicate-string */
+
 export default [
   // ------------------------------------------------
   // Bookmarks document (for frank):
   {
+    // eslint-disable-next-line no-secrets/no-secrets
     _id: 'changes/default:resources_bookmarks_123',
     resource_id: 'resources/default:resources_bookmarks_123',
     number: 1,
@@ -52,6 +55,7 @@ export default [
   },
 
   {
+    // eslint-disable-next-line no-secrets/no-secrets
     _id: 'changes/default:resources_bookmarks_124',
     resource_id: 'resources/default:resources_bookmarks_124',
     hash: 'b',
@@ -80,6 +84,7 @@ export default [
 
   // User sam's bookmarks changes doc
   {
+    // eslint-disable-next-line no-secrets/no-secrets
     _id: 'changes/default:resources_bookmarks_321',
     resource_id: 'resources/default:resources_bookmarks_321',
     number: 1,

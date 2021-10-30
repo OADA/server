@@ -15,10 +15,11 @@
  * limitations under the License.
  */
 
+// eslint-disable-next-line import/no-namespace
+import * as users from './users.js';
 import config from '../config.js';
 import { db as database } from '../db.js';
 import { sanitizeResult } from '../util.js';
-import * as users from './users.js';
 
 import { aql } from 'arangojs';
 import debug from 'debug';
@@ -41,18 +42,18 @@ export interface Authorization {
   revoked?: boolean;
 }
 
-export async function findById(id: string): Promise<Authorization | null> {
+export async function findById(id: string): Promise<Authorization | undefined> {
   return (await (
     await database.query(aql`
       FOR t IN ${authorizations}
         FILTER t._key == ${id}
         RETURN UNSET(t, '_key')`)
-  ).next()) as Authorization | null;
+  ).next()) as Authorization | undefined;
 }
 
 export async function findByToken(
   token: string
-): Promise<(Authorization & { user: users.User }) | null> {
+): Promise<(Authorization & { user: users.User }) | undefined> {
   const t = (await (
     await database.query(
       aql`
@@ -63,7 +64,7 @@ export async function findByToken(
   ).next()) as Authorization | null;
 
   if (!t) {
-    return null;
+    return undefined;
   }
 
   // No longer needed with new _id scheme
@@ -92,10 +93,13 @@ export async function findByUser(
 export async function save({
   _id,
   ...t
-}: Partial<Authorization> & { token: string }): Promise<Authorization | null> {
+}: Partial<Authorization> & { token: string }): Promise<
+  Authorization | undefined
+> {
   // Make sure nothing but id is in user info
   const user = t.user && { _id: t.user._id };
   // Have to get rid of illegal document handle _id
+  // eslint-disable-next-line @typescript-eslint/naming-convention
   const _key = _id?.replace(/^authorizations\//, '');
 
   trace('save: Replacing/Inserting token %s', t);

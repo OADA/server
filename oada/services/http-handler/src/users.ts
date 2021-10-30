@@ -31,16 +31,40 @@ export interface Options {
   prefix: string;
 }
 
-const plugin: FastifyPluginAsync<Options> = async function (fastify, options) {
-  function sanitizeDatabaseResult(user: users.User | null) {
-    if (!user) {
-      return null;
-    }
-
-    const { _rev, password, ...u } = user;
-    return u;
+function sanitizeDatabaseResult(user: users.User | undefined) {
+  if (!user) {
+    return;
   }
 
+  const { _rev, password, ...u } = user;
+  return u;
+}
+
+async function requestUserWrite(request: FastifyRequest, id: string) {
+  const authorization = request.requestContext.get('user');
+  // TODO: Sanitize POST body?
+  const resp = (await requester.send(
+    {
+      connection_id: request.id as string,
+      domain: request.hostname,
+      token: authorization,
+      authorization,
+      user: request.body,
+      userid: id, // Need for PUT, ignored for POST
+    } as UserRequest,
+    config.get('kafka.topics.userRequest')
+  )) as UserResponse;
+
+  // eslint-disable-next-line sonarjs/no-small-switch
+  switch (resp.code) {
+    case 'success':
+      return resp;
+    default:
+      throw new Error(`write failed with code ${resp.code}`);
+  }
+}
+
+const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
   // Parse JSON content types
   fastify.addContentTypeParser(
     ['json', '+json'],
@@ -49,32 +73,10 @@ const plugin: FastifyPluginAsync<Options> = async function (fastify, options) {
       bodyLimit: 20 * 1_048_576,
     },
     (_, body, done) => {
+      // eslint-disable-next-line unicorn/no-null
       done(null, body);
     }
   );
-
-  async function requestUserWrite(request: FastifyRequest, id: string) {
-    const authorization = request.requestContext.get('user');
-    // TODO: Sanitize POST body?
-    const resp = (await requester.send(
-      {
-        connection_id: request.id as string,
-        domain: request.hostname,
-        token: authorization,
-        authorization,
-        user: request.body,
-        userid: id, // Need for PUT, ignored for POST
-      } as UserRequest,
-      config.get('kafka.topics.userRequest')
-    )) as UserResponse;
-
-    switch (resp.code) {
-      case 'success':
-        return resp;
-      default:
-        throw new Error(`write failed with code ${resp.code}`);
-    }
-  }
 
   fastify.post('/', async (request, reply) => {
     request.log.info('Users POST, body = %O', request.body);

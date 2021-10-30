@@ -26,46 +26,46 @@ export interface Options {
   prefix: string;
 }
 
-const plugin: FastifyPluginAsync<Options> = async function (fastify, options) {
-  async function addClientToAuth(
-    request: FastifyRequest,
-    auth: authorizations.Authorization | null
-  ) {
-    if (auth?.clientId) {
-      request.log.trace(
-        'GET /%s: authorization has a client, retrieving',
-        auth._id
-      );
-      try {
-        const client = await clients.findById(auth.clientId);
-        // Store client from db into authorization object
-        return { client, ...auth };
-      } catch (error) {
-        request.log.error('ERROR: authorization clientId not found in DB');
-        throw error;
-      }
-    } else {
-      request.log.trace(
-        'GET /%s: authorization DOES NOT have a clientId',
-        auth?._id
-      );
-      return auth;
+async function addClientToAuth(
+  request: FastifyRequest,
+  auth: authorizations.Authorization | null
+) {
+  if (auth?.clientId) {
+    request.log.trace(
+      'GET /%s: authorization has a client, retrieving',
+      auth._id
+    );
+    try {
+      const client = await clients.findById(auth.clientId);
+      // Store client from db into authorization object
+      return { client, ...auth };
+    } catch (error: unknown) {
+      request.log.error('ERROR: authorization clientId not found in DB');
+      throw error;
     }
+  } else {
+    request.log.trace(
+      'GET /%s: authorization DOES NOT have a clientId',
+      auth?._id
+    );
+    return auth;
   }
+}
 
+const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
   // Authorizations routes
   // TODO: How the heck should this work??
   fastify.get('/', async (request, reply) => {
     const { user_id: userid } = request.requestContext.get('user')!;
     const auths = await authorizations.findByUser(userid);
 
-    const res: Record<string, authorizations.Authorization | null> = {};
+    const response: Record<string, authorizations.Authorization | null> = {};
     for await (const auth of auths) {
       const k = auth._id.replace(/^authorizations\//, '');
-      res[k] = await addClientToAuth(request, auth);
+      response[k] = await addClientToAuth(request, auth);
     }
 
-    return reply.send(res);
+    return reply.send(response);
   });
 
   fastify.get('/:authId', async (request, reply) => {
@@ -81,8 +81,8 @@ const plugin: FastifyPluginAsync<Options> = async function (fastify, options) {
 
     // Get the full client out of the DB to send out with this auth document
     // That way anybody listing authorizations can print the name, etc. of the client
-    const res = await addClientToAuth(request, auth);
-    return reply.send(res);
+    const response = await addClientToAuth(request, auth);
+    return reply.send(response);
   });
 
   // Parse JSON content types
@@ -93,6 +93,7 @@ const plugin: FastifyPluginAsync<Options> = async function (fastify, options) {
       bodyLimit: 20 * 1_048_576,
     },
     (_, body, done) => {
+      // eslint-disable-next-line unicorn/no-null
       done(null, body);
     }
   );
@@ -118,7 +119,7 @@ const plugin: FastifyPluginAsync<Options> = async function (fastify, options) {
     // Don't allow making tokens for other users unless admin.user
     if (auth.user._id !== user.user_id) {
       if (
-        !user.scope.find(
+        !user.scope.some(
           (s) => s === 'oada.admin.user:all' || 'oada.admin.user:write'
         )
       ) {

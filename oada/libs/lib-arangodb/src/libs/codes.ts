@@ -15,10 +15,10 @@
  * limitations under the License.
  */
 
+import { User, findById } from './users.js';
 import config from '../config.js';
 import { db as database } from '../db.js';
 import { sanitizeResult } from '../util.js';
-import * as users from './users.js';
 
 import { aql } from 'arangojs';
 
@@ -40,7 +40,7 @@ const codes = database.collection(
 
 export async function findByCode(
   code: string
-): Promise<(Code & { user: users.User }) | null> {
+): Promise<(Code & { user: User }) | undefined> {
   const c = (await (
     await database.query(
       aql`
@@ -51,13 +51,13 @@ export async function findByCode(
   ).next()) as Code | null;
 
   if (!c) {
-    return null;
+    return undefined;
   }
 
   // Removed this since we now have arango's _id === oada's _id
   // c._id = c._key;
 
-  const user = await users.findById(c.user._id);
+  const user = await findById(c.user._id);
   if (!user) {
     throw new Error(`Invalid user ${c.user._id} for code ${code}`);
   }
@@ -67,7 +67,7 @@ export async function findByCode(
 
 export async function save(
   code: Code
-): Promise<(Code & { user: users.User }) | null> {
+): Promise<(Code & { user: User }) | undefined> {
   await database.query(aql`
     UPSERT { code: ${code.code} }
     INSERT ${code}

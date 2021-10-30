@@ -15,6 +15,8 @@
  * limitations under the License.
  */
 
+/* eslint-disable unicorn/no-null */
+
 import { libConfig } from '@oada/lib-config';
 
 import type { CreateCollectionOptions } from 'arangojs/collection';
@@ -33,6 +35,7 @@ interface Collection {
 /**
  * @todo actually validate format?
  */
+// eslint-disable-next-line @typescript-eslint/no-empty-function
 export function collection(_value: unknown): asserts _value is Collection {}
 
 const config = libConfig({
@@ -58,6 +61,7 @@ const config = libConfig({
       default: 'oada',
       env: 'ARANGODB_DATABASE',
     },
+    // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
     collections: {
       users: {
         format: Object, // Collection,,
@@ -187,6 +191,7 @@ const config = libConfig({
         default: '$2a$10$l64QftVz6.7KR5BXNc29IO',
       },
       defaultData: {
+        // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
         default: {} as Record<string, string>,
       },
     },

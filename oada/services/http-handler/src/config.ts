@@ -44,6 +44,7 @@ const config = libConfig({
   'kafka': {
     topics: {
       doc: 'Kafka topic names to use',
+      // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
       default: {
         tokenRequest: 'token_request',
         graphRequest: 'graph_request',

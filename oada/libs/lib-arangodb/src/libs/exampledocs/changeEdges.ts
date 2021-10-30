@@ -37,6 +37,7 @@ export default [
   // --------------------------------------------------------
   // /bookmarks/rocks/rocks-index/90j2klfdjss
   {
+    // eslint-disable-next-line no-secrets/no-secrets
     _id: 'changeEdges/default:changeEdges_90j2klfdjss_123',
     path: '/90jsklfdjss',
     _from: 'changes/resources:default:resources_rocks_123:rocks-index',
