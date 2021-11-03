@@ -24,7 +24,7 @@
     "chalk": "^4.1.2",
     "clone-deep": "^4.0.1",
     "debug": "^4.3.2",
-    "ksuid": "^2.0.0",
+    "ksuid": "^3.0.0",
     "minimist": "^1.2.5",
     "promptly": "^3.2.0",
     "tslib": "^2.3.1"
