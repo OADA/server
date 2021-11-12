@@ -33,7 +33,12 @@ import type {} from './server.js';
 import config from './config.js';
 import requester from './requester.js';
 
-import type { FastifyPluginAsync, FastifyReply, FastifyRequest } from 'fastify';
+import type {
+  FastifyPluginAsync,
+  FastifyReply,
+  FastifyRequest,
+  HTTPMethods,
+} from 'fastify';
 import cacache from 'cacache';
 import { is } from 'type-is';
 import ksuid from 'ksuid';
@@ -393,12 +398,51 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
   });
 
   /**
+   *
+   */
+  fastify.route({
+    constraints: {
+      'oada-ensure': 'resource',
+    },
+    url: '*',
+    method: ['PUT', 'POST'],
+    async handler(request) {
+      const path = request.requestContext.get('oadaPath')!;
+      const {
+        method,
+        headers: { 'x-oada-ensure': _, ...headers },
+        body,
+      } = request;
+      // Create a new resource?
+      const {
+        headers: { location },
+      } = await fastify.inject({
+        method: 'post',
+        path: '/resources',
+        headers,
+        // @ts-ignore
+        payload: body,
+      });
+      // Link resource at original path
+      return fastify.inject({
+        method: method as HTTPMethods,
+        path,
+        headers,
+        payload: JSON.stringify({
+          _id: location?.toString().slice(1),
+          _rev: 0,
+        }),
+      });
+    },
+  });
+
+  /**
    * Handle PUT/POST
    */
   fastify.route({
     url: '*',
     method: ['PUT', 'POST'],
-    async handler(request: FastifyRequest, reply: FastifyReply) {
+    async handler(request, reply) {
       if (!request.headers['content-type']) {
         reply.badRequest('No content type specified');
         return;

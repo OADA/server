@@ -69,6 +69,7 @@
     "@types/uuid": "^8.3.1",
     "@types/ws": "^8.2.0",
     "connect": "^3.7.0",
+    "find-my-way": "^4.3.3",
     "light-my-request": "^4.6.0"
   }
 }

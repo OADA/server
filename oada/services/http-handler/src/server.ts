@@ -27,6 +27,7 @@ import resources from './resources.js';
 import users from './users.js';
 import websockets from './websockets.js';
 
+import type { HTTPVersion, Handler } from 'find-my-way';
 import fastify, { FastifyRequest } from 'fastify';
 import bearerAuth from 'fastify-bearer-auth';
 import cors from 'fastify-cors';
@@ -42,6 +43,34 @@ const logger = pino({ name: 'http-handler' });
 export const app = fastify({
   logger,
   ignoreTrailingSlash: true,
+  constraints: {
+    'oada-ensure': {
+      name: 'oada-ensure',
+      storage() {
+        const handlers: Map<unknown, Handler<HTTPVersion>> = new Map();
+        return {
+          get(key) {
+            // eslint-disable-next-line unicorn/no-null
+            return handlers.get(key) ?? null;
+          },
+          set(key, value) {
+            handlers.set(key, value);
+          },
+          del(key) {
+            handlers.delete(key);
+          },
+          empty() {
+            handlers.clear();
+          },
+        };
+      },
+      // eslint-disable-next-line @typescript-eslint/no-empty-function
+      validate(_value) {},
+      deriveConstraint(request) {
+        return request.headers['x-oada-ensure'];
+      },
+    },
+  },
 });
 
 export async function start(): Promise<void> {

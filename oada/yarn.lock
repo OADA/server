@@ -538,6 +538,7 @@ __metadata:
     fastify-request-context: ^2.2.0
     fastify-sensible: ^3.1.2
     fastify-websocket: ^4.0.0
+    find-my-way: ^4.3.3
     jsonpointer: ^5.0.0
     ksuid: ^3.0.0
     light-my-request: ^4.6.0
@@ -4184,7 +4185,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"find-my-way@npm:^4.1.0":
+"find-my-way@npm:^4.1.0, find-my-way@npm:^4.3.3":
   version: 4.3.3
   resolution: "find-my-way@npm:4.3.3"
   dependencies:
