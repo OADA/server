@@ -73,6 +73,7 @@
   "settings": {
     "search.exclude": {
       ".actrc": true,
+      ".history": true,
       "**/.DS_Store": true,
       "**/.grunt": true,
       "**/.lock-wscript": true,
@@ -105,6 +106,7 @@
     "eslint.nodePath": "../../.yarn/sdks",
     "files.exclude": {
       ".actrc": true,
+      ".history": true,
       "**/.DS_Store": true,
       "**/.grunt": true,
       "**/.lock-wscript": true,

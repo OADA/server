@@ -3,6 +3,8 @@ package.lock
 *.log
 .DS_Store
 
+.history
+
 # local env file
 /.env
 # local override file

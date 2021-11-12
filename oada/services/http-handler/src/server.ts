@@ -69,6 +69,7 @@ export const app = fastify({
       deriveConstraint(request) {
         return request.headers['x-oada-ensure'];
       },
+      mustMatchWhenDerived: true,
     },
   },
 });

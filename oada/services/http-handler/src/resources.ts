@@ -33,12 +33,7 @@ import type {} from './server.js';
 import config from './config.js';
 import requester from './requester.js';
 
-import type {
-  FastifyPluginAsync,
-  FastifyReply,
-  FastifyRequest,
-  HTTPMethods,
-} from 'fastify';
+import type { FastifyPluginAsync, FastifyReply, FastifyRequest } from 'fastify';
 import cacache from 'cacache';
 import { is } from 'type-is';
 import ksuid from 'ksuid';
@@ -402,20 +397,19 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
    */
   fastify.route({
     constraints: {
-      'oadaEnsure': 'resource',
+      oadaEnsure: 'resource',
     },
     url: '*',
     method: ['PUT', 'POST'],
-    async handler(request) {
+    async handler(request, reply) {
       const path = request.requestContext.get('oadaPath')!;
       const {
-        method,
-        headers: { 'x-oadaEnsure': _, ...headers },
+        headers: { 'x-oada-ensure': _, 'content-length': _cl, ...headers },
         body,
       } = request;
       // Create a new resource?
       const {
-        headers: { location },
+        headers: { 'content-location': location },
       } = await fastify.inject({
         method: 'post',
         path: '/resources',
@@ -424,8 +418,8 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
         payload: body,
       });
       // Link resource at original path
-      return fastify.inject({
-        method: method as HTTPMethods,
+      const response = await fastify.inject({
+        method: 'put',
         path,
         headers,
         payload: JSON.stringify({
@@ -433,6 +427,7 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
           _rev: 0,
         }),
       });
+      await reply.headers(response.headers).status(response.statusCode).send();
     },
   });
 
