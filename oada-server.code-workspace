@@ -141,6 +141,7 @@
       "cacache",
       "fastify",
       "jwks",
+      "kafa",
       "Kafkajs",
       "ksuid",
       "nosemgrep",

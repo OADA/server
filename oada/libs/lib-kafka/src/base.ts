@@ -20,8 +20,6 @@ import process from 'node:process';
 
 import config from './config.js';
 
-import Bluebird from 'bluebird';
-import debug from 'debug';
 import {
   Consumer,
   EachMessagePayload,
@@ -29,6 +27,8 @@ import {
   Producer,
   logLevel,
 } from 'kafkajs';
+import Bluebird from 'bluebird';
+import debug from 'debug';
 
 // Const info = debug('@oada/lib-kafka:info');
 const error = debug('@oada/lib-kafka:error');
@@ -36,16 +36,15 @@ const error = debug('@oada/lib-kafka:error');
 const REQ_ID_KEY = 'connection_id';
 const CANCEL_KEY = 'cancel_request';
 
-const CONNECT = Symbol('kafka-lib-connect');
 const DATA = Symbol('kafa-lib-data');
 
 function topicTimeout(topic: string): number {
   let timeout = config.get('kafka.timeouts.default');
 
   const topics = config.get('kafka.topics');
-  for (const topick of Object.keys(topics)) {
-    if (topics[topick] === topic) {
-      timeout = config.get('kafka.timeouts')[topick] || timeout;
+  for (const [topicK, topicV] of Object.entries(topics)) {
+    if (topicV === topic) {
+      timeout = config.get('kafka.timeouts')[topicK] ?? timeout;
     }
   }
 
@@ -54,8 +53,8 @@ function topicTimeout(topic: string): number {
 
 // Make it die on unhandled error
 // TODO: Figure out what is keeping node from dying on unhandled exception?
-function die(error_: Error) {
-  error(error_, 'Unhandled error');
+function die(reason: Error) {
+  error(reason, 'Unhandled error');
   process.abort();
 }
 
@@ -81,7 +80,7 @@ export interface KafkaBase {
   msgtype?: string;
   code?: string;
   /**
-   * @todo implement multiple paritions
+   * @todo implement multiple partitions
    */
   resp_partition?: 0;
   group?: string;
@@ -96,28 +95,32 @@ type KafkajsDebug = Record<
   keyof Omit<typeof logLevel, 'NOTHING'>,
   debug.Debugger
 >;
-const kafkajsDebugs: Record<string, KafkajsDebug> = {};
+const kafkajsDebugs: Map<string, KafkajsDebug> = new Map();
 function getKafkajsDebug(namespace: string): KafkajsDebug {
-  return (
-    kafkajsDebugs[namespace] ??
-    (kafkajsDebugs[namespace] = {
-      ERROR: debug(`kafkajs:${namespace}:error`),
-      WARN: debug(`kafkajs:${namespace}:warn`),
-      INFO: debug(`kafkajs:${namespace}:info`),
-      DEBUG: debug(`kafkajs:${namespace}:debug`),
-    })
-  );
+  const d = kafkajsDebugs.get(namespace);
+  if (d) {
+    return d;
+  }
+
+  const newDebug = {
+    ERROR: debug(`kafkajs:${namespace}:error`),
+    WARN: debug(`kafkajs:${namespace}:warn`),
+    INFO: debug(`kafkajs:${namespace}:info`),
+    DEBUG: debug(`kafkajs:${namespace}:debug`),
+  };
+  kafkajsDebugs.set(namespace, newDebug);
+  return newDebug;
 }
 
 export class Base extends EventEmitter {
   readonly consumeTopic;
   readonly produceTopic;
   readonly group;
-  private readonly kafka: Kafka;
+  readonly #kafka: Kafka;
+  #done!: (error_?: unknown) => void;
   protected consumer;
   protected producer;
   protected ready: Bluebird<void>;
-  #done!: (error_?: unknown) => void;
 
   constructor({
     consumeTopic,
@@ -132,7 +135,7 @@ export class Base extends EventEmitter {
     this.produceTopic = produceTopic;
     this.group = group;
 
-    this.kafka = new Kafka({
+    this.#kafka = new Kafka({
       /**
        * Make kafkajs logging nicer?
        */
@@ -148,10 +151,10 @@ export class Base extends EventEmitter {
 
     this.consumer =
       consumer ??
-      this.kafka.consumer({
+      this.#kafka.consumer({
         groupId: this.group,
       });
-    this.producer = producer ?? this.kafka.producer();
+    this.producer = producer ?? this.#kafka.producer();
 
     // See: https://github.com/Blizzard/node-rdkafka/issues/222
     // says fixed, but seems to still be an issue for us.
@@ -160,13 +163,13 @@ export class Base extends EventEmitter {
       // Disconnect kafka clients on uncaught exception
       try {
         await this.consumer.disconnect();
-      } catch (error_) {
+      } catch (error_: unknown) {
         error(error_);
       }
 
       try {
         await this.producer.disconnect();
-      } catch (error_) {
+      } catch (error_: unknown) {
         error(error_);
       }
     });
@@ -176,49 +179,23 @@ export class Base extends EventEmitter {
     });
   }
 
-  async [CONNECT](): Promise<void> {
-    try {
-      await this.consumer.connect();
-      await this.producer.connect();
-
-      for (const topic of Array.isArray(this.consumeTopic)
-        ? this.consumeTopic
-        : [this.consumeTopic]) {
-        await this.consumer.subscribe({ topic });
-      }
-
-      await this.consumer.run({
-        // eslint-disable-next-line
-        eachMessage: async (payload) => {
-          // Assume all messages are JSON
-          const resp: unknown =
-            payload.message.value &&
-            JSON.parse(payload.message.value.toString());
-          super.emit(DATA, resp, payload);
-        },
-      });
-    } catch (error_: unknown) {
-      this.#done(error_);
-      return;
-    }
-
-    this.#done();
-  }
-
   override on(
     event: typeof DATA,
     listener: (
       resp: KafkaBase,
       payload: EachMessagePayload,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       ...arguments_: any[]
     ) => unknown
   ): this;
   override on(
     event: string | symbol,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     listener: (...arguments_: any[]) => unknown
   ): this;
   override on(
     event: string | symbol,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     listener: (...arguments_: any[]) => unknown
   ): this {
     if (event === 'error') {
@@ -248,8 +225,8 @@ export class Base extends EventEmitter {
       ...mesg,
     });
 
-    return void this.producer.send({
-      topic: topic || this.produceTopic!,
+    await this.producer.send({
+      topic: topic ?? this.produceTopic!,
       messages: [{ value }],
     });
   }
@@ -258,6 +235,35 @@ export class Base extends EventEmitter {
     await this.consumer.disconnect();
     await this.producer.disconnect();
   }
+
+  protected async connect(): Promise<void> {
+    try {
+      await this.consumer.connect();
+      await this.producer.connect();
+
+      for (const topic of Array.isArray(this.consumeTopic)
+        ? this.consumeTopic
+        : [this.consumeTopic]) {
+        // eslint-disable-next-line no-await-in-loop
+        await this.consumer.subscribe({ topic });
+      }
+
+      await this.consumer.run({
+        eachMessage: async (payload) => {
+          // Assume all messages are JSON
+          const resp: unknown =
+            payload.message.value &&
+            JSON.parse(payload.message.value.toString());
+          super.emit(DATA, resp, payload);
+        },
+      });
+    } catch (error_: unknown) {
+      this.#done(error_);
+      return;
+    }
+
+    this.#done();
+  }
 }
 
-export { REQ_ID_KEY, CANCEL_KEY, topicTimeout, CONNECT, DATA };
+export { REQ_ID_KEY, CANCEL_KEY, topicTimeout, DATA };

@@ -21,15 +21,14 @@ import {
   Base,
   ConstructorOptions as BaseConstructorOptions,
   CANCEL_KEY,
-  CONNECT,
   DATA,
   KafkaBase,
   REQ_ID_KEY,
   topicTimeout,
 } from './base.js';
 
-import debug from 'debug';
 import type { EachMessagePayload } from 'kafkajs';
+import debug from 'debug';
 import ksuid from 'ksuid';
 
 const trace = debug('@oada/lib-kafka:trace');
@@ -52,41 +51,43 @@ export interface ConstructorOptions extends BaseConstructorOptions {
   old?: boolean;
 }
 export class Responder extends Base {
-  private readonly timeout;
-  private readonly old;
+  readonly #timeout;
+  readonly #old;
   protected requests: Map<string, Generator<KafkaBase, void> | true>;
 
   constructor({
     consumeTopic,
-    produceTopic = null,
+    produceTopic,
     group,
     old = false,
     ...options
   }: ConstructorOptions) {
     super({ consumeTopic, produceTopic, group, ...options });
 
-    this.old = old;
+    this.#old = old;
     this.requests = new Map();
 
-    this.timeout = topicTimeout(consumeTopic);
+    this.#timeout = topicTimeout(consumeTopic);
 
-    void this[CONNECT]();
+    void this.connect();
   }
 
   /**
    * @todo Maybe rearrange type parameters? Maybe make them class params?
    */
-  override on<Res, Request = KafkaBase>(
+  override on<R, Request = KafkaBase>(
     event: 'request',
     listener: (
       reg: Request & KafkaBase,
       data: EachMessagePayload
-    ) => Response<Res> | Promise<Response<Res>>
+    ) => Response<R> | Promise<Response<R>>
   ): this;
   override on(
     event: string | symbol,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     listener: (...arguments_: any[]) => unknown
   ): this;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   override on<L extends (...arguments_: any[]) => unknown>(
     event: string | symbol,
     listener: L
@@ -94,12 +95,14 @@ export class Responder extends Base {
     if (event === 'request') {
       // TODO: Probably a better way to handle this event...
       return super.on(DATA, async (request, data) => {
-        const { domain, group, resp_partition: part = null } = request;
+        // eslint-disable-next-line unicorn/no-null
+        const { domain, group, resp_partition: part = null, time } = request;
+        // eslint-disable-next-line security/detect-object-injection
         const id = request[REQ_ID_KEY]!;
         trace(request, 'Received request');
 
         // Check for old messages
-        if (!this.old && Date.now() - request.time! >= this.timeout) {
+        if (!this.#old && Date.now() - time! >= this.#timeout) {
           warn('Ignoring timed-out request');
           return;
         }
@@ -127,23 +130,27 @@ export class Responder extends Base {
           const it = isIterable(resp) ? resp : [resp];
           this.requests.set(id, it as Generator<KafkaBase, void>);
 
-          for await (const resp of it) {
-            trace(resp, 'received response');
-            if (resp[REQ_ID_KEY] === null) {
+          for await (const r of it) {
+            trace(r, 'received response');
+            // eslint-disable-next-line security/detect-object-injection
+            if (r[REQ_ID_KEY] === null) {
               // TODO: Remove once everything migrated
-              resp[REQ_ID_KEY] = (await ksuid.random()).string;
+              // eslint-disable-next-line security/detect-object-injection
+              r[REQ_ID_KEY] = (await ksuid.random()).string;
+              // eslint-disable-next-line @typescript-eslint/no-empty-function
               util.deprecate(() => {}, 'Please use ReResponder instead')();
             } else {
-              resp[REQ_ID_KEY] = id;
+              // eslint-disable-next-line security/detect-object-injection
+              r[REQ_ID_KEY] = id;
               // Check for cancelled requests
               if (!this.requests.has(id)) {
                 throw new Error('Request cancelled');
               }
             }
 
-            const mesg = { ...resp, domain, group };
+            const mesg = { ...r, domain, group };
             trace(mesg, 'responding');
-            return this.produce({
+            await this.produce({
               mesg,
               part,
             });
@@ -158,13 +165,12 @@ export class Responder extends Base {
           try {
             const resp = (await listener(request, data)) as Response;
             await respond(resp);
-          } catch (error_: unknown) {
+          } catch (cError: unknown) {
             // Catch and communicate errors over kafka?
-            error(error_);
-            const { code } = (error_ ?? {}) as { code?: string };
+            error(cError);
+            const { code } = (cError ?? {}) as { code?: string };
             await respond({
-              // eslint-disable-next-line
-              code: code ?? error_ + '',
+              code: code ?? `${cError}`,
             });
           }
 

@@ -20,7 +20,6 @@ import EventEmitter from 'node:events';
 import {
   Base,
   CANCEL_KEY,
-  CONNECT,
   ConstructorOptions,
   DATA,
   KafkaBase,
@@ -33,12 +32,11 @@ import ksuid from 'ksuid';
 
 export { ConstructorOptions };
 export class Requester extends Base {
+  #timeouts: Map<string, number> = new Map();
   protected requests: Map<
     string,
-    (error: Error | undefined, res: KafkaBase) => void
+    (error: Error | undefined, response: KafkaBase) => void
   > = new Map();
-
-  private timeouts: Record<string, number>;
 
   constructor({
     consumeTopic,
@@ -49,21 +47,21 @@ export class Requester extends Base {
     super({ consumeTopic, produceTopic, group, ...options });
 
     super.on(DATA, (resp) => {
+      // eslint-disable-next-line security/detect-object-injection
       const id = resp[REQ_ID_KEY];
       const done = id ? this.requests.get(id) : undefined;
 
       done?.(undefined, resp);
     });
 
-    this.timeouts = {};
     if (this.produceTopic) {
-      this.timeouts[this.produceTopic] = topicTimeout(this.produceTopic);
+      this.#timeouts.set(this.produceTopic, topicTimeout(this.produceTopic));
     }
 
-    void this[CONNECT]();
+    void this.connect();
 
     // Should this even be available?
-    super.on(DATA, (...arguments_) => super.emit('response', ...arguments_));
+    super.on(DATA, (...rest) => super.emit('response', ...rest));
   }
 
   // eslint-disable-next-line @typescript-eslint/ban-types
@@ -76,9 +74,10 @@ export class Requester extends Base {
       throw new Error('Send called with no topic specified');
     }
 
+    // eslint-disable-next-line security/detect-object-injection
     const id = (request[REQ_ID_KEY] || ksuid.randomSync().string) as string;
-    const timeout = this.timeouts[topic] ?? topicTimeout(topic);
-    this.timeouts[topic] = timeout;
+    const timeout = this.#timeouts.get(topic) ?? topicTimeout(topic);
+    this.#timeouts.set(topic, timeout);
 
     const requestDone = Bluebird.fromCallback((done) => {
       this.requests.set(id, done);
@@ -88,6 +87,7 @@ export class Requester extends Base {
       await this.produce({
         mesg: { ...request, [REQ_ID_KEY]: id, resp_partition: '0' },
         topic,
+        // eslint-disable-next-line unicorn/no-null
         part: null,
       });
       return (await requestDone.timeout(
@@ -110,13 +110,17 @@ export class Requester extends Base {
 
     const emitter = new EventEmitter();
 
+    // eslint-disable-next-line security/detect-object-injection
     const id = request[REQ_ID_KEY] ?? ksuid.randomSync().string;
 
+    // eslint-disable-next-line security/detect-object-injection
     request[REQ_ID_KEY] = id;
     // TODO: Handle partitions?
     request.resp_partition = 0;
 
-    this.requests.set(id, (_e, res) => emitter.emit('response', res));
+    this.requests.set(id, (_error, response) =>
+      emitter.emit('response', response)
+    );
     const close = async () => {
       try {
         // Send cancel message to other end
@@ -125,6 +129,7 @@ export class Requester extends Base {
           [CANCEL_KEY]: true,
         };
 
+        // eslint-disable-next-line unicorn/no-null
         await this.produce({ mesg, topic, part: null });
       } finally {
         this.requests.delete(id);
@@ -134,10 +139,11 @@ export class Requester extends Base {
     await this.produce({
       mesg: request as Record<string, unknown>,
       topic,
+      // eslint-disable-next-line unicorn/no-null
       part: null,
     });
 
-    // @ts-expect-error
+    // @ts-expect-error adsadds
     return { close, ...emitter };
   }
 }

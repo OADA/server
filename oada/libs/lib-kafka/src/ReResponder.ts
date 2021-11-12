@@ -23,11 +23,12 @@ import ksuid from 'ksuid';
 // Class for generate new requests in response to others
 // (without needing the answer)
 export class ReResponder extends Responder {
-  constructor(...arguments_: ConstructorParameters<typeof Responder>) {
-    super(...arguments_);
+  constructor(...rest: ConstructorParameters<typeof Responder>) {
+    super(...rest);
 
     // Make everything look like a new request
     super.prependListener(DATA, (request: Record<string, unknown>) => {
+      // eslint-disable-next-line security/detect-object-injection
       request[REQ_ID_KEY] = ksuid.randomSync().string;
     });
   }
