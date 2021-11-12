@@ -402,7 +402,7 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
    */
   fastify.route({
     constraints: {
-      'oada-ensure': 'resource',
+      'oadaEnsure': 'resource',
     },
     url: '*',
     method: ['PUT', 'POST'],
@@ -410,7 +410,7 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
       const path = request.requestContext.get('oadaPath')!;
       const {
         method,
-        headers: { 'x-oada-ensure': _, ...headers },
+        headers: { 'x-oadaEnsure': _, ...headers },
         body,
       } = request;
       // Create a new resource?

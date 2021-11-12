@@ -44,8 +44,8 @@ export const app = fastify({
   logger,
   ignoreTrailingSlash: true,
   constraints: {
-    'oada-ensure': {
-      name: 'oada-ensure',
+    'oadaEnsure': {
+      name: 'oadaEnsure',
       storage() {
         const handlers: Map<unknown, Handler<HTTPVersion>> = new Map();
         return {
