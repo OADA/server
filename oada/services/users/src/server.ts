@@ -210,7 +210,12 @@ export async function handleReq(request: UserRequest): Promise<UserResponse> {
 
   // All done!
   // Respond to the request with success:
-  trace(current_user, 'Finished with update, responding with success');
+  if (trace.enabled && current_user) {
+    // Don't log passwords
+    const { password, ...user } =
+      'new' in current_user ? current_user.new : current_user;
+    trace(user, 'Finished with update, responding with success');
+  }
   return {
     code: 'success',
     new: created_a_new_user,
