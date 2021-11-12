@@ -45,26 +45,34 @@ const responder = new Responder({
 
 // Only run one write at a time?
 // Per-resource write locks/queues
-const locks: Map<string, Bluebird<unknown>> = new Map();
+const locks: Map<string, Promise<WriteResponse | void>> = new Map();
 const cache = new Cache<number | string>({ defaultTtl: 60 * 1000 });
-responder.on<WriteResponse, WriteRequest>('request', (request) => {
+responder.on<WriteResponse, WriteRequest>('request', async (request) => {
   if (counter++ > 500) {
     counter = 0;
     global.gc?.();
   }
 
   const id = request.resource_id.replace(/^\//, '');
-  const ps = locks.get(id) ?? Bluebird.resolve();
+  const ps = locks.get(id) ?? Promise.resolve();
 
   // Run once last write finishes (whether it worked or not)
-  const p = ps.finally(async () => {
-    await handleRequest(request);
-    // Clean up if queue empty
-    if (locks.get(id) === p) {
-      // Our write has finished AND no others queued for this id
-      locks.delete(id);
-    }
-  });
+  const p = ps
+    // eslint-disable-next-line github/no-then
+    .catch(() => {}) // eslint-disable-line @typescript-eslint/no-empty-function
+    // eslint-disable-next-line github/no-then
+    .then(async () => {
+      try {
+        return await handleRequest(request);
+      } finally {
+        // Clean up if queue empty
+        // eslint-disable-next-line promise/always-return
+        if (locks.get(id) === p) {
+          // Our write has finished AND no others queued for this id
+          locks.delete(id);
+        }
+      }
+    });
   locks.set(id, p);
 
   return p;
@@ -349,11 +357,12 @@ export async function handleRequest(
         // Update rev of meta?
         object._meta._rev = rev;
 
-        return method(id, object, !request.ignoreLinks).then((orev) => ({
+        const orev = await method(id, object, !request.ignoreLinks);
+        return {
           rev,
           orev,
           changeId,
-        }));
+        };
       }
     )
     .then(
@@ -393,6 +402,7 @@ export async function handleRequest(
         return response;
       }
     )
+    // eslint-disable-next-line github/no-then
     .catch(resources.NotFoundError, (cError: unknown) => {
       error(cError);
       return {
@@ -401,23 +411,26 @@ export async function handleRequest(
         user_id: request.user_id,
         authorizationid: request.authorizationid,
       };
-    })
-    .catch((cError: unknown) => {
-      error(cError);
-      const { message = 'error' } = cError as { message?: string };
-      return {
-        msgtype: 'write-response',
-        code: message,
-        user_id: request.user_id,
-        authorizationid: request.authorizationid,
-      };
     });
 
-  await bodyP;
-  if (request.bodyid) {
-    await putBodies.removePutBody(request.bodyid);
+  try {
+    // TODO: Better return type for this function
+    return (await upsert) as WriteResponse;
+  } catch (cError: unknown) {
+    // Send errors over kafka
+    error(cError);
+    const { message = 'error' } = cError as { message?: string };
+    // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+    return {
+      msgtype: 'write-response',
+      code: message,
+      user_id: request.user_id,
+      authorizationid: request.authorizationid,
+    } as WriteResponse;
+  } finally {
+    // Do cleanup
+    if (request.bodyid) {
+      await putBodies.removePutBody(request.bodyid);
+    }
   }
-
-  // TODO: Better return type for this function
-  return (await upsert) as WriteResponse;
 }
