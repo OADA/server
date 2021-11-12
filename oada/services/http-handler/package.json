@@ -42,7 +42,7 @@
     "cacache": "^15.3.0",
     "debug": "^4.3.2",
     "es-main": "^1.0.2",
-    "fastify": "^3.22.1",
+    "fastify": "^3.23.1",
     "fastify-accepts": "^2.1.0",
     "fastify-bearer-auth": "^6.0.0",
     "fastify-cors": "^6.0.2",
@@ -64,12 +64,12 @@
     "@oada/write-handler": "^3.0.1",
     "@types/cacache": "^15.0.1",
     "@types/debug": "^4.1.7",
-    "@types/node": "^16.11.6",
+    "@types/node": "^16.11.7",
     "@types/type-is": "^1.6.3",
     "@types/uuid": "^8.3.1",
     "@types/ws": "^8.2.0",
     "connect": "^3.7.0",
-    "find-my-way": "^4.3.3",
+    "find-my-way": "^5.0.0",
     "light-my-request": "^4.6.0"
   }
 }

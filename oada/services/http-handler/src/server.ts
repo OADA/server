@@ -47,7 +47,7 @@ export const app = fastify({
     'oadaEnsure': {
       name: 'oadaEnsure',
       storage() {
-        const handlers: Map<unknown, Handler<HTTPVersion>> = new Map();
+        const handlers: Map<unknown, Handler<HTTPVersion.V1>> = new Map();
         return {
           get(key) {
             // eslint-disable-next-line unicorn/no-null
