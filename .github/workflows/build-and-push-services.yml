@@ -244,7 +244,7 @@ jobs:
 
       - name: Monitor Service image with Snyk
         uses: snyk/actions/docker@master
-        # Don't break workflow on errros?
+        # Don't break workflow on errors?
         continue-on-error: true
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
@@ -255,7 +255,7 @@ jobs:
 
       - name: Test current Service image with Snyk
         uses: snyk/actions/docker@master
-        # Don't break workflow on errros?
+        # Don't break workflow on errors?
         continue-on-error: true
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
@@ -277,7 +277,7 @@ jobs:
           #sarif_file: ./snyk.sarif
 
   # Create a "release" compose file and attack it to a draft GitHub release.
-  # TODO: Disallow relase if high severity vulnerabilities, failing tests, etc.?
+  # TODO: Disallow release if high severity vulnerabilities, failing tests, etc.?
   create-release:
     needs:
       - setup

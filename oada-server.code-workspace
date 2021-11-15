@@ -138,7 +138,9 @@
       "arangodb",
       "arangojs",
       "authorizationid",
+      "Buildx",
       "cacache",
+      "codeql",
       "fastify",
       "jwks",
       "kafa",
@@ -152,6 +154,7 @@
       "pino",
       "pspperfection",
       "servio",
+      "Snyk",
       "sonarjs",
       "trellisfw",
       "unflatten"

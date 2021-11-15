@@ -36,7 +36,7 @@ DOMAIN=yourdomain.com docker-compose up -d
 ### Running from the git
 
 If you want to contribute, or do other development type things,
-you can run the server straight from this code base.
+you can run the server straight from this codebase.
 
 ```shell
 git clone https://github.com/OADA/server.git
@@ -51,12 +51,12 @@ Note that running from the git is **not** recommended for production use.
 
 If you need to migrate an OADA v2 instance,
 or are making a new installation but for some reason
-are averse to managing you own configuration,
+are averse to managing your own configuration,
 see [`oadadeploy`].
 
 ## Configuration
 
-To modify the docker-compose configuration of you OADA instance,
+To modify the docker-compose configuration of your OADA instance,
 you can simply create a `docker-compose.override.yml`
 in the same directory as the `docker-compose.yml` file.
 Any settings in this [override file] will be merged with ours
@@ -74,7 +74,7 @@ Some important ones are:
 - DEBUG: set the namespace(s) enabled in [debug]
   (e.g., `*:info,*:error,*:warn`)
 
-Rather than trying to always remembering to set your environment variables,
+Rather than trying to always remember to set your environment variables,
 you probably want to use a [.env file] for things like `DOMAIN`.
 
 [releases]: https://github.com/OADA/server/releases
