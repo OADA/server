@@ -271,4 +271,4 @@ export async function cleanup(): Promise<void> {
   }
 }
 
-export { config };
+export { default as config } from './config.js';

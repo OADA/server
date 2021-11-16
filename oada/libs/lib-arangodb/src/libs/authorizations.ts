@@ -99,7 +99,7 @@ export async function save({
   // Make sure nothing but id is in user info
   const user = t.user && { _id: t.user._id };
   // Have to get rid of illegal document handle _id
-  // eslint-disable-next-line @typescript-eslint/naming-convention
+
   const _key = _id?.replace(/^authorizations\//, '');
 
   trace('save: Replacing/Inserting token %s', t);

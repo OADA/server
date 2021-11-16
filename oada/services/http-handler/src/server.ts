@@ -39,13 +39,21 @@ import { fastifyRequestContextPlugin } from 'fastify-request-context';
 import fastifySensible from 'fastify-sensible';
 import helmet from 'fastify-helmet';
 
+/**
+ * Supported values for X-OADA-Ensure-Link header
+ */
+export enum EnsureLink {
+  Versioned = 'versioned',
+  Unversioned = 'unversioned',
+}
+
 const logger = pino({ name: 'http-handler' });
 export const app = fastify({
   logger,
   ignoreTrailingSlash: true,
   constraints: {
-    'oadaEnsure': {
-      name: 'oadaEnsure',
+    oadaEnsureLink: {
+      name: 'oadaEnsureLink',
       storage() {
         const handlers: Map<unknown, Handler<HTTPVersion.V1>> = new Map();
         return {
@@ -64,10 +72,13 @@ export const app = fastify({
           },
         };
       },
-      // eslint-disable-next-line @typescript-eslint/no-empty-function
-      validate(_value) {},
+      validate(value) {
+        if (!Object.keys(EnsureLink).includes(value as string)) {
+          throw new Error(`Invalid  X-OADA-Ensure-Link: ${value}`);
+        }
+      },
       deriveConstraint(request) {
-        return request.headers['x-oada-ensure'];
+        return request.headers['x-oada-ensure-link'];
       },
       mustMatchWhenDerived: true,
     },

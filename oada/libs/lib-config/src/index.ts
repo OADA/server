@@ -104,6 +104,6 @@ export function libConfig<S>(schema: Schema<S>): Config<S & D> {
   return config;
 }
 
-export { convict };
-
 export default libConfig;
+
+export { default as convict } from 'convict';

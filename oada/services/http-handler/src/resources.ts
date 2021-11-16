@@ -29,7 +29,7 @@ import type { WriteRequest, WriteResponse } from '@oada/write-handler';
 import type { Resource } from '@oada/types/oada/resource';
 import { handleResponse } from '@oada/formats-server';
 
-import type {} from './server.js';
+import { EnsureLink } from './server.js';
 import config from './config.js';
 import requester from './requester.js';
 
@@ -71,8 +71,8 @@ function unflattenMeta(document: Partial<Resource>) {
 
   if (document._meta) {
     document._meta = {
-      _id: document._meta!._id,
-      _rev: document._meta!._rev,
+      _id: document._meta._id,
+      _rev: document._meta._rev,
     };
   }
 
@@ -393,41 +393,58 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
   });
 
   /**
-   *
+   * @todo Fix for PUT (POST works fine)
    */
+  async function ensureLink(
+    request: FastifyRequest,
+    reply: FastifyReply,
+    versioned = true
+  ) {
+    const path = request.requestContext.get('oadaPath')!;
+    const {
+      headers: { 'x-oada-ensure': _, 'content-length': _cl, ...headers },
+      body,
+    } = request;
+    // Create a new resource?
+    const {
+      headers: { 'content-location': location },
+    } = await fastify.inject({
+      method: 'post',
+      path: '/resources',
+      headers,
+      // @ts-expect-error
+      payload: body,
+    });
+    // Link resource at original path
+    const response = await fastify.inject({
+      method: 'put',
+      path,
+      headers,
+      payload: JSON.stringify({
+        _id: location!.toString().slice(1),
+        _rev: versioned ? 0 : undefined,
+      }),
+    });
+    await reply.headers(response.headers).status(response.statusCode).send();
+  }
   fastify.route({
     constraints: {
-      oadaEnsure: 'resource',
+      oadaEnsureLink: EnsureLink.Versioned,
     },
     url: '*',
     method: ['PUT', 'POST'],
     async handler(request, reply) {
-      const path = request.requestContext.get('oadaPath')!;
-      const {
-        headers: { 'x-oada-ensure': _, 'content-length': _cl, ...headers },
-        body,
-      } = request;
-      // Create a new resource?
-      const {
-        headers: { 'content-location': location },
-      } = await fastify.inject({
-        method: 'post',
-        path: '/resources',
-        headers,
-        // @ts-ignore
-        payload: body,
-      });
-      // Link resource at original path
-      const response = await fastify.inject({
-        method: 'put',
-        path,
-        headers,
-        payload: JSON.stringify({
-          _id: location?.toString().slice(1),
-          _rev: 0,
-        }),
-      });
-      await reply.headers(response.headers).status(response.statusCode).send();
+      await ensureLink(request, reply, true);
+    },
+  });
+  fastify.route({
+    constraints: {
+      oadaEnsureLink: EnsureLink.Unversioned,
+    },
+    url: '*',
+    method: ['PUT', 'POST'],
+    async handler(request, reply) {
+      await ensureLink(request, reply, false);
     },
   });
 

@@ -216,6 +216,7 @@ export async function handleReq(request: UserRequest): Promise<UserResponse> {
       'new' in current_user ? current_user.new : current_user;
     trace(user, 'Finished with update, responding with success');
   }
+
   return {
     code: 'success',
     new: created_a_new_user,

@@ -157,7 +157,8 @@
       "Snyk",
       "sonarjs",
       "trellisfw",
-      "unflatten"
+      "unflatten",
+      "unversioned"
     ],
     "eslint.packageManager": "yarn",
     "eslint.useESLintClass": true,

@@ -27,7 +27,6 @@ export function sanitizeResult<T extends {}>(
     return result;
   }
 
-  // eslint-disable-next-line @typescript-eslint/naming-convention
   const { _key, _oada_rev, ...rest } = result as {
     _key?: string;
     _rev?: number;

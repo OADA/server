@@ -15,6 +15,8 @@
  * limitations under the License.
  */
 
+import type EventEmitter from 'node:events';
+
 import { Base, DATA, KafkaBase } from './base.js';
 import {
   Requester,
@@ -28,12 +30,10 @@ import {
 
 import type Bluebird from 'bluebird';
 import type { EachMessagePayload } from 'kafkajs';
-import type EventEmitter from 'node:events';
+
 import debug from 'debug';
 
 const trace = debug('@oada/lib-kafka:trace');
-
-export { EventEmitter };
 
 class DummyResponder extends Responder {
   constructor(options: ResponderOptions, ready: Bluebird<void>) {
@@ -181,7 +181,9 @@ export class ResponderRequester extends Base {
     return this.#requester.send(...rest);
   }
 
-  async emitter(...rest: Parameters<Requester['emitter']>) {
+  async emitter(
+    ...rest: Parameters<Requester['emitter']>
+  ): Promise<EventEmitter & { close(): Promise<void> }> {
     return this.#requester.emitter(...rest);
   }
 }

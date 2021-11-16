@@ -35,7 +35,6 @@ class DatabaseWrapper extends Database {
   override async query(query: AqlQuery, options: QueryOptions = {}) {
     let tries = 0;
     const tryquery: () => ReturnType<Database['query']> = async () =>
-      // eslint-disable-next-line github/no-then
       Bluebird.resolve(super.query(query, { profile, ...options })).catch(
         DeadlockError,
         async (error: unknown) => {

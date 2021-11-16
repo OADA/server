@@ -100,7 +100,7 @@ responder.on<WriteResponse>('request', async (request) => {
        * If running in dev environment,
        * localhost should be directed to the proxy server
        */
-      // eslint-disable-next-line no-param-reassign
+
       domain = domain.replace('localhost', 'proxy');
     }
 
@@ -181,7 +181,6 @@ responder.on<WriteResponse>('request', async (request) => {
 
       // Fix links etc.
       const body = JSON.stringify(change, function (k, v: unknown) {
-        /* eslint-disable no-invalid-this */
         switch (k) {
           case '_meta': // Don't send resources's _meta
           case '_rev': // Don't send resource's _rev

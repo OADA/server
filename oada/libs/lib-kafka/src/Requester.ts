@@ -30,7 +30,6 @@ import {
 import Bluebird from 'bluebird';
 import ksuid from 'ksuid';
 
-export { ConstructorOptions };
 export class Requester extends Base {
   #timeouts: Map<string, number> = new Map();
   protected requests: Map<
@@ -147,3 +146,5 @@ export class Requester extends Base {
     return { close, ...emitter };
   }
 }
+
+export { ConstructorOptions } from './base.js';
