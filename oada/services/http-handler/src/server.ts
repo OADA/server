@@ -72,10 +72,12 @@ export const app = fastify({
           },
         };
       },
-      validate(value) {
+      validate(_value) {
+        /*
         if (!Object.keys(EnsureLink).includes(value as string)) {
           throw new Error(`Invalid  X-OADA-Ensure-Link: ${value}`);
         }
+        */
       },
       deriveConstraint(request) {
         return request.headers['x-oada-ensure-link'];
