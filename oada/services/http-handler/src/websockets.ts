@@ -64,8 +64,8 @@ type Watch = {
 };
 
 function parseRequest(data: WebSocket.Data): SocketRequest {
-  assert(typeof data === 'string');
-  const message: unknown = JSON.parse(data);
+  //assert(typeof data === 'string');
+  const message: unknown = JSON.parse(data.toString());
 
   // Assert type
   assertRequest(message);

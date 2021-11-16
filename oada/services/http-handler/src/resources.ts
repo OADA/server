@@ -69,7 +69,7 @@ function unflattenMeta(document: Partial<Resource>) {
     return document;
   }
 
-  if ('_meta' in document) {
+  if (document._meta) {
     document._meta = {
       _id: document._meta!._id,
       _rev: document._meta!._rev,

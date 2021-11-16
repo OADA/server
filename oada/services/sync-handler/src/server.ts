@@ -184,12 +184,6 @@ responder.on<WriteResponse>('request', async (request) => {
         /* eslint-disable no-invalid-this */
         switch (k) {
           case '_meta': // Don't send resources's _meta
-            if (this === change) {
-              return;
-            }
-
-            return v;
-
           case '_rev': // Don't send resource's _rev
             if (this === change) {
               return;

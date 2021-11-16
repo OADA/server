@@ -24,7 +24,7 @@ services:
       - arangodb__ensureDefaults=true
       - DOMAIN=${DOMAIN:-localhost}
       - NODE_TLS_REJECT_UNAUTHORIZED
-      - PINO_TRANSPORT=${PINO_TRANSPORT-yarn g:pretty -clti pid,hostname}
+      - PINO_TRANSPORT
       - PROFILE_AQL
       # Allow changing arangodb URL (e.g., to use external arango)
       - ARANGODB_URL=${ARANGODB_URL-http://arangodb:8529}
