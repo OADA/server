@@ -75,15 +75,65 @@ jobs:
           input_string: ${{ steps.ref.outputs.version }}
           #version_extractor_regex: '\/v(.*)$'
 
+  prebuild:
+    name: Build and chache shared Docker layers
+
+    runs-on: ubuntu-latest
+
+    # Only run one build at a time to fix layer reuse?
+    concurrency: prebuild-${{ github.sha }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2.4.0
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v1.2.0
+
+      - name: Set up Docker Buildx
+        id: buildx
+        uses: docker/setup-buildx-action@v1.6.0
+        with:
+          version: latest
+
+      - name: Cache docker layers
+        if: ${{ !env.ACT }} # Awaiting ACT version after 0.2.17 for this feature
+        uses: actions/cache@v2.1.5
+        id: cache
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-buildx-${{ github.sha }}-oada
+          restore-keys: |
+            ${{ runner.os }}-buildx-${{ github.sha }}-
+            ${{ runner.os }}-buildx-
+
+      - name: Build base OADA images
+        uses: docker/build-push-action@v2.7.0
+        with:
+          context: oada
+          file: oada/Dockerfile
+          platforms: linux/amd64
+          build-args: |
+            GIT_REF=${{ github.sha }}
+          cache-from: type=local,src=/tmp/.buildx-cache
+          cache-to: type=local,dest=/tmp/.buildx-cache-new,mode=max
+
+      - # Temp fix
+        # https://github.com/docker/build-push-action/issues/252
+        # https://github.com/moby/buildkit/issues/1896
+        name: Move cache
+        run: |
+          rm -rf /tmp/.buildx-cache
+          mv /tmp/.buildx-cache-new /tmp/.buildx-cache
+
   build-and-push-services:
     name: Build and Push images to DockerHub and GHCR
 
     needs:
       - setup
+      - prebuild
 
     strategy:
-      # Only run one build at a time to fix layer reuse?
-      max-parallel: 1
       matrix:
         service: ${{ fromJson(needs.setup.outputs.services) }}
         context:
@@ -106,12 +156,6 @@ jobs:
         uses: docker/setup-buildx-action@v1.6.0
         with:
           version: latest
-
-      - name: Builder instance name
-        run: echo ${{ steps.buildx.outputs.name }}
-
-      - name: Available platforms
-        run: echo ${{ steps.buildx.outputs.platforms }}
 
       - name: Cache docker layers
         if: ${{ !env.ACT }} # Awaiting ACT version after 0.2.17 for this feature
@@ -186,7 +230,7 @@ jobs:
             OADA_SERVICE=${{ matrix.service }}
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=local,src=/tmp/.buildx-cache
-          cache-to: type=local,dest=/tmp/.buildx-cache-new
+          cache-to: type=local,dest=/tmp/.buildx-cache-new,mode=max
 
       - # Temp fix
         # https://github.com/docker/build-push-action/issues/252

@@ -6,7 +6,7 @@
     "libs/**"
   ],
   "scripts": {
-    "eslint": "eslint --format pretty .",
+    "eslint": "eslint --format pretty",
     "build": "yarn build",
     "g:tsc": "cd $INIT_CWD && tsc -b",
     "g:pretty": "pino-pretty"
