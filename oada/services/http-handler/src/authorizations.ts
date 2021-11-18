@@ -57,10 +57,10 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
   // TODO: How the heck should this work??
   fastify.get('/', async (request, reply) => {
     const { user_id: userid } = request.requestContext.get('user')!;
-    const auths = await authorizations.findByUser(userid);
+    const results = await authorizations.findByUser(userid);
 
     const response: Record<string, authorizations.Authorization | null> = {};
-    for await (const auth of auths) {
+    for await (const auth of results) {
       const k = auth._id.replace(/^authorizations\//, '');
       response[k] = await addClientToAuth(request, auth);
     }
@@ -135,6 +135,7 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
 
     const result = await authorizations.save(auth);
     if (!result) {
+      // eslint-disable-next-line unicorn/no-null
       return null;
     }
 

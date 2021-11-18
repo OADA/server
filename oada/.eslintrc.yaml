@@ -50,6 +50,7 @@ overrides:
         [
           error,
           { selector: default, format: [camelCase] },
+          { selector: enumMember, format: [PascalCase] },
           { selector: objectLiteralProperty, format: null },
           { selector: typeProperty, format: null },
 

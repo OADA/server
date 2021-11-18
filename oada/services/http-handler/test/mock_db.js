@@ -15,17 +15,15 @@
  * limitations under the License.
  */
 
-'use strict';
-
 const Promise = require('bluebird');
 const mock = require('mock-require');
 
 const resources = {};
 
-before(function mockDatabase() {
+before(() => {
   mock('@oada/lib-arangodb', {
     resources: {
-      getResource: function mockGetResource(id, path) {
+      getResource(id, path) {
         path = (path || '').split('/').filter((x) => Boolean(x));
         return Promise.try(() => {
           let res = resources[id];
@@ -38,7 +36,7 @@ before(function mockDatabase() {
         });
       },
 
-      setResource: function mockSetResource(id, path, value) {
+      setResource(id, path, value) {
         return Promise.try(() => {
           if (path) {
             path = path.split('/').filter((x) => Boolean(x));

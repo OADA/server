@@ -15,6 +15,8 @@
  * limitations under the License.
  */
 
+/* eslint-disable camelcase */
+
 const config = require('./dist/config');
 const users = require('./dist/users');
 process.env.DEBUG = process.env.DEBUG || 'info:farmhack*';
@@ -30,7 +32,7 @@ const database = require('arangojs')({
 });
 database.useDatabase(config.get('arangodb.database'));
 
-const docs = [
+const documents = [
   // Authorizations:
   {
     _id: 'authorizations/default:authorization-333',
@@ -130,7 +132,7 @@ const docs = [
   },
 ];
 
-Promise.map(docs, (d) => {
+Promise.map(documents, (d) => {
   const collection = d._id.split('/')[0];
   const key = d._id.split('/')[1];
 

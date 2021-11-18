@@ -292,14 +292,15 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
        */
       if (oadaGraph.path_leftover === '/_meta/_changes') {
         const ch = await changes.getChanges(oadaGraph.resource_id);
-        return ch
-          .map((item) => ({
-            [item]: {
-              _id: `${oadaGraph.resource_id}/_meta/_changes/${item}`,
-              _rev: item,
-            },
-          }))
-          .reduce((a, b) => ({ ...a, ...b }));
+        const response: Record<string, unknown> = {};
+        for (const item of ch) {
+          response[item] = {
+            _id: `${oadaGraph.resource_id}/_meta/_changes/${item}`,
+            _rev: item,
+          };
+        }
+
+        return response;
       }
 
       if (/^\/_meta\/_changes\/.*?/.test(oadaGraph.path_leftover)) {
@@ -412,7 +413,7 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
       method: 'post',
       path: '/resources',
       headers,
-      // @ts-expect-error
+      // @ts-expect-error the types are wrong
       payload: body,
     });
     // Link resource at original path
@@ -427,6 +428,7 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
     });
     await reply.headers(response.headers).status(response.statusCode).send();
   }
+
   fastify.route({
     constraints: {
       oadaEnsureLink: EnsureLink.Versioned,

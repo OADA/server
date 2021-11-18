@@ -43,8 +43,7 @@ const config = libConfig({
       format: Boolean,
       nullable: true,
       default: null,
-      // TODO: Rename?
-      // This name for historical reasons
+      // This name is for historical reasons
       env: 'arangodb__ensureDefaults',
     },
     connectionString: {
@@ -186,7 +185,7 @@ const config = libConfig({
       // NOTE: passwordSalt HAS to match the one in auth
       passwordSalt: {
         format: String,
-        default: '$2a$10$l64QftVz6.7KR5BXNc29IO',
+        default: '',
       },
       defaultData: {
         // eslint-disable-next-line @typescript-eslint/consistent-type-assertions

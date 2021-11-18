@@ -15,8 +15,6 @@
  * limitations under the License.
  */
 
-'use strict';
-
 /* global step */
 
 const Promise = require('bluebird');
@@ -47,7 +45,7 @@ describe('GET /bookmarks/a', () => {
     b: 'baz',
   };
 
-  before(function setupKafka() {
+  before(() => {
     kf = require('kafka-node');
     app = require('../').app;
     database = require('@oada/lib-arangodb');
@@ -76,14 +74,13 @@ describe('GET /bookmarks/a', () => {
     return Promise.fromCallback((done) => consumer.on('connect', done));
   });
 
-  before(function setupDatabase() {
-    return database.resources.setResource('123', '', res);
-  });
+  before(() => database.resources.setResource('123', '', res));
   for (const not of ['', 'not']) {
     describe(`when${not ? ' not ' : ' '}owner`, () => {
       step('should make token_request', () => {
         const resp = Promise.fromCallback((done) => {
           consumer.on('message', (message) => {
+            // eslint-disable-next-line unicorn/no-null
             done(null, message);
           });
         });

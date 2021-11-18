@@ -76,7 +76,7 @@ jobs:
           #version_extractor_regex: '\/v(.*)$'
 
   prebuild:
-    name: Build and chache shared Docker layers
+    name: Build and cache shared Docker layers
 
     runs-on: ubuntu-latest
 

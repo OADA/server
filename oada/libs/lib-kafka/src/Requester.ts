@@ -110,7 +110,7 @@ export class Requester extends Base {
     const emitter = new EventEmitter();
 
     // eslint-disable-next-line security/detect-object-injection
-    const id = request[REQ_ID_KEY] ?? ksuid.randomSync().string;
+    const id = request[REQ_ID_KEY] ?? (await ksuid.random()).string;
 
     // eslint-disable-next-line security/detect-object-injection
     request[REQ_ID_KEY] = id;

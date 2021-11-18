@@ -15,17 +15,15 @@
  * limitations under the License.
  */
 
-'use strict';
-
 const mock = require('mock-require');
 
 const cbs = {};
 
-before(function mockKafka() {
+before(() => {
   mock('kafka-node', {
-    Client: function MockClient() {},
+    Client() {},
 
-    Producer: function MockProducer() {
+    Producer() {
       this.on = function (event, callback) {
         return event === 'ready' && setTimeout(callback);
       };
@@ -34,7 +32,7 @@ before(function mockKafka() {
         setTimeout(callback);
       };
 
-      this.send = function mockSend(objs, callback) {
+      this.send = function (objs, callback) {
         for (const object of objs) {
           for (const message of [object.messages].flat()) {
             setTimeout(() => cbs[object.topic]({ value: message }));
@@ -45,7 +43,7 @@ before(function mockKafka() {
       };
     },
 
-    ConsumerGroup: function MockConsumerGroup(_options, topics) {
+    ConsumerGroup(_options, topics) {
       this.on = function (event, callback) {
         switch (event) {
           case 'message':
@@ -62,7 +60,7 @@ before(function mockKafka() {
       };
     },
 
-    Offset: function MockOffset() {
+    Offset() {
       this.commit = () => {};
     },
   });

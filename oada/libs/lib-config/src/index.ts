@@ -18,12 +18,11 @@
 import { extname } from 'node:path';
 
 import convict, { Config, Schema } from 'convict';
-// eslint-disable-next-line
-// @ts-ignore
+import json5 from 'json5';
+import { config as load } from 'dotenv';
+// @ts-expect-error no types for this
 import moment from 'convict-format-with-moment';
 import validator from 'convict-format-with-validator';
-import { config as load } from 'dotenv';
-import json5 from 'json5';
 import yaml from 'yaml';
 
 // Load .env into environment
@@ -98,6 +97,7 @@ export function libConfig<S>(schema: Schema<S>): Config<S & D> {
     // Allow extra items
     allowed: 'warn',
     // Do not actually output warnings about extra items?
+    // eslint-disable-next-line @typescript-eslint/no-empty-function
     output: () => {},
   });
 

@@ -15,8 +15,7 @@
  * limitations under the License.
  */
 
-// eslint-disable-next-line
-// @ts-ignore
+// @ts-expect-error the types are not correct
 export { KafkaJSError as KafkaError } from 'kafkajs/src/errors.js';
 
 export { KafkaBase } from './base.js';

@@ -1,4 +1,26 @@
-// eslint-disable-next-line -- needs to be first import
+/**
+ * @license
+ * Copyright 2021 Open Ag Data Alliance
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+/* eslint-disable unicorn/prefer-module */
+/* eslint-disable @typescript-eslint/no-require-imports */
+/* eslint-disable @typescript-eslint/no-var-requires */
+/* eslint-disable security/detect-non-literal-require */
+/* eslint-disable import/no-dynamic-require */
+
 import pinoDebug, { Options } from 'pino-debug';
 
 import { resolve } from 'node:path';
@@ -60,7 +82,8 @@ export function pino({
   const p = _pino({ level, ...options });
   return (
     process.env.NODE_ENV === 'development'
-    ? require('pino-caller')(p) // eslint-disable-line
+      ? // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+        require('pino-caller')(p)
       : p
   ) as _pino.Logger;
 }
@@ -73,18 +96,18 @@ export default function oadaDebug(
   {
     // Turn off auto so only things enabled in DEBUG var get logged
     auto = false,
-    map: mmap,
+    map: mMap,
     ...rest
   }: Options = {}
 ): void {
   // Load mappings from files
-  const fmap = (process.env.OADA_PINO_MAP &&
+  const fMap = (process.env.OADA_PINO_MAP &&
     require(resolve(process.cwd(), process.env.OADA_PINO_MAP))) as  // Nosemgrep: javascript.lang.security.detect-non-literal-require.detect-non-literal-require
     | undefined
     | Record<string, string>;
   // Merge in mappings
-  const map = { ...defaultMap, ...fmap, ...mmap };
-  return void pinoDebug(logger, { auto, map, ...rest });
+  const map = { ...defaultMap, ...fMap, ...mMap };
+  pinoDebug(logger, { auto, map, ...rest });
 }
 
 if (

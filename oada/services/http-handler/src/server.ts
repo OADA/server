@@ -73,7 +73,7 @@ export const app = fastify({
         };
       },
       validate(_value) {
-        /*
+        /* TODO: Fix this?
         if (!Object.keys(EnsureLink).includes(value as string)) {
           throw new Error(`Invalid  X-OADA-Ensure-Link: ${value}`);
         }
