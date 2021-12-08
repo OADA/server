@@ -77,9 +77,11 @@ RUN apk add --no-cache \
 
 COPY ./utils/entrypoint.sh /entrypoint.sh
 RUN chmod u+x /entrypoint.sh
+RUN chown node:node /entrypoint.sh
 
 COPY ./utils/wait-for-it.sh /wait-for-it.sh
 RUN chmod u+x /wait-for-it.sh
+RUN chown node:node /wait-for-it.sh
 
 # Copy in config file?
 COPY ./oada.config.js /oada.config.js

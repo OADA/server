@@ -22,6 +22,8 @@
 **/GRTAGS
 **/.session*
 **/.undodir
+**/.history
+**/.vim
 
 # Built TS etc.
 **/dist
