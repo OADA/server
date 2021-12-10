@@ -1,4 +1,4 @@
-process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0'; // tests run inside docker and all certs are self-signed
+process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0'; // Tests run inside docker and all certs are self-signed
 
 describe('rev-graph-updates should be batched', async () => {
   const debug = require('debug');
@@ -14,12 +14,12 @@ describe('rev-graph-updates should be batched', async () => {
       'content-type': 'oada.rock.1+json',
     },
   });
-  const baseurl = 'http://proxy'; // use proxy domain name inside docker
+  const baseurl = 'http://proxy'; // Use proxy domain name inside docker
   const parentid = 'resources/test-rev-graph-batch-parent';
   const child1id = 'resources/test-rev-graph-batch-child1';
   const child2id = 'resources/test-rev-graph-batch-child2';
 
-  //-------------------------------------------------------------
+  // -------------------------------------------------------------
   // To begin, create a resource that links to another resource
   // so we can track batched changes
   before(async () => {
@@ -32,11 +32,11 @@ describe('rev-graph-updates should be batched', async () => {
         child1: { _id: child1id, _rev: 0 },
         child2: { _id: child2id, _rev: 0 },
       }),
-    ]).catch((err) =>
-      error("before: Failed one of the setup put's.  err = ", err)
+    ]).catch((error_) =>
+      error("before: Failed one of the setup put's.  err = ", error_)
     );
     const res = await axios.get(`${baseurl}/${parentid}`);
-    console.log('the parent get request result is: ', res);
+    console.log('the parent get request result is:', res);
   });
 
   it('should update the parent only once with two parallel child changes', async () => {});

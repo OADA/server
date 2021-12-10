@@ -1,76 +1,96 @@
+/**
+ * @license
+ * Copyright 2021 Open Ag Data Alliance
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 const Promise = require('bluebird');
 const { v4: uuid } = require('uuid');
-let WebSocket = require('ws');
+const WebSocket = require('ws');
 
 function websocket(url) {
-  //Create the message queue
-  var messages = [];
-  //Create the socket
+  // Create the message queue
+  let messages = [];
+  // Create the socket
   url = url.replace('https://', 'wss://').replace('http://', 'ws://');
-  //	url = url.indexOf('ws') !== 0 ? url + 'wss://' : url;
-  var socket = new WebSocket(url);
-  var connected = false;
-  var httpCallbacks = {};
-  var watchCallbacks = {};
+  //	Url = url.indexOf('ws') !== 0 ? url + 'wss://' : url;
+  const socket = new WebSocket(url);
+  let connected = false;
+  let httpCallbacks = {};
+  let watchCallbacks = {};
 
   function sendMessages() {
     if (!connected) return;
-    messages.forEach((message) => {
+    for (const message of messages) {
       socket.send(JSON.stringify(message));
-    });
+    }
+
     messages = [];
   }
 
   return new Promise((resolve, _reject) => {
-    socket.onopen = function () {
+    socket.addEventListener('open', () => {
       connected = true;
       sendMessages();
       resolve(socket);
-    };
+    });
+
     socket.on('open', socket.onopen);
 
-    socket.onclose = function () {};
+    socket.addEventListener('close', () => {});
     socket.on('close', socket.onclose);
     socket.onmessage = function (event) {
-      var response = JSON.parse(event.data);
-      //Look for id in httpCallbacks
+      const response = JSON.parse(event.data);
+      // Look for id in httpCallbacks
       if (response.requestId) {
         if (httpCallbacks[response.requestId]) {
-          //Resolve Promise
+          // Resolve Promise
           if (response.status >= 200 && response.status < 300) {
             httpCallbacks[response.requestId].resolve(response);
           } else {
-            //Create error like axios
-            let err = new Error(
-              'Request failed with status code ' + response.status
+            // Create error like axios
+            const error = new Error(
+              `Request failed with status code ${response.status}`
             );
-            err.request = httpCallbacks[response.requestId].request;
-            err.response = {
+            error.request = httpCallbacks[response.requestId].request;
+            error.response = {
               status: response.status,
               statusText: response.data.title,
               headers: response.headers,
               data: response.data,
             };
-            httpCallbacks[response.requestId].reject(err);
+            httpCallbacks[response.requestId].reject(error);
           }
+
           delete httpCallbacks[response.requestId];
         } else if (watchCallbacks[response.requestId]) {
           if (watchCallbacks[response.requestId].resolve) {
             if (response.status === 'success') {
-              //Successfully setup websocket, resolve promise
+              // Successfully setup websocket, resolve promise
               watchCallbacks[response.requestId].resolve(response);
             } else {
-              let err = new Error(
-                'Request failed with status code ' + response.status
+              const error = new Error(
+                `Request failed with status code ${response.status}`
               );
-              err.response = response;
-              watchCallbacks[response.requestId].reject(err);
+              error.response = response;
+              watchCallbacks[response.requestId].reject(error);
             }
-            //Remove resolve and reject so we process change as a signal next time
-            delete watchCallbacks[response.requestId]['resolve'];
-            delete watchCallbacks[response.requestId]['reject'];
+
+            // Remove resolve and reject so we process change as a signal next time
+            delete watchCallbacks[response.requestId].resolve;
+            delete watchCallbacks[response.requestId].reject;
           } else {
-            if (watchCallbacks[response.requestId].callback == null)
+            if (watchCallbacks[response.requestId].callback == undefined)
               throw new Error(
                 'The given watch function has an undefined callback:',
                 watchCallbacks[response.requestId]
@@ -80,50 +100,43 @@ function websocket(url) {
         }
       }
     };
+
     socket.on('message', socket.onclose);
   }).then(() => {
     function _http(request) {
-      //Do a HTTP request
+      // Do a HTTP request
       return new Promise((resolve, reject) => {
         if (request.url.indexOf(url) === 0)
           request.url = request.url.replace(url, '');
-        let message = {
+        const message = {
           requestId: uuid(),
           method: request.method.toLowerCase(),
           path: request.url,
           data: request.data,
           headers: Object.entries(request.headers)
-            .map(([key, value]) => {
-              return { [key.toLowerCase()]: value };
-            })
-            .reduce((a, b) => {
-              return Object.assign({}, a, b);
-            }),
+            .map(([key, value]) => ({ [key.toLowerCase()]: value }))
+            .reduce((a, b) => ({ ...a, ...b })),
         };
         messages.push(message);
         httpCallbacks[message.requestId] = {
-          request: request,
-          resolve: resolve,
-          reject: reject,
+          request,
+          resolve,
+          reject,
         };
         sendMessages();
       });
     }
 
     function _watch(request, callback) {
-      //Watch for changes on requested resource and trigger provided signal
+      // Watch for changes on requested resource and trigger provided signal
       return new Promise((resolve, reject) => {
-        let message = {
+        const message = {
           requestId: uuid(),
           method: 'watch',
           path: request.url,
           headers: Object.entries(request.headers)
-            .map(([key, value]) => {
-              return { [key.toLowerCase()]: value };
-            })
-            .reduce((a, b) => {
-              return Object.assign({}, a, b);
-            }),
+            .map(([key, value]) => ({ [key.toLowerCase()]: value }))
+            .reduce((a, b) => ({ ...a, ...b })),
         };
         messages.push(message);
         watchCallbacks[message.requestId] = { resolve, reject, callback };
@@ -132,12 +145,12 @@ function websocket(url) {
     }
 
     function _close() {
-      //TODO reject all callbacks that have not resolved
-      //Clear everything
+      // TODO reject all callbacks that have not resolved
+      // Clear everything
       messages = [];
       httpCallbacks = {};
       watchCallbacks = {};
-      //Close socket
+      // Close socket
       socket.close();
     }
 

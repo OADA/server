@@ -6,6 +6,7 @@ services-available
 LICENSE
 
 tags*
+.history
 
 **/yarn.lock
 **/yarn-error.log

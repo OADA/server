@@ -74,6 +74,7 @@
     "search.exclude": {
       ".actrc": true,
       ".history": true,
+      ".dccache": true,
       "**/.DS_Store": true,
       "**/.grunt": true,
       "**/.lock-wscript": true,
@@ -107,6 +108,7 @@
     "files.exclude": {
       ".actrc": true,
       ".history": true,
+      ".dccache": true,
       "**/.DS_Store": true,
       "**/.grunt": true,
       "**/.lock-wscript": true,
@@ -146,8 +148,10 @@
       "kafa",
       "Kafkajs",
       "ksuid",
+      "mkcert",
       "nosemgrep",
       "oada",
+      "oadadeploy",
       "oidc",
       "openidconnect",
       "orev",

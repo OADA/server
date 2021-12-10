@@ -1,3 +1,19 @@
+/**
+ * @license
+ * Copyright 2021 Open Ag Data Alliance
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 'use strict';
 
 /*
@@ -13,17 +29,17 @@
  */
 
 describe('Components should be restarted after being killed', () => {
-  // config.set('isTest', true);
+  // Config.set('isTest', true);
 
   const debug = require('debug');
   const trace = debug('tests:trace');
   const info = debug('tests:info');
   const error = debug('tests:error');
 
-  const expect = require('chai').expect;
+  const { expect } = require('chai');
   const Promise = require('bluebird');
 
-  const exec = require('node-exec-promise').exec;
+  const { exec } = require('node-exec-promise');
 
   const REQUIRED_CONTAINER_NAMES = [
     'arangodb',
@@ -39,48 +55,45 @@ describe('Components should be restarted after being killed', () => {
     'write-handler',
   ];
 
-  let containersAreRunning = Array.apply(
+  const containersAreRunning = Array.apply(
     null,
-    Array(REQUIRED_CONTAINER_NAMES.length)
+    Array.from({ length: REQUIRED_CONTAINER_NAMES.length })
   ).map(Boolean, false);
 
   before((done) => {
-    Promise.each(REQUIRED_CONTAINER_NAMES, (containerName, idx) => {
-      info('  ' + containerName);
+    Promise.each(REQUIRED_CONTAINER_NAMES, (containerName, index) => {
+      info(`  ${containerName}`);
       return exec(
-        "docker inspect -f '{{.State.Running}} ' " + containerName
+        `docker inspect -f '{{.State.Running}} ' ${containerName}`
       ).then((execResult) => {
         trace(
-          '  execResult for ' +
-            containerName +
-            ': ' +
-            JSON.stringify(execResult)
+          `  execResult for ${containerName}: ${JSON.stringify(execResult)}`
         );
-        let isRunning = execResult.stdout.includes('true');
-        trace('      isRunning: ' + isRunning);
-        containersAreRunning[idx] = isRunning;
+        const isRunning = execResult.stdout.includes('true');
+        trace(`      isRunning: ${isRunning}`);
+        containersAreRunning[index] = isRunning;
       });
     })
-      .then(() => {
+      .then(() =>
         // Kill the containers specified.
-        return Promise.each();
-      })
-      .catch((err) => error(err))
+        Promise.each()
+      )
+      .catch((error_) => error(error_))
       .asCallback(() => {
-        trace('    containersAreRunning: ' + containersAreRunning);
+        trace(`    containersAreRunning: ${containersAreRunning}`);
         done();
       });
   });
 
   // Tests.
   describe('containersAreRunning', () => {
-    trace('    containersAreRunning: ' + containersAreRunning);
-    REQUIRED_CONTAINER_NAMES.forEach((containerName, idx) => {
+    trace(`    containersAreRunning: ${containersAreRunning}`);
+    for (const [index, containerName] of REQUIRED_CONTAINER_NAMES.entries()) {
       describe(containerName, () => {
         it('should be running', () => {
-          expect(containersAreRunning[idx]).to.be.a('Boolean').equals.true;
+          expect(containersAreRunning[index]).to.be.a('Boolean').equals.true;
         });
       });
-    });
+    }
   });
 });

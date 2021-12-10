@@ -29,51 +29,64 @@ Download one of our [releases] and start it using [docker-compose].
 
 ```shell
 cd folder/containing/release/docker-compose
-# Will pull the corresponding release images from dockerhub
+# Will pull the corresponding release images from DockerHub
 DOMAIN=yourdomain.com docker-compose up -d
 ```
+
 ### Running as localhost
-localhost doesn't work out of the box because you need to create a self-signed SSL certificate and map it your oada installation.  
+
+localhost doesn't work out of the box because you need to create a self-signed SSL certificate and map it into your OADA installation.
 
 To generate a certificate, get [mkcert](https://github.com/FiloSottile/mkcert) (Works on pretty much every platform).
-Then, install mkcert to your machine's local certificate authority (so when you make requests to your OADA, it will trust the self-signed certificate)
+Then, install `mkcert` to your machine's local certificate authority (so when you make requests to your OADA, it will trust the self-signed certificate)
+
 ```shell
 # Only do this if you did not previously have mkcert installed.
 mkcert -install
 ```
+
 Now generate a certificate for localhost (in a folder named localhost)
+
 ```shell
 mkdir localhost
 mkcert -cert-file ./localhost/fullchain.pem -key-file ./localhost/privkey.pem localhost
 # The certificate is at "./localhost/fullchain.pem" and the key at "./localhost/privkey.pem"
 ```
-Finally, tell oada to use it by mapping it into the docker-compose service definition for the proxy.
+
+Finally, tell OADA to use it by mapping it into the docker-compose service definition for the proxy.
 NOTE: if you already have a `docker-compose.override.yml`, do not run this command as it will overwrite it.
+
 ```shell
 # Configure docker to map in the new cert as an override:
 printf "services:\n  proxy:\n    volumes:\n      - ./localhost:/config/keys/letsencrypt:ro" > docker-compose.override.yml
 # Re-up the proxy container with the new cert:
 DOMAIN=localhost docker-compose up -d proxy
 ```
-Your server should now be working on localhost.  Time to add a user and a token with which to make requests.
+
+Your server should now be working on localhost. Time to add a user and a token with which to make requests.
 
 ### Add a user
-You will need to add a user and a token in order to start making requests against your new OADA server.  To add a user:
+
+You will need to add a user and a token to start making requests against your new OADA server. To add a user:
 
 ```shell
 docker-compose run users add -u username -p password -a
 ```
-replacing `username` and `password` with the username and password that you want.  The `-a` means that the created user will be an admin user with the ability to add other users via the API.0
+
+replacing `username` and `password` with the username and password that you want. The `-a` means that the created user will be an admin user with the ability to add other users via the API.0
 
 ### Add a token for a user
-You need a token to make a request against an OADA server.  While you can get a token via OAuth2, to add a token
+
+You need a token to make a request against an OADA server. While you can get a token via OAuth2, to add a token
 for a user from the command line:
+
 ```shell
 docker-compose run auth token create -u username -s all:all
 ```
-The "-s" is the "scope" for the token.  `all:all` means read/write for all content types.  The token will have permission to any resources that the user has permission to.
 
-That command will print the last line `Successfully wrote token <token>`.  Copy the `<token>` for the authorization header on your requests.
+The "-s" is the "scope" for the token. `all:all` means read/write for all content types. The token will have permission to any resources that the user has permission to.
+
+That command will print the last line `Successfully wrote token <token>`. Copy the `<token>` for the authorization header on your requests.
 
 ### Running from the git
 

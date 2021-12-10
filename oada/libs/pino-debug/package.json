@@ -17,14 +17,14 @@
   "author": "Alex Layton <alex@layton.in>",
   "license": "ISC",
   "dependencies": {
-    "pino": "^7.2.0",
+    "pino": "^7.5.1",
     "pino-caller": "^3.2.0",
     "pino-debug": "^2.0.0",
     "tslib": "^2.3.1"
   },
   "devDependencies": {
     "@types/debug": "^4.1.7",
-    "@types/node": "^16.11.7"
+    "@types/node": "^16.11.12"
   },
   "peerDependencies": {
     "debug": "*"

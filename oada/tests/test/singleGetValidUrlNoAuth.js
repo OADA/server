@@ -1,3 +1,19 @@
+/**
+ * @license
+ * Copyright 2021 Open Ag Data Alliance
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 'use strict';
 
 /*
@@ -8,7 +24,7 @@
 
 describe('GET (No Authentication with Valid URL)', () => {
   const config = require('../config');
-  // config.set('isTest', true);
+  // Config.set('isTest', true);
   const path = require('path');
 
   const debug = require('debug');
@@ -17,7 +33,7 @@ describe('GET (No Authentication with Valid URL)', () => {
   const error = debug('tests:error');
   const debugMark = ' => ';
 
-  const expect = require('chai').expect;
+  const { expect } = require('chai');
   const axios = require('axios');
   // For debugging: Pass axios to the imported 'axios-debug' function.
   // require('axios-debug')(axios);
@@ -27,33 +43,30 @@ describe('GET (No Authentication with Valid URL)', () => {
   // according to exmpledocs for us.
   const oadaLib = require('@oada/lib-arangodb');
   // Used to create the database and populate it with the default testing data.
-  let setDatabaseP = oadaLib.init.run().catch((err) => {
-    error(err);
+  const setDatabaseP = oadaLib.init.run().catch((error_) => {
+    error(error_);
   });
 
   // Real tests.
   info(
-    debugMark +
-      'Starting tests... (for ' +
-      path.win32.basename(__filename) +
-      ')'
+    `${debugMark}Starting tests... (for ${path.win32.basename(__filename)})`
   );
 
   // For debugging.
   const VALID_GET_REQ_URL = '/resources/default:resources_bookmarks_123';
-  //const VALID_GET_REQ_URL = '/bookmarks/rocks/rocks-index/90j2klfdjss';
-  let url = 'http://proxy' + VALID_GET_REQ_URL;
+  // Const VALID_GET_REQ_URL = '/bookmarks/rocks/rocks-index/90j2klfdjss';
+  const url = `http://proxy${VALID_GET_REQ_URL}`;
 
-  //--------------------------------------------------
+  // --------------------------------------------------
   // Task - HTTP response
-  //--------------------------------------------------
+  // --------------------------------------------------
   // Hit the server with a URL (and a token) and check corresponding HTTP
   // response message.
-  let http_get_response = null,
-    http_get_error_response = null;
+  let http_get_response = null;
+  let http_get_error_response = null;
 
   before((done) => {
-    let axiosInst = axios.create();
+    const axiosInst = axios.create();
     // // Embed the token for all HTTP request.
     // let axiosInst = axios.create({
     //   headers: {
@@ -65,24 +78,25 @@ describe('GET (No Authentication with Valid URL)', () => {
     setDatabaseP.then(() => {
       axiosInst
         .get(url)
-        .then(function (response) {
-          trace('HTTP GET Response: ' + response);
-          trace('HTTP GET Response Status: ' + response.status);
+        .then((response) => {
+          trace(`HTTP GET Response: ${response}`);
+          trace(`HTTP GET Response Status: ${response.status}`);
           trace(
-            'HTTP GET Response Data String: ' + JSON.stringify(response.data)
+            `HTTP GET Response Data String: ${JSON.stringify(response.data)}`
           );
-          trace('HTTP GET Response Keys: ' + Object.keys(response));
+          trace(`HTTP GET Response Keys: ${Object.keys(response)}`);
           http_get_response = response;
           done();
         })
-        .catch(function (error) {
-          info('HTTP GET Error: ' + error);
+        .catch((error) => {
+          info(`HTTP GET Error: ${error}`);
           if (error.response) {
             info('data: ', error.response.data);
             info('status: ', error.response.status);
             info('headers: ', error.response.headers);
             http_get_error_response = error.response;
           }
+
           done();
         });
     });
@@ -92,18 +106,18 @@ describe('GET (No Authentication with Valid URL)', () => {
   describe('Task: HTTP response for the GET request', () => {
     describe('http_get_response', () => {
       it('should be null', () => {
-        trace('http_get_response:' + http_get_response);
+        trace(`http_get_response:${http_get_response}`);
         expect(http_get_response).to.be.null;
       });
     });
 
     describe('http_get_error_response', () => {
       it('should be a non-empty object', () => {
-        trace('http_get_error_response:' + http_get_error_response);
+        trace(`http_get_error_response:${http_get_error_response}`);
         expect(http_get_error_response).to.be.an('Object').that.is.not.empty;
       });
       it('should contain the status 401 Unauthorized', () => {
-        trace('http_get_error_response.status:' + http_get_error_response.code);
+        trace(`http_get_error_response.status:${http_get_error_response.code}`);
         expect(http_get_error_response)
           .to.have.property('status')
           .that.equals(401);
@@ -112,11 +126,11 @@ describe('GET (No Authentication with Valid URL)', () => {
   });
 
   after(() => {
-    info(debugMark + 'in after()');
-    info('    config = ' + config);
-    info('    config.isTest = ' + config.get('isTest'));
-    return oadaLib.init.cleanup().catch((err) => {
-      error(err);
+    info(`${debugMark}in after()`);
+    info(`    config = ${config}`);
+    info(`    config.isTest = ${config.get('isTest')}`);
+    return oadaLib.init.cleanup().catch((error_) => {
+      error(error_);
     });
   });
 });

@@ -1,3 +1,19 @@
+/**
+ * @license
+ * Copyright 2021 Open Ag Data Alliance
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 'use strict';
 
 /*
@@ -5,7 +21,7 @@
     - A simple self test (for express, axios and chai).
  */
 
-const expect = require('chai').expect;
+const { expect } = require('chai');
 const axios = require('axios');
 const Promise = require('bluebird');
 
@@ -17,47 +33,45 @@ if (isSelfTesting) {
   const FOO_INVALID_TOKEN = 'foo-invalid-token-tests';
 
   describe('SelfTest', () => {
-    let serverResHeader = '',
-      serverResToken = '';
+    let serverResHeader = '';
+    let serverResToken = '';
 
     before(() => {
       // Embed the token for all HTTP request.
       axios.interceptors.request.use(
-        function (config) {
-          const token = FOO_INVALID_TOKEN; // cookie.get(__TOKEN_KEY__);
+        (config) => {
+          const token = FOO_INVALID_TOKEN; // Cookie.get(__TOKEN_KEY__);
 
-          if (token != null) {
+          if (token != undefined) {
             config.headers.Authorization = `Bearer ${token}`;
           }
 
           return config;
         },
-        function (errEmbedToken) {
-          return Promise.reject(errEmbedToken);
-        }
+        (errorEmbedToken) => Promise.reject(errorEmbedToken)
       );
 
       // Self tests.
       return axios
         .get('http://localhost/echo', {
           params: {
-            ID: 12345,
+            ID: 12_345,
           },
         })
-        .then(function (response) {
-          serverResHeader = response.data.substr(0, 4);
+        .then((response) => {
+          serverResHeader = response.data.slice(0, 4);
           serverResToken = response.config.headers.Authorization;
         })
-        .catch(function (error) {
+        .catch((error) => {
           error('FAILED sending HTTP GET using axios!');
           error(error);
           return Promise.reject(error);
         });
     });
 
-    //--------------------------------------------------
+    // --------------------------------------------------
     // The tests!
-    //--------------------------------------------------
+    // --------------------------------------------------
     describe('SelfTestSever', () => {
       it('should be an echo server', (done) => {
         expect(serverResHeader).to.equal('Echo');

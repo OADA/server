@@ -8,6 +8,7 @@
     "importHelpers": true,
     "composite": true,
     "strict": true,
+    "alwaysStrict": true,
     "importsNotUsedAsValues": "error",
     "noUncheckedIndexedAccess": true,
     "noUnusedLocals": true,

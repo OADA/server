@@ -1,15 +1,31 @@
+/**
+ * @license
+ * Copyright 2021 Open Ag Data Alliance
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 module.exports = {
   _type: 'application/vnd.trellisfw.audit.globalgap.1+json',
 
-  // certificationid identifies a particular chain of documents that culinates
+  // Certificationid identifies a particular chain of documents that culinates
   // in a certification if successful.  All documents in the chain (audit, corrective
   // actions, certificate) will have the same certificationid.
   certificationid: {
-    id_source: 'scheme', // source for this ID is the scheme owner described elsewhere
-    id: '12345-AAAAA-6789', // in this audit (global gap in this case)
+    id_source: 'scheme', // Source for this ID is the scheme owner described elsewhere
+    id: '12345-AAAAA-6789', // In this audit (global gap in this case)
   },
 
-  // scheme: info about the type of audit
+  // Scheme: info about the type of audit
   scheme: {
     name: 'GLOBALG.A.P.', // Does GFSI maintain a list of strings which would be valid here?
     version: '5.0-1',
@@ -21,7 +37,7 @@ module.exports = {
     ],
   },
 
-  // certifying body: info about who performed the audit
+  // Certifying body: info about who performed the audit
   certifying_body: {
     name: 'SCS Global Services',
     auditor: { name: 'Aaron Auditor Ault' },
@@ -30,7 +46,7 @@ module.exports = {
   // Organization contains information about the party being audited.
   organization: {
     organizationid: {
-      id_source: 'scheme', // the certifying body already described in this document
+      id_source: 'scheme', // The certifying body already described in this document
       id: '777777777', // This is the GLOBALG.A.P Number for this organization
       otherids: [{ id_source: 'certifying_body', id: '1234567' }],
     },
@@ -47,10 +63,10 @@ module.exports = {
 
   // Scope: what sorts of things does this audit cover (operation, products, etc.)
   scope: {
-    notification: 'announced', //or 'unannounced'
+    notification: 'announced', // Or 'unannounced'
     description: '',
     operations: [
-      { name: 'handling' }, // if handling is "no", then don't include it in the array
+      { name: 'handling' }, // If handling is "no", then don't include it in the array
     ],
 
     // Called "Crops audited" in global gap, but same as "products_observed" in primus
@@ -67,7 +83,7 @@ module.exports = {
         further_area: { value: 10.67, units: 'acres' },
         operations: [
           { name: 'growing', covering_type: 'uncovered' },
-          { name: 'harvest' }, // if harvest is excluded, then don't include it in the array
+          { name: 'harvest' }, // If harvest is excluded, then don't include it in the array
         ],
       },
     ],
@@ -88,7 +104,7 @@ module.exports = {
             organic: true,
             area: { value: 70, units: 'acres' },
             location: {
-              description: '', //any accompanying text description; often used to supply directions
+              description: '', // Any accompanying text description; often used to supply directions
               city: '',
             },
           },
@@ -96,18 +112,18 @@ module.exports = {
       },
     ],
 
-    parallel_production: false, // optional, true/false
-    parallel_ownership: false, // optional, true/false
+    parallel_production: false, // Optional, true/false
+    parallel_ownership: false, // Optional, true/false
   },
 
   conditions_during_audit: {
-    // what should we call it if there is just a single "audit date"?
+    // What should we call it if there is just a single "audit date"?
     operation_observed_date: '2016-07-26',
     duration: { value: 4.5, units: 'hours' },
   },
 
   score: {
-    is_compliant: false, // because in this example, major_musts.is_compliant is false
+    is_compliant: false, // Because in this example, major_musts.is_compliant is false
     // If there is a total score, you can put value and units under score directly.
     // If there is a preliminary/final score, put them under preliminary/final
     globalgap_levels: {
@@ -128,7 +144,7 @@ module.exports = {
     },
   },
 
-  //A summary of failed questions and corrective actions are reported on the last page.
+  // A summary of failed questions and corrective actions are reported on the last page.
 
   sections: [
     {

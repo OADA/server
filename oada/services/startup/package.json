@@ -30,11 +30,11 @@
   "dependencies": {
     "@oada/lib-arangodb": "^3.0.1",
     "@oada/pino-debug": "^3.0.1",
-    "debug": "^4.3.2",
+    "debug": "^4.3.3",
     "tslib": "^2.3.1"
   },
   "devDependencies": {
     "@types/debug": "^4.1.7",
-    "@types/node": "^16.11.7"
+    "@types/node": "^16.11.12"
   }
 }

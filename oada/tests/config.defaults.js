@@ -15,5 +15,5 @@
 'use strict';
 
 module.exports = {
-  //	isTest: true
+  //	IsTest: true
 };
