@@ -33,6 +33,22 @@ cd folder/containing/release/docker-compose
 DOMAIN=yourdomain.com docker-compose up -d
 ```
 
+### Add a user
+You will need to add a user and a token in order to start making requests against your new OADA server.  To add a user:
+
+```shell
+docker-compose run users add -u username -p password -a
+```
+replacing `username` and `password` with the username and password that you want.  The `-a` means that the created user will be an admin user with the ability to add other users via the API.0
+
+### Add a token for a user
+You need a token to make a request against an OADA server.  While you can get a token via OAuth2, to add a token
+for a user from the command line:
+```shell
+docker-compose run auth token create -u username -s all:all
+```
+The "-s" is the "scope" for the token.  "all:all" means read/write for all content types.  The token will have permission to any resources that the user has permission to.
+
 ### Running from the git
 
 If you want to contribute, or do other development type things,
