@@ -49,6 +49,8 @@ docker-compose run auth token create -u username -s all:all
 ```
 The "-s" is the "scope" for the token.  "all:all" means read/write for all content types.  The token will have permission to any resources that the user has permission to.
 
+That command will print the last line `Successfully wrote token <token>`.  Copy the `<token>` for the authorization header on your requests.
+
 ### Running from the git
 
 If you want to contribute, or do other development type things,
