@@ -15,6 +15,8 @@
  * limitations under the License.
  */
 
+/* eslint-disable unicorn/no-null */
+
 import { libConfig } from '@oada/lib-config';
 
 const config = libConfig({
@@ -76,7 +78,7 @@ const config = libConfig({
       format: Object,
       default: {
         well_known_version: '1.1.0',
-        oada_version: '0.1.0', // Override the version in oada-srvc-docker-config.js
+        oada_version: '0.1.0', // Override the version in oada.config.js
         oada_base_uri: null,
         scopes_supported: [
           {

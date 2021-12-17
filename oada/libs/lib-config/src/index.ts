@@ -55,7 +55,8 @@ const defaults = {
     env: 'isProduction',
   },
 };
-type D = typeof defaults extends Schema<infer D> ? D : never;
+// FIXME: Why did this start making TS hang?
+//type D = typeof defaults extends Schema<infer D> ? D : never;
 
 // Add more formats to convict
 convict.addFormats(validator);
@@ -75,9 +76,10 @@ convict.addParser([
  * @param schema Config schema for your application
  * @see Schema
  */
-export function libConfig<S>(schema: Schema<S>): Config<S & D> {
+export function libConfig<S>(schema: Schema<S>) {
   // Merge input schema with default schema and create config
-  const config = convict({ ...defaults, ...schema } as Schema<S & D>);
+  const config = convict({ ...defaults, ...schema } as Schema<S> &
+    typeof defaults);
 
   // Optionally load any config file(s)
   const files = config.get('configfiles');
@@ -101,7 +103,7 @@ export function libConfig<S>(schema: Schema<S>): Config<S & D> {
     output: () => {},
   });
 
-  return config;
+  return config as Config<S> & typeof config;
 }
 
 export default libConfig;

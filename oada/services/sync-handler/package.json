@@ -36,6 +36,6 @@
     "@oada/write-handler": "^3.0.1",
     "@types/bluebird": "^3.5.36",
     "@types/debug": "^4.1.7",
-    "@types/node": "^16.11.12"
+    "@types/node": "^16.11.14"
   }
 }

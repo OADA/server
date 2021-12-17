@@ -413,8 +413,7 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
       method: 'post',
       path: '/resources',
       headers,
-      // @ts-expect-error the types are wrong
-      payload: body,
+      payload: body as Buffer,
     });
     // Link resource at original path
     const response = await fastify.inject({
