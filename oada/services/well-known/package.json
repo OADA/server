@@ -27,7 +27,7 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
-    "@oada/formats-server": "^1.7.0",
+    "@oada/formats-server": "^1.8.1",
     "@oada/lib-config": "^3.0.1",
     "@oada/pino-debug": "^3.0.1",
     "@oada/well-known-json": "^1.0.1",
@@ -35,7 +35,7 @@
     "bluebird": "^3.7.2",
     "cors": "^2.8.5",
     "debug": "^4.3.3",
-    "express": "^4.17.1",
+    "express": "^4.17.2",
     "helmet": "^4.6.0",
     "oada-error": "^1.1.1",
     "tslib": "^2.3.1"

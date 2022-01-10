@@ -259,19 +259,29 @@ const plugin: FastifyPluginAsync = async (fastify) => {
           return;
         }
 
-        case 'watch':
+        case 'watch': // Standard watch it just a HEAD
+        case 'head-watch':
           request.method = 'head';
           break;
+        case 'get-watch':
+          request.method = 'get';
+          break;
+        case 'put-watch':
+          request.method = 'put';
+          break;
+        case 'post-watch':
+          request.method = 'post';
+          break;
+        case 'delete-watch':
+          request.method = 'delete';
+          break;
 
-        case 'put':
-        case 'post':
-          request.payload = JSON.stringify(message.data);
-
-        // eslint-disable-next-line no-fallthrough
         default:
           request.method = message.method;
           break;
       }
+
+      request.payload = JSON.stringify(message.data);
 
       let response: LightMyRequest.Response;
       try {
@@ -336,6 +346,11 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       }
 
       switch (message.method) {
+        case 'head-watch':
+        case 'get-watch':
+        case 'put-watch':
+        case 'post-watch':
+        case 'delete-watch':
         case 'watch': {
           debug('opening watch %s', message.requestId);
 
@@ -362,12 +377,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
 
           // Emit all new changes from the given rev in the request
           const headerRev = request.headers?.['x-oada-rev'];
-          if (headerRev === undefined) {
-            sendResponse({
-              requestId: message.requestId,
-              status: 200,
-            });
-          } else {
+          if (headerRev !== undefined) {
             debug('Setting up watch on: %s', resourceId);
             trace('RECEIVED THIS REV: %s %s', resourceId, headerRev);
             const rev = await resources.getResource(resourceId, '/_rev');
@@ -426,6 +436,12 @@ const plugin: FastifyPluginAsync = async (fastify) => {
           break;
         }
 
+        default:
+          break;
+      }
+
+      switch (message.method) {
+        case 'delete-watch':
         case 'delete':
           if (parts.length === 3) {
             // It is a resource
@@ -433,6 +449,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
           }
 
         // eslint-disable-next-line no-fallthrough
+        case 'get-watch':
         case 'get': {
           // Can only send JSON over websockets
           const type = response.headers['content-type']?.toString();
@@ -472,7 +489,9 @@ const plugin: FastifyPluginAsync = async (fastify) => {
             status: response.statusCode,
             headers,
             // TODO: why is there a payload for HEAD??
-            payload: message.method === 'head' ? undefined : response.payload,
+            payload: ['watch', 'head', 'head-watch'].includes(message.method)
+              ? undefined
+              : response.payload,
           });
         }
       }
