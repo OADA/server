@@ -22,7 +22,7 @@ import { changes, putBodies, resources } from '@oada/lib-arangodb';
 
 import {
   Scope,
-  handleReq as permissionsRequest,
+  handleRequest as permissionsRequest,
 } from '@oada/permissions-handler';
 
 import type { WriteRequest, WriteResponse } from '@oada/write-handler';

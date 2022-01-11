@@ -21,7 +21,11 @@
  *
  * @packageDocumentation
  */
-export default {
+
+/* eslint-disable sonarjs/no-duplicate-string */
+/* eslint-disable no-secrets/no-secrets */
+
+const scopes = {
   'all': ['*/*'],
   'oada.admin.user': [
     // Can interact with /users
@@ -138,4 +142,6 @@ export default {
     'application/vnd.oada.as-harvested.geohash.1+json',
     'application/json',
   ],
-} as Record<string, string[]>;
+};
+
+export default scopes;
