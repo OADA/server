@@ -10,7 +10,8 @@ services:
     depends_on:
       - redpanda
       - arangodb
-    expose: # expose only internally, not on host
+    expose:
+      # expose only internally, not on host
       - '8080'
     environment:
       # set RESETDATABASE to "yes" if you want to drop database on startup and recreate
@@ -28,7 +29,8 @@ services:
       - startup
     networks:
       http_net: {}
-    expose: # expose only internally, not on host
+    expose:
+      # expose only internally, not on host
       - '8080'
 
   # http-handler is in charge of maintaining connectiongs to clients and starting
@@ -42,12 +44,13 @@ services:
       args:
         OADA_SERVICE: http-handler
     healthcheck:
-      test: ['CMD', 'yarn', 'healthcheck']
+      test: [ 'CMD', 'yarn', 'healthcheck' ]
     depends_on:
       - startup
     networks:
       http_net: {}
-    expose: # expose only internally, not on host
+    expose:
+      # expose only internally, not on host
       - '8080'
     environment:
       IGNORE_SCOPE:
@@ -116,7 +119,8 @@ services:
       - startup
     networks:
       http_net: {}
-    expose: # expose only internally, not on host
+    expose:
+      # expose only internally, not on host
       - '8080'
 
   webhooks:
@@ -186,13 +190,14 @@ services:
     volumes:
       - arangodb_data:/var/lib/arangodb3
       - arangodb_apps_data:/var/lib/arangodb3-apps
-    expose: # expose only internally, not on host
+    expose:
+      # expose only internally, not on host
       - '8529'
     environment:
       # - ARANGO_RANDOM_ROOT_PASSWORD=1
       ARANGO_NO_AUTH: 1
       ARANGO_STORAGE_ENGINE: rocksdb
-    command: ['arangod', '--server.statistics=false']
+    command: [ 'arangod', '--server.statistics=false' ]
 
   # Redpanda is API compatible with kafka.
   redpanda:
