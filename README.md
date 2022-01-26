@@ -102,12 +102,6 @@ DOMAIN=yourdomain.com docker-compose up -d
 
 Note that running from the git is **not** recommended for production use.
 
-### Using `oadadeploy`
-
-If you need to migrate an OADA v2 instance,
-or are making a new installation but for some reason
-are averse to managing your own configuration,
-see [`oadadeploy`].
 
 ## Configuration
 
