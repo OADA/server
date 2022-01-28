@@ -403,7 +403,7 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
   ) {
     const path = request.requestContext.get('oadaPath')!;
     const {
-      headers: { 'x-oada-ensure': _, 'content-length': _cl, ...headers },
+      headers: { 'x-oada-ensure-link': _, 'content-length': _cl, ...headers },
       body,
     } = request;
     // Create a new resource?
@@ -647,8 +647,6 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
       .code(204)
       .send();
   });
-
-  return Promise.resolve();
 };
 
 export default plugin;
