@@ -67,6 +67,7 @@ export class Requester extends Base {
   async send(request: {}, topic?: string): Promise<KafkaBase>;
   async send(
     request: Record<string, unknown>,
+    // eslint-disable-next-line @typescript-eslint/ban-types
     topic: string | null | undefined = this.produceTopic
   ): Promise<KafkaBase> {
     if (!topic) {
@@ -86,7 +87,6 @@ export class Requester extends Base {
       await this.produce({
         mesg: { ...request, [REQ_ID_KEY]: id, resp_partition: '0' },
         topic,
-        // eslint-disable-next-line unicorn/no-null
         part: null,
       });
       return (await requestDone.timeout(
@@ -101,6 +101,7 @@ export class Requester extends Base {
   // Like send but return an event emitter to allow multiple responses
   async emitter(
     request: KafkaBase,
+    // eslint-disable-next-line @typescript-eslint/ban-types
     topic: string | null | undefined = this.produceTopic
   ): Promise<EventEmitter & { close(): Promise<void> }> {
     if (!topic) {
@@ -128,7 +129,6 @@ export class Requester extends Base {
           [CANCEL_KEY]: true,
         };
 
-        // eslint-disable-next-line unicorn/no-null
         await this.produce({ mesg, topic, part: null });
       } finally {
         this.requests.delete(id);
@@ -138,7 +138,6 @@ export class Requester extends Base {
     await this.produce({
       mesg: request as Record<string, unknown>,
       topic,
-      // eslint-disable-next-line unicorn/no-null
       part: null,
     });
 

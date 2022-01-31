@@ -95,7 +95,6 @@ export class Responder extends Base {
     if (event === 'request') {
       // TODO: Probably a better way to handle this event...
       return super.on(DATA, async (request, data) => {
-        // eslint-disable-next-line unicorn/no-null
         const { domain, group, resp_partition: part = null, time } = request;
         // eslint-disable-next-line security/detect-object-injection
         const id = request[REQ_ID_KEY]!;

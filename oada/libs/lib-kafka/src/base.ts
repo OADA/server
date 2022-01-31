@@ -36,7 +36,7 @@ const error = debug('@oada/lib-kafka:error');
 const REQ_ID_KEY = 'connection_id';
 const CANCEL_KEY = 'cancel_request';
 
-const DATA = Symbol('kafa-lib-data');
+const DATA = Symbol('kafka-lib-data');
 
 function topicTimeout(topic: string): number {
   let timeout = config.get('kafka.timeouts.default');
@@ -44,6 +44,7 @@ function topicTimeout(topic: string): number {
   const topics = config.get('kafka.topics');
   for (const [topicK, topicV] of Object.entries(topics)) {
     if (topicV === topic) {
+      // eslint-disable-next-line security/detect-object-injection
       timeout = config.get('kafka.timeouts')[topicK] ?? timeout;
     }
   }
@@ -60,6 +61,7 @@ function die(reason: Error) {
 
 export interface ConstructorOptions {
   consumeTopic: string | string[];
+  // eslint-disable-next-line @typescript-eslint/ban-types
   produceTopic?: string | null;
   group: string;
   /**
@@ -142,6 +144,7 @@ export class Base extends EventEmitter {
       logCreator() {
         return ({ namespace, label, log: { message, ...extra } }) => {
           const l = label as keyof KafkajsDebug;
+          // eslint-disable-next-line security/detect-object-injection
           const log = getKafkajsDebug(namespace)[l];
           log(extra, message);
         };
@@ -213,6 +216,7 @@ export class Base extends EventEmitter {
   {
     mesg: Record<string, unknown>;
     topic?: string;
+    // eslint-disable-next-line @typescript-eslint/ban-types
     part: number | null;
   }): Promise<void> {
     // Wait for producer to be ready?

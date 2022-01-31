@@ -43,7 +43,6 @@ class DummyResponder extends Responder {
 
   override async connect(): Promise<void> {
     // Don't connect to Kafka
-    return Promise.resolve();
   }
 }
 class DummyRequester extends Requester {
@@ -54,7 +53,6 @@ class DummyRequester extends Requester {
 
   override async connect(): Promise<void> {
     // Don't connect to Kafka
-    return Promise.resolve();
   }
 }
 

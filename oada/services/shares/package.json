@@ -31,7 +31,7 @@
   "devDependencies": {
     "@oada/write-handler": "^3.0.1",
     "@types/debug": "^4.1.7",
-    "@types/mocha": "^9.0.0",
-    "mocha": "^9.1.3"
+    "@types/mocha": "^9.1.0",
+    "mocha": "^9.2.0"
   }
 }

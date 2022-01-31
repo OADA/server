@@ -3,22 +3,25 @@
   "version": "3.0.1",
   "type": "module",
   "description": "OADA Kafka library",
-  "main": "dist/index.js",
+  "main": "./dist/index.js",
   "engines": {
     "node": ">=16.0.0"
   },
   "scripts": {
     "build": "yarn g:tsc",
-    "test": "mocha"
+    "test": "yarn run build test && ava"
   },
-  "mocha": {
-    "ui": "bdd",
-    "timeout": 4000,
-    "exit": true,
-    "require": "ts-node/register",
-    "extension": [
-      "ts"
-    ]
+  "ava": {
+    "typescript": {
+      "extensions": [
+        "ts"
+      ],
+      "rewritePaths": {
+        "src/": "dist/",
+        "test/": ".test/"
+      },
+      "compile": false
+    }
   },
   "repository": {
     "type": "git",
@@ -36,17 +39,12 @@
     "uuid": "^8.3.2"
   },
   "devDependencies": {
+    "@ava/typescript": "^3.0.1",
     "@types/bluebird": "^3.5.36",
-    "@types/chai": "^4.3.0",
-    "@types/chai-as-promised": "^7.1.4",
+    "@types/convict": "^6.1.1",
     "@types/debug": "^4.1.7",
-    "@types/mocha": "^9.0.0",
-    "@types/node": "16.11.19",
+    "@types/node": "16.11.21",
     "@types/uuid": "^8.3.4",
-    "chai": "^4.3.4",
-    "chai-as-promised": "^7.1.1",
-    "mocha": "^9.1.3",
-    "ts-node": "^10.4.0",
-    "typescript": "^4.5.4"
+    "ava": "4.0.0-rc.1"
   }
 }

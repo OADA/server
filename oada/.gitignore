@@ -1,5 +1,6 @@
 # ts build stuff
 dist/
+.test/
 *.tsbuildinfo
 
 # yarn 2 stuff

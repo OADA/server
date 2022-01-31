@@ -36,7 +36,9 @@ parserOptions:
   project:
     - './tsconfig.json'
     - './services/*/tsconfig.json'
+    - './services/*/test/tsconfig.json'
     - './lib/*/tsconfig.json'
+    - './lib/*/test/tsconfig.json'
 
 overrides:
   - files: '*.ts'
@@ -50,7 +52,9 @@ overrides:
       project:
         - './tsconfig.json'
         - './services/*/tsconfig.json'
+        - './services/*/test/tsconfig.json'
         - './lib/*/tsconfig.json'
+        - './lib/*/test/tsconfig.json'
     rules:
       '@typescript-eslint/naming-convention':
         [
