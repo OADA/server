@@ -21,10 +21,11 @@ import { libConfig } from '@oada/lib-config';
 const config = libConfig({
   kafka: {
     topics: {
+      // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
       default: {
         writeRequest: 'write_request',
         httpResponse: 'http_response',
-      },
+      } as Record<string, string>,
     },
   },
 });
