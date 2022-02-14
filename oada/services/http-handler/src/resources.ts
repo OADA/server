@@ -83,7 +83,7 @@ function unflattenMeta(document: Partial<Resource>) {
 function noModifyShares(request: FastifyRequest, reply: FastifyReply) {
   const path = request.requestContext.get('oadaPath')!;
   const user = request.requestContext.get('user')!;
-  if (new RegExp(`^/${user.shares_id}`).test(path)) {
+  if (path.startsWith(`/${user.shares_id}`)) {
     reply.forbidden('User cannot modify their shares document');
   }
 }
@@ -97,7 +97,7 @@ function noModifyShares(request: FastifyRequest, reply: FastifyReply) {
 function parseETag(etag: string): number {
   // Parse strong or weak ETags?
   // e.g., `W/"123"` or `"123"`
-  const r = /(W\/)?"(?<rev>\d*)"/;
+  const r = /(?:W\/)?"(?<rev>\d*)"/;
 
   const { rev } = r.exec(etag)?.groups ?? {};
 
@@ -127,10 +127,11 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
       options.prefix,
       options.prefixPath(request)
     );
+    const { string: id } = await ksuid.random();
     const path =
       request.method === 'POST'
         ? // Treat POST as PUT put append random id
-          join(url, (await ksuid.random()).string)
+          join(url, id)
         : url.replace(/\/$/, '');
     request.requestContext.set('oadaPath', path);
   });
@@ -292,18 +293,18 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
        */
       if (oadaGraph.path_leftover === '/_meta/_changes') {
         const ch = await changes.getChanges(oadaGraph.resource_id);
-        const response: Record<string, unknown> = {};
-        for (const item of ch) {
-          response[item] = {
-            _id: `${oadaGraph.resource_id}/_meta/_changes/${item}`,
-            _rev: item,
-          };
-        }
-
-        return response;
+        return Object.fromEntries(
+          ch.map((_rev) => [
+            _rev,
+            {
+              _rev,
+              _id: `${oadaGraph.resource_id}/_meta/_changes/${_rev}`,
+            },
+          ])
+        );
       }
 
-      if (/^\/_meta\/_changes\/.*?/.test(oadaGraph.path_leftover)) {
+      if (oadaGraph.path_leftover.startsWith('/_meta/_changes/')) {
         const rev = Number(oadaGraph.path_leftover.split('/')[3]!);
         const ch = await changes.getChangeArray(oadaGraph.resource_id, rev);
         request.log.trace('CHANGE %O', ch);
@@ -376,20 +377,18 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
   fastify.addContentTypeParser(
     ['json', '+json'],
     {
-      // TODO: Stream process the body instead
+      // FIXME: Stream process the body instead
       parseAs: 'string',
       // 20 MB
       bodyLimit: 20 * 1_048_576,
     },
     (_, body, done) => {
-      // eslint-disable-next-line unicorn/no-null
       done(null, body);
     }
   );
 
   // Allow unknown contentType but don't parse?
   fastify.addContentTypeParser('*', (_request, _payload, done) => {
-    // eslint-disable-next-line unicorn/no-null
     done(null);
   });
 
@@ -397,35 +396,41 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
    * @todo Fix for PUT (POST works fine)
    */
   async function ensureLink(
-    request: FastifyRequest,
+    {
+      headers: { 'x-oada-ensure-link': _, 'content-length': _cl, ...headers },
+      body,
+      raw,
+      log,
+      requestContext,
+    }: FastifyRequest,
     reply: FastifyReply,
     versioned = true
   ) {
-    const path = request.requestContext.get('oadaPath')!;
-    const {
-      headers: { 'x-oada-ensure-link': _, 'content-length': _cl, ...headers },
-      body,
-    } = request;
+    const path = requestContext.get('oadaPath')!;
     // Create a new resource?
+    log.trace('EnsureLink: creating new resource');
     const {
       headers: { 'content-location': location },
     } = await fastify.inject({
       method: 'post',
       path: '/resources',
       headers,
-      payload: body as Buffer,
+      // FIXME: Better way to pick between body or raw?
+      payload: typeof body === 'string' ? body : raw,
     });
+
     // Link resource at original path
+    log.trace('EnsureLink: linking %s at %s', location, path);
     const response = await fastify.inject({
       method: 'put',
       path,
-      headers,
+      headers: { ...headers, 'content-type': 'application/json' },
       payload: JSON.stringify({
         _id: location!.toString().slice(1),
         _rev: versioned ? 0 : undefined,
       }),
     });
-    await reply.headers(response.headers).status(response.statusCode).send();
+    return reply.headers(response.headers).status(response.statusCode).send();
   }
 
   fastify.route({
@@ -435,7 +440,7 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
     url: '*',
     method: ['PUT', 'POST'],
     async handler(request, reply) {
-      await ensureLink(request, reply, true);
+      return ensureLink(request, reply, true);
     },
   });
   fastify.route({
@@ -445,7 +450,7 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
     url: '*',
     method: ['PUT', 'POST'],
     async handler(request, reply) {
-      await ensureLink(request, reply, false);
+      return ensureLink(request, reply, false);
     },
   });
 
@@ -546,10 +551,10 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
 
       return (
         reply
+          // ? What is the right thing to return here?
+          .code(201)
           .header('X-OADA-Rev', resp._rev)
           .header('ETag', `"${resp._rev}"`)
-          // ? What is the right thing to return here?
-          // .redirect(204, req.baseUrl + req.url)
           .send()
       );
     },

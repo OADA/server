@@ -39,7 +39,7 @@ export interface RemoteID {
 }
 
 export async function getRemoteId(
-  id: string | string[],
+  id: string | readonly string[],
   domain: string
 ): Promise<RemoteID[]> {
   const ids = Array.isArray(id) ? id : [id];

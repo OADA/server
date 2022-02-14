@@ -15,8 +15,8 @@
  * limitations under the License.
  */
 
-import { resources } from '@oada/lib-arangodb';
 import { KafkaBase, Requester, Responder } from '@oada/lib-kafka';
+import { resources } from '@oada/lib-arangodb';
 
 // Import message format from write-handler
 import type { WriteRequest, WriteResponse } from '@oada/write-handler';
@@ -28,7 +28,6 @@ import PQueue from 'p-queue';
 import type { SetRequired } from 'type-fest';
 import debug from 'debug';
 
-const trace = debug('rev-graph-update:trace');
 const info = debug('rev-graph-update:info');
 const warn = debug('rev-graph-update:warn');
 const error = debug('rev-graph-update:error');
@@ -72,7 +71,7 @@ const causechainSchema: JTDSchemaType<string[]> = {
 const parse = ajv.compileParser(causechainSchema);
 const serialize = ajv.compileSerializer(causechainSchema);
 
-responder.on<WriteRequest>('request', async function handleRequest(request) {
+responder.on<WriteRequest>('request', async (request) => {
   if (!checkRequest(request)) {
     return; // Not a successful write-response message, ignore it
   }
@@ -91,20 +90,6 @@ responder.on<WriteRequest>('request', async function handleRequest(request) {
 
   if (typeof request.authorizationid === 'undefined') {
     warn('Received message does not have authorizationid');
-  }
-
-  // Find resource's parent
-  info('finding parents for resource_id = %s', request.resource_id);
-  const parents = await resources.getParents(request.resource_id);
-  if (!parents?.length) {
-    trace('%s does not have parents.', request.resource_id);
-    return;
-  }
-
-  trace('the parents are: %O', parents);
-
-  if (parents.some((p) => p.resource_id === request.resource_id)) {
-    throw new Error(`${request.resource_id} is its own parent!`);
   }
 
   // Real cycle detection: check the write-response's causechain
@@ -128,7 +113,16 @@ responder.on<WriteRequest>('request', async function handleRequest(request) {
   // Add this resource to the set of "causing" resources to prevent cycles
   causechain.push(request.resource_id);
 
-  for (const parent of parents) {
+  // Find resource's parents
+  info('finding parents for resource_id = %s', request.resource_id);
+  const parents = await resources.getParents(request.resource_id);
+  for await (const parent of parents) {
+    if (parent.resource_id === request.resource_id) {
+      error('%s is its own parent!', request.resource_id);
+      // Ignore this "parent"
+      continue;
+    }
+
     // Delete has null rev
     const childrev = typeof request._rev === 'number' ? request._rev : 0;
 
@@ -165,17 +159,18 @@ responder.on<WriteRequest>('request', async function handleRequest(request) {
       );
       // Create a new write request.
       const message = {
-        connection_id: null, // TODO: Fix ReResponder for multiple responses?
+        connection_id: null,
         type: 'write_request',
         resource_id: parent.resource_id,
         path: null,
         contentType: parent.contentType,
         body: childrev,
         url: '',
-        user_id: 'system/rev_graph_update', // FIXME
+        user_id: 'system/rev_graph_update',
+
         // This is an array; new change IDs may be added later
         from_change_id: request.change_id ? [request.change_id] : [],
-        authorizationid: 'authorizations/rev_graph_update', // FIXME
+        authorizationid: 'authorizations/rev_graph_update',
         change_path: parent.path,
         path_leftover: `${parent.path}/_rev`,
         resourceExists: true,

@@ -15,19 +15,27 @@
  * limitations under the License.
  */
 
+/* eslint-disable @typescript-eslint/ban-types */
+
 import type { Link } from '@oada/types/oada/link/v1';
-import type { Resource } from '@oada/types/oada/resource';
+import type Resource from '@oada/types/oada/resource';
 
 import config from '../config.js';
+
+import { OADAified, oadaify } from '@oada/oadaify';
+
+import { User, findById } from './users.js';
 import { db as database } from '../db.js';
-import { findById } from './users.js';
 import { sanitizeResult } from '../util.js';
 
-import Bluebird from 'bluebird';
+import { ArangoError } from 'arangojs/error';
 import { aql } from 'arangojs';
 import cloneDeep from 'clone-deep';
 import debug from 'debug';
 import pointer from 'json-pointer';
+
+type IResource = OADAified<Resource>;
+export { IResource as Resource };
 
 const info = debug('arangodb#resources:info');
 const trace = debug('arangodb#resources:trace');
@@ -65,8 +73,20 @@ export interface GraphLookup {
   resourceExists: boolean;
 }
 
+function normalizeUrl(user: User, url: string): string {
+  if (url.startsWith('/bookmarks')) {
+    return url.replace(/^\/bookmarks/, `/${user.bookmarks._id}`);
+  }
+
+  if (url.startsWith('/shares')) {
+    return url.replace(/^\/shares/, `/${user.shares._id}`);
+  }
+
+  return url;
+}
+
 export async function lookupFromUrl(
-  url: string,
+  path: string,
   userId: string
 ): Promise<GraphLookup> {
   const user = await findById(userId);
@@ -74,13 +94,7 @@ export async function lookupFromUrl(
     throw new Error(`No User Found for given userId ${userId}`);
   }
 
-  if (url.startsWith('/bookmarks')) {
-    url = url.replace(/^\/bookmarks/, `/${user.bookmarks._id}`);
-  }
-
-  if (url.startsWith('/shares')) {
-    url = url.replace(/^\/shares/, `/${user.shares._id}`);
-  }
+  const url = normalizeUrl(user, path);
 
   //    Trace(userId);
   const pieces = pointer.parse(url);
@@ -123,8 +137,7 @@ export async function lookupFromUrl(
     )
     LET rev = DOCUMENT(LAST(path.vertices).resource_id)._oada_rev
     RETURN MERGE(path, {permissions, rev, type})`;
-
-  trace(query, 'Query');
+  const cursor = await database.query(query);
   const result: {
     rev: number;
     type: string | null;
@@ -144,7 +157,7 @@ export async function lookupFromUrl(
           versioned: boolean;
         }>
       | [null];
-  } = (await (await database.query(query)).next()) as {
+  } = (await cursor.next()) as {
     rev: number;
     type: string | null;
     permissions: Array<Nullable<Permission>>;
@@ -247,13 +260,13 @@ export async function lookupFromUrl(
     };
   }
 
-  const [lastv] = vertices.slice(-1);
+  const [lastV] = vertices.slice(-1);
   // A dangling edge indicates uncreated resource; return graph lookup
   // starting at this uncreated resource
-  if (lastv) {
-    resource_id = lastv.resource_id;
+  if (lastV) {
+    resource_id = lastV.resource_id;
     trace('graph-lookup traversal found resource %s', resource_id);
-    const fromv = vertices[vertices.length - 2];
+    const fromV = vertices[vertices.length - 2];
     const edge = edges[edges.length - 1];
     // If the desired url has more pieces than the longest path, the
     // pathLeftover is the extra pieces
@@ -266,14 +279,14 @@ export async function lookupFromUrl(
         pieces.slice(lastResource - pieces.length)
       );
     } else {
-      path_leftover = lastv.path ?? '';
+      path_leftover = lastV.path ?? '';
     }
 
     from = {
       permissions,
-      resourceExists: Boolean(fromv),
-      resource_id: fromv?.resource_id ?? '',
-      path_leftover: (fromv?.path ?? '') + (edge ? `/${edge.name}` : ''),
+      resourceExists: Boolean(fromV),
+      resource_id: fromV?.resource_id ?? '',
+      path_leftover: (fromV?.path ?? '') + (edge ? `/${edge.name}` : ''),
     };
   } else {
     const lastEdge = edges[edges.length - 1]?._to;
@@ -283,13 +296,13 @@ export async function lookupFromUrl(
     }`;
     trace('graph-lookup traversal uncreated resource %s', resource_id);
     rev = 0;
-    const fromv = vertices[vertices.length - 2];
+    const fromV = vertices[vertices.length - 2];
     const edge = edges[edges.length - 1];
     from = {
-      resourceExists: Boolean(fromv),
+      resourceExists: Boolean(fromV),
       permissions,
-      resource_id: fromv?.resource_id ?? '',
-      path_leftover: (fromv?.path ?? '') + (edge ? `/${edge.name}` : ''),
+      resource_id: fromV?.resource_id ?? '',
+      path_leftover: (fromV?.path ?? '') + (edge ? `/${edge.name}` : ''),
     };
     resourceExists = false;
   }
@@ -307,8 +320,16 @@ export async function lookupFromUrl(
 
 export async function getResource(
   id: string,
+  path?: ''
+): Promise<IResource | undefined>;
+export async function getResource(
+  id: string,
+  path: string
+): Promise<Partial<IResource> | undefined>;
+export async function getResource(
+  id: string,
   path = ''
-): Promise<Partial<Resource> | undefined> {
+): Promise<Partial<IResource> | undefined> {
   // TODO: Escaping stuff?
   const parts = pointer.parse(path);
 
@@ -317,24 +338,15 @@ export async function getResource(
     parts[0] = '_oada_rev';
   }
 
-  const bindVariables = parts.reduce<Record<string, string>>(
-    (b, part, index) => {
-      b[`v${index}`] = part;
-      return b;
-    },
-    {}
-  );
-  bindVariables.id = id;
-  bindVariables['@collection'] = resources.name;
+  const bindVariables = {
+    ...Object.fromEntries(parts.map((part, index) => [`v${index}`, part])),
+    id,
+    '@collection': resources.name,
+  };
+  const returnPath = parts.map((_, index) => `[@v${index}]`).join('');
 
-  const returnPath = parts.reduce(
-    (p, _, index) => p.concat(`[@v${index}]`),
-    ''
-  );
-
-  // eslint-disable-next-line promise/valid-params
-  return Bluebird.resolve(
-    database.query({
+  try {
+    const result = await database.query({
       // TODO: Fix this thing to use aql...
       query: `
         WITH ${resources.name}
@@ -342,18 +354,19 @@ export async function getResource(
           FILTER r._id == @id
           RETURN r${returnPath}`,
       bindVars: bindVariables,
-    })
-  )
-    .then(async (result) => result.next() as unknown as Partial<Resource>)
-    .then(sanitizeResult)
-    .catch(
-      {
-        isArangoError: true,
-        errorMessage: 'invalid traversal depth (while instantiating plan)',
-      },
-      // eslint-disable-next-line unicorn/no-useless-undefined
-      () => undefined
-    ); // Treat non-existing path has not-found
+    });
+    return oadaify(sanitizeResult(await result.next()), false);
+  } catch (error: unknown) {
+    if (
+      error instanceof ArangoError &&
+      error.message === 'invalid traversal depth (while instantiating plan)'
+    ) {
+      // Treat non-existing path as not-found
+      return undefined;
+    }
+
+    throw error as Error;
+  }
 }
 
 interface OwnerIdRev {
@@ -366,9 +379,8 @@ interface OwnerIdRev {
 export async function getResourceOwnerIdRev(
   id: string
 ): Promise<OwnerIdRev | undefined> {
-  // eslint-disable-next-line promise/valid-params
-  return Bluebird.resolve(
-    database.query(aql`
+  try {
+    const result = await database.query(aql`
       WITH ${resources}
       FOR r IN ${resources}
         FILTER r._id == ${id}
@@ -376,35 +388,34 @@ export async function getResourceOwnerIdRev(
           _rev: r._oada_rev,
           _id: r._id,
           _meta: { _owner: r._meta._owner }
-        }`)
-  )
-    .then(async (result) => result.next())
-    .then((object) => {
-      trace('getResourceOwnerIdRev(%s): result = %O', id, object);
-      return object as OwnerIdRev | undefined;
-    })
-    .catch(
-      {
-        isArangoError: true,
-        errorMessage: 'invalid traversal depth (while instantiating plan)',
-      },
-      // eslint-disable-next-line unicorn/no-useless-undefined
-      () => undefined
-    ); // Treat non-existing path has not-found
+        }`);
+
+    const object = (await result.next()) as OwnerIdRev | undefined;
+    trace('getResourceOwnerIdRev(%s): result = %O', id, object);
+    return object;
+  } catch (error: unknown) {
+    if (
+      error instanceof ArangoError &&
+      error.message === 'invalid traversal depth (while instantiating plan)'
+    ) {
+      // Treat non-existing path as not-found
+      return undefined;
+    }
+
+    throw error as Error;
+  }
 }
 
-export async function getParents(id: string): Promise<Array<{
-  resource_id: string;
-  path: string;
-  contentType: string;
-}> | null> {
-  // eslint-disable-next-line promise/valid-params
-  return Bluebird.resolve(
-    database.query(
+export async function getParents(id: string) {
+  try {
+    const cursor = await database.query(
       aql`
         WITH ${edgesCollection}, ${graphNodes}, ${resources}
         FOR v, e IN 0..1
-          INBOUND ${`graphNodes/${id.replace(/\//, ':')}`}
+          INBOUND ${
+            // eslint-disable-next-line sonarjs/no-nested-template-literals
+            `graphNodes/${id.replace(/\//, ':')}`
+          }
           ${edgesCollection}
           FILTER e.versioned == true
           LET res = DOCUMENT(v.resource_id)
@@ -413,26 +424,30 @@ export async function getParents(id: string): Promise<Array<{
             path: CONCAT(v.path || '', '/', e.name),
             contentType: res._type
           }`
-    )
-  )
-    .call('all')
-    .catch(
-      {
-        isArangoError: true,
-        errorMessage: 'invalid traversal depth (while instantiating plan)',
-      },
-      () => null
-    ); // Treat non-existing path has not-found
+    );
+    return cursor as AsyncIterableIterator<{
+      resource_id: string;
+      path: string;
+      contentType: string;
+    }>;
+  } catch (error: unknown) {
+    if (
+      error instanceof ArangoError &&
+      error.message === 'invalid traversal depth (while instantiating plan)'
+    ) {
+      // Treat non-existing path as no parents?
+      return (async function* () {
+        // Empty async iterable iterator
+      })();
+    }
+
+    throw error as Error;
+  }
 }
 
-export async function getNewDescendants(
-  id: string,
-  rev: string | number
-): Promise<Array<{ id: string; changed: boolean }>> {
-  // TODO: Better way to compare the revs?
-  return (await (
-    await database.query(
-      aql`
+export async function getNewDescendants(id: string, rev: string | number) {
+  const cursor = await database.query(
+    aql`
         WITH ${graphNodes}, ${edgesCollection}, ${resources}
         LET node = FIRST(
           FOR node in ${graphNodes}
@@ -449,18 +464,14 @@ export async function getNewDescendants(
             id: v.resource_id,
             changed: TO_NUMBER(ver) >= ${Number.parseInt(rev as string, 10)}
           }`
-    )
-  ).all()) as Array<{ id: string; changed: boolean }>;
+  );
+  return cursor as AsyncIterableIterator<{ id: string; changed: boolean }>;
 }
 
-export async function getChanges(
-  id: string,
-  rev: string | number
-): Promise<Array<{ id: string; changes: string }>> {
+export async function getChanges(id: string, rev: string | number) {
   // Currently utilizes fixed depth search "7..7" to get data points down
-  return (await (
-    await database.query(
-      aql`
+  const cursor = await database.query(
+    aql`
         WITH ${graphNodes}, ${edgesCollection}, ${resources}
         LET node = FIRST(
           FOR node in ${graphNodes}
@@ -480,8 +491,8 @@ export async function getChanges(
         FOR obj in objs
           LET doc = DOCUMENT(obj.id)
           RETURN {id: obj.id, changes: doc._meta._changes[obj.rev]}`
-    )
-  ).all()) as Array<{ id: string; changes: string }>;
+  );
+  return cursor as AsyncIterableIterator<{ id: string; changes: string }>;
 }
 
 export async function putResource(
@@ -496,7 +507,7 @@ export async function putResource(
   // TODO: Sanitize OADA keys?
   // _key is now an illegal document key
   object._key = id.replace(/^\/?resources\//, '');
-  trace(`Adding links for resource ${id}...`);
+  trace('Adding links for resource %s...', id);
 
   const links = checkLinks ? await addLinks(object) : [];
   info('Upserting resource %s', object._key);
@@ -507,7 +518,7 @@ export async function putResource(
   if (links.length > 0) {
     const thingy = aql`
       LET reskey = ${object._key as string}
-      LET resup = FIRST(
+      LET resUp = FIRST(
         LET res = ${object}
         UPSERT { '_key': reskey }
         INSERT res
@@ -515,9 +526,9 @@ export async function putResource(
         IN ${resources}
         RETURN { res: NEW, orev: OLD._oada_rev }
       )
-      LET res = resup.res
+      LET res = resUp.res
       FOR l IN ${links}
-        LET lkey = SUBSTRING(l._id, LENGTH('resources/'))
+        LET lKey = SUBSTRING(l._id, LENGTH('resources/'))
         LET nodeids = FIRST(
           LET nodeids = (
             LET nodeids = APPEND([reskey], SLICE(l.path, 0, -1))
@@ -525,20 +536,20 @@ export async function putResource(
               LET path = CONCAT_SEPARATOR(':', SLICE(nodeids, 0, i))
               RETURN CONCAT('resources:', path)
           )
-          LET end = CONCAT('resources:', lkey)
+          LET end = CONCAT('resources:', lKey)
           RETURN APPEND(nodeids, [end])
         )
         LET nodes = APPEND((
           FOR i IN 0..(LENGTH(l.path)-1)
-            LET isresource = i IN [0, LENGTH(l.path)]
-            LET ppath = SLICE(l.path, 0, i)
-            LET resid = i == LENGTH(l.path) ? lkey : reskey
-            LET path = isresource ? null
-                : CONCAT_SEPARATOR('/', APPEND([''], ppath))
+            LET isResource = i IN [0, LENGTH(l.path)]
+            LET pPath = SLICE(l.path, 0, i)
+            LET resId = i == LENGTH(l.path) ? lKey : reskey
+            LET path = isResource ? null
+                : CONCAT_SEPARATOR('/', APPEND([''], pPath))
             UPSERT { '_key': nodeids[i] }
             INSERT {
               '_key': nodeids[i],
-              'is_resource': isresource,
+              'is_resource': isResource,
               'path': path,
               'resource_id': res._id
             }
@@ -566,12 +577,12 @@ export async function putResource(
             IN ${edgesCollection}
             RETURN NEW
         )
-        RETURN resup.orev`;
+        RETURN resUp.orev`;
 
     q = await database.query(thingy);
   } else {
     q = await database.query(aql`
-      LET resup = FIRST(
+      LET resUp = FIRST(
         LET res = ${object}
         UPSERT { '_key': res._key }
         INSERT res
@@ -579,7 +590,7 @@ export async function putResource(
         IN ${resources}
         return { res: NEW, orev: OLD._oada_rev }
       )
-      LET res = resup.res
+      LET res = resUp.res
       LET nodekey = CONCAT('resources:', res._key)
       UPSERT { '_key': nodekey }
       INSERT {
@@ -590,7 +601,7 @@ export async function putResource(
       UPDATE {}
       IN ${graphNodes}
       OPTIONS {exclusive: true, ignoreErrors: true }
-      RETURN resup.orev`);
+      RETURN resUp.orev`);
   }
 
   return (await q.next()) as number;
@@ -601,28 +612,29 @@ async function forLinks(
   callback: (link: Link, path: readonly string[]) => void | Promise<void>,
   path: string[] = []
 ): Promise<void> {
-  await Bluebird.map(Object.entries(resource), async ([key, value]) => {
-    if (value && typeof value === 'object') {
-      if ('_id' in value && key !== '_meta') {
-        // If it has _id and is not _meta, treat as a link
-        await callback(value as Link, path.concat(key));
-        return;
-      }
+  await Promise.all(
+    Object.entries(resource).map(async ([key, value]) => {
+      if (value && typeof value === 'object') {
+        if ('_id' in value && key !== '_meta') {
+          // If it has _id and is not _meta, treat as a link
+          await callback(value as Link, path.concat(key));
+          return;
+        }
 
-      await forLinks(
-        value as Record<string, unknown>,
-        callback,
-        path.concat(key)
-      );
-    }
-  });
+        await forLinks(
+          value as Record<string, unknown>,
+          callback,
+          path.concat(key)
+        );
+      }
+    })
+  );
 }
 
 // TODO: Remove links as well
 async function addLinks(resource: Record<string, unknown>) {
   // TODO: Use fewer queries or something?
   const links: Link[] = [];
-
   await forLinks(resource, async (link, path) => {
     // Ignore _changes "link"?
     if (path[0] === '_meta' && path[1] === '_changes') {
@@ -663,9 +675,8 @@ export async function deleteResource(id: string): Promise<number> {
   const key = id.replace(/^\/?resources\//, '');
 
   // Query deletes resource, its nodes, and outgoing edges (but not incoming)
-  return (await (
-    await database.query(
-      aql`
+  const cursor = await database.query(
+    aql`
         LET res = FIRST(
           REMOVE { '_key': ${key} } IN ${resources}
           RETURN OLD
@@ -683,8 +694,8 @@ export async function deleteResource(id: string): Promise<number> {
               REMOVE edge IN ${edgesCollection}
         )
         RETURN res._oada_rev`
-    )
-  ).next()) as number;
+  );
+  return (await cursor.next()) as number;
 }
 
 /**
@@ -710,21 +721,19 @@ export async function deletePartialResource(
 
   const name = aPath.pop();
   const sPath = pointer.compile(aPath) || null;
-  const hasObject = (await (
-    await database.query({
-      query: `
+  const cursor = await database.query({
+    query: `
         LET res = DOCUMENT(${resources.name}, '${key}')
         LET has = ${hasString}
 
         RETURN {has, rev: res._oada_rev}`,
-      bindVars: {},
-    })
-  ).next()) as { has: boolean; rev: number };
+    bindVars: {},
+  });
+  const hasObject = (await cursor.next()) as { has: boolean; rev: number };
   if (hasObject.has) {
     // TODO: Why the heck does arango error if I update resource before graph?
-    return (await (
-      await database.query(
-        aql`
+    const updateCursor = await database.query(
+      aql`
           LET start = FIRST(
             FOR node IN ${graphNodes}
               LET path = node.path || null
@@ -768,22 +777,9 @@ export async function deletePartialResource(
           )
           UPDATE ${key} WITH newres IN ${resources} OPTIONS { keepNull: false }
           RETURN OLD._oada_rev`
-      )
-    ).next()) as number;
+    );
+    return (await updateCursor.next()) as number;
   }
 
   return hasObject.rev;
 }
-
-// TODO: Better way to handler errors?
-// ErrorNum from: https://docs.arangodb.com/2.8/ErrorCodes/
-// eslint-disable-next-line @typescript-eslint/naming-convention
-export const NotFoundError = {
-  name: 'ArangoError',
-  errorNum: 1202,
-};
-// eslint-disable-next-line @typescript-eslint/naming-convention
-export const UniqueConstraintError = {
-  name: 'ArangoError',
-  errorNum: 1210,
-};

@@ -31,7 +31,7 @@
     "@oada/lib-config": "^3.0.1",
     "@oada/pino-debug": "^3.0.1",
     "@oada/well-known-json": "^1.0.1",
-    "axios": "^0.25.0",
+    "axios": "^0.26.0",
     "bluebird": "^3.7.2",
     "cors": "^2.8.5",
     "debug": "^4.3.3",

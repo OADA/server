@@ -87,6 +87,14 @@ export const app = fastify({
   },
 });
 
+if (process.env.NODE_ENV !== 'production') {
+  // Add request id header for debugging purposes
+  app.addHook('onSend', async (request, reply, payload) => {
+    await reply.header('X-Request-Id', request.id);
+    return payload;
+  });
+}
+
 export async function start(): Promise<void> {
   await app.listen(config.get('server.port'), '0.0.0.0');
   app.log.info('OADA Server started on port %d', config.get('server.port'));

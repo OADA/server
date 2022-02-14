@@ -16,22 +16,22 @@
  */
 
 import { URL } from 'node:url';
+import { join } from 'node:path';
 
 import { KafkaBase, Responder } from '@oada/lib-kafka';
 import { remoteResources, resources } from '@oada/lib-arangodb';
+import type { Resource } from '@oada/lib-arangodb/dist/libs/resources';
 
 import type { WriteResponse } from '@oada/write-handler';
 
 import config from './config.js';
 
-import Bluebird from 'bluebird';
 import axios from 'axios';
 import debug from 'debug';
 
 const info = debug('sync-handler:info');
 const trace = debug('sync-handler:trace');
 const warn = debug('sync-handler:warn');
-const error = debug('sync-handler:error');
 
 // TODO: Where to store the syncs?
 // I feel like putting webhooks in _syncs was a poor choice
@@ -80,158 +80,166 @@ responder.on<WriteResponse>('request', async (request) => {
 
   trace('Processing syncs for resource %s', id);
 
-  const desc = await resources.getNewDescendants(id, oRev);
-  trace('New descendants for %s: %O', id, desc);
-  // TODO: Figure out just what changed
-  const changes = desc
-    .filter((d) => d.changed)
-    .map(({ id }) => ({ [id]: resources.getResource(id) }))
-    .reduce((a, b) => Object.assign(a, b));
+  const descendants = await resources.getNewDescendants(id, oRev);
+  const changes: Record<string, Promise<Resource | undefined>> = {};
+  const ids: string[] = [];
+  for await (const desc of descendants) {
+    trace('New descendant for %s: %O', id, desc);
+    ids.push(desc.id);
+
+    if (!desc.changed) {
+      continue;
+    }
+
+    // TODO: Figure out just what changed
+    changes[desc.id] = resources.getResource(desc.id);
+  }
 
   // TODO: Probably should not be keeping the tokens under _meta...
-  const puts = Bluebird.map(syncs, async ([key, { url, domain, token }]) => {
-    info('Running sync %s for resource %s', key, id);
-    trace('Sync %s: %O', key, { url, domain, token });
-    // Need separate changes map for each sync since they run concurrently
-    const lChanges = { ...changes }; // Shallow copy
+  const puts = Promise.all(
+    syncs.map(async ([key, { url, domain, token }]) => {
+      info('Running sync %s for resource %s', key, id);
+      trace('Sync %s: %O', key, { url, domain, token });
+      // Need separate changes map for each sync since they run concurrently
+      const lChanges = { ...changes }; // Shallow copy
 
-    if (process.env.NODE_ENV !== 'production') {
-      /*
-       * If running in dev environment,
-       * localhost should be directed to the proxy server
-       */
+      if (process.env.NODE_ENV !== 'production') {
+        /**
+         * If running in dev environment,
+         * localhost should be directed to the proxy server
+         */
 
-      domain = domain.replace('localhost', 'proxy');
-    }
+        domain = domain.replace('localhost', 'proxy');
+      }
 
-    // TODO: Cache this?
-    const apiroot = Bluebird.resolve(
-      axios.get<{ oada_base_uri: string }>(
+      // TODO: Cache this?
+      const {
+        data: { oada_base_uri: apiroot },
+      } = await axios.get<{ oada_base_uri: string }>(
         `https://${domain}/.well-known/oada-configuration`
-      )
-    )
-      .get('data')
-      .get('oada_base_uri')
-      .then((s) => s.replace(/\/?$/, '/'));
-
-    // Ensure each local resource has a corresponding remote one
-    const ids = desc.map((d) => d.id);
-    let rids = (await remoteResources.getRemoteId(ids, domain))
-      // Map the top resource to supplied URL
-      .map((rid) => (rid.id === id ? { id, rid: url } : rid));
-    // Create missing rids
-    const newrids = await Bluebird.map(
-      rids.filter(({ rid }) => !rid),
-      async ({ id }) => {
-        trace('Creating remote ID for %s at %s', id, domain);
-
-        const url = `${await apiroot}resources/`;
-        // Create any missing remote IDs
-        const {
-          headers: { location: loc },
-        } = await axios.post<void, { headers: { location: string } }>(
-          url,
-          {},
-          {
-            headers: {
-              authorization: token,
-            },
-          }
-        );
-
-        // TODO: Less gross way of create new remote resources?
-        lChanges[id] = resources.getResource(id);
-
-        // Parse resource ID from Location header
-        const newID = new URL(loc, url).toString().replace(url, 'resources/');
-        return {
-          rid: newID,
-          id,
-        };
-      }
-    );
-    // Add all remote IDs at once
-    if (newrids.length === 0) {
-      return;
-    }
-
-    // Record new remote ID
-    await Bluebird.resolve(
-      remoteResources.addRemoteId(newrids, domain)
-    ).tapCatch(remoteResources.UniqueConstraintError, () => {
-      error('Unique constraint error for remoteId %O %O', newrids, domain);
-    });
-
-    trace('Created remote ID for %s at %s: %O', id, domain, newrids);
-
-    rids = rids.filter(({ rid }) => rid).concat(newrids);
-    // Create mapping of IDs here to IDs there
-    const idMapping = rids
-      .map(({ id, rid }) => ({ [id]: rid }))
-      .reduce((a, b) => ({ ...a, ...b }), {});
-    return Bluebird.map(rids, async ({ id, rid }) => {
-      const change = await lChanges[id];
-      if (!change) {
-        return Promise.resolve();
-      }
-
-      trace('PUTing change for %s to %s at %s', id, rid, domain);
-
-      const type = change._meta?._type;
-
-      // Fix links etc.
-      const body = JSON.stringify(change, function (k, v: unknown) {
-        switch (k) {
-          case '_meta': // Don't send resources's _meta
-          case '_rev': // Don't send resource's _rev
-            if (this === change) {
-              return;
-            }
-
-            return v;
-
-          case '_id':
-            if (this === change) {
-              // Don't send resource's _id
-              return;
-            }
-
-            // TODO: Better link detection?
-            if (idMapping[v as string]) {
-              return idMapping[v as string];
-            }
-
-            warn('Could not resolve link to %s at %s', v, domain);
-            // TODO: What to do in this case?
-            return '';
-          default:
-            return v;
-        }
-        /* eslint-enable no-invalid-this */
-      });
-
-      // TODO: Support DELETE
-      const put = axios({
-        method: 'put',
-        url: `${await apiroot}${rid}`,
-        data: body,
-        headers: {
-          'content-type': type!,
-          'authorization': token,
-        },
-      });
-      await put;
-
-      trace(
-        'Finished PUTing change for %s to %s at %s: %O',
-        id,
-        rid,
-        domain,
-        await put
       );
-      return put;
-    });
-  });
+
+      // Ensure each local resource has a corresponding remote one
+      let rids = (await remoteResources.getRemoteId(ids, domain))
+        // Map the top resource to supplied URL
+        .map((rid) => (rid.id === id ? { id, rid: url } : rid));
+      // Create missing rids
+      const newrids = await Promise.all(
+        rids
+          .filter(({ rid }) => !rid)
+          .map(async ({ id }) => {
+            trace('Creating remote ID for %s at %s', id, domain);
+
+            const url = join(apiroot, 'resources');
+            // Create any missing remote IDs
+            const {
+              headers: { location: loc },
+            } = await axios.post<void, { headers: { location: string } }>(
+              url,
+              {},
+              {
+                headers: {
+                  authorization: token,
+                },
+              }
+            );
+
+            // TODO: Less gross way of create new remote resources?
+            lChanges[id] = resources.getResource(id);
+
+            // Parse resource ID from Location header
+            const newID = new URL(loc, url)
+              .toString()
+              .replace(url, 'resources/');
+            return {
+              rid: newID,
+              id,
+            };
+          })
+      );
+      // Add all remote IDs at once
+      if (newrids.length === 0) {
+        return;
+      }
+
+      // Record new remote ID
+      await remoteResources.addRemoteId(newrids, domain);
+
+      trace('Created remote ID for %s at %s: %O', id, domain, newrids);
+
+      rids = rids.filter(({ rid }) => rid).concat(newrids);
+      // Create mapping of IDs here to IDs there
+      const idMapping = Object.fromEntries(
+        rids.map(({ id, rid }) => [id, rid])
+      );
+      return Promise.all(
+        rids.map(async ({ id, rid }) => {
+          const change = await lChanges[id];
+          if (!change) {
+            return;
+          }
+
+          trace('PUTing change for %s to %s at %s', id, rid, domain);
+
+          const type = change._meta._type;
+
+          // Fix links etc.
+          const body = JSON.stringify(
+            change,
+            function (this: unknown, k, v: unknown) {
+              switch (k) {
+                case '_meta': // Don't send resources's _meta
+                case '_rev': // Don't send resource's _rev
+                  if (this === change) {
+                    return;
+                  }
+
+                  return v;
+
+                case '_id':
+                  if (this === change) {
+                    // Don't send resource's _id
+                    return;
+                  }
+
+                  // TODO: Better link detection?
+                  if (idMapping[v as string]) {
+                    return idMapping[v as string];
+                  }
+
+                  warn('Could not resolve link to %s at %s', v, domain);
+                  // TODO: What to do in this case?
+                  return '';
+                default:
+                  return v;
+              }
+            }
+          );
+
+          // TODO: Support DELETE
+          const put = axios({
+            method: 'put',
+            url: join(apiroot, rid),
+            data: body,
+            headers: {
+              'content-type': `${type}`,
+              'authorization': token,
+            },
+          });
+          await put;
+
+          trace(
+            'Finished PUTing change for %s to %s at %s: %O',
+            id,
+            rid,
+            domain,
+            await put
+          );
+          return put;
+        })
+      );
+    })
+  );
 
   await puts;
 });

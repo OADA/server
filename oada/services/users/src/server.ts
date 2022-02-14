@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-import { users } from '@oada/lib-arangodb';
+import { ArangoError, ArangoErrorCode, users } from '@oada/lib-arangodb';
 import { ResponderRequester } from '@oada/lib-kafka';
 
 import config from './config.js';
@@ -66,37 +66,38 @@ async function createNewUser(request: UserRequest): Promise<users.User> {
     ...request.user,
   } as Omit<users.User, '_rev'>);
   // Create empty resources for user
-  for (const res of <const>['bookmarks', 'shares']) {
-    if (!user[res]?._id) {
-      const resID = `resources/${(await ksuid.random()).string}`;
+  for await (const resource of <const>['bookmarks', 'shares']) {
+    if (!user[resource]?._id) {
+      const { string: id } = await ksuid.random();
+      const resourceID = `resources/${id}`;
 
       trace(
         'Creating %s for %s of %s as _type = %s',
-        resID,
-        res,
+        resourceID,
+        resource,
         user._id,
-        contentTypes[res]
+        contentTypes[resource]
       );
       const resp = await responder.send({
         msgtype: 'write-request',
-        url: `/${resID}`,
-        resource_id: `/${resID}`,
+        url: `/${resourceID}`,
+        resource_id: `/${resourceID}`,
         path_leftover: '',
-        meta_id: `${resID}/_meta`,
+        meta_id: `${resourceID}/_meta`,
         user_id: user._id,
         // TODO: What to put for these?
         // 'authorizationid': ,
         // 'client_id': ,
-        contentType: contentTypes[res],
+        contentType: contentTypes[resource],
         body: {},
       });
       if (resp?.code !== 'success') {
         // TODO: Clean up on failure?
         trace(resp.code);
-        throw new Error(`Failed to create ${res}`);
+        throw new Error(`Failed to create ${resource}`);
       }
 
-      user[res] = { _id: resID };
+      user[resource] = { _id: resourceID };
     }
   }
 
@@ -137,7 +138,7 @@ export async function handleReq(request: UserRequest): Promise<UserResponse> {
   );
   // While this could fit in permissions_handler, since users are not really resources (i.e. no graph),
   // we'll add a check here that the user has oada.admin.user:write or oada.admin.user:all scope
-  const authorization = cloneDeep(request.authorization) || { scope: '' };
+  const authorization = cloneDeep(request.authorization) ?? { scope: '' };
   const tokenscope = Array.isArray(authorization.scope)
     ? authorization.scope.join(' ')
     : authorization.scope; // Force to space-separated string
@@ -146,39 +147,36 @@ export async function handleReq(request: UserRequest): Promise<UserResponse> {
     !/oada.admin.user:all/.test(tokenscope)
   ) {
     warn(
-      'WARNING: attempt to create a user, but request does not have token with oada.admin.user:write or oada.admin.user:all scope'
+      'Attempted to create a user, but request does not have token with oada.admin.user:write or oada.admin.user:all scope'
     );
     throw new Error('Token does not have required scope to create users.');
   }
 
   // First, check if the ID exists already:
-  let current_user = null;
+  let currentUser = null;
   if (request.userid) {
     trace('Checking if user id %s exists.', request.userid);
-    current_user = await users.findById(request.userid, { graceful: true });
+    currentUser = await users.findById(request.userid, { graceful: true });
   }
 
   trace(
     'Result of search for user with id %s: %O',
     request.userid,
-    current_user
+    currentUser
   );
 
   // Make one if it doesn't exist already:
-  let created_a_new_user = false;
-  if (!current_user) {
+  let createUser = false;
+  if (!currentUser) {
     try {
-      created_a_new_user = true;
-      current_user = await createNewUser(request);
-    } catch (error_: unknown) {
+      createUser = true;
+      currentUser = await createNewUser(request);
+    } catch (cError: unknown) {
       if (
-        error_ &&
-        typeof error_ === 'object' &&
-        'errorNum' in error_ &&
-        (error_ as { errorNum: number }).errorNum ===
-          users.UniqueConstraintError.errorNum
+        cError instanceof ArangoError &&
+        cError.errorNum === ArangoErrorCode.ARANGO_UNIQUE_CONSTRAINT_VIOLATED
       ) {
-        created_a_new_user = false;
+        createUser = false;
         trace(
           request.user,
           'Tried to create user, but it already existed (same username). Returning as if we had created it'
@@ -188,20 +186,20 @@ export async function handleReq(request: UserRequest): Promise<UserResponse> {
           trace(user, 'existing user found');
         }
       } else {
-        error(error_, 'Unknown error occurred when creating new user');
-        throw error_;
+        error(cError, 'Unknown error occurred when creating new user');
+        throw cError as Error;
       }
     }
   }
 
   // Now we know the user exists and has bookmarks/shares.  Now update/merge it with the requested data
-  if (!created_a_new_user) {
-    const { _id } = current_user ?? {};
+  if (!createUser) {
+    const { _id } = currentUser ?? {};
     trace(
       'We did not create a new user, so we are now updating user id %s',
       _id
     );
-    current_user = await users.update({
+    currentUser = await users.update({
       // Assume req.user is a full user now?
       ...request.user,
       _id: _id!,
@@ -210,17 +208,17 @@ export async function handleReq(request: UserRequest): Promise<UserResponse> {
 
   // All done!
   // Respond to the request with success:
-  if (trace.enabled && current_user) {
+  if (trace.enabled && currentUser) {
     // Don't log passwords
     const { password, ...user } =
-      'new' in current_user ? current_user.new : current_user;
+      'new' in currentUser ? currentUser.new : currentUser;
     trace(user, 'Finished with update, responding with success');
   }
 
   return {
     code: 'success',
-    new: created_a_new_user,
+    new: createUser,
     // TODO: figure out what cur_user is supposed to be??
-    user: current_user as users.User,
+    user: currentUser as users.User,
   };
 }

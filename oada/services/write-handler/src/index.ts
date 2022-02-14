@@ -15,8 +15,14 @@
  * limitations under the License.
  */
 
+import {
+  ArangoError,
+  ArangoErrorCode,
+  changes,
+  putBodies,
+  resources,
+} from '@oada/lib-arangodb';
 import { KafkaBase, Responder } from '@oada/lib-kafka';
-import { changes, putBodies, resources } from '@oada/lib-arangodb';
 
 import type Change from '@oada/types/oada/change/v2';
 import type { Resource } from '@oada/types/oada/resource';
@@ -403,15 +409,21 @@ export async function handleRequest(
       }
     )
     // eslint-disable-next-line github/no-then
-    .catch(resources.NotFoundError, (cError: unknown) => {
-      error(cError);
-      return {
-        msgtype: 'write-response',
-        code: 'not_found',
-        user_id: request.user_id,
-        authorizationid: request.authorizationid,
-      };
-    });
+    .catch(
+      {
+        name: ArangoError.name,
+        errorNum: ArangoErrorCode.ARANGO_DOCUMENT_NOT_FOUND,
+      },
+      (cError: unknown) => {
+        error(cError);
+        return {
+          msgtype: 'write-response',
+          code: 'not_found',
+          user_id: request.user_id,
+          authorizationid: request.authorizationid,
+        };
+      }
+    );
 
   try {
     // TODO: Better return type for this function

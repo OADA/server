@@ -15,20 +15,17 @@
  * limitations under the License.
  */
 
-import { expect } from 'chai';
-import { init, resources } from '../src';
+import test from 'ava';
 
-describe('resources lib', () => {
-  before(async () => init.run());
+import { init, resources } from '../';
 
-  it('should find parents based on resource id', async () =>
-    resources.getParents('/resources:default:resources_rock_123').then((p) => {
-      expect(p?.[0]?.path).to.equal('/rocks-index/90j2klfdjss');
-      expect(p?.[0]?.resource_id).to.equal(
-        'resources/default:resources_rocks_123'
-      );
-      expect(p?.[0]?.contentType).to.equal('application/vnd.oada.rocks.1+json');
-    }));
+test.before(async () => init.run());
 
-  after(async () => init.cleanup());
+test('should find parents based on resource id', async (t) => {
+  const p = await resources.getParents('/resources:default:resources_rock_123');
+  t.is(p?.[0]?.path, '/rocks-index/90j2klfdjss');
+  t.is(p?.[0]?.resource_id, 'resources/default:resources_rocks_123');
+  t.is(p?.[0]?.contentType, 'application/vnd.oada.rocks.1+json');
 });
+
+test.after(async () => init.cleanup());

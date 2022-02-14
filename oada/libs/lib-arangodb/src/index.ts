@@ -26,3 +26,5 @@ export * as clients from './libs/clients.js';
 export * as codes from './libs/codes.js';
 export * as authorizations from './libs/authorizations.js';
 export * as putBodies from './libs/putBodies.js';
+
+export { ArangoError, ArangoErrorCode } from './libs/errors.js';

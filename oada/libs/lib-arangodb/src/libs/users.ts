@@ -19,7 +19,6 @@ import config from '../config.js';
 import { db as database } from '../db.js';
 import { sanitizeResult } from '../util.js';
 
-import Bluebird from 'bluebird';
 import type { CollectionReadOptions } from 'arangojs/collection';
 import { aql } from 'arangojs';
 import bcrypt from 'bcryptjs';
@@ -74,13 +73,19 @@ export interface User {
 export async function findById(
   id: string,
   options?: CollectionReadOptions
-): Promise<User | null> {
-  // eslint-disable-next-line promise/valid-params
-  const result = await Bluebird.resolve(
-    users.document(id, options) as Promise<User>
-  ).catch({ code: 404 }, () => null);
+): Promise<User | undefined> {
+  try {
+    // eslint-disable-next-line @typescript-eslint/ban-types
+    const result = (await users.document(id, options)) as User | null;
+    return result ? sanitizeResult(result) : undefined;
+  } catch (error: unknown) {
+    // @ts-expect-error errors in TS are annoying
+    if (error?.code === 404) {
+      return undefined;
+    }
 
-  return result && sanitizeResult(result);
+    throw error as Error;
+  }
 }
 
 export async function exists(id: string): Promise<boolean> {
@@ -90,41 +95,31 @@ export async function exists(id: string): Promise<boolean> {
 export async function findByUsername(
   username: string
 ): Promise<User | undefined> {
-  const user = (await (
-    await database.query(
-      aql`
+  const cursor = await database.query(
+    aql`
         FOR u IN ${users}
           FILTER u.username == ${username}
           RETURN u`
-    )
-  ).next()) as User;
+  );
+  const user = (await cursor.next()) as User;
 
-  if (!user) {
-    return;
-  }
-
-  return sanitizeResult(user);
+  return user ? sanitizeResult(user) : undefined;
 }
 
 export async function findByOIDCUsername(
   oidcUsername: string,
   oidcDomain: string
-): Promise<User | null> {
-  const user = (await (
-    await database.query(
-      aql`
+): Promise<User | undefined> {
+  const cursor = await database.query(
+    aql`
         FOR u IN ${users}
           FILTER u.oidc.username == ${oidcUsername}
           FILTER u.oidc.iss == ${oidcDomain}
           RETURN u`
-    )
-  ).next()) as User;
+  );
+  const user = (await cursor.next()) as User;
 
-  if (!user) {
-    return null;
-  }
-
-  return sanitizeResult(user);
+  return user ? sanitizeResult(user) : undefined;
 }
 
 /**
@@ -134,33 +129,30 @@ export async function findByOIDCUsername(
 export async function findByOIDCToken(idToken: {
   sub: string;
   iss: string;
-}): Promise<User | null> {
-  const user = (await (
-    await database.query(
-      aql`
+}): Promise<User | undefined> {
+  const cursor = await database.query(
+    aql`
         FOR u IN ${users}
           FILTER u.oidc.sub == ${idToken.sub}
           FILTER u.oidc.iss == ${idToken.iss}
           RETURN u`
-    )
-  ).next()) as User;
+  );
+  const user = (await cursor.next()) as User;
 
-  if (!user) {
-    return null;
-  }
-
-  return sanitizeResult(user);
+  return user ? sanitizeResult(user) : undefined;
 }
 
 export async function findByUsernamePassword(
   username: string,
   password: string
-): Promise<User | null> {
+): Promise<User | undefined> {
   const user = await findByUsername(username);
-  if (!user) return null;
+  if (!user) {
+    return undefined;
+  }
 
   const { password: pass } = user;
-  return pass && (await bcrypt.compare(password, pass)) ? user : null;
+  return pass && (await bcrypt.compare(password, pass)) ? user : undefined;
 }
 
 export async function create(u: Omit<User, '_id' | '_rev'>): Promise<User> {
@@ -202,16 +194,3 @@ export async function like(
 export function hashPw(pw: string): string {
   return bcrypt.hashSync(pw, config.get('arangodb.init.passwordSalt'));
 }
-
-// TODO: Better way to handler errors?
-// ErrorNum from: https://docs.arangodb.com/2.8/ErrorCodes/
-// eslint-disable-next-line @typescript-eslint/naming-convention
-export const NotFoundError = {
-  name: 'ArangoError',
-  errorNum: 1202,
-};
-// eslint-disable-next-line @typescript-eslint/naming-convention
-export const UniqueConstraintError = {
-  name: 'ArangoError',
-  errorNum: 1210,
-};

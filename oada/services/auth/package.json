@@ -49,7 +49,7 @@
     "@oada/pino-debug": "^3.0.1",
     "@oada/well-known-json": "^1.0.1",
     "arangojs": "^7.7.0",
-    "axios": "^0.25.0",
+    "axios": "^0.26.0",
     "bcryptjs": "^2.4.3",
     "bluebird": "^3.7.2",
     "body-parser": "^1.19.1",
