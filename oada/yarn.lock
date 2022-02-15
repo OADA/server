@@ -271,6 +271,7 @@ __metadata:
     "@oada/lib-arangodb": ^3.0.1
     "@oada/lib-config": ^3.0.1
     "@oada/lib-kafka": ^3.0.1
+    "@oada/oadaify": ^2.1.0
     "@oada/permissions-handler": ^3.0.1
     "@oada/pino-debug": ^3.0.1
     "@oada/types": ^1.8.1

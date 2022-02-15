@@ -24,9 +24,9 @@ import {
   Scope,
   handleRequest as permissionsRequest,
 } from '@oada/permissions-handler';
-
 import type { WriteRequest, WriteResponse } from '@oada/write-handler';
-import type { Resource } from '@oada/types/oada/resource';
+
+import { _meta } from '@oada/oadaify';
 import { handleResponse } from '@oada/formats-server';
 
 import { EnsureLink } from './server.js';
@@ -63,16 +63,22 @@ declare module 'cacache' {
 }
 
 // * This was a quick make it work. Do what you want with it.
-function unflattenMeta(document: Partial<Resource>) {
+function unflattenMeta(document: {
+  [key: string]: unknown;
+  [_meta]?: { _id: string; _rev?: number };
+}) {
   if (!document) {
     // Object.keys does not like null
     return document;
   }
 
-  if (document._meta) {
-    document._meta = {
-      _id: document._meta._id,
-      _rev: document._meta._rev,
+  // eslint-disable-next-line security/detect-object-injection
+  const meta = document[_meta];
+  if (meta) {
+    // eslint-disable-next-line security/detect-object-injection
+    document[_meta] = {
+      _id: meta._id,
+      _rev: meta._rev,
     };
   }
 
