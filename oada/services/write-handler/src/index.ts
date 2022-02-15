@@ -31,9 +31,9 @@ import config from './config.js';
 
 import Bluebird from 'bluebird';
 import Cache from 'timed-cache';
+import { JsonPointer } from 'json-ptr';
 import debug from 'debug';
 import objectAssignDeep from 'object-assign-deep';
-import pointer from 'json-pointer';
 
 type DeepPartial<T> = { [K in keyof T]?: DeepPartial<T[K]> };
 
@@ -226,7 +226,7 @@ export async function handleRequest(
           throw new Error('rev mismatch');
         }
 
-        let path = pointer.parse(request.path_leftover);
+        let path = JsonPointer.decode(request.path_leftover);
         let method = resources.putResource;
         changeType = 'merge';
         const object: DeepPartial<Resource> = {};
@@ -239,7 +239,7 @@ export async function handleRequest(
             // TODO: This is gross
             const aPath = Array.from(path);
             method = async (pid, partial) =>
-              resources.deletePartialResource(pid, aPath, partial);
+              resources.deletePartialResource(pid, aPath as string[], partial);
             trace(
               'Setting method = deletePartialResource(%s, %o, %O)',
               id,
@@ -340,7 +340,7 @@ export async function handleRequest(
         }
 
         object._rev = rev;
-        pointer.set(object, '/_meta/_rev', rev);
+        JsonPointer.set(object, '/_meta/_rev', rev);
 
         // Compute new change
         const children = request.from_change_id ?? [];
@@ -355,7 +355,7 @@ export async function handleRequest(
           userId: request.user_id,
           authorizationId: request.authorizationid,
         });
-        pointer.set(object, '/_meta/_changes', {
+        JsonPointer.set(object, '/_meta/_changes', {
           _id: `${id}/_meta/_changes`,
           _rev: rev,
         });

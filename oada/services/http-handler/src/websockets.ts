@@ -33,13 +33,13 @@ import type { WriteResponse } from '@oada/write-handler';
 import config from './config.js';
 
 import type { FastifyPluginAsync } from 'fastify';
+import { JsonPointer } from 'json-ptr';
 import type LightMyRequest from 'light-my-request';
 import { OADAError } from 'oada-error';
 import type WebSocket from 'ws';
 import _debug from 'debug';
 import fastifyWebsocket from 'fastify-websocket';
 import { is } from 'type-is';
-import jsonpointer from 'jsonpointer';
 
 /**
  * @todo Actually figure out how "forgetting history" should work...
@@ -121,7 +121,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         };
         for (const [requestId, pathLeftover] of requests) {
           // Find requests with changes
-          const pathChange: unknown = jsonpointer.get(
+          const pathChange: unknown = JsonPointer.get(
             change?.[0]?.body ?? {},
             pathLeftover
           );

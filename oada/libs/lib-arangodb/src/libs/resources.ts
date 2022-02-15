@@ -29,10 +29,10 @@ import { db as database } from '../db.js';
 import { sanitizeResult } from '../util.js';
 
 import { ArangoError } from 'arangojs/error';
+import { JsonPointer } from 'json-ptr';
 import { aql } from 'arangojs';
 import cloneDeep from 'clone-deep';
 import debug from 'debug';
-import pointer from 'json-pointer';
 
 type IResource = OADAified<Resource>;
 export { IResource as Resource };
@@ -97,7 +97,7 @@ export async function lookupFromUrl(
   const url = normalizeUrl(user, path);
 
   //    Trace(userId);
-  const pieces = pointer.parse(url);
+  const pieces = JsonPointer.decode(url);
   if (!(pieces[0] && pieces[1])) {
     throw new Error(`Failed to parse URL ${url}`);
   }
@@ -179,7 +179,9 @@ export async function lookupFromUrl(
   };
 
   // Get rid of leading slash from json pointer
-  let resource_id = pointer.compile(id.concat(pieces)).replace(/^\//, '');
+  let resource_id = JsonPointer.create(id.concat(pieces))
+    .toString()
+    .replace(/^\//, '');
 
   let { rev, type, edges, vertices } = result;
   let resourceExists = true;
@@ -275,9 +277,9 @@ export async function lookupFromUrl(
       const lastResource =
         vertices.length - 1 - revVertices.findIndex((v) => v?.is_resource);
       // Slice a negative value to take the last n pieces of the array
-      path_leftover = pointer.compile(
+      path_leftover = JsonPointer.create(
         pieces.slice(lastResource - pieces.length)
-      );
+      ).toString();
     } else {
       path_leftover = lastV.path ?? '';
     }
@@ -331,7 +333,7 @@ export async function getResource(
   path = ''
 ): Promise<Partial<IResource> | undefined> {
   // TODO: Escaping stuff?
-  const parts = pointer.parse(path);
+  const parts = JsonPointer.decode(path);
 
   if (parts[0] === '_rev') {
     // Get OADA rev, not arango one
@@ -707,7 +709,8 @@ export async function deletePartialResource(
   document: Partial<Resource> = {}
 ): Promise<number> {
   const key = id.replace(/^resources\//, '');
-  const aPath = Array.isArray(path) ? path : pointer.parse(path);
+  const pointer = new JsonPointer(path);
+  const aPath = Array.isArray(path) ? path : pointer.path;
 
   // TODO: Less gross way to check existence of JSON pointer in AQL??
   let pathA = aPath.slice(0, -1).join("']['");
@@ -717,10 +720,10 @@ export async function deletePartialResource(
   const hasString = `HAS${stringA}`;
 
   const rev = document._rev;
-  pointer.set(document, path as string, null);
+  pointer.set(document, null);
 
   const name = aPath.pop();
-  const sPath = pointer.compile(aPath) || null;
+  const sPath = JsonPointer.create(aPath) || null;
   const cursor = await database.query({
     query: `
         LET res = DOCUMENT(${resources.name}, '${key}')

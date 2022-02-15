@@ -53,7 +53,7 @@
     "fastify-request-context": "^2.2.0",
     "fastify-sensible": "^3.1.2",
     "fastify-websocket": "^4.0.0",
-    "jsonpointer": "^5.0.0",
+    "json-ptr": "^3.1.0",
     "ksuid": "^3.0.0",
     "oada-error": "^1.1.1",
     "tslib": "^2.3.1",

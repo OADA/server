@@ -20,9 +20,9 @@ import type Change from '@oada/types/oada/change/v2';
 import config from '../config.js';
 import { db as database } from '../db.js';
 
+import { JsonPointer } from 'json-ptr';
 import { aql } from 'arangojs';
 import debug from 'debug';
-import pointer from 'json-pointer';
 
 const trace = debug('arangodb#resources:trace');
 
@@ -146,7 +146,7 @@ export async function getChange(
     path += result.edges[index]?.path;
     if (change.body) {
       const { body } = result.vertices[index + 1] ?? {};
-      pointer.set(change.body, path, body);
+      JsonPointer.set(change.body, path, body);
     }
   }
 

@@ -299,7 +299,7 @@ __metadata:
     fastify-sensible: ^3.1.2
     fastify-websocket: ^4.0.0
     find-my-way: ^5.2.0
-    jsonpointer: ^5.0.0
+    json-ptr: ^3.1.0
     ksuid: ^3.0.0
     light-my-request: ^4.7.1
     oada-error: ^1.1.1
@@ -334,7 +334,7 @@ __metadata:
     debug: ^4.3.3
     deep-equal: ^2.0.5
     flat: ^5.0.2
-    json-pointer: ^0.6.1
+    json-ptr: ^3.1.0
     tslib: ^2.3.1
   languageName: unknown
   linkType: soft
@@ -663,7 +663,7 @@ __metadata:
     ava: 4.0.0-rc.1
     bluebird: ^3.7.2
     debug: ^4.3.3
-    json-pointer: ^0.6.1
+    json-ptr: ^3.1.0
     object-assign-deep: ^0.4.0
     timed-cache: ^1.1.5
     tslib: ^2.3.1
@@ -4183,7 +4183,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"foreach@npm:^2.0.4, foreach@npm:^2.0.5":
+"foreach@npm:^2.0.5":
   version: 2.0.5
   resolution: "foreach@npm:2.0.5"
   checksum: dab4fbfef0b40b69ee5eab81bcb9626b8fa8b3469c8cfa26480f3e5e1ee08c40eae07048c9a967c65aeda26e774511ccc70b3f10a604c01753c6ef24361f0fc8
@@ -5177,12 +5177,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"json-pointer@npm:^0.6.1":
-  version: 0.6.1
-  resolution: "json-pointer@npm:0.6.1"
-  dependencies:
-    foreach: ^2.0.4
-  checksum: 882b4b24b515fd866f8c228ed1381c129a40bdbfec578b73882be86a52bbcac15aaa87579c548167d4d8d9e3fc60e35aefead473df95c463553bede2b957f79c
+"json-ptr@npm:^3.1.0":
+  version: 3.1.0
+  resolution: "json-ptr@npm:3.1.0"
+  checksum: b64990594e77d562f5d6dfdf866d4dc338788ddfee6493ce09d2d0b373571dbafbc71364ab02b277c05f911ad4e1ec26e2a05ef899029d747153e51bf8a7de3b
   languageName: node
   linkType: hard
 
@@ -5226,13 +5224,6 @@ __metadata:
   bin:
     json5: lib/cli.js
   checksum: e88fc5274bb58fc99547baa777886b069d2dd96d9cfc4490b305fd16d711dabd5979e35a4f90873cefbeb552e216b041a304fe56702bedba76e19bc7845f208d
-  languageName: node
-  linkType: hard
-
-"jsonpointer@npm:^5.0.0":
-  version: 5.0.0
-  resolution: "jsonpointer@npm:5.0.0"
-  checksum: c7ec0b6bb596b81de687bc12945586bbcdc80dfb54919656d2690d76334f796a936270067ee9f1b5bbc2d9ecc551afb366ac35e6685aa61f07b5b68d1e5e857d
   languageName: node
   linkType: hard
 
