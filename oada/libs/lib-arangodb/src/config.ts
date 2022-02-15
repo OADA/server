@@ -195,7 +195,7 @@ const config = libConfig({
   },
   isTest: {
     format: Boolean,
-    default: process.env.NODE_ENV !== 'test',
+    default: process.env.NODE_ENV === 'test',
   },
 });
 

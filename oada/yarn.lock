@@ -324,7 +324,6 @@ __metadata:
     "@types/deep-equal": ^1.0.1
     "@types/flat": ^5.0.2
     "@types/json-pointer": ^1.0.31
-    "@types/lodash": ^4.14.178
     "@types/node": ^16.11.25
     arangojs: ^7.7.0
     ava: 4.0.0-rc.1
@@ -335,7 +334,6 @@ __metadata:
     deep-equal: ^2.0.5
     flat: ^5.0.2
     json-pointer: ^0.6.1
-    lodash: ^4.17.21
     tslib: ^2.3.1
   languageName: unknown
   linkType: soft
@@ -934,13 +932,6 @@ __metadata:
   dependencies:
     "@types/node": "*"
   checksum: b5f8aa592cc21c16d99e69aec0976f12b893b055e4456d90148a610a6b6088e297b2ba5f38f8c8280cef006cfd8f9ec99e069905020882619dc5fc8aa46f5f27
-  languageName: node
-  linkType: hard
-
-"@types/lodash@npm:^4.14.178":
-  version: 4.14.178
-  resolution: "@types/lodash@npm:4.14.178"
-  checksum: a69a04a60bfc5257c3130a554b4efa0c383f0141b7b3db8ab7cf07ad2a46ea085fce66d0242da41da7e5647b133d5dfb2c15add9cbed8d7fef955e4a1e5b3128
   languageName: node
   linkType: hard
 
