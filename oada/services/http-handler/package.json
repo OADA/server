@@ -71,6 +71,6 @@
     "@types/ws": "^8.2.2",
     "connect": "^3.7.0",
     "find-my-way": "^5.2.0",
-    "light-my-request": "^4.7.1"
+    "light-my-request": "^4.8.0"
   }
 }

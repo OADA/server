@@ -21,7 +21,7 @@
     "@oada/lib-config": "^3.0.1",
     "@oada/lib-kafka": "^3.0.1",
     "@oada/pino-debug": "^3.0.1",
-    "chalk": "^5.0.0",
+    "chalk": "^4.1.2",
     "clone-deep": "^4.0.1",
     "debug": "^4.3.3",
     "ksuid": "^3.0.0",
