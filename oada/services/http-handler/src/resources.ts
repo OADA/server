@@ -329,7 +329,7 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
           oadaGraph.resource_id,
           oadaGraph.path_leftover
         );
-        request.log.trace(document, 'DOC IS');
+        request.log.trace({ document }, 'Document is');
 
         // TODO: Allow null values in OADA?
         if (document === undefined || document === null) {

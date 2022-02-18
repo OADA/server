@@ -163,6 +163,34 @@ export interface WriteResponse extends KafkaBase, WriteContext {
   change_id?: string;
 }
 
+async function checkPreconditions(request: WriteRequest) {
+  if (request['if-match']) {
+    const rev = (await resources.getResource(
+      request.resource_id,
+      '/_rev'
+    )) as unknown as number;
+    if (request['if-match'] !== rev) {
+      error(rev);
+      error(request['if-match']);
+      error(request);
+      throw new Error('if-match failed');
+    }
+  }
+
+  if (request['if-none-match']) {
+    const rev = (await resources.getResource(
+      request.resource_id,
+      '/_rev'
+    )) as unknown as number;
+    if (request['if-none-match'].includes(rev)) {
+      error(rev);
+      error(request['if-none-match']);
+      error(request);
+      throw new Error('if-none-match failed');
+    }
+  }
+}
+
 export async function handleRequest(
   request: WriteRequest
 ): Promise<WriteResponse> {
@@ -187,32 +215,8 @@ export async function handleRequest(
       async (
         body: unknown
       ): Promise<{ rev?: number; orev?: number; changeId?: string }> => {
-        trace(body, 'FIRST BODY');
-        if (request['if-match']) {
-          const rev = (await resources.getResource(
-            request.resource_id,
-            '/_rev'
-          )) as unknown as number;
-          if (request['if-match'] !== rev) {
-            error(rev);
-            error(request['if-match']);
-            error(request);
-            throw new Error('if-match failed');
-          }
-        }
-
-        if (request['if-none-match']) {
-          const rev = (await resources.getResource(
-            request.resource_id,
-            '/_rev'
-          )) as unknown as number;
-          if (request['if-none-match'].includes(rev)) {
-            error(rev);
-            error(request['if-none-match']);
-            error(request);
-            throw new Error('if-none-match failed');
-          }
-        }
+        trace({ body }, 'FIRST BODY');
+        await checkPreconditions(request);
 
         let cacheRev = cache.get(request.resource_id);
         if (!cacheRev) {
@@ -271,7 +275,9 @@ export async function handleRequest(
         );
         if (request.resourceExists === false) {
           trace(
-            `initializing arango: resource_id = ${request.resource_id}, path_leftover = ${request.path_leftover}`
+            'initializing arango: resource_id = %s, path_leftover = %s',
+            request.resource_id,
+            request.path_leftover
           );
           id = request.resource_id.replace(/^\//, '');
           path = path.slice(2);
@@ -289,7 +295,7 @@ export async function handleRequest(
               },
             },
           });
-          trace(object, 'Intializing resource');
+          trace({ resource: object }, 'Intializing resource');
         }
 
         // Create object to recursively merge into the resource
@@ -312,7 +318,7 @@ export async function handleRequest(
           o[endK] = body as DeepPartial<Resource>;
         }
 
-        trace(object, 'Setting body on arango object');
+        trace({ body: object }, 'Setting body on arango object');
 
         // Update meta
         const meta: Partial<Resource['_meta']> & Record<string, unknown> = {
@@ -344,7 +350,7 @@ export async function handleRequest(
 
         // Compute new change
         const children = request.from_change_id ?? [];
-        trace(object, 'Putting change');
+        trace({ change: object }, 'Putting change');
         const changeId = await changes.putChange({
           change: { ...object, _rev: rev },
           resId: id,
