@@ -723,7 +723,7 @@ export async function deletePartialResource(
   pointer.set(document, null);
 
   const name = aPath.pop();
-  const sPath = JsonPointer.create(aPath) || null;
+  const sPath = JsonPointer.create(aPath).toString() || null;
   const cursor = await database.query({
     query: `
         LET res = DOCUMENT(${resources.name}, '${key}')
@@ -740,7 +740,7 @@ export async function deletePartialResource(
           LET start = FIRST(
             FOR node IN ${graphNodes}
               LET path = node.path || null
-              FILTER node['resource_id'] == ${id} AND path == ${sPath ?? null}
+              FILTER node['resource_id'] == ${id} AND path == ${sPath}
               RETURN node._id
           )
           LET vs = (

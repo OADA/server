@@ -263,7 +263,7 @@ export async function putChange({
   }
 
   const number = Number.parseInt(rev as string, 10);
-  trace('putChange: inserting change with body %O', change);
+  trace({ change }, 'putChange: inserting change');
   return (await (
     await database.query(
       aql`
