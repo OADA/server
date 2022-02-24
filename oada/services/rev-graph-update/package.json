@@ -46,7 +46,7 @@
     "@oada/write-handler": "^3.0.1",
     "@types/bluebird": "^3.5.36",
     "@types/debug": "^4.1.7",
-    "@types/node": "^16.11.25",
+    "@types/node": "^16.11.26",
     "@types/randomstring": "^1.1.8",
     "ava": "4.0.0-rc.1",
     "type-fest": "^2.12.0",
