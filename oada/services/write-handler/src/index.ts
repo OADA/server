@@ -346,7 +346,7 @@ export async function handleRequest(
         }
 
         object._rev = rev;
-        JsonPointer.set(object, '/_meta/_rev', rev);
+        JsonPointer.set(object, '/_meta/_rev', rev, true);
 
         // Compute new change
         const children = request.from_change_id ?? [];
@@ -361,10 +361,15 @@ export async function handleRequest(
           userId: request.user_id,
           authorizationId: request.authorizationid,
         });
-        JsonPointer.set(object, '/_meta/_changes', {
-          _id: `${id}/_meta/_changes`,
-          _rev: rev,
-        });
+        JsonPointer.set(
+          object,
+          '/_meta/_changes',
+          {
+            _id: `${id}/_meta/_changes`,
+            _rev: rev,
+          },
+          true
+        );
 
         // Update rev of meta?
         object._meta._rev = rev;

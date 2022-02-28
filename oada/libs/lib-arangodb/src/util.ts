@@ -27,13 +27,14 @@ export function sanitizeResult<T extends {}>(
     return result;
   }
 
-  const { _key, _oada_rev, ...rest } = result as {
+  const { _key, _id, _oada_rev, _rev, ...rest } = result as {
     _key?: string;
-    _rev?: number;
+    _id?: string;
     _oada_rev?: number;
+    _rev?: number;
   };
 
-  return { ...rest, _rev: _oada_rev } as unknown as Omit<
+  return { _id, _rev: _oada_rev ?? _rev, ...rest } as unknown as Omit<
     T & { _rev?: number },
     '_key' | '_oada_rev'
   >;
