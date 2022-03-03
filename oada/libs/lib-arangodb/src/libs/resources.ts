@@ -112,9 +112,7 @@ export async function lookupFromUrl(
     // otherwise indexes don't work...
     filters = aql`
       ${filters}
-      FILTER p.edges[${Number(index)}].name == ${urlPiece} || p.edges[${Number(
-      index
-    )}].name == null`;
+      FILTER p.edges[${Number(index)}].name IN [${urlPiece}, null]`;
   }
 
   const query = aql`
