@@ -81,6 +81,7 @@ export interface KafkaBase {
   connection_id?: string;
   msgtype?: string;
   code?: string;
+  error_message?: string;
   /**
    * @todo implement multiple partitions
    */

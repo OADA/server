@@ -55,24 +55,20 @@ export type ChangeVertex = Change[0] & {
   authorizationid: string;
 };
 
-export async function getChanges(resourceId: string): Promise<number[]> {
-  const result = (await (
-    await database.query(
-      aql`
+export async function getChanges(
+  resourceId: string
+): Promise<AsyncIterableIterator<number>> {
+  return database.query(
+    aql`
         FOR change in ${changes}
           FILTER change.resource_id == ${resourceId}
           RETURN change.number`
-    )
-  ).all()) as number[];
-
-  // Idk what this is about but it was here before...
-  return result || undefined;
+  );
 }
 
 export async function getMaxChangeRev(resourceId: string): Promise<number> {
-  const result = (await (
-    await database.query(
-      aql`
+  const cursor = await database.query(
+    aql`
         RETURN FIRST(
           FOR change in ${changes}
             FILTER change.resource_id == ${resourceId}
@@ -80,10 +76,9 @@ export async function getMaxChangeRev(resourceId: string): Promise<number> {
             LIMIT 1
             RETURN change.number
         )`
-    )
-  ).next()) as number;
+  );
 
-  return result || 0;
+  return ((await cursor.next()) as number) || 0;
 }
 
 /**
@@ -109,9 +104,8 @@ export async function getChange(
     };
   }
 
-  const result = (await (
-    await database.query(
-      aql`
+  const cursor = await database.query(
+    aql`
         LET change = FIRST(
           FOR change in ${changes}
           FILTER change.resource_id == ${resourceId}
@@ -123,27 +117,28 @@ export async function getChange(
           RETURN p
         )
         RETURN path`
-    )
-  ).next()) as {
+  );
+
+  const result = (await cursor.next()) as {
     vertices: Array<Change[0]>;
     edges: Array<{ path: string }>;
   };
 
-  const firstv = result?.vertices[0];
-  if (!firstv) {
+  const firstV = result?.vertices[0];
+  if (!firstV) {
     return undefined;
   }
 
   const change = {
     resource_id: resourceId,
     path: '',
-    body: firstv.body,
-    type: firstv.type,
+    body: firstV.body,
+    type: firstV.type,
     wasDelete: result.vertices[result.vertices.length - 1]?.type === 'delete',
   };
   let path = '';
   for (let index = 0; index < result.vertices.length - 1; index++) {
-    path += result.edges[index]?.path;
+    path += result.edges[Number(index)]!.path;
     if (change.body) {
       const { body } = result.vertices[index + 1] ?? {};
       JsonPointer.set(change.body, path, body);
@@ -208,7 +203,7 @@ function toChangeObject(arangoPathObject: {
 
   const { body, resource_id, type } = lastV;
   // Return change object
-  trace(body, 'toChangeObj: returning change object with body');
+  trace({ body }, 'toChangeObj: returning change object with body');
   return {
     resource_id,
     path,
@@ -221,9 +216,8 @@ export async function getRootChange(
   resourceId: string,
   changeRev: string | number
 ): Promise<{ edges: ChangeEdge[]; vertices: ChangeVertex[] }> {
-  return (await (
-    await database.query(
-      aql`
+  const cursor = await database.query(
+    aql`
         LET change = FIRST(
           FOR change in ${changes}
           FILTER change.resource_id == ${resourceId}
@@ -235,8 +229,12 @@ export async function getRootChange(
           RETURN v
         )
         RETURN path`
-    )
-  ).next()) as { edges: ChangeEdge[]; vertices: ChangeVertex[] };
+  );
+
+  return (await cursor.next()) as {
+    edges: ChangeEdge[];
+    vertices: ChangeVertex[];
+  };
 }
 
 export async function putChange({
@@ -264,9 +262,8 @@ export async function putChange({
 
   const number = Number.parseInt(rev as string, 10);
   trace({ change }, 'putChange: inserting change');
-  return (await (
-    await database.query(
-      aql`
+  const cursor = await database.query(
+    aql`
         LET doc = FIRST(
           INSERT {
             body: ${change},
@@ -288,6 +285,6 @@ export async function putChange({
             } in ${changeEdges}
         )
         RETURN doc._id`
-    )
-  ).next()) as string;
+  );
+  return (await cursor.next()) as string;
 }

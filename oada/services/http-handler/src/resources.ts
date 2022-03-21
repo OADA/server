@@ -37,6 +37,7 @@ import type { FastifyPluginAsync, FastifyReply, FastifyRequest } from 'fastify';
 import cacache from 'cacache';
 import { is } from 'type-is';
 import ksuid from 'ksuid';
+import type { Link } from '@oada/types/oada/link/v1';
 
 const CACHE_PATH = config.get('storage.binary.cacache');
 
@@ -299,15 +300,16 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
        */
       if (oadaGraph.path_leftover === '/_meta/_changes') {
         const ch = await changes.getChanges(oadaGraph.resource_id);
-        return Object.fromEntries(
-          ch.map((_rev) => [
+
+        const list: Record<number, Link> = {};
+        for await (const _rev of ch) {
+          list[Number(_rev)] = {
             _rev,
-            {
-              _rev,
-              _id: `${oadaGraph.resource_id}/_meta/_changes/${_rev}`,
-            },
-          ])
-        );
+            _id: `${oadaGraph.resource_id}/_meta/_changes/${_rev}`,
+          };
+        }
+
+        return list;
       }
 
       if (oadaGraph.path_leftover.startsWith('/_meta/_changes/')) {
@@ -532,24 +534,26 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
       switch (resp.code) {
         case 'success':
           break;
-        case 'permission': {
+
+        case 'permission':
           reply.forbidden('User does not own this resource');
           return;
-        }
 
-        case 'if-match failed': {
+        case 'if-match failed':
           reply.preconditionFailed(
             'If-Match header does not match current resource _rev'
           );
           return;
-        }
 
-        case 'if-none-match failed': {
+        case 'if-none-match failed':
           reply.preconditionFailed(
             'If-None-Match header contains current resource _rev'
           );
           return;
-        }
+
+        case 'bad request':
+          reply.unprocessableEntity(resp.error_message);
+          return;
 
         default:
           throw new Error(`Write failed with code "${resp.code ?? ''}"`);

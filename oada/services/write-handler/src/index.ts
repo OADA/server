@@ -41,6 +41,20 @@ const error = debug('write-handler:error');
 const info = debug('write-handler:info');
 const trace = debug('write-handler:trace');
 
+/**
+ * Create reusable JSON pointers
+ */
+const metaPointers = <const>{
+  /**
+   * Reusable JSON Pointer to `/_meta/_rev`
+   */
+  rev: JsonPointer.create('/_meta/_rev'),
+  /**
+   * Reusable JSON Pointer to `/_meta/_changes`
+   */
+  changes: JsonPointer.create('/_meta/_changes'),
+};
+
 let counter = 0;
 
 const responder = new Responder({
@@ -250,7 +264,6 @@ export async function handleRequest(
               aPath,
               object
             );
-            // eslint-disable-next-line unicorn/no-null
             body = null;
             changeType = 'delete';
             trace(`Setting changeType = 'delete'`);
@@ -346,7 +359,17 @@ export async function handleRequest(
         }
 
         object._rev = rev;
-        JsonPointer.set(object, '/_meta/_rev', rev, true);
+        metaPointers.rev.set(object, rev, true);
+
+        /**
+         * ???: Error is body contains a non-matching `_id`
+         */
+        if ('_id' in object && object._id !== id) {
+          const tError = new Error(
+            `Tried to write _id ${object._id} to resource with _id ${id}`
+          );
+          throw Object.assign(tError, { code: 'bad request' });
+        }
 
         // Compute new change
         const children = request.from_change_id ?? [];
@@ -361,9 +384,8 @@ export async function handleRequest(
           userId: request.user_id,
           authorizationId: request.authorizationid,
         });
-        JsonPointer.set(
+        metaPointers.changes.set(
           object,
-          '/_meta/_changes',
           {
             _id: `${id}/_meta/_changes`,
             _rev: rev,
@@ -426,27 +448,26 @@ export async function handleRequest(
         errorNum: ArangoErrorCode.ARANGO_DOCUMENT_NOT_FOUND,
       },
       (cError: unknown) => {
-        error(cError);
-        return {
-          msgtype: 'write-response',
-          code: 'not_found',
-          user_id: request.user_id,
-          authorizationid: request.authorizationid,
-        };
+        // Resource not found in DB
+        throw Object.assign(cError as Error, { code: 'not_found' });
       }
     );
 
   try {
     // TODO: Better return type for this function
-    return (await upsert) as WriteResponse;
+    return await upsert;
   } catch (cError: unknown) {
     // Send errors over kafka
     error(cError);
-    const { message = 'error' } = cError as { message?: string };
+    const { code, message = 'error' } = cError as {
+      code?: string;
+      message?: string;
+    };
     // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
     return {
       msgtype: 'write-response',
-      code: message,
+      code: code ?? message,
+      error_message: message,
       user_id: request.user_id,
       authorizationid: request.authorizationid,
     } as WriteResponse;
