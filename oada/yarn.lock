@@ -8388,9 +8388,9 @@ __metadata:
   linkType: hard
 
 "urijs@npm:^1.18.12, urijs@npm:^1.19.2, urijs@npm:^1.19.8":
-  version: 1.19.8
-  resolution: "urijs@npm:1.19.8"
-  checksum: 0e7d4da86c14b3e353a5563df8130385f5dc9e7b4e8a36a52b7ed6d25a0477e77d422987365279c2e5545679d7910f120f1a3bb76f8d3de4a37bc1ccd91727fb
+  version: 1.19.10
+  resolution: "urijs@npm:1.19.10"
+  checksum: 6402b0882633f0a4dfb481b8bfd3020d518e60edc519b2e05828e91f1b9e6857bf016ffee1848183152081bedc7689b1707fe942ad6e9384492d92185484a200
   languageName: node
   linkType: hard
 
