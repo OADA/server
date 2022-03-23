@@ -151,7 +151,7 @@ export interface WriteRequest extends WriteContext {
   /**
    * Rev which must match current rev before write
    */
-  'if-match'?: number;
+  'if-match'?: number[];
   /**
    * Revs which must not match current rev before write
    */
@@ -183,7 +183,7 @@ async function checkPreconditions(request: WriteRequest) {
       request.resource_id,
       '/_rev'
     )) as unknown as number;
-    if (request['if-match'] !== rev) {
+    if (!request['if-match'].includes(rev)) {
       error(rev);
       error(request['if-match']);
       error(request);

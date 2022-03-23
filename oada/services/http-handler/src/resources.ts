@@ -34,10 +34,10 @@ import config from './config.js';
 import requester from './requester.js';
 
 import type { FastifyPluginAsync, FastifyReply, FastifyRequest } from 'fastify';
+import type { Link } from '@oada/types/oada/link/v1';
 import cacache from 'cacache';
 import { is } from 'type-is';
 import ksuid from 'ksuid';
-import type { Link } from '@oada/types/oada/link/v1';
 
 const CACHE_PATH = config.get('storage.binary.cacache');
 
@@ -96,20 +96,27 @@ function noModifyShares(request: FastifyRequest, reply: FastifyReply) {
 }
 
 /**
- * Parse the rev out of a resource's ETag
- *
- * @param {string} etag
- * @returns {number} rev
+ * Parse a list of ETags from a header
  */
-function parseETag(etag: string): number {
+function parseETags(etags?: string) {
+  return etags?.split(', ').map((etag) => parseETag(etag));
+}
+
+/**
+ * Parse the id and rev out of a resource's ETag
+ */
+function parseETag(etag: string): { id?: string; rev: number } {
   // Parse strong or weak ETags?
-  // e.g., `W/"123"` or `"123"`
-  const r = /(?:W\/)?"(?<rev>\d*)"/;
+  // e.g., `W/"123"`, `"456/123"` or `"123"`
+  const r = /(?:W\/)?"(?:(?<id>.*)\/)?(?<rev>\d*)"/;
 
-  const { rev } = r.exec(etag)?.groups ?? {};
+  const { id, rev } = r.exec(etag)?.groups ?? {};
 
-  // If parse fails, assume `123` format (for legacy code)
-  return rev ? Number(rev) : Number(etag);
+  return {
+    id: `resources/${id}`,
+    // If parse fails, assume `123` format (for legacy code)
+    rev: rev ? Number(rev) : Number(etag),
+  };
 }
 
 /**
@@ -264,35 +271,39 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
       // TODO: Why does fastify strip content-type params??
       void reply.headers(headers);
 
+      const key = oadaGraph.resource_id.replace(/^resources\//, '');
       void reply.header('X-OADA-Rev', oadaGraph.rev);
-      void reply.header('ETag', `"${oadaGraph.rev}"`);
+      void reply.header('ETag', `"${key}/${oadaGraph.rev}"`);
 
       /**
        * Check preconditions before actually getting the body
        */
 
-      const ifMatch = request.headers['if-match'];
-      if (ifMatch) {
-        const rev = parseETag(ifMatch);
-        if (rev !== oadaGraph.rev) {
-          reply.preconditionFailed(
-            'If-Match header does not match current resource _rev'
-          );
-          return;
-        }
+      const ifMatch = parseETags(request.headers['if-match']);
+      if (
+        ifMatch &&
+        !ifMatch.some(
+          ({ id, rev }) =>
+            (!id || id === oadaGraph.resource_id) && rev === oadaGraph.rev
+        )
+      ) {
+        reply.preconditionFailed(
+          'If-Match header does not match current resource'
+        );
+        return;
       }
 
-      const ifNoneMatch = request.headers['if-none-match'];
-      if (ifNoneMatch) {
-        const revs = ifNoneMatch
-          .split(',')
-          .map((element) => parseETag(element));
-        if (revs.includes(oadaGraph.rev)) {
-          reply.preconditionFailed(
-            'If-None-Match header contains current resource _rev'
-          );
-          return;
-        }
+      const ifNoneMatch = parseETags(request.headers['if-none-match']);
+      if (
+        ifNoneMatch &&
+        !ifNoneMatch.every(
+          ({ id, rev }) => id !== oadaGraph.resource_id && rev !== oadaGraph.rev
+        )
+      ) {
+        reply.preconditionFailed(
+          'If-None-Match header does match current resource'
+        );
+        return;
       }
 
       /**
@@ -505,28 +516,32 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
         (
           (request.headers['x-oada-ignore-links'] ?? '') as string
         ).toLowerCase() === 'true';
-      const ifMatch = request.headers['if-match'];
-      const ifNoneMatch = request.headers['if-none-match'];
+      const ifMatch = parseETags(request.headers['if-match'])
+        ?.filter(({ id }) => [undefined, oadaGraph.resource_id].includes(id))
+        .map(({ rev }) => rev);
+      const ifNoneMatch = parseETags(request.headers['if-none-match'])
+        ?.filter(({ id }) => [undefined, oadaGraph.resource_id].includes(id))
+        .map(({ rev }) => rev);
+      const writeRequest: WriteRequest = {
+        // @ts-expect-error stuff
+        'connection_id': request.id as unknown,
+        resourceExists,
+        'domain': request.hostname,
+        'url': path,
+        'resource_id': oadaGraph.resource_id,
+        'path_leftover': oadaGraph.path_leftover,
+        // 'meta_id': oadaGraph['meta_id'],
+        'user_id': user.user_id,
+        'authorizationid': user.authorizationid,
+        'client_id': user.client_id,
+        'contentType': request.headers['content-type'],
+        bodyid,
+        'if-match': ifMatch,
+        'if-none-match': ifNoneMatch,
+        ignoreLinks,
+      };
       const resp = (await requester.send(
-        {
-          'connection_id': request.id as unknown,
-          resourceExists,
-          'domain': request.hostname,
-          'url': path,
-          'resource_id': oadaGraph.resource_id,
-          'path_leftover': oadaGraph.path_leftover,
-          // 'meta_id': oadaGraph['meta_id'],
-          'user_id': user.user_id,
-          'authorizationid': user.authorizationid,
-          'client_id': user.client_id,
-          'contentType': request.headers['content-type'],
-          bodyid,
-          'if-match': ifMatch && parseETag(ifMatch),
-          'if-none-match': ifNoneMatch
-            ?.split(',')
-            .map((element) => parseETag(element)),
-          ignoreLinks,
-        } as WriteRequest,
+        writeRequest,
         config.get('kafka.topics.writeRequest')
       )) as WriteResponse;
 
@@ -559,12 +574,13 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
           throw new Error(`Write failed with code "${resp.code ?? ''}"`);
       }
 
+      const key = oadaGraph.resource_id.replace(/^resources\//, '');
       return (
         reply
           // ? What is the right thing to return here?
           .code(201)
           .header('X-OADA-Rev', resp._rev)
-          .header('ETag', `"${resp._rev}"`)
+          .header('ETag', `"${key}/${resp._rev}"`)
           .send()
       );
     },
@@ -576,7 +592,7 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
   fastify.delete('*', async (request, reply) => {
     let path = request.requestContext.get('oadaPath')!;
     const user = request.requestContext.get('user')!;
-    let { rev, ...oadaGraph } = request.requestContext.get('oadaGraph')!;
+    let { rev: _, ...oadaGraph } = request.requestContext.get('oadaGraph')!;
     let resourceExists = request.requestContext.get('resourceExists')!;
 
     // Don't let users delete their shares?
@@ -602,28 +618,32 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
     }
 
     request.log.trace('Sending DELETE request');
-    const ifMatch = request.headers['if-match'];
-    const ifNoneMatch = request.headers['if-none-match'];
+    const ifMatch = parseETags(request.headers['if-match'])
+      ?.filter(({ id }) => [undefined, oadaGraph.resource_id].includes(id))
+      .map(({ rev }) => rev);
+    const ifNoneMatch = parseETags(request.headers['if-none-match'])
+      ?.filter(({ id }) => [undefined, oadaGraph.resource_id].includes(id))
+      .map(({ rev }) => rev);
+    const deleteRequest: WriteRequest = {
+      // @ts-expect-error stuff
+      'connection_id': request.id as unknown,
+      resourceExists,
+      'domain': request.hostname,
+      'url': path,
+      'resource_id': oadaGraph.resource_id,
+      'path_leftover': oadaGraph.path_leftover,
+      // 'meta_id': oadaGraph['meta_id'],
+      'user_id': user.user_id,
+      'authorizationid': user.authorizationid,
+      'client_id': user.client_id,
+      'if-match': ifMatch,
+      'if-none-match': ifNoneMatch,
+      // 'bodyid': bodyid, // No body means delete?
+      // body: req.body
+      'contentType': '',
+    };
     const resp = (await requester.send(
-      {
-        resourceExists,
-        'connection_id': request.id as unknown,
-        'domain': request.hostname,
-        'url': path,
-        'resource_id': oadaGraph.resource_id,
-        'path_leftover': oadaGraph.path_leftover,
-        // 'meta_id': oadaGraph['meta_id'],
-        'user_id': user.user_id,
-        'authorizationid': user.authorizationid,
-        'client_id': user.client_id,
-        'if-match': ifMatch && parseETag(ifMatch),
-        'if-none-match': ifNoneMatch
-          ?.split(',')
-          .map((element) => parseETag(element)),
-        // 'bodyid': bodyid, // No body means delete?
-        // body: req.body
-        'contentType': '',
-      } as WriteRequest,
+      deleteRequest,
       config.get('kafka.topics.writeRequest')
     )) as WriteResponse;
 
@@ -656,9 +676,10 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
         throw new Error(`Delete failed with code "${resp.code ?? ''}"`);
     }
 
+    const key = oadaGraph.resource_id.replace(/^resources\//, '');
     return reply
       .header('X-OADA-Rev', resp._rev)
-      .header('ETag', `"${resp._rev}"`)
+      .header('ETag', `"${key}/${resp._rev}"`)
       .code(204)
       .send();
   });
