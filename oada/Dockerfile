@@ -1,7 +1,7 @@
 ARG NODE_VER=16-alpine
 
 # Copy in package files and any needed apt packages?
-FROM node:$NODE_VER AS packages
+FROM node:${NODE_VER} AS packages
 
 WORKDIR /oada
 
@@ -53,7 +53,7 @@ RUN yarn install --immutable
 # TODO: Without p it quits after first build... ?
 RUN yarn build --verbose && rm -rfv .yarn .pnp.*
 
-FROM node:$NODE_VER AS code
+FROM node:${NODE_VER} AS code
 
 # Copy in service code and production dependencies
 COPY --from=yarn /oada/ /oada/
@@ -72,16 +72,18 @@ WORKDIR /oada
 
 # Install needed packages
 RUN apk add --no-cache \
-    bash \
-    dumb-init
+  dumb-init
 
+# Copy in entrypoint script
 COPY ./utils/entrypoint.sh /entrypoint.sh
 RUN chmod u+x /entrypoint.sh
 RUN chown node:node /entrypoint.sh
 
-COPY ./utils/wait-for-it.sh /wait-for-it.sh
-RUN chmod u+x /wait-for-it.sh
-RUN chown node:node /wait-for-it.sh
+# Get wait-for script
+ARG WAIT_FOR_VER=v2.2.3
+RUN wget https://raw.githubusercontent.com/eficode/wait-for/${WAIT_FOR_VER}/wait-for -O /wait-for
+RUN chmod u+x /wait-for
+RUN chown node:node /wait-for
 
 # Copy in config file?
 COPY ./oada.config.js /oada.config.js
