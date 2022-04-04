@@ -465,7 +465,6 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
     },
   });
 
-
   fastify.route({
     constraints: {
       oadaEnsureLink: EnsureLink.Versioned,
@@ -484,6 +483,17 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
     method: ['PUT', 'POST'],
     async handler(request, reply) {
       return ensureLink(request, reply, false);
+    },
+  });
+  fastify.route({
+    constraints: {
+      oadaEnsureLink: /.*/,
+    },
+    url: '*',
+    method: ['PUT', 'POST'],
+    async handler(_request, reply) {
+      reply.badRequest('Unsupported value for X-OADA-Ensure-Link');
+      return;
     },
   });
 
