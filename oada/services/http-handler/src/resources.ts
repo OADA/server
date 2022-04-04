@@ -455,18 +455,7 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
   // Better error message for x-oada-ensure-link GET request
   fastify.route({
     constraints: {
-      oadaEnsureLink: EnsureLink.Versioned,
-    },
-    url: '*',
-    method: ['GET'],
-    async handler(_request, reply) {
-      reply.badRequest('X-OADA-Ensure-Link not allowed for this method');
-      return;
-    },
-  });
-  fastify.route({
-    constraints: {
-      oadaEnsureLink: EnsureLink.Unversioned,
+      oadaEnsureLink: /.*/,
     },
     url: '*',
     method: ['GET'],
