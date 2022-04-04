@@ -56,19 +56,43 @@ export const app = fastify({
       name: 'oadaEnsureLink',
       storage() {
         const handlers: Map<unknown, Handler<HTTPVersion.V1>> = new Map();
+        let regexHandlers: {
+          pattern: RegExp,
+          handler: Handler<HTTPVersion.V1>
+        }[] = [];
         return {
           get(key) {
             // eslint-disable-next-line unicorn/no-null
-            return handlers.get(key) ?? null;
+            return (
+              handlers.get(key) ||
+              regexHandlers
+                .find((i: { pattern: RegExp, handler: Handler<HTTPVersion.V1> }) => {
+                  return i.pattern.test(String(key));
+                })?.handler
+            ) ?? null;
           },
           set(key, value) {
-            handlers.set(key, value);
+            if (key instanceof RegExp) {
+              regexHandlers.push({
+                pattern: key,
+                handler: value,
+              });
+            } else {
+              handlers.set(key, value);
+            }
           },
           del(key) {
-            handlers.delete(key);
+            if (key instanceof RegExp) {
+              regexHandlers = regexHandlers.filter(({ pattern }) => {
+                return String(pattern) !== String(key);
+              });
+            } else {
+              handlers.delete(key);
+            }
           },
           empty() {
             handlers.clear();
+            regexHandlers = [];
           },
         };
       },
