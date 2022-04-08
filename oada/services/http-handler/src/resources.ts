@@ -455,7 +455,7 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
   // Better error message for x-oada-ensure-link HEAD, GET, DELETE request
   fastify.route({
     constraints: {
-      oadaEnsureLink: /.*/,
+      oadaEnsureLink: true,
     },
     url: '*',
     method: ['HEAD', 'GET', 'DELETE'],
@@ -487,7 +487,7 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
   });
   fastify.route({
     constraints: {
-      oadaEnsureLink: /.*/,
+      oadaEnsureLink: true,
     },
     url: '*',
     method: ['PUT', 'POST'],
