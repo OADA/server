@@ -452,13 +452,13 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
     return reply.headers(response.headers).status(response.statusCode).send();
   }
 
-  // Better error message for x-oada-ensure-link GET request
+  // Better error message for x-oada-ensure-link HEAD, GET, DELETE request
   fastify.route({
     constraints: {
       oadaEnsureLink: /.*/,
     },
     url: '*',
-    method: ['GET'],
+    method: ['HEAD', 'GET', 'DELETE'],
     async handler(_request, reply) {
       reply.badRequest('X-OADA-Ensure-Link not allowed for this method');
       return;
