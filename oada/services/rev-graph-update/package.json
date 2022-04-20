@@ -42,7 +42,7 @@
   },
   "devDependencies": {
     "@ava/typescript": "^3.0.1",
-    "@oada/client": "^3.2.0",
+    "@oada/client": "^4.0.0",
     "@oada/write-handler": "^3.0.1",
     "@types/bluebird": "^3.5.36",
     "@types/debug": "^4.1.7",

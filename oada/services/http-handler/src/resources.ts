@@ -461,7 +461,6 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
     method: ['HEAD', 'GET', 'DELETE'],
     async handler(_request, reply) {
       reply.badRequest('X-OADA-Ensure-Link not allowed for this method');
-      return;
     },
   });
 
@@ -493,7 +492,6 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
     method: ['PUT', 'POST'],
     async handler(_request, reply) {
       reply.badRequest('Unsupported value for X-OADA-Ensure-Link');
-      return;
     },
   });
 
