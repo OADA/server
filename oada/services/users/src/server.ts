@@ -18,7 +18,7 @@
 import { ArangoError, ArangoErrorCode, users } from '@oada/lib-arangodb';
 import { ResponderRequester } from '@oada/lib-kafka';
 
-import config from './config.js';
+import { config } from './config.js';
 
 import cloneDeep from 'clone-deep';
 import debug from 'debug';
@@ -66,7 +66,7 @@ async function createNewUser(request: UserRequest): Promise<users.User> {
     ...request.user,
   } as Omit<users.User, '_rev'>);
   // Create empty resources for user
-  for await (const resource of <const>['bookmarks', 'shares']) {
+  for await (const resource of ['bookmarks', 'shares'] as const) {
     if (!user[resource]?._id) {
       const { string: id } = await ksuid.random();
       const resourceID = `resources/${id}`;
@@ -125,7 +125,7 @@ export interface UserRequest {
 export interface UserResponse {
   code: string;
   new: boolean;
-  user: users.User & { _id: string };
+  user?: users.User & { _id: users.UserID };
 }
 responder.on<UserResponse, UserRequest>('request', handleReq);
 
@@ -219,6 +219,6 @@ export async function handleReq(request: UserRequest): Promise<UserResponse> {
     code: 'success',
     new: createUser,
     // TODO: figure out what cur_user is supposed to be??
-    user: currentUser as users.User,
+    user: currentUser as users.DBUser,
   };
 }

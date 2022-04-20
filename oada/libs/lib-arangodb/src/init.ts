@@ -24,7 +24,7 @@
 
 /* eslint-disable no-await-in-loop */
 
-import config from './config.js';
+import { config } from './config.js';
 import { hashPw } from './libs/users.js';
 
 import arangojs from 'arangojs';
@@ -271,4 +271,4 @@ export async function cleanup(): Promise<void> {
   }
 }
 
-export { default as config } from './config.js';
+export { config } from './config.js';

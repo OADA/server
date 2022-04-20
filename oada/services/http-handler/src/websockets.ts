@@ -30,27 +30,28 @@ import type SocketChange from '@oada/types/oada/websockets/change.js';
 import type SocketResponse from '@oada/types/oada/websockets/response.js';
 import type { WriteResponse } from '@oada/write-handler';
 
-import config from './config.js';
+import { config } from './config.js';
 
 import type { FastifyPluginAsync } from 'fastify';
 import { JsonPointer } from 'json-ptr';
 import type LightMyRequest from 'light-my-request';
-import { OADAError } from 'oada-error';
 import type WebSocket from 'ws';
-import _debug from 'debug';
 import fastifyWebsocket from 'fastify-websocket';
 import { is } from 'type-is';
+import log from 'debug';
+
+import { OADAError } from '@oada/error';
 
 /**
  * @todo Actually figure out how "forgetting history" should work...
  */
 const revLimit = Number.POSITIVE_INFINITY;
 
-const info = _debug('websockets:info');
-const error = _debug('websockets:error');
-const warn = _debug('websockets:warn');
-const debug = _debug('websockets:debug');
-const trace = _debug('websockets:trace');
+const info = log('websockets:info');
+const error = log('websockets:error');
+const warn = log('websockets:warn');
+const debug = log('websockets:debug');
+const trace = log('websockets:trace');
 
 const emitter = new EventEmitter();
 
@@ -177,7 +178,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
             'Invalid socket message format',
             undefined,
             error_ as string
-          ) as Record<string, unknown>,
+          ) as unknown as Record<string, unknown>,
         };
         sendResponse(errorResponse);
         error(error_);
@@ -193,7 +194,10 @@ const plugin: FastifyPluginAsync = async (fastify) => {
           status: 500,
           requestId: message.requestId,
           headers: {},
-          data: new OADAError('Internal Error', 500) as Record<string, unknown>,
+          data: new OADAError('Internal Error', 500) as unknown as Record<
+            string,
+            unknown
+          >,
         };
         sendResponse(errorResponse);
       }

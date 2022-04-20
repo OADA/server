@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2017-2021 Open Ag Data Alliance
+ * Copyright 2017-2022 Open Ag Data Alliance
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,16 +17,13 @@
 
 import { extname } from 'node:path';
 
+import 'dotenv/config';
 import convict, { Config, Schema } from 'convict';
 import json5 from 'json5';
-import { config as load } from 'dotenv';
 // @ts-expect-error no types for this
 import moment from 'convict-format-with-moment';
 import validator from 'convict-format-with-validator';
 import yaml from 'yaml';
-
-// Load .env into environment
-load();
 
 // Builtin part of the config schema
 const defaults = {
@@ -56,7 +53,7 @@ const defaults = {
   },
 };
 // FIXME: Why did this start making TS hang?
-//type D = typeof defaults extends Schema<infer D> ? D : never;
+// type D = typeof defaults extends Schema<infer D> ? D : never;
 
 // Add more formats to convict
 convict.addFormats(validator);
@@ -73,39 +70,40 @@ convict.addParser([
 /**
  * Using schema `schema`, load and parse the config.
  *
- * @param schema Config schema for your application
+ * @param inSchema Config schema for your application
  * @see Schema
  */
-export function libConfig<S>(schema: Schema<S>) {
+export default async function config<S>(
+  // Defer type inference
+  inSchema: S extends unknown ? Schema<S> : never
+) {
   // Merge input schema with default schema and create config
-  const config = convict({ ...defaults, ...schema } as Schema<S> &
-    typeof defaults);
+  const schema = convict({ ...defaults, ...inSchema });
 
   // Optionally load any config file(s)
-  const files = config.get('configfiles');
-  for (const file of files) {
-    if (extname(file) === '.js') {
-      // Allow requiring a js config?
-      // TODO: Probably remove this later
-      // eslint-disable-next-line  @typescript-eslint/no-var-requires
-      config.load(require(file)); // Nosemgrep: javascript.lang.security.detect-non-literal-require.detect-non-literal-require
+  const files = schema.get('configfiles');
+  for await (const file of files) {
+    // Allow requiring a js config?
+    // FIXME: Probably remove this
+    if (['.js', '.mjs', '.cjs'].includes(extname(file))) {
+      const configFile = (await import(file)) as { default?: unknown };
+      schema.load(configFile.default ?? configFile); // Nosemgrep: javascript.lang.security.detect-non-literal-require.detect-non-literal-require
     } else {
-      config.loadFile(file);
+      schema.loadFile(file);
     }
   }
 
   // Ensure config is valid
-  config.validate({
+  schema.validate({
     // Allow extra items
     allowed: 'warn',
     // Do not actually output warnings about extra items?
     // eslint-disable-next-line @typescript-eslint/no-empty-function
-    output: () => {},
+    output() {},
   });
 
-  return config as Config<S> & typeof config;
+  return {
+    config: schema as (S extends unknown ? Config<S> : never) & typeof schema,
+    schema: inSchema,
+  };
 }
-
-export default libConfig;
-
-export { default as convict } from 'convict';

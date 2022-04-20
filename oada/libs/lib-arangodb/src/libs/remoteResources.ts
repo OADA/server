@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-import config from '../config.js';
+import { config } from '../config.js';
 import { db as database } from '../db.js';
 
 import { aql } from 'arangojs';

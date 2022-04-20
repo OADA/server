@@ -18,7 +18,7 @@
 import EventEmitter from 'node:events';
 import process from 'node:process';
 
-import config from './config.js';
+import { config } from './config.js';
 
 import {
   Consumer,

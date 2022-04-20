@@ -15,16 +15,16 @@
  * limitations under the License.
  */
 
-import { changes, resources } from '@oada/lib-arangodb';
 import { KafkaBase, Responder } from '@oada/lib-kafka';
+import { changes, resources } from '@oada/lib-arangodb';
 
 import type Resource from '@oada/types/oada/resource';
 import type { WriteResponse } from '@oada/write-handler';
 
-import config from './config.js';
+import { config } from './config.js';
 
-import axios from 'axios';
 import Bluebird from 'bluebird';
+import axios from 'axios';
 import debug from 'debug';
 
 const trace = debug('webhooks:trace');
@@ -55,7 +55,7 @@ export interface Sync {
 }
 type Syncs = Record<string, Sync>;
 
-responder.on<void>('request', async function handleRequest(request) {
+responder.on<void>('request', async (request) => {
   if (!checkRequest(request)) {
     return;
   }

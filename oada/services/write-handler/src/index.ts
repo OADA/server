@@ -25,9 +25,9 @@ import {
 import { KafkaBase, Responder } from '@oada/lib-kafka';
 
 import type Change from '@oada/types/oada/change/v2';
-import type { Resource } from '@oada/types/oada/resource';
+import type Resource from '@oada/types/oada/resource';
 
-import config from './config.js';
+import { config } from './config.js';
 
 import Bluebird from 'bluebird';
 import Cache from 'timed-cache';
@@ -44,7 +44,7 @@ const trace = debug('write-handler:trace');
 /**
  * Create reusable JSON pointers
  */
-const metaPointers = <const>{
+const metaPointers = {
   /**
    * Reusable JSON Pointer to `/_meta/_rev`
    */
@@ -53,7 +53,7 @@ const metaPointers = <const>{
    * Reusable JSON Pointer to `/_meta/_changes`
    */
   changes: JsonPointer.create('/_meta/_changes'),
-};
+} as const;
 
 let counter = 0;
 

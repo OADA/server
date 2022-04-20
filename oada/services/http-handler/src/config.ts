@@ -15,9 +15,9 @@
  * limitations under the License.
  */
 
-import { libConfig } from '@oada/lib-config';
+import libConfig from '@oada/lib-config';
 
-const config = libConfig({
+export const { config, schema } = await libConfig({
   'server': {
     port: {
       format: 'port',
@@ -65,5 +65,3 @@ const config = libConfig({
     },
   },
 });
-
-export default config;

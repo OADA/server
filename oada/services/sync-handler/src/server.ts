@@ -24,7 +24,7 @@ import type { Resource } from '@oada/lib-arangodb/dist/libs/resources';
 
 import type { WriteResponse } from '@oada/write-handler';
 
-import config from './config.js';
+import { config } from './config.js';
 
 import axios from 'axios';
 import debug from 'debug';

@@ -15,11 +15,11 @@
  * limitations under the License.
  */
 
-import { libConfig } from '@oada/lib-config';
+import libConfig from '@oada/lib-config';
 
 import type { CreateCollectionOptions } from 'arangojs/collection';
 
-interface Collection {
+export interface Collection {
   name: string;
   createOptions?: CreateCollectionOptions;
   indexes: Array<
@@ -36,7 +36,7 @@ interface Collection {
 // eslint-disable-next-line @typescript-eslint/no-empty-function
 export function collection(_value: unknown): asserts _value is Collection {}
 
-const config = libConfig({
+export const { config, schema } = await libConfig({
   arangodb: {
     ensureDefaults: {
       doc: 'Ensure the default (i.e., debug) documents are loaded',
@@ -198,5 +198,3 @@ const config = libConfig({
     default: process.env.NODE_ENV === 'test',
   },
 });
-
-export default config;

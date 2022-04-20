@@ -19,7 +19,7 @@
 
 import { setTimeout } from 'node:timers/promises';
 
-import config from './config.js';
+import { config } from './config.js';
 
 import { ArangoError, ArangoErrorCode } from './libs/errors.js';
 

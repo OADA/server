@@ -15,19 +15,6 @@
  * limitations under the License.
  */
 
-declare module 'oada-error' {
-  // eslint-disable-next-line @typescript-eslint/no-extraneous-class
-  export class OADAError {
-    constructor(
-      message: string,
-      code?: number,
-      userMessage?: string | null,
-      href?: string | null,
-      detail?: string | null
-    );
-  }
-}
-
 declare module 'es-main' {
   function esMain(meta: unknown): boolean;
   export = esMain;

@@ -15,6 +15,10 @@
  * limitations under the License.
  */
 
+export type Selector<T> = T extends { _id?: infer I | undefined }
+  ? I | { _id: I }
+  : never;
+
 /**
  * @todo clean up this mess
  */

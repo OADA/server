@@ -23,86 +23,83 @@
 // internal requests to every internal service to retrieve the
 // latest well-known documents.
 
+import type { ServerOptions } from 'node:http';
 import https from 'node:https';
 
-import { middleware as formats } from '@oada/formats-server';
-import well_known_json from '@oada/well-known-json';
-
-import config from './config.js';
+import { config } from './config.js';
 
 import axios from 'axios';
-import Bluebird from 'bluebird';
 import cors from 'cors';
 import debuglib from 'debug';
 import express from 'express';
 import helmet from 'helmet';
-import type { ServerOptions } from 'node:http';
-import oada_error from 'oada-error';
 
-function run() {
-  // Setup the loggers:
-  const log = {
-    error: debuglib('well-known:error'),
-    info: debuglib('well-known:info'),
-    trace: debuglib('well-known:trace'),
-  };
+import { Codes, OADAError, middleware } from '@oada/error';
+import { middleware as formats } from '@oada/formats-server';
+import wkj from '@oada/well-known-json';
 
-  log.info('-------------------------------------------------------------');
-  log.info('Starting server for ./well-known/oada-configuration...');
-  log.trace('config.get(wellKnown) = %O', config.get('wellKnown'));
+// Setup the loggers:
+const log = {
+  error: debuglib('well-known:error'),
+  info: debuglib('well-known:info'),
+  trace: debuglib('well-known:trace'),
+};
 
-  // Setup express:
-  const app = express();
+log.info('-------------------------------------------------------------');
+log.info('Starting server for ./well-known/oada-configuration...');
+log.trace('config.get(wellKnown) = %O', config.get('wellKnown'));
 
-  app.use(helmet() as (...arguments_: unknown[]) => void);
+// Setup express:
+const app = express();
 
-  // -----------------------------------------------------------------
-  // Log all requests before anything else gets them for debugging:
-  app.use((request, _res, next) => {
-    log.info('Received request: %s %s', request.method, request.url);
-    // Log.trace('req.headers = ', req.headers);
-    // log.trace('req.body = ', req.body);
-    next();
-  });
+app.use(helmet() as (...arguments_: unknown[]) => void);
 
-  // ----------------------------------------------------------
-  // Turn on CORS for all domains, allow the necessary headers
-  app.use(
-    cors({
-      exposedHeaders: ['x-oada-rev', 'location'],
-    })
-  );
-  app.options('*', cors() as (...arguments_: unknown[]) => void);
+// -----------------------------------------------------------------
+// Log all requests before anything else gets them for debugging:
+app.use((request, _response, next) => {
+  log.info('Received request: %s %s', request.method, request.url);
+  // Log.trace('req.headers = ', req.headers);
+  // log.trace('req.body = ', req.body);
+  next();
+});
 
-  // TODO: Less gross fix for Content-Types?
-  app.get('/.well-known/oada-configuration', (_, res, next) => {
-    res.type('application/vnd.oada.oada-configuration.1+json');
-    next();
-  });
-  app.get('/.well-known/oada-configuration', formats({}));
+// ----------------------------------------------------------
+// Turn on CORS for all domains, allow the necessary headers
+app.use(
+  cors({
+    exposedHeaders: ['x-oada-rev', 'location'],
+  })
+);
+app.options('*', cors() as (...arguments_: unknown[]) => void);
 
-  // ---------------------------------------------------
-  // Configure the top-level OADA well-known handler middleware
-  const options: { forceProtocol?: string } = {};
-  if (config.get('wellKnown.forceProtocol')) {
-    // Set to 'https' to force to https.  Useful when behind another proxy.
-    options.forceProtocol = config.get('wellKnown.forceProtocol') || undefined;
-  }
+// TODO: Less gross fix for Content-Types?
+app.get('/.well-known/oada-configuration', (_, response, next) => {
+  response.type('application/vnd.oada.oada-configuration.1+json');
+  next();
+});
+app.get('/.well-known/oada-configuration', formats({}));
 
-  const well_known_handler = well_known_json(options);
-  well_known_handler.addResource(
-    'oada-configuration',
-    config.get('wellKnown.oada-configuration')
-  );
-  well_known_handler.addResource(
-    'openid-configuration',
-    config.get('wellKnown.openid-configuration')
-  );
+// ---------------------------------------------------
+// Configure the top-level OADA well-known handler middleware
+const options: { forceProtocol?: string } = {};
+if (config.get('wellKnown.forceProtocol')) {
+  // Set to 'https' to force to https.  Useful when behind another proxy.
+  options.forceProtocol = config.get('wellKnown.forceProtocol') ?? undefined;
+}
 
-  // ------------------------------------------
-  // Retrieve /.well-known/ from sub-services,
-  // replacing domains and paths as needed
-  app.use((request, _res, done) => {
+const wellKnownHandler = wkj.middleware(
+  {
+    'oada-configuration': config.get('wellKnown.oada-configuration'),
+    'openid-configuration': config.get('wellKnown.openid-configuration'),
+  },
+  options
+);
+
+// ------------------------------------------
+// Retrieve /.well-known/ from sub-services,
+// replacing domains and paths as needed
+app.use(async (request, _response, next) => {
+  try {
     // Parse out the '/.well-known' part of the URL, like
     // '/.well-known/oada-configuration' or '/.well-known/openid-configuration'
     //
@@ -112,32 +109,32 @@ function run() {
     const resource = whichdoc.replace(/^\/.well-known\/(.*)$/, '$1');
     const subservices = config.get('wellKnown.mergeSubServices');
     if (Array.isArray(subservices)) {
-      return Bluebird.map(subservices, (s) => {
-        // If this subservice doesn't support this resource
-        // (oada-configuration vs. openid-configuration), move on...
-        if (s.resource !== resource) {
+      await Promise.all(
+        subservices.map(async (s) => {
+          // If this subservice doesn't support this resource
+          // (oada-configuration vs. openid-configuration), move on...
+          if (s.resource !== resource) {
+            log.trace(
+              'Requested resource %s, ' +
+                'but this subservice entry (%o) is not for that resource.' +
+                'Skipping...',
+              resource,
+              s
+            );
+            return;
+          }
+
           log.trace(
-            'Requested resource %s, ' +
-              'but this subservice entry (%o) is not for that resource.' +
-              'Skipping...',
+            'Resource (%s) matches subservice entry (%o), retrieving',
             resource,
             s
           );
-          return;
-        }
 
-        log.trace(
-          'Resource (%s) matches subservice entry (%o), retrieving',
-          resource,
-          s
-        );
-
-        // Request this resource from the subservice:
-        const url = s.base + whichdoc;
-        log.trace('Requesting subservice URL: %s', url);
-        return axios
-          .get(url)
-          .then((result) => {
+          // Request this resource from the subservice:
+          const url = s.base + whichdoc;
+          log.trace('Requesting subservice URL: %s', url);
+          try {
+            const result = await axios.get(url);
             if (result?.status !== 200) {
               log.trace(
                 '%s does not exist for subservice %s',
@@ -152,73 +149,67 @@ function run() {
             // on the URLs instead of the proxy's name.
             // Replace the subservice name with "./"
             // so this top-level wkj handler will replace properly:
-            const pfx = s.addPrefix || '';
-            const body: Record<string, unknown> = {};
-            for (const [key, value] of Object.entries(result.data)) {
-              if (typeof value !== 'string') {
-                body[key] = value;
-              } else {
-                body[key] = value.replace(/^https?:\/\/[^/]+\//, `./${pfx}`);
-              }
-            }
+            const pfx = s.addPrefix ?? '';
+            const body = Object.fromEntries(
+              Object.entries(result.data).map(([key, value]) => [
+                key,
+                typeof value === 'string'
+                  ? value.replace(/^https?:\/\/[^/]+\//, `./${pfx}`)
+                  : value,
+              ])
+            );
 
-            well_known_handler.addResource(s.resource, body);
+            wellKnownHandler.addResource(s.resource, body);
             log.trace('Merged into %s: %O', whichdoc, body);
 
             // If failed to return, or json didn't parse:
-          })
-          .catch((error) => {
-            log.error('The subservice URL %s failed. err = %O', url, error);
-          });
-
-        // No matter whether we throw or not, let request continue:
-      }).finally(() => {
-        done();
-      });
-    }
-  });
-
-  // Include well_known_handler AFTER the subservices check so that
-  // express does the check prior to the well-known handler responding.
-  app.use(well_known_handler);
-
-  // --------------------------------------------------
-  // Default handler for top-level routes not found:
-  app.use((request) => {
-    throw new oada_error.OADAError(
-      `Route not found: ${request.url}`,
-      oada_error.codes.NOT_FOUND
-    );
-  });
-
-  // ---------------------------------------------------
-  // Use OADA middleware to catch errors and respond
-  app.use(oada_error.middleware(log.error));
-
-  app.set('port', config.get('wellKnown.server.port'));
-
-  // ---------------------------------------------------
-  // In oada/server, the proxy provides the https for us,
-  // but this service could also have its own certs and run https
-  if (config.get('wellKnown.server.mode') === 'https') {
-    const s = https.createServer(
-      config.get('wellKnown.server.certs') as ServerOptions,
-      app
-    );
-    s.listen(app.get('port'), () => {
-      log.info(
-        'OADA Well-Known service started on port %d [https]',
-        app.get('port')
+          } catch (error: unknown) {
+            log.error(error, `The subservice URL ${url} failed`);
+          }
+        })
       );
-    });
-
-    // -------------------------------------------------------
-    // Otherwise, just plain-old HTTP server
-  } else {
-    app.listen(app.get('port'), () => {
-      log.info('OADA well-known server started on port %d', app.get('port'));
-    });
+    }
+  } finally {
+    // No matter whether we throw or not, let request continue:
+    next();
   }
-}
+});
 
-run();
+// Include well_known_handler AFTER the subservices check so that
+// express does the check prior to the well-known handler responding.
+app.use(wellKnownHandler);
+
+// --------------------------------------------------
+// Default handler for top-level routes not found:
+app.use((request) => {
+  throw new OADAError(`Route not found: ${request.url}`, Codes.NotFound);
+});
+
+// ---------------------------------------------------
+// Use OADA middleware to catch errors and respond
+app.use(middleware(log.error));
+
+app.set('port', config.get('wellKnown.server.port'));
+
+// ---------------------------------------------------
+// In oada/server, the proxy provides the https for us,
+// but this service could also have its own certs and run https
+if (config.get('wellKnown.server.mode') === 'https') {
+  const s = https.createServer(
+    config.get('wellKnown.server.certs') as ServerOptions,
+    app
+  );
+  s.listen(app.get('port'), () => {
+    log.info(
+      'OADA Well-Known service started on port %d [https]',
+      app.get('port')
+    );
+  });
+
+  // -------------------------------------------------------
+  // Otherwise, just plain-old HTTP server
+} else {
+  app.listen(app.get('port'), () => {
+    log.info('OADA well-known server started on port %d', app.get('port'));
+  });
+}

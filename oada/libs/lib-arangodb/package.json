@@ -3,6 +3,7 @@
   "version": "3.0.1",
   "description": "All OADA Arango interface code in one place.",
   "main": "dist/index.js",
+  "type": "module",
   "engines": {
     "node": ">=16.0.0"
   },
@@ -48,12 +49,12 @@
   "dependencies": {
     "@oada/lib-config": "^3.0.1",
     "@oada/oadaify": "^2.1.0",
-    "@oada/types": "^1.8.1",
+    "@oada/types": "^2.0.1",
     "arangojs": "^7.7.0",
     "bcryptjs": "^2.4.3",
     "bluebird": "^3.7.2",
     "clone-deep": "^4.0.1",
-    "debug": "^4.3.3",
+    "debug": "^4.3.4",
     "deep-equal": "^2.0.5",
     "flat": "^5.0.2",
     "json-ptr": "^3.1.0",
@@ -69,7 +70,8 @@
     "@types/deep-equal": "^1.0.1",
     "@types/flat": "^5.0.2",
     "@types/json-pointer": "^1.0.31",
-    "@types/node": "^16.11.26",
-    "ava": "4.0.0-rc.1"
+    "@types/node": "^16.11.27",
+    "ava": "4.0.0-rc.1",
+    "type-fest": "^2.12.2"
   }
 }

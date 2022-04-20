@@ -86,7 +86,7 @@ RUN chmod u+x /wait-for
 RUN chown node:node /wait-for
 
 # Copy in config file?
-COPY ./oada.config.js /oada.config.js
+COPY ./oada.config.mjs /oada.config.mjs
 
 # Launch entrypoint with dumb-init
 # Remap SIGTERM to SIGINT https://github.com/Yelp/dumb-init#signal-rewriting

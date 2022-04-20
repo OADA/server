@@ -15,9 +15,8 @@
  * limitations under the License.
  */
 
-// eslint-disable-next-line import/no-namespace
-import * as users from './users.js';
-import config from '../config.js';
+import { User, findById as findUserById } from './users.js';
+import { config } from '../config.js';
 import { db as database } from '../db.js';
 import { sanitizeResult } from '../util.js';
 
@@ -34,7 +33,7 @@ export interface Authorization {
   _id: string;
   _rev: number;
   token: string;
-  scope: string[];
+  scope: readonly string[];
   createTime: number;
   expiresIn: number;
   user: { _id: string };
@@ -43,25 +42,27 @@ export interface Authorization {
 }
 
 export async function findById(id: string): Promise<Authorization | undefined> {
-  return (await (
-    await database.query(aql`
+  const cursor = await database.query(aql`
       FOR t IN ${authorizations}
         FILTER t._key == ${id}
-        RETURN UNSET(t, '_key')`)
-  ).next()) as Authorization | undefined;
+        RETURN UNSET(t, '_key')`);
+
+  // eslint-disable-next-line @typescript-eslint/ban-types
+  const t = (await cursor.next()) as Authorization | null;
+  return t ?? undefined;
 }
 
 export async function findByToken(
   token: string
-): Promise<(Authorization & { user: users.User }) | undefined> {
-  const t = (await (
-    await database.query(
-      aql`
+): Promise<(Authorization & { user: User }) | undefined> {
+  const cursor = await database.query(
+    aql`
       FOR t IN ${authorizations}
         FILTER t.token == ${token}
         RETURN t`
-    )
-  ).next()) as Authorization | null;
+  );
+  // eslint-disable-next-line @typescript-eslint/ban-types
+  const t = (await cursor.next()) as Authorization | null;
 
   if (!t) {
     return undefined;
@@ -71,7 +72,7 @@ export async function findByToken(
   // t._id = t._key;
 
   trace('Found authorization by token (%O), filling out user by user._id', t);
-  const user = await users.findById(t.user._id);
+  const user = await findUserById(t.user._id);
   if (!user) {
     throw new Error(`Invalid user ${t.user._id} for token ${token}`);
   }

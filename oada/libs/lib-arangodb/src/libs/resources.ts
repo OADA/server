@@ -20,7 +20,7 @@
 import type { Link } from '@oada/types/oada/link/v1';
 import type Resource from '@oada/types/oada/resource';
 
-import config from '../config.js';
+import { config } from '../config.js';
 
 import { OADAified, oadaify } from '@oada/oadaify';
 
@@ -28,7 +28,7 @@ import { User, findById } from './users.js';
 import { db as database } from '../db.js';
 import { sanitizeResult } from '../util.js';
 
-import { ArangoError } from 'arangojs/error';
+import { ArangoError } from './errors.js';
 import { JsonPointer } from 'json-ptr';
 import { aql } from 'arangojs';
 import cloneDeep from 'clone-deep';

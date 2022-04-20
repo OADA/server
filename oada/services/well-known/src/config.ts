@@ -15,11 +15,9 @@
  * limitations under the License.
  */
 
-/* eslint-disable unicorn/no-null */
+import libConfig from '@oada/lib-config';
 
-import { libConfig } from '@oada/lib-config';
-
-const config = libConfig({
+export const { config, schema } = await libConfig({
   wellKnown: {
     'forceProtocol': {
       doc: 'use this to force https prefixes on URLs. Useful when behind a proxy.',
@@ -106,5 +104,3 @@ if (!config.get('wellKnown.oada-configuration.oada_base_uri')) {
     }`
   );
 }
-
-export default config;

@@ -15,12 +15,12 @@
  * limitations under the License.
  */
 
-import { changes, users } from '@oada/lib-arangodb';
 import { KafkaBase, ReResponder } from '@oada/lib-kafka';
+import { changes, users } from '@oada/lib-arangodb';
 
 import type { WriteRequest, WriteResponse } from '@oada/write-handler';
 
-import config from './config.js';
+import { config } from './config.js';
 
 import debug from 'debug';
 

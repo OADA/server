@@ -31,7 +31,7 @@ import debug from 'debug';
 /**
  * Default mappings of debug namespaces to pino levels
  */
-export const defaultMap = <const>{
+export const defaultMap = {
   '*:info': 'info',
   'info:*': 'info',
   '*:warn': 'warn',
@@ -46,7 +46,7 @@ export const defaultMap = <const>{
   'fatal:*': 'fatal',
   // Send anything unspecified to debug?
   '*': 'debug',
-};
+} as const;
 
 /**
  * Get current logging level based on PINO_LEVEL or DEBUG env vars

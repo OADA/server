@@ -9,10 +9,10 @@ services:
       kafka_net: {}
       arango_net: {}
     volumes:
-      - ./oada/oada.config.js:/oada.config.js # for debug?
+      - ./oada/oada.config.mjs:/oada.config.mjs # for debug?
     environment:
       # Default to loading packaged default config?
-      - CONFIG=${OADA_CONFIG-/oada.config.js}
+      - CONFIG=${OADA_CONFIG-/oada.config.mjs}
       - NODE_ENV=${NODE_ENV-development}
       - DEBUG=${DEBUG-*}
       - PINO_LEVEL

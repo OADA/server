@@ -16,9 +16,9 @@
  */
 
 // TODO: Publish this to npm instead?
-import { libConfig } from '@oada/lib-config';
+import libConfig from '@oada/lib-config';
 
-const config = libConfig({
+export const { config, schema } = await libConfig({
   kafka: {
     topics: {
       // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
@@ -29,5 +29,3 @@ const config = libConfig({
     },
   },
 });
-
-export default config;

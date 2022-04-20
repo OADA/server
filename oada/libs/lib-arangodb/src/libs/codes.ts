@@ -15,23 +15,31 @@
  * limitations under the License.
  */
 
-import { User, findById } from './users.js';
-import config from '../config.js';
+import type { Opaque } from 'type-fest';
+import { aql } from 'arangojs';
+
+import { DBUser, UserID, findById } from './users.js';
+import { config } from '../config.js';
 import { db as database } from '../db.js';
 import { sanitizeResult } from '../util.js';
 
-import { aql } from 'arangojs';
-
+export type CodeID = Opaque<string, Code>;
 export interface Code {
+  _id?: CodeID;
+  _rev?: number;
   code: string;
-  scope: string[];
+  scope: readonly string[];
   nonce?: string;
-  user: { _id: string };
+  user: { _id: UserID };
   createTime: number;
   expiresIn: number;
   redeemed: boolean;
   clientId: string;
   redirectUri: string;
+}
+export interface DBCode extends Code {
+  _id: CodeID;
+  _rev: number;
 }
 
 const codes = database.collection(
@@ -40,15 +48,15 @@ const codes = database.collection(
 
 export async function findByCode(
   code: string
-): Promise<(Code & { user: User }) | undefined> {
-  const c = (await (
-    await database.query(
-      aql`
+): Promise<(DBCode & { user: DBUser }) | undefined> {
+  const cursor = await database.query(
+    aql`
       FOR c IN ${codes}
       FILTER c.code == ${code}
       RETURN c`
-    )
-  ).next()) as Code | null;
+  );
+  // eslint-disable-next-line @typescript-eslint/ban-types
+  const c = (await cursor.next()) as DBCode | null;
 
   if (!c) {
     return undefined;
@@ -66,8 +74,8 @@ export async function findByCode(
 }
 
 export async function save(
-  code: Code
-): Promise<(Code & { user: User }) | undefined> {
+  code: Partial<Code> & { code: string }
+): Promise<(DBCode & { user: DBUser }) | undefined> {
   await database.query(aql`
     UPSERT { code: ${code.code} }
     INSERT ${code}

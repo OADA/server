@@ -16,9 +16,9 @@
  */
 
 // TODO: Publish this to npm instead?
-import { libConfig } from '@oada/lib-config';
+import libConfig from '@oada/lib-config';
 
-const config = libConfig({
+export const { config, schema } = await libConfig({
   kafka: {
     healthInterval: {
       format: 'duration',
@@ -61,5 +61,3 @@ const config = libConfig({
     },
   },
 });
-
-export default config;

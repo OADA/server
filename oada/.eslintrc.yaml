@@ -1,5 +1,13 @@
 root: true
 
+parser: '@typescript-eslint/parser'
+
+parserOptions:
+  ecmaVersion: 2020
+  project:
+    - '**/tsconfig.json'
+    - '../../tsconfig.eslint.json'
+
 extends:
   - plugin:node/recommended
   - plugin:github/recommended
@@ -29,17 +37,6 @@ plugins:
   - sonarjs
   - notice
 
-parser: '@typescript-eslint/parser'
-
-parserOptions:
-  ecmaVersion: 2020
-  project:
-    - './tsconfig.json'
-    - './services/*/tsconfig.json'
-    - './services/*/test/tsconfig.json'
-    - './lib/*/tsconfig.json'
-    - './lib/*/test/tsconfig.json'
-
 overrides:
   - files: '*.ts'
     extends:
@@ -49,12 +46,7 @@ overrides:
       - prettier
     parserOptions:
       ecmaVersion: 2020
-      project:
-        - './tsconfig.json'
-        - './services/*/tsconfig.json'
-        - './services/*/test/tsconfig.json'
-        - './lib/*/tsconfig.json'
-        - './lib/*/test/tsconfig.json'
+      project: '**/tsconfig.json'
     rules:
       '@typescript-eslint/naming-convention':
         [

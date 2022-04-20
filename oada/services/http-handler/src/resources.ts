@@ -30,7 +30,7 @@ import { _meta } from '@oada/oadaify';
 import { handleResponse } from '@oada/formats-server';
 
 import { EnsureLink } from './server.js';
-import config from './config.js';
+import { config } from './config.js';
 import requester from './requester.js';
 
 import type { FastifyPluginAsync, FastifyReply, FastifyRequest } from 'fastify';

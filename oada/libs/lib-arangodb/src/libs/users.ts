@@ -15,15 +15,16 @@
  * limitations under the License.
  */
 
-import config from '../config.js';
-import { db as database } from '../db.js';
-import { sanitizeResult } from '../util.js';
-
 import type { CollectionReadOptions } from 'arangojs/collection';
+import type { Opaque } from 'type-fest';
 import { aql } from 'arangojs';
 import bcrypt from 'bcryptjs';
 import debug from 'debug';
 import flatten from 'flat';
+
+import { Selector, sanitizeResult } from '../util.js';
+import { config } from '../config.js';
+import { db as database } from '../db.js';
 
 const info = debug('arangodb#resources:info');
 
@@ -49,9 +50,10 @@ const users = database.collection(
       "username": "bob", // can be used to pre-link this account to openidconnect identity
     }
 */
+export type UserID = Opaque<string, User>;
 export interface User {
-  _id: string;
-  _rev: number;
+  _id?: UserID;
+  _rev?: number;
   username: string;
   password?: string;
   name?: string;
@@ -69,14 +71,18 @@ export interface User {
   shares: { _id: string };
   scope: readonly string[];
 }
+export interface DBUser extends User {
+  _id: UserID;
+  _rev: number;
+}
 
 export async function findById(
   id: string,
   options?: CollectionReadOptions
-): Promise<User | undefined> {
+): Promise<DBUser | undefined> {
   try {
     // eslint-disable-next-line @typescript-eslint/ban-types
-    const result = (await users.document(id, options)) as User | null;
+    const result = (await users.document(id, options)) as DBUser | null;
     return result ? sanitizeResult(result) : undefined;
   } catch (error: unknown) {
     // @ts-expect-error errors in TS are annoying
@@ -94,14 +100,14 @@ export async function exists(id: string): Promise<boolean> {
 
 export async function findByUsername(
   username: string
-): Promise<User | undefined> {
+): Promise<DBUser | undefined> {
   const cursor = await database.query(
     aql`
         FOR u IN ${users}
           FILTER u.username == ${username}
           RETURN u`
   );
-  const user = (await cursor.next()) as User;
+  const user = (await cursor.next()) as DBUser;
 
   return user ? sanitizeResult(user) : undefined;
 }
@@ -109,7 +115,7 @@ export async function findByUsername(
 export async function findByOIDCUsername(
   oidcUsername: string,
   oidcDomain: string
-): Promise<User | undefined> {
+): Promise<DBUser | undefined> {
   const cursor = await database.query(
     aql`
         FOR u IN ${users}
@@ -117,7 +123,7 @@ export async function findByOIDCUsername(
           FILTER u.oidc.iss == ${oidcDomain}
           RETURN u`
   );
-  const user = (await cursor.next()) as User;
+  const user = (await cursor.next()) as DBUser;
 
   return user ? sanitizeResult(user) : undefined;
 }
@@ -129,7 +135,7 @@ export async function findByOIDCUsername(
 export async function findByOIDCToken(idToken: {
   sub: string;
   iss: string;
-}): Promise<User | undefined> {
+}): Promise<DBUser | undefined> {
   const cursor = await database.query(
     aql`
         FOR u IN ${users}
@@ -137,7 +143,7 @@ export async function findByOIDCToken(idToken: {
           FILTER u.oidc.iss == ${idToken.iss}
           RETURN u`
   );
-  const user = (await cursor.next()) as User;
+  const user = (await cursor.next()) as DBUser;
 
   return user ? sanitizeResult(user) : undefined;
 }
@@ -145,7 +151,7 @@ export async function findByOIDCToken(idToken: {
 export async function findByUsernamePassword(
   username: string,
   password: string
-): Promise<User | undefined> {
+): Promise<DBUser | undefined> {
   const user = await findByUsername(username);
   if (!user) {
     return undefined;
@@ -155,25 +161,25 @@ export async function findByUsernamePassword(
   return pass && (await bcrypt.compare(password, pass)) ? user : undefined;
 }
 
-export async function create(u: Omit<User, '_id' | '_rev'>): Promise<User> {
-  info(u, 'create user was called');
+export async function create(u: Omit<User, '_id' | '_rev'>): Promise<DBUser> {
+  info(u, 'Create user was called');
 
   if (u.password) {
     u.password = hashPw(u.password);
   }
 
   // Throws if username already exists
-  const user = (await users.save(u, { returnNew: true })) as { new: User };
+  const user = (await users.save(u, { returnNew: true })) as { new: DBUser };
   return user.new || user;
 }
 
 // Use this with care because it will completely remove that user document.
-export async function remove(u: User): Promise<void> {
+export async function remove(u: Selector<User>): Promise<void> {
   await users.remove(u);
 }
 
 export async function update(
-  u: { _id: string } & Partial<User>
+  u: { _id: string } & Partial<DBUser>
 ): Promise<{ _id: string; new: User }> {
   if (u.password) {
     u.password = hashPw(u.password);
@@ -187,7 +193,7 @@ export async function update(
 
 export async function like(
   u: Partial<User>
-): Promise<AsyncIterableIterator<User>> {
+): Promise<AsyncIterableIterator<DBUser>> {
   return users.byExample(flatten(u));
 }
 

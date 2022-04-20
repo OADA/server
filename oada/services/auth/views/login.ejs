@@ -12,6 +12,7 @@
   See the License for the specific language governing permissions and
   limitations under the License.
 -->
+
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -27,10 +28,10 @@
 
     <div class="container">
       <div class="container" style="max-width: 600px;">
-        <% if (iserror) { %> 
-          <div class="text-danger"><%= errormsg %></div> 
+        <% if (iserror) { %>
+          <div class="text-danger"><%= errormsg %></div>
         <% } %>
-  
+
         <form class="card" action="<%= login_url %>" method="post">
           <div class="container-fluid">
             <div class="row">
@@ -54,25 +55,25 @@
               <div class="col-1"></div>
           </div> <!-- container -->
         </form>
-  
+
         <br/>
-  
+
         <form class="card" action="<%= loginconnect_url %>" method="post">
           <div class="container-fluid">
-  
+
             <div class="row align-items-center">
               <div class="col align-items-center">
                 <center><strong>Or login with <%= idService.shortname %> identity:</center>
               </div>
             </div>
-  
+
             <div class="input-group">
               <span class="input-group-addon">
                 <strong><%= idService.shortname %> Domain</strong>
               </span>
               <input type="text" class="form-control" name="dest_domain" placeholder="<%= domain_hint %>" />
             </div>
-  
+
             <div class="row pt-2 pb-2">
               <div class="col-1"></div>
               <div class="col">
@@ -80,7 +81,7 @@
               </div>
               <div class="col-1"></div>
             </div>
-  
+
           </div> <!-- container -->
         </form>
       </div>

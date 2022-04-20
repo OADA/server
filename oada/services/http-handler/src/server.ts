@@ -22,7 +22,7 @@ import { plugin as formats } from '@oada/formats-server';
 
 import tokenLookup, { TokenResponse } from './tokenLookup.js';
 import authorizations from './authorizations.js';
-import config from './config.js';
+import { config } from './config.js';
 import resources from './resources.js';
 import users from './users.js';
 import websockets from './websockets.js';

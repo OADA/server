@@ -21,7 +21,7 @@ import { users } from '@oada/lib-arangodb';
 
 import type { UserRequest, UserResponse } from '@oada/users';
 
-import config from './config.js';
+import { config } from './config.js';
 import requester from './requester.js';
 
 import type { FastifyPluginAsync, FastifyReply, FastifyRequest } from 'fastify';
@@ -31,7 +31,7 @@ export interface Options {
   prefix: string;
 }
 
-function sanitizeDatabaseResult(user: users.User | undefined) {
+function sanitizeDatabaseResult(user: users.DBUser | undefined) {
   if (!user) {
     return;
   }
@@ -196,8 +196,6 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
     void reply.header('Content-Location', join(options.prefix, id));
     return reply.send(user);
   }
-
-  return Promise.resolve();
 };
 
 export default plugin;

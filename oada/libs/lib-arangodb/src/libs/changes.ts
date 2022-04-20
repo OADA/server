@@ -17,7 +17,7 @@
 
 import type Change from '@oada/types/oada/change/v2';
 
-import config from '../config.js';
+import { config } from '../config.js';
 import { db as database } from '../db.js';
 
 import { JsonPointer } from 'json-ptr';

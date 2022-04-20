@@ -20,7 +20,7 @@ import fs from 'node:fs';
 
 import { Responder } from '@oada/lib-kafka';
 
-import config from './config.js';
+import { config } from './config.js';
 import scopeTypes from './scopes.js';
 
 import debug from 'debug';
