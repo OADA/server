@@ -56,19 +56,29 @@ export const app = fastify({
       name: 'oadaEnsureLink',
       storage() {
         const handlers: Map<unknown, Handler<HTTPVersion.V1>> = new Map();
+        let defaultHandler: Handler<HTTPVersion.V1> | null = null;
         return {
           get(key) {
             // eslint-disable-next-line unicorn/no-null
-            return handlers.get(key) ?? null;
+            return handlers.get(key) ?? defaultHandler;
           },
           set(key, value) {
-            handlers.set(key, value);
+            if (key === true) {
+              defaultHandler = value;
+            } else {
+              handlers.set(key, value);
+            }
           },
           del(key) {
-            handlers.delete(key);
+            if (key === true) {
+              defaultHandler = null;
+            } else {
+              handlers.delete(key);
+            }
           },
           empty() {
             handlers.clear();
+            defaultHandler = null;
           },
         };
       },

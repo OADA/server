@@ -452,6 +452,19 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
     return reply.headers(response.headers).status(response.statusCode).send();
   }
 
+  // Better error message for x-oada-ensure-link HEAD, GET, DELETE request
+  fastify.route({
+    constraints: {
+      oadaEnsureLink: true,
+    },
+    url: '*',
+    method: ['HEAD', 'GET', 'DELETE'],
+    async handler(_request, reply) {
+      reply.badRequest('X-OADA-Ensure-Link not allowed for this method');
+      return;
+    },
+  });
+
   fastify.route({
     constraints: {
       oadaEnsureLink: EnsureLink.Versioned,
@@ -470,6 +483,17 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
     method: ['PUT', 'POST'],
     async handler(request, reply) {
       return ensureLink(request, reply, false);
+    },
+  });
+  fastify.route({
+    constraints: {
+      oadaEnsureLink: true,
+    },
+    url: '*',
+    method: ['PUT', 'POST'],
+    async handler(_request, reply) {
+      reply.badRequest('Unsupported value for X-OADA-Ensure-Link');
+      return;
     },
   });
 
