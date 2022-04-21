@@ -69,17 +69,22 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
   fastify.addContentTypeParser(
     ['json', '+json'],
     {
+      parseAs: 'string',
       // 20 MB
       bodyLimit: 20 * 1_048_576,
     },
     (_, body, done) => {
-      // eslint-disable-next-line unicorn/no-null
-      done(null, body);
+      try {
+        const json: unknown = JSON.parse(body as string);
+        done(null, json);
+      } catch (error: unknown) {
+        done(error as Error);
+      }
     }
   );
 
   fastify.post('/', async (request, reply) => {
-    request.log.info('Users POST, body = %O', request.body);
+    request.log.trace({ body: request.body }, 'Users POST');
     // Note: if the username already exists, the ksuid() below will end up
     // silently discarded and replaced in the response with the real one.
     const { string: newID } = await ksuid.random(); // Generate a random string for ID

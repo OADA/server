@@ -56,10 +56,10 @@ export const app = fastify({
       name: 'oadaEnsureLink',
       storage() {
         const handlers: Map<unknown, Handler<HTTPVersion.V1>> = new Map();
+        // eslint-disable-next-line @typescript-eslint/ban-types
         let defaultHandler: Handler<HTTPVersion.V1> | null = null;
         return {
           get(key) {
-            // eslint-disable-next-line unicorn/no-null
             return handlers.get(key) ?? defaultHandler;
           },
           set(key, value) {
