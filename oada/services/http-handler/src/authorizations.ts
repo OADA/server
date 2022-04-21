@@ -28,6 +28,7 @@ export interface Options {
 
 async function addClientToAuth(
   request: FastifyRequest,
+  // eslint-disable-next-line @typescript-eslint/ban-types
   auth: authorizations.Authorization | null
 ) {
   if (auth?.clientId) {
@@ -59,6 +60,7 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
     const { user_id: userid } = request.requestContext.get('user')!;
     const results = await authorizations.findByUser(userid);
 
+    // eslint-disable-next-line @typescript-eslint/ban-types
     const response: Record<string, authorizations.Authorization | null> = {};
     for await (const auth of results) {
       const k = auth._id.replace(/^authorizations\//, '');
@@ -89,12 +91,17 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
   fastify.addContentTypeParser(
     ['json', '+json'],
     {
+      parseAs: 'string',
       // 20 MB
       bodyLimit: 20 * 1_048_576,
     },
     (_, body, done) => {
-      // eslint-disable-next-line unicorn/no-null
-      done(null, body);
+      try {
+        const json: unknown = JSON.parse(body as string);
+        done(null, json);
+      } catch (error: unknown) {
+        done(error as Error);
+      }
     }
   );
 
@@ -135,7 +142,6 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
 
     const result = await authorizations.save(auth);
     if (!result) {
-      // eslint-disable-next-line unicorn/no-null
       return null;
     }
 
@@ -164,8 +170,6 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
     await authorizations.revoke(authId);
     return reply.code(204).send();
   });
-
-  return Promise.resolve();
 };
 
 export default plugin;
