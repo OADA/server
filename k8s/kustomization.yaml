@@ -1,15 +1,16 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
-#namespace: oada
+# namespace: oada
+
+bases:
+  - https://github.com/arangodb/kube-arangodb/manifests/kustomize/crd/?ref=1.2.8
+  - https://github.com/arangodb/kube-arangodb/manifests/kustomize/deployment/?ref=1.2.8
+  - https://github.com/redpanda-data/redpanda/src/go/k8s/config/default?ref=v21.11.14
 
 resources:
-  - https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v0.47.0/deploy/static/provider/cloud/deploy.yaml
-  - https://raw.githubusercontent.com/arangodb/kube-arangodb/1.1.9/manifests/arango-crd.yaml
-    #- https://github.com/vectorizedio/redpanda/src/go/k8s/config/crd?ref=v21.6.5
-  - https://github.com/arangodb/kube-arangodb/manifests/kustomize/deployment/?ref=1.1.9
-  - https://github.com/jetstack/cert-manager/releases/download/v1.4.0/cert-manager.yaml
-  - https://github.com/vectorizedio/redpanda/src/go/k8s/config/default
+  - https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.1.2/deploy/static/provider/cloud/deploy.yaml
+  - https://github.com/cert-manager/cert-manager/releases/download/v1.8.0/cert-manager.yaml
   - ./arangodb-deployment.yaml
   - ./redpanda-deployment.yaml
   - ./binary-data-persistentvolumeclaim.yaml

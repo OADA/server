@@ -50,7 +50,6 @@ COPY . /oada/
 RUN yarn install --immutable
 
 # Build and then remove yarn stuff
-# TODO: Without p it quits after first build... ?
 RUN yarn build --verbose && rm -rfv .yarn .pnp.*
 
 FROM node:${NODE_VER} AS code
@@ -109,4 +108,3 @@ ARG OADA_SERVICE
 ENV OADA_SERVICE=${OADA_SERVICE}
 
 WORKDIR /oada/services/${OADA_SERVICE}
-

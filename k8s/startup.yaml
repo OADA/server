@@ -34,7 +34,7 @@ spec:
       containers:
         - env:
             - name: CONFIG
-              value: /oada.config.js
+              value: /oada.config.mjs
             - name: DEBUG
               value: '*:error,*:warn,*:info'
             - name: DOMAIN
@@ -43,8 +43,6 @@ spec:
               value: production
             - name: NODE_TLS_REJECT_UNAUTHORIZED
               value: '0'
-            - name: PINO_TRANSPORT
-              value: yarn g:pretty -clti pid,hostname
             - name: RESETDATABASE
               value: 'no'
             - name: arangodb__ensureDefaults

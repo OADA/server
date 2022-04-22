@@ -17,8 +17,8 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: well-known-ingress
-  annotations:
-    #nginx.ingress.kubernetes.io/rewrite-target: /
+  #annotations:
+  #nginx.ingress.kubernetes.io/rewrite-target: /
 spec:
   rules:
     - http:
@@ -52,7 +52,7 @@ spec:
       containers:
         - env:
             - name: CONFIG
-              value: /oada.config.js
+              value: /oada.config.mjs
             - name: DEBUG
               value: '*:error,*:warn,*:info'
             - name: DOMAIN
@@ -61,8 +61,6 @@ spec:
               value: production
             - name: NODE_TLS_REJECT_UNAUTHORIZED
               value: '0'
-            - name: PINO_TRANSPORT
-              value: yarn g:pretty -clti pid,hostname
           image: oada/well-known:edge
           securityContext:
             runAsNonRoot: true
