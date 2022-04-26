@@ -173,6 +173,25 @@ export const { config, schema } = await libConfig({
       },
     },
     dynamicRegistration: {
+      softwareStatement: {
+        require: {
+          description:
+            'Whether to require all clients send a software_statement to register',
+          format: Boolean,
+          default: false,
+        },
+        mustTrust: {
+          description:
+            'Whether to outright reject clients with untrusted software_statement',
+          format: Boolean,
+          default: false,
+        },
+        mustInclude: {
+          description: 'List of field that any software_statement must include',
+          format: Array,
+          default: ['software_id'],
+        },
+      },
       trustedListLookupTimeout: {
         format: 'duration',
         default: 5000,

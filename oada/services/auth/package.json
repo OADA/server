@@ -49,7 +49,7 @@
     "@oada/pino-debug": "^3.0.1",
     "@oada/well-known-json": "^2.0.1",
     "arangojs": "^7.7.0",
-    "axios": "^0.26.1",
+    "axios": "^0.27.1",
     "bcryptjs": "^2.4.3",
     "bluebird": "^3.7.2",
     "body-parser": "^1.20.0",
@@ -59,9 +59,9 @@
     "connect-ensure-login": "^0.1.1",
     "cors": "^2.8.5",
     "debug": "^4.3.4",
-    "ejs": "^3.1.6",
+    "ejs": "^3.1.7",
     "es-main": "^1.0.2",
-    "express": "^4.17.3",
+    "express": "^4.18.0",
     "express-session": "^1.17.2",
     "helmet": "^5.0.2",
     "jsonwebtoken": "^8.5.1",
@@ -75,7 +75,7 @@
     "passport-local": "^1.0.0",
     "passport-oauth2-client-password": "~0.1.2",
     "pem-jwk": "^2.0.0",
-    "tslib": "^2.3.1",
+    "tslib": "^2.4.0",
     "urijs": "^1.19.11",
     "uuid": "^8.3.2"
   },
@@ -102,7 +102,7 @@
     "@types/pem-jwk": "^2.0.0",
     "@types/urijs": "^1.19.19",
     "@types/uuid": "^8.3.4",
-    "c8": "^7.11.0",
+    "c8": "^7.11.2",
     "type-fest": "^2.12.2"
   }
 }

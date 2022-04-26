@@ -58,7 +58,7 @@
     "deep-equal": "^2.0.5",
     "flat": "^5.0.2",
     "json-ptr": "^3.1.0",
-    "tslib": "^2.3.1"
+    "tslib": "^2.4.0"
   },
   "devDependencies": {
     "@ava/typescript": "^3.0.1",
@@ -70,7 +70,7 @@
     "@types/deep-equal": "^1.0.1",
     "@types/flat": "^5.0.2",
     "@types/json-pointer": "^1.0.31",
-    "@types/node": "^16.11.27",
+    "@types/node": "^16.11.30",
     "ava": "4.0.0-rc.1",
     "type-fest": "^2.12.2"
   }

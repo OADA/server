@@ -41,7 +41,7 @@
     "@oada/pino-debug": "^3.0.1",
     "@oada/types": "^2.0.1",
     "bluebird": "^3.7.2",
-    "cacache": "^16.0.4",
+    "cacache": "^16.0.6",
     "debug": "^4.3.4",
     "es-main": "^1.0.2",
     "fastify": "^3.28.0",
@@ -56,7 +56,7 @@
     "fastify-websocket": "^4.2.2",
     "json-ptr": "^3.1.0",
     "ksuid": "^3.0.0",
-    "tslib": "^2.3.1",
+    "tslib": "^2.4.0",
     "type-is": "^1.6.18",
     "uuid": "^8.3.2"
   },
@@ -65,12 +65,12 @@
     "@oada/write-handler": "^3.0.1",
     "@types/cacache": "^15.0.1",
     "@types/debug": "^4.1.7",
-    "@types/node": "^16.11.27",
+    "@types/node": "^16.11.30",
     "@types/type-is": "^1.6.3",
     "@types/uuid": "^8.3.4",
     "@types/ws": "^8.5.3",
     "connect": "^3.7.0",
-    "find-my-way": "^5.5.0",
+    "find-my-way": "^5.5.1",
     "light-my-request": "^4.9.0"
   }
 }

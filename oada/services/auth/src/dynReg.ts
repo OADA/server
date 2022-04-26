@@ -20,123 +20,153 @@ import { config } from './config.js';
 import type { RequestHandler } from 'express';
 import debug from 'debug';
 
+import Metadata, {
+  assert as assertMetadata,
+} from '@oada/types/oauth-dyn-reg/metadata.js';
 import { validate } from '@oada/certs';
 
 import { IClient, save } from './db/models/client.js';
+
+/**
+ * @see {@link https://datatracker.ietf.org/doc/html/rfc7591#section-3.2.2}
+ */
+const enum RegistrationErrorCode {
+  InvalidRedirectURI = 'invalid_redirect_uri',
+  InvalidClientMetadata = 'invalid_client_metadata',
+  InvalidSoftwareStatement = 'invalid_software_statement',
+  UnapprovedSoftwareStatement = 'unapproved_software_statement',
+}
+
+/**
+ * @see {@link https://datatracker.ietf.org/doc/html/rfc7591#section-3.2.2}
+ */
+class RegistrationError extends Error {
+  readonly code;
+
+  constructor(code: RegistrationErrorCode, message?: string) {
+    super(message);
+    this.code = code;
+  }
+
+  toJSON() {
+    return {
+      error: this.code,
+      error_description: this.message,
+    };
+  }
+}
 
 const error = debug('oada-ref-auth:dynReg:error');
 const info = debug('oada-ref-auth:dynReg:info');
 const trace = debug('oada-ref-auth:dynReg:trace');
 
+const {
+  require: requireSS,
+  mustInclude,
+  mustTrust,
+} = config.get('auth.dynamicRegistration.softwareStatement');
+const timeout = config.get('auth.dynamicRegistration.trustedListLookupTimeout');
+
+async function getSoftwareStatement({ software_statement }: Metadata) {
+  if (!software_statement) {
+    return undefined;
+  }
+
+  const { payload, trusted, valid, details } = await validate.validate(
+    software_statement,
+    { timeout }
+  );
+  if (!valid) {
+    throw new RegistrationError(
+      RegistrationErrorCode.InvalidSoftwareStatement,
+      `Software statement was not a valid JWT. Details = "${details}"`
+    );
+  }
+
+  const statements: Metadata =
+    typeof payload === 'string' ? JSON.parse(payload) : payload;
+  return {
+    ...statements,
+    // Set the "trusted" status based on JWS library return value
+    trusted,
+  };
+}
+
 const dynReg: RequestHandler = async (request, response) => {
   try {
-    if (!request.body?.software_statement) {
+    const metadata = request.body;
+    // TODO: More thorough checking of sent metadata
+    assertMetadata(metadata);
+
+    const softwareStatement = await getSoftwareStatement(metadata);
+
+    if (requireSS && !softwareStatement) {
       info(
-        request.body,
+        metadata,
         'Request body does not have software_statement key. Did you remember content-type=application/json?'
       );
-      response.status(400).json({
-        error: 'invalid_client_registration_body',
-        error_description:
-          'POST to Client registration must include a software_statement in the body',
-      });
-      return;
-    }
-
-    const { payload, trusted, valid, details } = await validate.validate(
-      request.body.software_statement,
-      {
-        timeout: config.get(
-          'auth.dynamicRegistration.trustedListLookupTimeout'
-        ),
-      }
-    );
-    const clientcert = {
-      ...((typeof payload === 'string'
-        ? JSON.parse(payload)
-        : payload) as IClient),
-      // Set the "trusted" status based on JWS library return value
-      valid,
-      trusted,
-    };
-
-    // Must have contacts, client_name, and redirect_uris or we won't save it
-    if (
-      !clientcert.contacts ||
-      !clientcert.client_name ||
-      !clientcert.redirect_uris
-    ) {
-      response.status(400).json({
-        error: 'invalid_software_statement',
-        error_description:
-          'Software statement must include at least client_name, redirect_uris, and contacts',
-      });
-      return;
-    }
-
-    if (!valid) {
-      response.status(400).json({
-        error: 'invalid_software_statement',
-        error_description: `Software statement was not a valid JWT. Details on rejection = ${JSON.stringify(
-          details,
-          null,
-          '  '
-        )}`,
-      });
-      return;
-    }
-
-    // If scopes is listed in the body, check them to make sure they are in the software_statement, then
-    // replace the signed ones with the subset given in the body
-    const { scope } = (request.body ?? {}) as { scope?: string };
-    if (typeof scope === 'string') {
-      const possiblescopes = (clientcert.scope ?? '').split(' ');
-      const subsetscopes = scope.split(' ');
-      const finalscopes = subsetscopes.filter((s) =>
-        possiblescopes.includes(s)
+      throw new RegistrationError(
+        // FIXME: What is the correct code here??
+        RegistrationErrorCode.InvalidSoftwareStatement,
+        'Client registration MUST include a software_statement for this server'
       );
-      clientcert.scope = finalscopes.join(' ');
     }
+
+    if (mustTrust && !softwareStatement?.trusted) {
+      info(metadata, 'Request body does not have a trusted software_statement');
+      throw new RegistrationError(
+        RegistrationErrorCode.UnapprovedSoftwareStatement,
+        'Client registration MUST include a software_statement for this server'
+      );
+    }
+
+    if (
+      softwareStatement &&
+      !mustInclude.every((statement) => statement in softwareStatement)
+    ) {
+      throw new RegistrationError(
+        RegistrationErrorCode.InvalidSoftwareStatement,
+        `Software statement must include at least ${mustInclude}`
+      );
+    }
+
+    // Fields in software statement MUST take precedence
+    const registrationData = { ...metadata, ...softwareStatement };
 
     // ------------------------------------------
     // Save client to database, return client_id for their future OAuth2 requests
     trace(
       'Saving client %s registration, trusted = %s',
-      clientcert.client_name,
-      trusted
+      registrationData.client_name,
+      registrationData.trusted
     );
-    try {
-      const client = await save(clientcert);
-      const result = {
-        ...clientcert,
-        clientId: undefined,
-        client_id: client.clientId,
-      };
-      info(
-        'Saved new client ID %s to DB, client_name = %s',
-        result.client_id,
-        result.client_name
-      );
-      response.status(201).json(result);
-    } catch (cError: unknown) {
-      error(cError, 'Failed to save new dynReg client');
-      response.status(400).json({
-        error: 'invalid_client_registration',
-        error_description: `Unexpected error - Client registration could not be stored. Err = ${cError}`,
-      });
-    }
-
-    // If @oada/certs fails
+    const client = await save(registrationData as IClient);
+    const result = {
+      ...registrationData,
+      client_id: client.clientId,
+    };
+    info(
+      'Saved new client ID %s to DB, client_name = %s',
+      result.client_id,
+      result.client_name
+    );
+    response.status(201).json(result);
   } catch (cError: unknown) {
-    error(
-      'Failed to validate client registration, oada-certs threw error: %O',
-      cError
-    );
-    response.status(400).json({
-      error: 'invalid_client_registration',
-      error_description:
-        'Client registration failed decoding or had invalid signature.',
-    });
+    error(cError, 'Failed to validate client registration');
+    if (cError instanceof RegistrationError) {
+      response.status(400).json(cError);
+    } else {
+      response
+        .status(400)
+        .json(
+          new RegistrationError(
+            RegistrationErrorCode.InvalidClientMetadata,
+            `Client registration failed: ${
+              (cError as Error)?.message ?? cError
+            }`
+          )
+        );
+    }
   }
 };
 
