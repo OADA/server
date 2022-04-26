@@ -300,9 +300,8 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
           ({ id, rev }) => id !== oadaGraph.resource_id && rev !== oadaGraph.rev
         )
       ) {
-        reply.preconditionFailed(
-          'If-None-Match header does match current resource'
-        );
+        // Not modified
+        await reply.code(304).send();
         return;
       }
 
