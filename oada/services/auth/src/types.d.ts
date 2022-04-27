@@ -15,27 +15,6 @@
  * limitations under the License.
  */
 
-/*
-declare module 'oada-error' {
-  import { RequestHandler } from 'express';
-  export class OADAError extends Error {
-    constructor(
-      message: string,
-      code?: number,
-      userMessage?: string | null,
-      href?: string | null,
-      detail?: string | null
-    );
-  }
-  // eslint-disable-next-line @typescript-eslint/naming-convention
-  export enum codes {
-    // eslint-disable-next-line @typescript-eslint/naming-convention
-    BAD_REQUEST,
-  }
-  export const middleware: () => RequestHandler;
-}
-*/
-
 declare module 'connect-arango' {
   import { Class } from 'type-fest';
   import { Config } from 'arangojs';

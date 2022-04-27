@@ -52,7 +52,6 @@
     "@oada/types": "^2.0.1",
     "arangojs": "^7.7.0",
     "bcryptjs": "^2.4.3",
-    "bluebird": "^3.7.2",
     "clone-deep": "^4.0.1",
     "debug": "^4.3.4",
     "deep-equal": "^2.0.5",
@@ -63,14 +62,13 @@
   "devDependencies": {
     "@ava/typescript": "^3.0.1",
     "@types/bcryptjs": "^2.4.2",
-    "@types/bluebird": "^3.5.36",
     "@types/clone-deep": "^4.0.1",
     "@types/convict": "^6.1.1",
     "@types/debug": "^4.1.7",
     "@types/deep-equal": "^1.0.1",
     "@types/flat": "^5.0.2",
     "@types/json-pointer": "^1.0.31",
-    "@types/node": "^16.11.30",
+    "@types/node": "^16.11.31",
     "ava": "4.0.0-rc.1",
     "type-fest": "^2.12.2"
   }

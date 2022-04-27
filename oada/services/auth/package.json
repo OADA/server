@@ -49,9 +49,8 @@
     "@oada/pino-debug": "^3.0.1",
     "@oada/well-known-json": "^2.0.1",
     "arangojs": "^7.7.0",
-    "axios": "^0.27.1",
+    "axios": "^0.27.2",
     "bcryptjs": "^2.4.3",
-    "bluebird": "^3.7.2",
     "body-parser": "^1.20.0",
     "chalk": "^4.1.2",
     "clone-deep": "^4.0.1",
@@ -82,7 +81,6 @@
   "devDependencies": {
     "@oada/types": "^2.0.1",
     "@types/bcryptjs": "^2.4.2",
-    "@types/bluebird": "^3.5.36",
     "@types/body-parser": "^1.19.2",
     "@types/clone-deep": "^4.0.1",
     "@types/connect-ensure-login": "^0.1.7",

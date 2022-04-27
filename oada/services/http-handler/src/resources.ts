@@ -46,7 +46,7 @@ export interface Options {
   prefixPath(request: FastifyRequest): string;
 }
 
-declare module 'fastify-request-context' {
+declare module '@fastify/request-context' {
   interface RequestContextData {
     // Add path within OADA to request context
     oadaPath: string;

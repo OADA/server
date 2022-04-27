@@ -32,7 +32,7 @@
     "@oada/lib-config": "^3.0.1",
     "@oada/pino-debug": "^3.0.1",
     "@oada/well-known-json": "^2.0.1",
-    "axios": "^0.27.1",
+    "axios": "^0.27.2",
     "cors": "^2.8.5",
     "debug": "^4.3.4",
     "express": "^4.18.0",

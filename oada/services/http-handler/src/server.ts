@@ -27,17 +27,18 @@ import resources from './resources.js';
 import users from './users.js';
 import websockets from './websockets.js';
 
-import type { HTTPVersion, Handler } from 'find-my-way';
 import fastify, { FastifyRequest } from 'fastify';
-import bearerAuth from 'fastify-bearer-auth';
-import cors from 'fastify-cors';
-import esMain from 'es-main';
-import fastifyAccepts from 'fastify-accepts';
+import bearerAuth from '@fastify/bearer-auth';
+import cors from '@fastify/cors';
+import fastifyAccepts from '@fastify/accepts';
 import fastifyGracefulShutdown from 'fastify-graceful-shutdown';
 import fastifyHealthcheck from 'fastify-healthcheck';
-import { fastifyRequestContextPlugin } from 'fastify-request-context';
-import fastifySensible from 'fastify-sensible';
-import helmet from 'fastify-helmet';
+import { fastifyRequestContextPlugin } from '@fastify/request-context';
+import fastifySensible from '@fastify/sensible';
+import helmet from '@fastify/helmet';
+
+import type { HTTPVersion, Handler } from 'find-my-way';
+import esMain from 'es-main';
 
 /**
  * Supported values for X-OADA-Ensure-Link header
@@ -110,7 +111,7 @@ export async function start(): Promise<void> {
   app.log.info('OADA Server started on port %d', config.get('server.port'));
 }
 
-declare module 'fastify-request-context' {
+declare module '@fastify/request-context' {
   interface RequestContextData {
     // Add graph lookup result to request context
     user: TokenResponse['doc'];
@@ -200,7 +201,7 @@ async function init(): Promise<void> {
   await app.register(async (aApp) => {
     await aApp.register(bearerAuth, {
       keys: new Set<string>(),
-      async auth(token, request: FastifyRequest) {
+      async auth(token: string, request: FastifyRequest) {
         try {
           const tok = await tokenLookup({
             // Connection_id: request.id,

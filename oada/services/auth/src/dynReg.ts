@@ -67,13 +67,15 @@ const {
 } = config.get('auth.dynamicRegistration.softwareStatement');
 const timeout = config.get('auth.dynamicRegistration.trustedListLookupTimeout');
 
-async function getSoftwareStatement({ software_statement }: Metadata) {
-  if (!software_statement) {
-    return undefined;
+async function getSoftwareStatement({
+  software_statement: softwareStatement,
+}: Metadata) {
+  if (!softwareStatement) {
+    return;
   }
 
   const { payload, trusted, valid, details } = await validate.validate(
-    software_statement,
+    softwareStatement,
     { timeout }
   );
   if (!valid) {
@@ -83,8 +85,9 @@ async function getSoftwareStatement({ software_statement }: Metadata) {
     );
   }
 
-  const statements: Metadata =
+  const statements: unknown =
     typeof payload === 'string' ? JSON.parse(payload) : payload;
+  assertMetadata(statements);
   return {
     ...statements,
     // Set the "trusted" status based on JWS library return value
@@ -94,7 +97,7 @@ async function getSoftwareStatement({ software_statement }: Metadata) {
 
 const dynReg: RequestHandler = async (request, response) => {
   try {
-    const metadata = request.body;
+    const metadata: unknown = request.body;
     // TODO: More thorough checking of sent metadata
     assertMetadata(metadata);
 

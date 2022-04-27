@@ -36,7 +36,7 @@ import type { FastifyPluginAsync } from 'fastify';
 import { JsonPointer } from 'json-ptr';
 import type LightMyRequest from 'light-my-request';
 import type WebSocket from 'ws';
-import fastifyWebsocket from 'fastify-websocket';
+import fastifyWebsocket from '@fastify/websocket';
 import { is } from 'type-is';
 import log from 'debug';
 
