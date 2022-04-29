@@ -113,7 +113,7 @@ spec:
         - envFrom:
             - configMapRef:
                 name: oada-configmap
-          image: oada/http-handler:build
+          image: oada/http-handler:edge
           securityContext:
             runAsNonRoot: true
             # run as user node (uid 1000)
