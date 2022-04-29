@@ -47,6 +47,7 @@
     "@oada/lib-config": "^3.0.1",
     "@oada/lookup": "^2.0.0",
     "@oada/pino-debug": "^3.0.1",
+    "@oada/types": "^2.0.1",
     "@oada/well-known-json": "^2.0.1",
     "arangojs": "^7.7.0",
     "axios": "^0.27.2",
@@ -79,7 +80,6 @@
     "uuid": "^8.3.2"
   },
   "devDependencies": {
-    "@oada/types": "^2.0.1",
     "@types/bcryptjs": "^2.4.2",
     "@types/body-parser": "^1.19.2",
     "@types/clone-deep": "^4.0.1",
