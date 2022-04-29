@@ -1,0 +1,23 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+
+kind: Kustomization
+
+#namespace: oada
+
+resources:
+  - ./binary-data-persistentvolumeclaim.yaml
+  - ./startup.yaml
+  - ./auth.yaml
+  - ./http-handler.yaml
+  - ./rev-graph-update.yaml
+  - ./shares.yaml
+  - ./sync-handler.yaml
+  - ./users.yaml
+  - ./webhooks.yaml
+  - ./well-known.yaml
+  - ./write-handler.yaml
+
+configMapGenerator:
+  - name: oada-configmap
+    envs:
+      - .env
