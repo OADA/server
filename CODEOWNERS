@@ -16,10 +16,10 @@
 *.code-workspace @awlayton
 
 # eslint
-.eslint* @awlayton
+**/.eslint* @awlayton
 
 # TypeScript
-tsconfig.* @awlayton
+**/tsconfig.* @awlayton
 
 # docker
 oada/.dockerignore @awalyton
