@@ -35,6 +35,7 @@ spec:
             - configMapRef:
                 name: oada-configmap
           image: oada/users:edge
+          imagePullPolicy: Always
           securityContext:
             runAsNonRoot: true
             # run as user node (uid 1000)
