@@ -68,7 +68,7 @@
     "@types/deep-equal": "^1.0.1",
     "@types/flat": "^5.0.2",
     "@types/json-pointer": "^1.0.31",
-    "@types/node": "^16.11.31",
+    "@types/node": "^16.11.33",
     "ava": "4.0.0-rc.1",
     "type-fest": "^2.12.2"
   }

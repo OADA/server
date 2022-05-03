@@ -61,7 +61,7 @@
     "debug": "^4.3.4",
     "ejs": "^3.1.7",
     "es-main": "^1.0.2",
-    "express": "^4.18.0",
+    "express": "^4.18.1",
     "express-session": "^1.17.2",
     "helmet": "^5.0.2",
     "jsonwebtoken": "^8.5.1",
