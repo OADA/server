@@ -1,0 +1,24 @@
+oada:
+  # oada.domain is the domain for this OADA instance
+  domain: localhost
+  # oada.tag is the Docker tag for the OADA images
+  tag: edge
+  # oada.services is the list of oada services to deploy
+  services:
+    startup:
+      http: true
+    http-handler:
+      http: true
+    auth:
+      http: true
+    shares: {}
+    rev-graph-update: {}
+    sync-handler: {}
+    users: {}
+    webhooks: {}
+    well-known: {}
+    write-handler: {}
+
+global:
+  # global.debug is whether to enable debug features not meant for production use
+  debug: false

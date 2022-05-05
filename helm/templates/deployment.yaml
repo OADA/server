@@ -1,0 +1,68 @@
+{{- range $k, $v := .Values.oada.services -}}
+# Copyright 2022 Open Ag Data Alliance
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+{{/* Deploy the OADA uservice `$k` */}}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ $.Release.Name }}-{{ $k }}
+  labels:
+    app: {{ $.Release.Name }}-{{ $k }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ $.Release.Name }}-{{ $k }}
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: {{ $.Release.Name }}-{{ $k }}
+    spec:
+      containers:
+        - envFrom:
+            - configMapRef:
+                name: {{ $.Release.Name }}-configmap
+          image: {{ print "oada/" $k ":" $.Values.oada.tag }}
+          imagePullPolicy: Always
+          securityContext:
+            runAsNonRoot: true
+            # run as user node (uid 1000)
+            runAsUser: 1000
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+          name: {{ $.Release.Name }}-{{ $k }}
+          {{ if $v.http -}}
+          ports:
+            - containerPort: 8080
+          {{ end -}}
+          volumeMounts:
+            {{ if eq $k "http-handler" -}}
+            - mountPath: /oada/binary
+              name: {{ $.Release.Name }}-binary-data
+            {{ end -}}
+            - mountPath: /tmp
+              name: tmp
+      volumes:
+        {{ if eq $k "http-handler" -}}
+        - name: {{ $.Release.Name }}-binary-data
+        {{ end -}}
+        - name: tmp
+          emptyDir:
+            medium: Memory
+      restartPolicy: Always
+---
+{{- end -}}

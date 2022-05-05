@@ -10,6 +10,14 @@
       "path": "oada"
     },
     {
+      "name": "☸ k8s (kustomize)",
+      "path": "k8s"
+    },
+    {
+      "name": "⎈ Helm chart",
+      "path": "helm"
+    },
+    {
       "name": "📦 @oada/lib-arangodb",
       "path": "oada/libs/lib-arangodb"
     },
