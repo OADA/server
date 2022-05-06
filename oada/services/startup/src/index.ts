@@ -25,6 +25,16 @@ const trace = debug('startup:trace');
 const info = debug('startup:info');
 
 const port = process.env.PORT ?? 8080;
+const exit = process.env.EXIT ?? false;
+
+info('Startup is creating the database');
+await init.run();
+info('Database created/ensured.');
+
+if (exit) {
+  // eslint-disable-next-line no-process-exit, unicorn/no-process-exit
+  process.exit(0);
+}
 
 const server = http.createServer((request, response) => {
   trace('Request received: %O', request);
@@ -35,8 +45,4 @@ server.on('listening', () => {
   info('Startup finished, listening on %o', server.address());
 });
 
-info('Startup is creating database');
-await init.run();
-
-info('Database created/ensured.');
 server.listen(port);
