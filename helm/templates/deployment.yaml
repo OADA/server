@@ -14,23 +14,25 @@
 # limitations under the License.
 
 {{/* Deploy the OADA uservice `$k` */}}
+{{- $name := print $.Release.Name "-" $k -}}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ $.Release.Name }}-{{ $k }}
+  name: {{ $name }}
   labels:
-    app: {{ $.Release.Name }}-{{ $k }}
+    app.kubernetes.io/name: {{ $name }}
+    {{- include "oada.chart.labels" $ | nindent 4 }}
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: {{ $.Release.Name }}-{{ $k }}
+      app.kubernetes.io/name: {{ $name }}
   strategy:
     type: Recreate
   template:
     metadata:
       labels:
-        app: {{ $.Release.Name }}-{{ $k }}
+        app.kubernetes.io/name: {{ $name }}
     spec:
       containers:
         - envFrom:
@@ -38,13 +40,14 @@ spec:
                 name: {{ $.Release.Name }}-configmap
           image: {{ print "oada/" $k ":" $.Values.oada.tag }}
           imagePullPolicy: Always
+          command: ["/usr/bin/dumb-init", "--rewrite", "15:2", "--", "/bin/sh"]
+          args: ["-c", "yarn workspace @oada/${OADA_SERVICE} run start"]
           securityContext:
             runAsNonRoot: true
-            # run as user node (uid 1000)
-            runAsUser: 1000
+            runAsUser: 1000 # run as user node (uid 1000)
             allowPrivilegeEscalation: false
             readOnlyRootFilesystem: true
-          name: {{ $.Release.Name }}-{{ $k }}
+          name: {{ $name }}
           {{ if $v.http -}}
           ports:
             - containerPort: 8080

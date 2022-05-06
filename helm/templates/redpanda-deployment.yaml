@@ -2,6 +2,9 @@ apiVersion: redpanda.vectorized.io/v1alpha1
 kind: Cluster
 metadata:
   name: {{ .Release.Name }}-redpanda
+  labels:
+    app.kubernetes.io/name: {{ .Release.Name }}-redpanda
+    {{- include "oada.chart.labels" . | nindent 4 }}
 spec:
   image: 'vectorized/redpanda'
   version: 'latest'

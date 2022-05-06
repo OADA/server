@@ -16,20 +16,24 @@ kind: Service
 metadata:
   name: {{ .Release.Name }}-http-handler
   labels:
-    app: {{ .Release.Name }}-http-handler
+    app.kubernetes.io/name: {{ .Release.Name }}-http-handler
+{{ include "oada.chart.labels" . | indent 4 }}
 spec:
   ports:
     - name: http
       port: 8080
       targetPort: 8080
   selector:
-    app: {{ .Release.Name }}-http-handler
+    app.kubernetes.io/name: {{ .Release.Name }}-http-handler
 ---
 # TODO: Why do I get an error with just `path: /`?
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: {{ .Release.Name }}-websocket-ingress
+  labels:
+    app.kubernetes.io/name: {{ .Release.Name }}-websocket-ingress
+{{ include "oada.chart.labels" . | indent 4 }}
   annotations:
     nginx.ingress.kubernetes.io/rewrite-target: /
 spec:

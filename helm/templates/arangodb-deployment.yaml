@@ -2,6 +2,9 @@ apiVersion: 'database.arangodb.com/v1'
 kind: ArangoDeployment
 metadata:
   name: {{ .Release.Name }}-arangodb
+  labels:
+    app.kubernetes.io/name: {{ .Release.Name }}-arangodb
+{{ include "oada.chart.labels" . | indent 4 }}
 spec:
   image: arangodb/arangodb:3.7.12
   mode: Single

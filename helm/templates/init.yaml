@@ -11,16 +11,26 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-apiVersion: v1
-kind: Service
+
+apiVersion: batch/v1
+kind: Job
 metadata:
+  name: {{ .Release.Name }}-init
   labels:
-    app: {{ .Release.Name }}-startup
-  name: {{ .Release.Name }}-startup
+    app.kubernetes.io/name: {{ .Release.Name }}-init
+    {{- include "oada.chart.labels" . | nindent 4 }}
 spec:
-  ports:
-    - name: http
-      port: 8080
-      targetPort: 8080
-  selector:
-    app: {{ .Release.Name }}-startup
+  backoffLimit: 4
+  template:
+    spec:
+      restartPolicy: OnFailure
+      containers:
+      - name: init
+        envFrom:
+          - configMapRef:
+              name: {{ .Release.Name }}-configmap
+        env:
+          - name: EXIT
+            value: 'true'
+        image: oada/startup:{{ .Values.oada.tag }}
+        imagePullPolicy: Always
