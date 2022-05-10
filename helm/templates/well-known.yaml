@@ -27,6 +27,7 @@ spec:
   selector:
     app.kubernetes.io/name: well-known
     app.kubernetes.io/instance: {{ .Release.Name }}
+{{- if .Values.oada.ingress }}
 ---
 apiVersion: networking.k8s.io/v1
 kind: Ingress
@@ -51,3 +52,4 @@ spec:
                 name: well-known-{{ .Release.Name }}
                 port:
                   name: http
+{{- end }}

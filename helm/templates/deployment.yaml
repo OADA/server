@@ -42,7 +42,7 @@ spec:
             - configMapRef:
                 name: {{ $.Chart.Name }}-configmap-{{ $.Release.Name }}
           image: {{ print "oada/" $k ":" $.Values.oada.tag }}
-          imagePullPolicy: Always
+          imagePullPolicy: {{ $.Values.global.development | ternary "Always" "IfNotPresent" }}
           command: ["/usr/bin/dumb-init", "--rewrite", "15:2", "--", "/bin/sh"]
           args: ["-c", "yarn workspace @oada/${OADA_SERVICE} run start"]
           securityContext:
@@ -51,6 +51,8 @@ spec:
             allowPrivilegeEscalation: false
             readOnlyRootFilesystem: true
           name: {{ $name }}
+          resources:
+            {{- toYaml $.Values.oada.resources | nindent 12 }}
           {{ if $v.http -}}
           ports:
             - containerPort: 8080

@@ -27,6 +27,7 @@ spec:
   selector:
     app.kubernetes.io/name: http-handler
     app.kubernetes.io/instance: {{ .Release.Name }}
+{{- if .Values.oada.ingress }}
 ---
 # TODO: Why do I get an error with just `path: /`?
 apiVersion: networking.k8s.io/v1
@@ -102,3 +103,4 @@ spec:
                 name: http-handler-{{ .Release.Name }}
                 port:
                   name: http
+{{- end }}

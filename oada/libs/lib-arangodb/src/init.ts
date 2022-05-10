@@ -19,10 +19,10 @@
  * @packageDocumentation
  *
  * This file exports a function which can be used to initialize the database
- * with `npm run init`.
+ * with `yarn run init`.
  */
 
-/* eslint-disable no-await-in-loop */
+/* eslint-disable max-depth */
 
 import { config } from './config.js';
 import { hashPw } from './libs/users.js';
@@ -41,6 +41,7 @@ const databaseName = config.get('arangodb.database');
 const cols = config.get('arangodb.collections');
 const colsarr = Object.values(cols);
 
+// eslint-disable-next-line complexity, sonarjs/cognitive-complexity
 export async function run(): Promise<void> {
   // Can't use ./db because we're creating the actual database
   const systemDB = arangojs({
@@ -95,7 +96,7 @@ export async function run(): Promise<void> {
     try {
       const databaseCols = await database.listCollections();
       trace('Found collections, looking for the ones we need');
-      for (const c of colsarr) {
+      for await (const c of colsarr) {
         if (databaseCols.some((d) => d.name === c.name)) {
           trace('Collection %s exists', c.name);
           continue;
@@ -116,10 +117,10 @@ export async function run(): Promise<void> {
 
       // ---------------------------------------------------------------------
       // Now check if the proper indexes exist on each collection:
-      for (const c of colsarr) {
+      for await (const c of colsarr) {
         const databaseIndexes = await database.collection(c.name).indexes();
         // For each index in this collection, check and create
-        for (const ci of c.indexes) {
+        for await (const ci of c.indexes) {
           const indexname = typeof ci === 'string' ? ci : ci.name;
           const unique = typeof ci === 'string' ? true : ci.unique;
           const sparse = typeof ci === 'string' ? true : ci.sparse;
@@ -144,7 +145,7 @@ export async function run(): Promise<void> {
         // Finally, import default data if they want some:
       }
 
-      for (const [colname, colinfo] of Object.entries(
+      for await (const [colname, colinfo] of Object.entries(
         config.get('arangodb.collections')
       )) {
         trace('Setting up collection %s: %O', colname, colinfo);
@@ -162,7 +163,7 @@ export async function run(): Promise<void> {
             : colinfo.ensureDefaults;
 
         // TODO: clean up this any nonsense
-        for (const document of data) {
+        for await (const document of data) {
           if (!document || !document._id) {
             warn('doc is undefined for collection %s', colinfo.name);
           }

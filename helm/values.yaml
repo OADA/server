@@ -1,6 +1,8 @@
 oada:
   # oada.domain is the domain for this OADA instance
   domain: localhost
+  # oada.ingress is whether to create ingresses into the OADA API
+  ingress: true
   # oada.tag is the Docker tag for the OADA images
   tag: edge
   # oada.services is the list of oada services to deploy
@@ -16,6 +18,7 @@ oada:
     webhooks: {}
     well-known: {}
     write-handler: {}
+  resources: {}
 
 global:
   # global.development is whether to enable development/debug features not meant for production use

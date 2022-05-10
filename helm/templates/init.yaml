@@ -21,7 +21,7 @@ metadata:
     app.kubernetes.io/instance: {{ .Release.Name }}
     {{- include "oada.chart.labels" . | nindent 4 }}
 spec:
-  backoffLimit: 4
+  backoffLimit: 10
   template:
     spec:
       restartPolicy: OnFailure
@@ -34,4 +34,4 @@ spec:
           - name: EXIT
             value: 'true'
         image: oada/startup:{{ .Values.oada.tag }}
-        imagePullPolicy: Always
+        imagePullPolicy: {{ .Values.global.development | ternary "Always" "IfNotPresent" }}
