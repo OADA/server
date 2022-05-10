@@ -18,6 +18,12 @@ oada:
     webhooks: {}
     well-known: {}
     write-handler: {}
+  # oada.users is a list of users to be created
+  users:
+    - name: admin
+      admin: true
+      tokens:
+        - scope: all:all
   resources: {}
 
 global:

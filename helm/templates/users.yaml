@@ -1,0 +1,60 @@
+{{- range .Values.oada.users -}}
+# Copyright 2022 Open Ag Data Alliance
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+{{- $secretName := print "user-" .name "-" $.Release.Name -}}
+{{- if lookup "v1" "Secret" $.Release.Namespace $secretName | empty }}
+apiVersion: v1
+kind: Secret
+metadata:
+  name: {{ $secretName }}
+  labels:
+    app.kubernetes.io/name: {{ $.Chart.Name }}
+    app.kubernetes.io/instance: {{ $.Release.Name }}
+    {{- include "oada.chart.labels" $ | nindent 4 }}
+data:
+  {{/* Generate random password */}}
+  password: {{ randAlphaNum 20 | b64enc }}
+  {{/* Generate random tokens */}}
+  tokens: []
+---
+{{ end }}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: user-add-{{ .name }}-{{ $.Release.Name }}
+  labels:
+    app.kubernetes.io/name: {{ $.Chart.Name }}
+    app.kubernetes.io/instance: {{ $.Release.Name }}
+    {{- include "oada.chart.labels" $ | nindent 4 }}
+spec:
+  backoffLimit: 10
+  template:
+    spec:
+      restartPolicy: OnFailure
+      containers:
+      - name: user-add
+        envFrom:
+          - configMapRef:
+              name: {{ $.Chart.Name }}-configmap-{{ $.Release.Name }}
+        env:
+          - name: PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: {{ $secretName }}
+                key: password
+        image: oada/users:{{ $.Values.oada.tag }}
+        imagePullPolicy: {{ $.Values.global.development | ternary "Always" "IfNotPresent" }}
+        command: ["/usr/bin/dumb-init", "--rewrite", "15:2", "--", "/bin/sh"]
+        args: ["-c", "yarn workspace @oada/users run add -u {{ .name }} -p ${PASSWORD} -a {{ .admin }} "]
+{{- end -}}
