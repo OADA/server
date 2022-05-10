@@ -15,9 +15,10 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: {{ .Release.Name }}-init
+  name: init-{{ .Release.Name }}
   labels:
-    app.kubernetes.io/name: {{ .Release.Name }}-init
+    app.kubernetes.io/name: init
+    app.kubernetes.io/instance: {{ .Release.Name }}
     {{- include "oada.chart.labels" . | nindent 4 }}
 spec:
   backoffLimit: 4
@@ -28,7 +29,7 @@ spec:
       - name: init
         envFrom:
           - configMapRef:
-              name: {{ .Release.Name }}-configmap
+              name: {{ .Chart.Name }}-configmap-{{ .Release.Name }}
         env:
           - name: EXIT
             value: 'true'

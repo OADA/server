@@ -5,13 +5,9 @@ kind: Kustomization
 # namespace: oada
 
 bases:
-  - https://github.com/arangodb/kube-arangodb/manifests/kustomize/crd/?ref=1.2.8
-  - https://github.com/arangodb/kube-arangodb/manifests/kustomize/deployment/?ref=1.2.8
-  - https://github.com/redpanda-data/redpanda/src/go/k8s/config/default?ref=v21.11.14
+  - ./support/
   - ./oada/
 
 resources:
-  - https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.1.2/deploy/static/provider/cloud/deploy.yaml
-  - https://github.com/cert-manager/cert-manager/releases/download/v1.8.0/cert-manager.yaml
   - ./arangodb-deployment.yaml
   - ./redpanda-deployment.yaml

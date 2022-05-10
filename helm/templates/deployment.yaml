@@ -14,30 +14,33 @@
 # limitations under the License.
 
 {{/* Deploy the OADA uservice `$k` */}}
-{{- $name := print $.Release.Name "-" $k -}}
+{{- $name := print $k "-" $.Release.Name -}}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: {{ $name }}
   labels:
-    app.kubernetes.io/name: {{ $name }}
+    app.kubernetes.io/name: {{ $k }}
+    app.kubernetes.io/instance: {{ $.Release.Name }}
     {{- include "oada.chart.labels" $ | nindent 4 }}
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app.kubernetes.io/name: {{ $name }}
+      app.kubernetes.io/name: {{ $k }}
+      app.kubernetes.io/instance: {{ $.Release.Name }}
   strategy:
     type: Recreate
   template:
     metadata:
       labels:
-        app.kubernetes.io/name: {{ $name }}
+        app.kubernetes.io/name: {{ $k }}
+        app.kubernetes.io/instance: {{ $.Release.Name }}
     spec:
       containers:
         - envFrom:
             - configMapRef:
-                name: {{ $.Release.Name }}-configmap
+                name: {{ $.Chart.Name }}-configmap-{{ $.Release.Name }}
           image: {{ print "oada/" $k ":" $.Values.oada.tag }}
           imagePullPolicy: Always
           command: ["/usr/bin/dumb-init", "--rewrite", "15:2", "--", "/bin/sh"]
@@ -55,13 +58,13 @@ spec:
           volumeMounts:
             {{ if eq $k "http-handler" -}}
             - mountPath: /oada/binary
-              name: {{ $.Release.Name }}-binary-data
+              name: binary-data-{{ $.Release.Name }}
             {{ end -}}
             - mountPath: /tmp
               name: tmp
       volumes:
         {{ if eq $k "http-handler" -}}
-        - name: {{ $.Release.Name }}-binary-data
+        - name: binary-data-{{ $.Release.Name }}
         {{ end -}}
         - name: tmp
           emptyDir:

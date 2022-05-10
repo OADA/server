@@ -15,20 +15,21 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: {{ .Release.Name }}-configmap
+  name: {{ .Chart.Name }}-configmap-{{ .Release.Name }}
   labels:
-    app.kubernetes.io/name: {{ .Release.Name }}-configmap
-{{ include "oada.chart.labels" . | indent 4 }}
-{{ if not .Values.global.debug -}}
+    app.kubernetes.io/name: {{ .Chart.Name }}-configmap
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    {{ include "oada.chart.labels" . | nindent 4 }}
+{{ if not .Values.global.development -}}
 immutable: true
 {{- end }}
 data:
   CONFIG: /oada.config.mjs
   DEBUG: '*:fatal,*:error,*:warn,*:info'
   DOMAIN: {{ .Values.oada.domain }}
-  ARANGODB_URL: http://{{ .Release.Name }}-arangodb:8529
-  KAFKA_BROKERS: {{ .Release.Name }}-redpanda:9092
-  {{ if .Values.global.debug -}}
+  ARANGODB_URL: http://arangodb-{{ .Release.Name }}:8529
+  KAFKA_BROKERS: redpanda-{{ .Release.Name }}:9092
+  {{ if .Values.global.development -}}
   NODE_ENV: development
   NODE_TLS_REJECT_UNAUTHORIZED: '0'
   arangodb__ensureDefaults: 'true'

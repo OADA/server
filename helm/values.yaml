@@ -5,8 +5,6 @@ oada:
   tag: edge
   # oada.services is the list of oada services to deploy
   services:
-    startup:
-      http: true
     http-handler:
       http: true
     auth:
@@ -20,5 +18,5 @@ oada:
     write-handler: {}
 
 global:
-  # global.debug is whether to enable debug features not meant for production use
-  debug: false
+  # global.development is whether to enable development/debug features not meant for production use
+  development: false

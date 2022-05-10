@@ -1,9 +1,10 @@
 apiVersion: redpanda.vectorized.io/v1alpha1
 kind: Cluster
 metadata:
-  name: {{ .Release.Name }}-redpanda
+  name: redpanda-{{ .Release.Name }}
   labels:
-    app.kubernetes.io/name: {{ .Release.Name }}-redpanda
+    app.kubernetes.io/name: redpanda
+    app.kubernetes.io/instance: {{ .Release.Name }}
     {{- include "oada.chart.labels" . | nindent 4 }}
 spec:
   image: 'vectorized/redpanda'
@@ -26,4 +27,4 @@ spec:
       - port: 8082
     adminApi:
       - port: 9644
-    developerMode: true
+    developerMode: {{ .Values.global.development }}

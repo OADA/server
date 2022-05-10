@@ -14,10 +14,11 @@
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: {{ .Release.Name }}-binary-data
+  name: binary-data-{{ .Release.Name }}
   labels:
-    app.kubernetes.io/name: {{ .Release.Name }}-binary-data
-{{ include "oada.chart.labels" . | indent 4 }}
+    app.kubernetes.io/name: binary-data
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    {{ include "oada.chart.labels" . | nindent 4 }}
 spec:
   accessModes:
     - ReadWriteOnce

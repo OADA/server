@@ -1,9 +1,0 @@
-dependencies:
-- name: redpanda-operator
-  repository: https://charts.vectorized.io/
-  version: v21.11.15
-- name: kube-arangodb
-  repository: https://arangodb.github.io/kube-arangodb
-  version: 1.2.8
-digest: sha256:dd36dbc81367eb5ea23e2b1ad8f041e6518a3612d015bf3e7ae65623bc419633
-generated: "2022-05-06T14:44:15.1407023-04:00"

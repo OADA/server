@@ -22,11 +22,3 @@ version: 0.1.0
 # follow Semantic Versioning. They should reflect the version the application is using.
 # It is recommended to use it with quotes.
 appVersion: '3.2.0'
-
-dependencies:
-  - name: redpanda-operator
-    version: 'v21.11.15'
-    repository: https://charts.vectorized.io/
-  - name: kube-arangodb
-    version: '1.2.8'
-    repository: https://arangodb.github.io/kube-arangodb
