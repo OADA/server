@@ -12,44 +12,37 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 apiVersion: v1
-kind: Service
+kind: Pod
 metadata:
-  name: auth-{{ .Release.Name }}
+  name: test-oada-configuration-{{ .Release.Name }}
   labels:
-    app.kubernetes.io/name: auth
+    app.kubernetes.io/name: test-well-known
     app.kubernetes.io/instance: {{ .Release.Name }}
     {{ include "oada.chart.labels" . | nindent 4 }}
+  annotations:
+    "helm.sh/hook": test
 spec:
-  ports:
-    - name: http
-      port: 80
-      targetPort: 8080
-  selector:
-    app.kubernetes.io/name: auth
-    app.kubernetes.io/instance: {{ .Release.Name }}
-{{- if .Values.oada.ingress }}
+  containers:
+    - name: oada-configuration
+      image: busybox
+      command: ['wget']
+      args: ['http://well-known-{{ .Release.Name }}/.well-known/oada-configuration']
+  restartPolicy: Never
 ---
-apiVersion: networking.k8s.io/v1
-kind: Ingress
+apiVersion: v1
+kind: Pod
 metadata:
-  name: auth-ingress-{{ .Release.Name }}
+  name: test-openid-configuration-{{ .Release.Name }}
   labels:
-    app.kubernetes.io/name: auth-ingress
+    app.kubernetes.io/name: test-well-known
     app.kubernetes.io/instance: {{ .Release.Name }}
     {{ include "oada.chart.labels" . | nindent 4 }}
-  #annotations:
-  #nginx.ingress.kubernetes.io/rewrite-target: /
+  annotations:
+    "helm.sh/hook": test
 spec:
-  ingressClassName: nginx
-  rules:
-    - host: '{{ .Values.oada.domain }}'
-      http:
-        paths:
-          - path: /oadaauth/
-            pathType: Prefix
-            backend:
-              service:
-                name: auth-{{ .Release.Name }}
-                port:
-                  name: http
-{{- end }}
+  containers:
+    - name: openid-configuration
+      image: busybox
+      command: ['wget']
+      args: ['http://well-known-{{ .Release.Name }}/.well-known/openid-configuration']
+  restartPolicy: Never
