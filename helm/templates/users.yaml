@@ -25,8 +25,11 @@ metadata:
 stringData:
   {{/* Generate random password */}}
   password: {{ randAlphaNum 20 }}
-  {{/* Generate random tokens */}}
-  token: {{ uuidv4 }}
+  {{/* Generate random token */}}
+  {{- $token := uuidv4 }}
+  token: {{ $token }}
+  header: >
+    Authorization: Bearer {{ $token }}
 ---
 {{ end }}
 apiVersion: batch/v1

@@ -25,9 +25,12 @@ metadata:
 spec:
   containers:
     - name: {{ . }}
-      image: busybox
-      command: ['wget']
-      args: ['http://well-known-{{ $.Release.Name }}/.well-known/{{ . }}']
+      image: curlimages/curl
+      args:
+        {{- if $.Values.global.development }}
+        - --verbose
+        {{- end }}
+        - http://well-known-{{ $.Release.Name }}/.well-known/{{ . }}
   restartPolicy: Never
 ---
 {{- end -}}

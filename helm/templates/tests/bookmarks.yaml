@@ -23,17 +23,25 @@ metadata:
   annotations:
     "helm.sh/hook": test
 spec:
+  volumes:
+    - name: header-volume
+      secret:
+        secretName: {{ print "user-" $user.name "-" .Release.Name }}
+        items:
+          - key: header
+            path: header
   containers:
     - name: bookmarks
-      image: busybox
-      env:
-        - name: TOKEN
-          valueFrom:
-            secretKeyRef:
-              name: {{ print "user-" $user.name "-" .Release.Name }}
-              key: token
-      command: ['wget']
+      image: curlimages/curl
+      volumeMounts:
+        - name: header-volume
+          mountPath: /secrets
+          readOnly: true
       args:
-      - '--header="Authorization: Bearer ${TOKEN}"'
-      - 'http://http-handler-{{ .Release.Name }}/bookmarks/'
+        {{- if .Values.global.development }}
+        - --verbose
+        {{- end }}
+        - --header
+        - '@/secrets/header'
+        - http://http-handler-{{ .Release.Name }}/bookmarks/
   restartPolicy: Never
