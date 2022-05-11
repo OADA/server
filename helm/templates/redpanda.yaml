@@ -13,10 +13,10 @@ spec:
   resources:
     requests:
       cpu: 1
-      memory: 1.2Gi
+      memory: 2Gi
     limits:
       cpu: 1
-      memory: 1.2Gi
+      memory: 2Gi
   configuration:
     autoCreateTopics: true
     rpcServer:
