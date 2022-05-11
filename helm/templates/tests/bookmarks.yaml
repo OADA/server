@@ -1,4 +1,3 @@
-{{- range tuple "oada-configuration" "openid-configuration" -}}
 # Copyright 2022 Open Ag Data Alliance
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,22 +11,29 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+{{- $user := first .Values.oada.users }}
 apiVersion: v1
 kind: Pod
 metadata:
-  name: test-{{ . }}-{{ $.Release.Name }}
+  name: test-bookmarks-{{ .Release.Name }}
   labels:
-    app.kubernetes.io/name: test-{{ . }}
-    app.kubernetes.io/instance: {{ $.Release.Name }}
-    {{ include "oada.chart.labels" $ | nindent 4 }}
+    app.kubernetes.io/name: test-bookmarks
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    {{ include "oada.chart.labels" . | nindent 4 }}
   annotations:
     "helm.sh/hook": test
 spec:
   containers:
-    - name: {{ . }}
+    - name: bookmarks
       image: busybox
+      env:
+        - name: TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: {{ print "user-" $user.name "-" .Release.Name }}
+              key: token
       command: ['wget']
-      args: ['http://well-known-{{ $.Release.Name }}/.well-known/{{ . }}']
+      args:
+      - '--header="Authorization: Bearer ${TOKEN}"'
+      - 'http://http-handler-{{ .Release.Name }}/bookmarks/'
   restartPolicy: Never
----
-{{- end -}}

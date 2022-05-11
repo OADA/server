@@ -22,11 +22,11 @@ metadata:
     app.kubernetes.io/name: {{ $.Chart.Name }}
     app.kubernetes.io/instance: {{ $.Release.Name }}
     {{- include "oada.chart.labels" $ | nindent 4 }}
-data:
+stringData:
   {{/* Generate random password */}}
-  password: {{ randAlphaNum 20 | b64enc }}
+  password: {{ randAlphaNum 20 }}
   {{/* Generate random tokens */}}
-  tokens: []
+  token: {{ uuidv4 }}
 ---
 {{ end }}
 apiVersion: batch/v1
@@ -42,19 +42,34 @@ spec:
   template:
     spec:
       restartPolicy: OnFailure
+      initContainers:
+        - name: user-add
+          envFrom:
+            - configMapRef:
+                name: {{ $.Chart.Name }}-configmap-{{ $.Release.Name }}
+          env:
+            - name: PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ $secretName }}
+                  key: password
+          image: oada/users:{{ $.Values.oada.tag }}
+          imagePullPolicy: {{ $.Values.global.development | ternary "Always" "IfNotPresent" }}
+          command: ["/usr/bin/dumb-init", "--rewrite", "15:2", "--", "/bin/sh"]
+          args: ["-c", "yarn workspace @oada/users run add -u {{ .name }} -p ${PASSWORD} -a {{ .admin }} "]
       containers:
-      - name: user-add
-        envFrom:
-          - configMapRef:
-              name: {{ $.Chart.Name }}-configmap-{{ $.Release.Name }}
-        env:
-          - name: PASSWORD
-            valueFrom:
-              secretKeyRef:
-                name: {{ $secretName }}
-                key: password
-        image: oada/users:{{ $.Values.oada.tag }}
-        imagePullPolicy: {{ $.Values.global.development | ternary "Always" "IfNotPresent" }}
-        command: ["/usr/bin/dumb-init", "--rewrite", "15:2", "--", "/bin/sh"]
-        args: ["-c", "yarn workspace @oada/users run add -u {{ .name }} -p ${PASSWORD} -a {{ .admin }} "]
+        - name: token-create
+          envFrom:
+            - configMapRef:
+                name: {{ $.Chart.Name }}-configmap-{{ $.Release.Name }}
+          env:
+            - name: TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: {{ $secretName }}
+                  key: token
+          image: oada/users:{{ $.Values.oada.tag }}
+          imagePullPolicy: {{ $.Values.global.development | ternary "Always" "IfNotPresent" }}
+          command: ["/usr/bin/dumb-init", "--rewrite", "15:2", "--", "/bin/sh"]
+          args: ["-c", "yarn workspace @oada/auth run token create -u {{ .name }} -s {{ .scope }} ${TOKEN} "]
 {{- end -}}

@@ -22,8 +22,7 @@ oada:
   users:
     - name: admin
       admin: true
-      tokens:
-        - scope: all:all
+      scope: all:all
   resources: {}
 
 global:
