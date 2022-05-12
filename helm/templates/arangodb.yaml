@@ -5,7 +5,7 @@ metadata:
   labels:
     app.kubernetes.io/name: arangodb
     app.kubernetes.io/instance: {{ .Release.Name }}
-    {{ include "oada.chart.labels" . | nindent 4 }}
+    {{- include "oada.chart.labels" . | nindent 4 }}
 spec:
   image: arangodb/arangodb:3.7.12
   mode: Single

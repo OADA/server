@@ -45,6 +45,24 @@ const responder = new ResponderRequester({
   group: 'user-handlers',
 });
 
+export interface User {
+  username: string;
+  password?: string;
+  domain?: string;
+  name?: string;
+  email?: string;
+  oidc?: {
+    sub?: string; // Subject, i.e. unique ID for this user
+    iss?: string; // Issuer: the domain that gave out this ID
+    username?: string; // Can be used to pre-link this account to openidconnect identity
+  };
+  scope?: readonly string[];
+  // TODO: These don't really belong here...
+  reqdomain?: string;
+  bookmarks?: { _id: string };
+  shares?: { _id: string };
+}
+
 export async function stopResp(): Promise<void> {
   return responder.disconnect();
 }
@@ -110,13 +128,7 @@ async function createNewUser(request: UserRequest): Promise<users.User> {
 
 export interface UserRequest {
   userid?: string;
-  user: {
-    username: string;
-    password: string;
-    bookmarks?: { _id: string };
-    shares?: { _id: string };
-    scope?: string[];
-  };
+  user: User;
   authorization?: {
     scope: string | string[];
   };

@@ -28,10 +28,10 @@
   },
   "homepage": "https://github.com/oada/@oada/lib-config#readme",
   "dependencies": {
-    "convict": "^6.2.2",
+    "convict": "^6.2.3",
     "convict-format-with-moment": "^6.2.0",
     "convict-format-with-validator": "^6.2.0",
-    "dotenv": "^16.0.0",
+    "dotenv": "^16.0.1",
     "json5": "^2.2.1",
     "tslib": "^2.4.0",
     "yaml": "^2.0.1"

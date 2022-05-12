@@ -6,7 +6,7 @@ parserOptions:
   ecmaVersion: 2020
   project:
     - '**/tsconfig.json'
-    - '../../tsconfig.eslint.json'
+    - '../../**/tsconfig.eslint.json'
 
 extends:
   - plugin:node/recommended

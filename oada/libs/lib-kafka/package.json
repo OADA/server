@@ -33,7 +33,7 @@
     "@oada/lib-config": "^3.0.1",
     "bluebird": "^3.7.2",
     "debug": "^4.3.4",
-    "kafkajs": "^1.16.0",
+    "kafkajs": "^2.0.0",
     "ksuid": "^3.0.0",
     "tslib": "^2.4.0",
     "uuid": "^8.3.2"
@@ -43,8 +43,8 @@
     "@types/bluebird": "^3.5.36",
     "@types/convict": "^6.1.1",
     "@types/debug": "^4.1.7",
-    "@types/node": "^16.11.33",
+    "@types/node": "^16.11.34",
     "@types/uuid": "^8.3.4",
-    "ava": "4.0.0-rc.1"
+    "ava": "4.2.0"
   }
 }

@@ -13,27 +13,28 @@
    * See the License for the specific language governing permissions and
    * limitations under the License.
    */}}
-apiVersion: v1
-kind: ConfigMap
+{{- if .Values.oada.ingress }}
+apiVersion: cert-manager.io/v1
+kind: Issuer
 metadata:
-  name: {{ .Chart.Name }}-configmap-{{ .Release.Name }}
+  name: letsencrypt-{{ .Release.Name }}
   labels:
-    app.kubernetes.io/name: {{ .Chart.Name }}-configmap
+    app.kubernetes.io/name: letsencrypt
     app.kubernetes.io/instance: {{ .Release.Name }}
     {{- include "oada.chart.labels" . | nindent 4 }}
-{{- if not .Values.global.development }}
-immutable: true
+spec:
+  acme:
+    server:
+      https://acme{{ .Values.global.development | ternary "-staging-" "-" }}v02.api.letsencrypt.org/directory
+    email: info@{{ .Values.oada.domain }}
+    privateKeySecretRef:
+      name: letsencrypt-{{ .Release.Name }}
+    solvers:
+      - http01:
+          ingress:
+            class: nginx
+            podTemplate:
+              spec:
+                nodeSelector:
+                  'kubernetes.io/os': linux
 {{- end }}
-data:
-  CONFIG: /oada.config.mjs
-  DEBUG: '*:fatal,*:error,*:warn,*:info'
-  DOMAIN: {{ .Values.oada.domain }}
-  ARANGODB_URL: http://arangodb-{{ .Release.Name }}:8529
-  KAFKA_BROKERS: redpanda-{{ .Release.Name }}:9092
-  {{ if .Values.global.development -}}
-  NODE_ENV: development
-  NODE_TLS_REJECT_UNAUTHORIZED: '0'
-  arangodb__ensureDefaults: 'true'
-  {{ else -}}
-  NODE_ENV: production
-  {{- end }}
