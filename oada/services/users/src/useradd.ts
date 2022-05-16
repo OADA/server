@@ -20,7 +20,7 @@
 import { Requester } from '@oada/lib-kafka';
 import { users } from '@oada/lib-arangodb';
 
-import type { UserRequest, UserResponse } from './server.js';
+import type { User, UserRequest, UserResponse } from './server.js';
 import { config } from './config.js';
 
 import chalk from 'chalk';
@@ -75,12 +75,21 @@ try {
     process.exit(1);
   }
 
-  const password = (argv.p ||
-    argv.password ||
-    (await promptly.prompt('Password: '))) as string;
+  const p = (argv.password ?? argv.p) as string | boolean | undefined;
+  const password = p
+    ? p === true
+      ? await promptly.prompt('Password: ')
+      : p
+    : undefined;
   const isAdmin = Boolean(argv.a || argv.isadmin || argv.isAdmin);
 
   trace('Sending request to kafka');
+  const user: User = {
+    username,
+    password,
+    // Add scope if you want the user to have permission to create other users
+    scope: isAdmin ? ['oada.admin.user:all'] : [],
+  };
   const response = (await kafkareq.send({
     connection_id: 'useradd',
     token: 'admin',
@@ -88,12 +97,7 @@ try {
       scope: ['oada.admin.user:all'],
     },
     // The "user" key is what goes into the DB
-    user: {
-      username,
-      password,
-      // Add scope if you want the user to have permission to create other users
-      scope: isAdmin ? ['oada.admin.user:all'] : [],
-    },
+    user,
   } as UserRequest)) as unknown as UserResponse;
 
   trace('Finished kafka.send, have our response = %O', response);

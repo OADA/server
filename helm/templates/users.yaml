@@ -24,8 +24,6 @@ metadata:
     app.kubernetes.io/instance: {{ $.Release.Name }}
     {{- include "oada.chart.labels" $ | nindent 4 }}
 stringData:
-  {{/* Generate random password */}}
-  password: {{ randAlphaNum 20 }}
   {{/* Generate random token */}}
   {{- $token := uuidv4 -}}
   token: {{ $token }}
@@ -50,16 +48,10 @@ spec:
           envFrom:
             - configMapRef:
                 name: {{ $.Chart.Name }}-configmap-{{ $.Release.Name }}
-          env:
-            - name: PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: {{ $secretName }}
-                  key: password
           image: oada/users:{{ $.Values.oada.tag }}
           imagePullPolicy: {{ $.Values.global.development | ternary "Always" "IfNotPresent" }}
           command: ["/usr/bin/dumb-init", "--rewrite", "15:2", "--", "/bin/sh"]
-          args: ["-c", "yarn workspace @oada/users run add -u {{ .name }} -p ${PASSWORD} -a {{ .admin }} "]
+          args: ["-c", "yarn workspace @oada/users run add -u {{ .name }} -a {{ .admin }} "]
       containers:
         - name: token-create
           envFrom:
