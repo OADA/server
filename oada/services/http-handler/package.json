@@ -64,7 +64,7 @@
     "@oada/write-handler": "^3.0.1",
     "@types/cacache": "^15.0.1",
     "@types/debug": "^4.1.7",
-    "@types/node": "^16.11.34",
+    "@types/node": "^16.11.35",
     "@types/type-is": "^1.6.3",
     "@types/uuid": "^8.3.4",
     "@types/ws": "^8.5.3",

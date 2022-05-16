@@ -70,7 +70,7 @@
     "morgan": "^1.10.0",
     "oauth2orize": "^1.11.1",
     "oauth2orize-openid": "^0.4.1",
-    "passport": "^0.5.2",
+    "passport": "^0.5.3",
     "passport-http-bearer": "^1.0.1",
     "passport-local": "^1.0.0",
     "passport-oauth2-client-password": "~0.1.2",
@@ -100,7 +100,7 @@
     "@types/pem-jwk": "^2.0.0",
     "@types/urijs": "^1.19.19",
     "@types/uuid": "^8.3.4",
-    "c8": "^7.11.2",
+    "c8": "^7.11.3",
     "type-fest": "^2.12.2"
   }
 }
