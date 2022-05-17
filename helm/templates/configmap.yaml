@@ -28,8 +28,9 @@ data:
   CONFIG: /oada.config.mjs
   DEBUG: '*:fatal,*:error,*:warn,*:info'
   DOMAIN: {{ .Values.oada.domain }}
-  ARANGODB_URL: http://arangodb-{{ .Release.Name }}:8529
-  KAFKA_BROKERS: redpanda-{{ .Release.Name }}:9092
+  ARANGODB_URL: {{ include "oada.arango.connection" . }}
+  ARANGODB_DATABASE: {{ .Values.arangodb.database }}
+  KAFKA_BROKERS: {{ include "oada.kafka.brokers" . }}
   {{ if .Values.global.development -}}
   NODE_ENV: development
   NODE_TLS_REJECT_UNAUTHORIZED: '0'

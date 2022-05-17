@@ -51,7 +51,7 @@ spec:
           image: oada/users:{{ $.Values.oada.tag }}
           imagePullPolicy: {{ $.Values.global.development | ternary "Always" "IfNotPresent" }}
           command: ["/usr/bin/dumb-init", "--rewrite", "15:2", "--", "/bin/sh"]
-          args: ["-c", "yarn workspace @oada/users run add -u {{ .name }} -a {{ .admin }} "]
+          args: ["-c", "yarn workspace @oada/users run add -u {{ .name }} -a {{ .admin | default false }} "]
       containers:
         - name: token-create
           envFrom:
@@ -66,5 +66,5 @@ spec:
           image: oada/users:{{ $.Values.oada.tag }}
           imagePullPolicy: {{ $.Values.global.development | ternary "Always" "IfNotPresent" }}
           command: ["/usr/bin/dumb-init", "--rewrite", "15:2", "--", "/bin/sh"]
-          args: ["-c", "yarn workspace @oada/auth run token create -u {{ .name }} -s {{ .scope }} ${TOKEN} "]
+          args: ["-c", "yarn workspace @oada/auth run token create -u {{ .name }} -s {{ .scope | join "," }} ${TOKEN} "]
 {{- end -}}

@@ -22,3 +22,15 @@ app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
 app.kubernetes.io/component: backend
 app.kubernetes.io/part-of: oada
 {{- end -}}
+
+{{/* ArangoDB connection to use */}}
+{{- define "oada.arango.connection" -}}
+  {{- $connection := print "http://arangodb-" .Release.Name ":8529" -}}
+  {{ .Values.arangodb.connection | default $connection }}
+{{- end -}}
+
+{{/* Kafka/Redpanda brokers to use */}}
+{{- define "oada.kafka.brokers" -}}
+  {{- $brokers := print "redpanda-" .Release.Name ":9092" -}}
+  {{ .Values.kafka.brokers | join "," | default $brokers }}
+{{- end -}}

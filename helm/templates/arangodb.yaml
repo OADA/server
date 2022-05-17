@@ -1,3 +1,4 @@
+{{- if not .Values.arangodb.connection }}
 apiVersion: 'database.arangodb.com/v1'
 kind: ArangoDeployment
 metadata:
@@ -7,10 +8,11 @@ metadata:
     app.kubernetes.io/instance: {{ .Release.Name }}
     {{- include "oada.chart.labels" . | nindent 4 }}
 spec:
-  image: arangodb/arangodb:3.7.12
+  image: arangodb/arangodb:{{ .Values.arangodb.tag }}
   mode: Single
   environment: {{ .Values.global.development | ternary "Development" "Production" }}
   tls:
     caSecretName: None
   auth:
     jwtSecretName: None
+{{- end }}

@@ -1,3 +1,5 @@
+replicaCount: 1
+
 oada:
   # oada.domain is the domain for this OADA instance
   domain: localhost
@@ -22,8 +24,33 @@ oada:
   users:
     - name: admin
       admin: true
-      scope: all:all
+      scope:
+        - all:all
+        - oada.admin.user:all
   resources: {}
+
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 100
+  targetCPUUtilizationPercentage: 80
+  targetMemoryUtilizationPercentage: 80
+
+arangodb:
+  # arangodb.database is the ArangoDB database to use
+  database: oada
+  # arangodb.connection is a URI of an external ArangoDB server.
+  # If this is set, the ArangoDB service will not be deployed.
+  # If this is not set, the kube-arango operator will be used to deploy a cluster.
+  connection: ''
+  # arangodb.tag is the Docker tag for the ArangoDB images
+  tag: 3.7.12
+
+kafka:
+  # kafka.brokers is an array of an external Kafka brokers.
+  # If this is not empty, the Redpanda service will not be deployed.
+  # If this is empty, the redpanda operator will be used to deploy a cluster.
+  brokers: []
 
 global:
   # global.development is whether to enable development/debug features not meant for production use

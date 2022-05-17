@@ -2,7 +2,15 @@ Thank you for installing {{ .Chart.Name }}.
 
 Your release is named {{ .Release.Name }}.
 
+It is serving the domain {{ .Values.oada.domain }}.
+
 To learn more about the release, try:
 
   $ helm status {{ .Release.Name }}
   $ helm get all {{ .Release.Name }}
+{{- if .Values.global.development }}
+
+####################################################################################
+### WARNING: This chart is running in development mode. DO NOT USE IN PRODUCTION ###
+####################################################################################
+{{- end }}

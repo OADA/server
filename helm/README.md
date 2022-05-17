@@ -36,3 +36,5 @@ After 2-3 times, it should run without error.
 
 Install the Helm chart:
 `helm install oada .`
+
+See the [values.yaml](values.yaml) for various configuration options.

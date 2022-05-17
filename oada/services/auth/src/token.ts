@@ -163,5 +163,5 @@ if (update) {
   trace(update, 'Sending updated token');
   // @ts-expect-error stuff
   await authorizations.save(update);
-  console.info(chalk.green`Successfully wrote token ${update.token}`);
+  console.info(chalk.green`Successfully wrote token`);
 }
