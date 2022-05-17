@@ -108,11 +108,10 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     });
 
     function handleChange(resourceId: string): Watch['handler'] {
+      const watch = watches.get(resourceId);
       function handler(this: Watch, { change }: { change: Change }) {
         debug('responding watch %s', resourceId);
-
-        const requests =
-          watches.get(resourceId)?.requests ?? new Map<string, string>();
+        const { requests } = watch!;
 
         const message = {
           resourceId,
@@ -233,25 +232,25 @@ const plugin: FastifyPluginAsync = async (fastify) => {
           debug('closing watch', message.requestId);
 
           // Find corresponding WATCH
-          let response: string | undefined;
-          let watch: Watch | undefined;
           let found = false;
-          for ([response, watch] of watches) {
-            if (watch?.requests.get(message.requestId)) {
-              found = true;
-              break;
+          for (const [resource, watch] of watches) {
+            if (!watch.requests.has(message.requestId)) {
+              continue;
             }
-          }
 
-          if (!found || !watch || !response) {
-            warn('Received UNWATCH for unknown WATCH %s', message.requestId);
-          } else {
             watch.requests.delete(message.requestId);
             if (watch.requests.size === 0) {
               // No watches on this resource left
-              watches.delete(response);
-              emitter.removeListener(response, watch.handler);
+              watches.delete(resource);
+              emitter.removeListener(resource, watch.handler);
             }
+
+            found = true;
+            break;
+          }
+
+          if (!found) {
+            warn('Received UNWATCH for unknown WATCH %s', message.requestId);
           }
 
           sendResponse({
