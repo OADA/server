@@ -126,11 +126,17 @@ const plugin: FastifyPluginAsync = async (fastify) => {
             pathLeftover
           );
           if (pathChange === undefined) {
+            // No relevant change
             continue;
           }
 
           message.requestId.push(requestId);
           message.path_leftover.push(pathLeftover);
+        }
+
+        if (message.requestId.length <= 0) {
+          // No-one to notify?
+          return;
         }
 
         sendChange(message as SocketChange);
