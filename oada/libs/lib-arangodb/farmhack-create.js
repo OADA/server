@@ -17,20 +17,22 @@
 
 /* eslint-disable camelcase */
 
-const config = require('./dist/config');
-const users = require('./dist/users');
+import { config } from './dist/config.js';
+
+import { Database } from 'arangojs';
+import debug from 'debug';
+
+import users from './dist/users.js';
+
 process.env.DEBUG = process.env.DEBUG || 'info:farmhack*';
-const debug = require('debug');
 const info = debug('info:farmhack#init');
 const trace = debug('trace:farmhack#init');
-const Promise = require('bluebird');
 
 // Can't use db.js's db because we're creating the actual database
-const database = require('arangojs')({
-  promise: Promise,
+const systemDB = new Database({
   url: config.get('arangodb.connectionString'),
 });
-database.useDatabase(config.get('arangodb.database'));
+const database = systemDB.database(config.get('arangodb.database'));
 
 const documents = [
   // Authorizations:
@@ -132,35 +134,34 @@ const documents = [
   },
 ];
 
-Promise.map(documents, (d) => {
-  const collection = d._id.split('/')[0];
-  const key = d._id.split('/')[1];
+await Promise.all(
+  documents.map(async (d) => {
+    const collection = d._id.split('/')[0];
+    const key = d._id.split('/')[1];
 
-  if (collection === 'users') {
-    d.password = users.hashPw(d.password);
-  }
+    if (collection === 'users') {
+      d.password = users.hashPw(d.password);
+    }
 
-  info('Saving document ', d);
-  const id = d._id;
-  delete d._id;
-  d._key = key;
-  info(`Checking for existence of id = ${id}`);
-  return database
-    .collection(collection)
-    .document(id)
-    .then(() => {
+    info('Saving document ', d);
+    const id = d._id;
+    delete d._id;
+    d._key = key;
+    info(`Checking for existence of id = ${id}`);
+    try {
+      await database.collection(collection).document(id);
       trace(`document ${id} exists: updating`);
       delete d._key;
-      return database.collection(collection).update(id, d);
-    })
-    .catch((error) => {
+      await database.collection(collection).update(id, d);
+    } catch (error) {
       if (error.code === 404) {
         trace(`document ${id} does not exist, inserting.`);
-        return database.collection(collection).save(d);
+        await database.collection(collection).save(d);
       }
 
-      info(`ERROR: ${id} had a non-404 error.  err = `, error);
-    });
-}).then(() => {
-  info('Done!');
-});
+      info(error, `${id} had a non-404 error`);
+    }
+  })
+);
+
+info('Done!');
