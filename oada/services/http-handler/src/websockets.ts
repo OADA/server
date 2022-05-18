@@ -90,7 +90,9 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     /**
      * Awaitable function to send over socket
      */
-    const send: (value: unknown) => Promise<void> = promisify(socket.send);
+    const send: (value: unknown) => Promise<void> = promisify(
+      socket.send.bind(socket)
+    );
     // Add our state stuff?
     let isAlive = true;
     const watches: Map<string, Watch> = new Map();
