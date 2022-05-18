@@ -17,6 +17,7 @@
 
 import { EventEmitter } from 'node:events';
 import { strict as assert } from 'node:assert';
+import { promisify } from 'node:util';
 
 import { KafkaBase, Responder } from '@oada/lib-kafka';
 import { changes, resources } from '@oada/lib-arangodb';
@@ -86,6 +87,10 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   await fastify.register(fastifyWebsocket);
 
   fastify.get('/*', { websocket: true }, ({ socket }) => {
+    /**
+     * Awaitable function to send over socket
+     */
+    const send: (value: unknown) => Promise<void> = promisify(socket.send);
     // Add our state stuff?
     let isAlive = true;
     const watches: Map<string, Watch> = new Map();
@@ -139,29 +144,27 @@ const plugin: FastifyPluginAsync = async (fastify) => {
           return;
         }
 
-        sendChange(message as SocketChange);
+        void sendChange(message as SocketChange);
       }
 
       return handler;
     }
 
-    function sendResponse({
+    async function sendResponse({
       payload,
       ...resp
     }: SocketResponse & { payload?: string }) {
-      debug('Responding to request: %O', resp);
+      debug(resp, 'Responding to request');
       // TODO: Remove this hack...
       const string = JSON.stringify(resp);
-      if (payload) {
-        socket.send(`${string.slice(0, -1)},"data":${payload}}`);
-      } else {
-        socket.send(string);
-      }
+      await (payload
+        ? send(`${string.slice(0, -1)},"data":${payload}}`)
+        : send(string));
     }
 
-    function sendChange(resp: SocketChange) {
+    async function sendChange(resp: SocketChange) {
       trace(resp, 'Sending change');
-      socket.send(JSON.stringify(resp));
+      await send(JSON.stringify(resp));
     }
 
     // Handle request
@@ -169,7 +172,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       let message: SocketRequest;
       try {
         message = parseRequest(data);
-      } catch (error_: unknown) {
+      } catch (cError: unknown) {
         const errorResponse: SocketResponse = {
           status: 400,
           /**
@@ -182,18 +185,18 @@ const plugin: FastifyPluginAsync = async (fastify) => {
             400,
             'Invalid socket message format',
             undefined,
-            error_ as string
+            cError as string
           ) as unknown as Record<string, unknown>,
         };
-        sendResponse(errorResponse);
-        error(error_);
+        error(cError);
+        await sendResponse(errorResponse);
         return;
       }
 
       try {
         await handleRequest(message);
-      } catch (error_: unknown) {
-        error(error_);
+      } catch (cError: unknown) {
+        error(cError);
         error('Request was: %O', message);
         const errorResponse = {
           status: 500,
@@ -204,7 +207,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
             unknown
           >,
         };
-        sendResponse(errorResponse);
+        await sendResponse(errorResponse);
       }
     });
 
@@ -229,7 +232,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         case 'ping':
           debug('ping');
           // Send an empty response
-          sendResponse({
+          await sendResponse({
             requestId: message.requestId,
             status: 204, // HTTP 204: No Content
           });
@@ -259,7 +262,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
             warn('Received UNWATCH for unknown WATCH %s', message.requestId);
           }
 
-          sendResponse({
+          await sendResponse({
             requestId: message.requestId,
             status: 200,
           });
@@ -306,7 +309,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
             }
           }
 
-          sendResponse({
+          await sendResponse({
             requestId: message.requestId,
             status: response.statusCode,
             statusText: response.statusMessage,
@@ -315,12 +318,12 @@ const plugin: FastifyPluginAsync = async (fastify) => {
           });
           return;
         }
-      } catch (error_: unknown) {
-        if (error_ && typeof error_ === 'object' && 'response' in error_) {
-          error(error_);
+      } catch (cError: unknown) {
+        if (cError && typeof cError === 'object' && 'response' in cError) {
+          error(cError);
           const {
             response: { status, statusText, headers, data },
-          } = error_ as {
+          } = cError as {
             response: {
               status: number;
               statusText: string;
@@ -328,7 +331,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
               data: Record<string, unknown>;
             };
           };
-          sendResponse({
+          await sendResponse({
             requestId: message.requestId,
             status,
             statusText,
@@ -338,7 +341,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
           return;
         }
 
-        throw error_;
+        throw cError;
       }
 
       const parts =
@@ -385,60 +388,52 @@ const plugin: FastifyPluginAsync = async (fastify) => {
           }
 
           // Emit all new changes from the given rev in the request
-          const headerRev = request.headers?.['x-oada-rev'];
-          if (headerRev !== undefined) {
-            debug('Setting up watch on: %s', resourceId);
-            trace('RECEIVED THIS REV: %s %s', resourceId, headerRev);
-            const rev = await resources.getResource(resourceId, '/_rev');
-            const revInt = Number.parseInt(rev as unknown as string, 10);
-            // If the requested rev is behind by revLimit, simply
-            // re-GET the entire resource
-            trace('REVS: %s %s %s', resourceId, rev, headerRev);
-            if (revInt - Number.parseInt(headerRev as string, 10) >= revLimit) {
+          const revHeader = request.headers?.['x-oada-rev'];
+          trace('Received this rev: %s %s', resourceId, revHeader);
+          const headerRev = Number.parseInt(revHeader as string, 10);
+          if (Number.isNaN(headerRev)) {
+            // Emit no changes, just set a WATCH
+            break;
+          }
+
+          debug('Setting up watch on: %s', resourceId);
+          const rev = await resources.getResource(resourceId, '/_rev');
+          const revInt = Number.parseInt(rev as unknown as string, 10);
+          // If the requested rev is behind by revLimit, simply
+          // re-GET the entire resource
+          trace('REVS: %s %s %s', resourceId, rev, headerRev);
+          if (revInt - headerRev >= revLimit) {
+            trace('REV WAY OUT OF DATE %s: %s %s', resourceId, rev, headerRev);
+            const resource = await resources.getResource(resourceId);
+            await sendResponse({
+              requestId: message.requestId,
+              resourceId,
+              resource,
+              status: 200,
+            });
+          } else {
+            // First, declare success.
+            await sendResponse({
+              requestId: message.requestId,
+              status: 200,
+            });
+            trace('REV NOT TOO OLD %s: %s %s', resourceId, rev, headerRev);
+            // Next, feed changes to client
+            for (let sendRev = headerRev + 1; sendRev <= revInt; sendRev++) {
               trace(
-                'REV WAY OUT OF DATE %s: %s %s',
-                resourceId,
-                rev,
-                headerRev
+                'Sending change %s to resumed WATCH %s',
+                sendRev,
+                message.requestId
               );
-              const resource = await resources.getResource(resourceId);
-              sendResponse({
-                requestId: message.requestId,
+              // eslint-disable-next-line no-await-in-loop
+              const change = await changes.getChangeArray(resourceId, sendRev);
+              // eslint-disable-next-line no-await-in-loop
+              await sendChange({
+                requestId: [message.requestId],
                 resourceId,
-                resource,
-                status: 200,
+                path_leftover: [pathLeftover],
+                change,
               });
-            } else {
-              // First, declare success.
-              sendResponse({
-                requestId: message.requestId,
-                status: 200,
-              });
-              trace('REV NOT TOO OLD %s: %s %s', resourceId, rev, headerRev);
-              // Next, feed changes to client
-              const requestRevInt = Number.parseInt(headerRev as string, 10);
-              for (
-                let sendRev = requestRevInt + 1;
-                sendRev <= revInt;
-                sendRev++
-              ) {
-                trace(
-                  'Sending change %s to resumed WATCH %s',
-                  sendRev,
-                  message.requestId
-                );
-                // eslint-disable-next-line no-await-in-loop
-                const change = await changes.getChangeArray(
-                  resourceId,
-                  sendRev
-                );
-                sendChange({
-                  requestId: [message.requestId],
-                  resourceId,
-                  path_leftover: pathLeftover,
-                  change,
-                });
-              }
             }
           }
 
@@ -471,7 +466,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
               }
             }
 
-            sendResponse({
+            await sendResponse({
               requestId: message.requestId,
               // Bad Request
               status: 400,
@@ -493,7 +488,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
             }
           }
 
-          sendResponse({
+          await sendResponse({
             requestId: message.requestId,
             status: response.statusCode,
             headers,
