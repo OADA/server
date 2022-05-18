@@ -16,6 +16,7 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
+  namespace: {{ .Release.Namespace }}
   name: init-{{ .Release.Name }}
   labels:
     app.kubernetes.io/name: init
@@ -26,13 +27,29 @@ spec:
   template:
     spec:
       restartPolicy: OnFailure
+      serviceAccountName: service-account-{{ .Release.Name }}
+      initContainers:
+        {{- if not .Values.arangodb.connection }}
+        - name: wait-for-arangodb
+          image: {{ .Values.k8sWaitFor.image }}:{{ .Values.k8sWaitFor.tag }}
+          args:
+            - service
+            - arangodb-{{ .Release.Name }}
+        {{- end }}
+        {{- if not .Values.kafka.brokers }}
+        - name: wait-for-redpanda
+          image: {{ .Values.k8sWaitFor.image }}:{{ .Values.k8sWaitFor.tag }}
+          args:
+            - service
+            - redpanda-{{ .Release.Name }}
+        {{- end }}
       containers:
-      - name: init
-        envFrom:
-          - configMapRef:
-              name: {{ .Chart.Name }}-configmap-{{ .Release.Name }}
-        env:
-          - name: EXIT
-            value: 'true'
-        image: oada/startup:{{ .Values.oada.tag }}
-        imagePullPolicy: {{ .Values.global.development | ternary "Always" "IfNotPresent" }}
+        - name: init
+          envFrom:
+            - configMapRef:
+                name: {{ .Chart.Name }}-configmap-{{ .Release.Name }}
+          env:
+            - name: EXIT
+              value: 'true'
+          image: oada/startup:{{ .Values.oada.tag }}
+          imagePullPolicy: {{ .Values.global.development | ternary "Always" "IfNotPresent" }}

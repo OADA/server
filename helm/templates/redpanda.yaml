@@ -2,14 +2,15 @@
 apiVersion: redpanda.vectorized.io/v1alpha1
 kind: Cluster
 metadata:
+  namespace: {{ .Release.Namespace }}
   name: redpanda-{{ .Release.Name }}
   labels:
     app.kubernetes.io/name: redpanda
     app.kubernetes.io/instance: {{ .Release.Name }}
     {{- include "oada.chart.labels" . | nindent 4 }}
 spec:
-  image: 'vectorized/redpanda'
-  version: 'latest'
+  image: {{ .Values.kafka.image }}
+  version: {{ .Values.kafka.tag }}
   replicas: 1
   resources:
     requests:
@@ -24,9 +25,21 @@ spec:
       port: 33145
     kafkaApi:
       - port: 9092
+      {{- if .Values.global.development }}
+      - external:
+          enabled: true
+      {{- end }}
     pandaproxyApi:
       - port: 8082
+      {{- if .Values.global.development }}
+      - external:
+          enabled: true
+      {{- end }}
     adminApi:
       - port: 9644
+      {{- if .Values.global.development }}
+      - external:
+          enabled: true
+      {{- end }}
     developerMode: {{ .Values.global.development }}
 {{- end }}

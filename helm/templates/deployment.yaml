@@ -19,6 +19,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
+  namespace: {{ $.Release.Namespace }}
   name: {{ $name }}
   labels:
     app.kubernetes.io/name: {{ $k }}
@@ -40,6 +41,13 @@ spec:
         app.kubernetes.io/name: {{ $k }}
         app.kubernetes.io/instance: {{ $.Release.Name }}
     spec:
+      serviceAccountName: service-account-{{ $.Release.Name }}
+      initContainers:
+        - name: wait-for-init
+          image: {{ $.Values.k8sWaitFor.image }}:{{ $.Values.k8sWaitFor.tag }}
+          args:
+            - job
+            - init-{{ $.Release.Name }}
       containers:
         - envFrom:
             - configMapRef:
@@ -80,6 +88,7 @@ spec:
 apiVersion: autoscaling/v2beta1
 kind: HorizontalPodAutoscaler
 metadata:
+  namespace: {{ $.Release.Namespace }}
   name: {{ $name }}
   labels:
     app.kubernetes.io/name: {{ $k }}

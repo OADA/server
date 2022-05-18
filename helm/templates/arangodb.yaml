@@ -2,13 +2,14 @@
 apiVersion: 'database.arangodb.com/v1'
 kind: ArangoDeployment
 metadata:
+  namespace: {{ .Release.Namespace }}
   name: arangodb-{{ .Release.Name }}
   labels:
     app.kubernetes.io/name: arangodb
     app.kubernetes.io/instance: {{ .Release.Name }}
     {{- include "oada.chart.labels" . | nindent 4 }}
 spec:
-  image: arangodb/arangodb:{{ .Values.arangodb.tag }}
+  image: {{ .Values.arangodb.image }}:{{ .Values.arangodb.tag }}
   mode: Single
   environment: {{ .Values.global.development | ternary "Development" "Production" }}
   tls:

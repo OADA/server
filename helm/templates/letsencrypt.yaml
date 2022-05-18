@@ -17,6 +17,7 @@
 apiVersion: cert-manager.io/v1
 kind: Issuer
 metadata:
+  namespace: {{ .Release.Namespace }}
   name: letsencrypt-{{ .Release.Name }}
   labels:
     app.kubernetes.io/name: letsencrypt

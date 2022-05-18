@@ -16,6 +16,7 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
+  namespace: {{ .Release.Namespace }}
   name: {{ .Chart.Name }}-configmap-{{ .Release.Name }}
   labels:
     app.kubernetes.io/name: {{ .Chart.Name }}-configmap

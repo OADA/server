@@ -10,7 +10,7 @@ To learn more about the release, try:
   $ helm get all {{ .Release.Name }}
 {{- if .Values.global.development }}
 
-####################################################################################
-### WARNING: This chart is running in development mode. DO NOT USE IN PRODUCTION ###
-####################################################################################
+##################################################################################
+### WARNING: This chart is running in development mode! NOT FOR PRODUCTION USE ###
+##################################################################################
 {{- end }}

@@ -158,6 +158,7 @@
       "crds",
       "etags",
       "fastify",
+      "groundnuty",
       "jwks",
       "jwku",
       "kafa",
