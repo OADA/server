@@ -45,7 +45,7 @@
     "@oada/client": "^4.0.1",
     "@oada/write-handler": "^3.0.1",
     "@types/debug": "^4.1.7",
-    "@types/node": "^16.11.35",
+    "@types/node": "^16.11.36",
     "@types/randomstring": "^1.1.8",
     "ava": "4.2.0",
     "type-fest": "^2.12.2",
