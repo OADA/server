@@ -53,7 +53,7 @@ spec:
             - configMapRef:
                 name: {{ $.Chart.Name }}-configmap-{{ $.Release.Name }}
           image: {{ print "oada/" $k ":" $.Values.oada.tag }}
-          imagePullPolicy: {{ $.Values.global.development | ternary "Always" "IfNotPresent" }}
+          #imagePullPolicy: {{ $.Values.global.development | ternary "Always" "IfNotPresent" }}
           command: ["/usr/bin/dumb-init", "--rewrite", "15:2", "--", "/bin/sh"]
           args: ["-c", "yarn workspace @oada/{{ $k }} run start"]
           securityContext:

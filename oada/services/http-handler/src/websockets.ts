@@ -15,9 +15,21 @@
  * limitations under the License.
  */
 
+import { config } from './config.js';
+
 import { EventEmitter } from 'node:events';
 import { strict as assert } from 'node:assert';
 import { promisify } from 'node:util';
+
+import type { FastifyPluginAsync } from 'fastify';
+import { JsonPointer } from 'json-ptr';
+import type LightMyRequest from 'light-my-request';
+import type WebSocket from 'ws';
+import fastifyWebsocket from '@fastify/websocket';
+import { is } from 'type-is';
+import log from 'debug';
+
+import { OADAError } from '@oada/error';
 
 import { KafkaBase, Responder } from '@oada/lib-kafka';
 import { changes, resources } from '@oada/lib-arangodb';
@@ -30,18 +42,6 @@ import type Change from '@oada/types/oada/change/v2.js';
 import type SocketChange from '@oada/types/oada/websockets/change.js';
 import type SocketResponse from '@oada/types/oada/websockets/response.js';
 import type { WriteResponse } from '@oada/write-handler';
-
-import { config } from './config.js';
-
-import type { FastifyPluginAsync } from 'fastify';
-import { JsonPointer } from 'json-ptr';
-import type LightMyRequest from 'light-my-request';
-import type WebSocket from 'ws';
-import fastifyWebsocket from '@fastify/websocket';
-import { is } from 'type-is';
-import log from 'debug';
-
-import { OADAError } from '@oada/error';
 
 /**
  * @todo Actually figure out how "forgetting history" should work...
@@ -56,14 +56,70 @@ const trace = log('websockets:trace');
 
 const emitter = new EventEmitter();
 
-type Watch = {
-  handler: (this: Watch, { change }: { change: Change }) => void;
+class Watch {
   /**
    * @description Maps requestId to path_leftover
    */
-  // requests: { [requestId: string]: string };
-  requests: Map<string, string>;
-};
+  readonly requests = new Map<string, string>();
+  readonly resourceId;
+
+  readonly #send: (value: unknown) => Promise<void>;
+  readonly #cb;
+
+  constructor(resourceId: string, socket: WebSocket) {
+    this.#send = promisify(socket.send.bind(socket));
+    this.resourceId = resourceId;
+
+    // eslint-disable-next-line no-constructor-bind/no-constructor-bind
+    this.#cb = this.#handler.bind(this);
+    emitter.on(resourceId, this.#cb);
+    socket.on('close', () => {
+      this.stop();
+    });
+  }
+
+  stop() {
+    emitter.removeListener(this.resourceId, this.#cb);
+  }
+
+  async sendChange(resp: SocketChange) {
+    trace(resp, 'Sending change');
+    await this.#send(JSON.stringify(resp));
+  }
+
+  #handler({ change }: { change: Change }): void {
+    const { resourceId, requests } = this;
+    debug('responding watch %s', resourceId);
+
+    const message = {
+      resourceId,
+      change,
+      requestId: [] as string[],
+      path_leftover: [] as string[],
+    };
+    for (const [requestId, pathLeftover] of requests) {
+      // Find requests with changes
+      const pathChange: unknown = JsonPointer.get(
+        change?.[0]?.body ?? {},
+        pathLeftover
+      );
+      if (pathChange === undefined) {
+        // No relevant change
+        continue;
+      }
+
+      message.requestId.push(requestId);
+      message.path_leftover.push(pathLeftover);
+    }
+
+    if (message.requestId.length <= 0) {
+      // No-one to notify?
+      return;
+    }
+
+    void this.sendChange(message as SocketChange);
+  }
+}
 
 function parseRequest(data: WebSocket.Data): SocketRequest {
   // Assert(typeof data === 'string');
@@ -114,44 +170,6 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       clearInterval(interval);
     });
 
-    function handleChange(resourceId: string): Watch['handler'] {
-      const watch = watches.get(resourceId);
-      function handler(this: Watch, { change }: { change: Change }) {
-        debug('responding watch %s', resourceId);
-        const { requests } = watch!;
-
-        const message = {
-          resourceId,
-          change,
-          requestId: [] as string[],
-          path_leftover: [] as string[],
-        };
-        for (const [requestId, pathLeftover] of requests) {
-          // Find requests with changes
-          const pathChange: unknown = JsonPointer.get(
-            change?.[0]?.body ?? {},
-            pathLeftover
-          );
-          if (pathChange === undefined) {
-            // No relevant change
-            continue;
-          }
-
-          message.requestId.push(requestId);
-          message.path_leftover.push(pathLeftover);
-        }
-
-        if (message.requestId.length <= 0) {
-          // No-one to notify?
-          return;
-        }
-
-        void sendChange(message as SocketChange);
-      }
-
-      return handler;
-    }
-
     async function sendResponse({
       payload,
       ...resp
@@ -162,11 +180,6 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       await (payload
         ? send(`${string.slice(0, -1)},"data":${payload}}`)
         : send(string));
-    }
-
-    async function sendChange(resp: SocketChange) {
-      trace(resp, 'Sending change');
-      await send(JSON.stringify(resp));
     }
 
     // Handle request
@@ -253,7 +266,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
             if (watch.requests.size === 0) {
               // No watches on this resource left
               watches.delete(resource);
-              emitter.removeListener(resource, watch.handler);
+              watch.stop();
             }
 
             found = true;
@@ -368,26 +381,10 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         case 'watch': {
           debug('opening watch %s', message.requestId);
 
-          const watch = watches.get(resourceId);
-          if (watch) {
-            // Already WATCHing this resource
-            watch.requests.set(message.requestId, pathLeftover);
-          } else {
-            // No existing WATCH on this resource
-            const newwatch = {
-              handler: handleChange(resourceId),
-              requests: new Map<string, string>().set(
-                message.requestId,
-                pathLeftover
-              ),
-            };
-            watches.set(resourceId, newwatch);
-
-            emitter.on(resourceId, newwatch.handler);
-            socket.on('close', () => {
-              emitter.removeListener(resourceId, newwatch.handler);
-            });
-          }
+          const watch =
+            watches.get(resourceId) ?? new Watch(resourceId, socket);
+          watch.requests.set(message.requestId, pathLeftover);
+          watches.set(resourceId, watch);
 
           // Emit all new changes from the given rev in the request
           const revHeader = request.headers?.['x-oada-rev'];
@@ -430,7 +427,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
               // eslint-disable-next-line no-await-in-loop
               const change = await changes.getChangeArray(resourceId, sendRev);
               // eslint-disable-next-line no-await-in-loop
-              await sendChange({
+              await watch.sendChange({
                 requestId: [message.requestId],
                 resourceId,
                 path_leftover: [pathLeftover],
@@ -526,7 +523,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         request.resource_id,
         request._rev
       );
-      trace('Emitted change for %s: %O', request.resource_id, change);
+      trace(change, `Emitted change for ${request.resource_id}`);
       emitter.emit(request.resource_id, {
         path_leftover: request.path_leftover,
         change,
@@ -538,8 +535,8 @@ const plugin: FastifyPluginAsync = async (fastify) => {
           emitter.removeAllListeners(request.resource_id);
         }
       }
-    } catch (error_: unknown) {
-      error(error_);
+    } catch (cError: unknown) {
+      error(cError);
     }
   });
 };

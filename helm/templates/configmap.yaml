@@ -27,7 +27,7 @@ immutable: true
 {{- end }}
 data:
   CONFIG: /oada.config.mjs
-  DEBUG: '*:fatal,*:error,*:warn,*:info'
+  DEBUG: {{ .Values.global.development | ternary "*" "*:fatal,*:error,*:warn,*:info" | quote }}
   DOMAIN: {{ .Values.oada.domain }}
   ARANGODB_URL: {{ include "oada.arango.connection" . }}
   ARANGODB_DATABASE: {{ .Values.arangodb.database }}

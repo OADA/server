@@ -52,4 +52,4 @@ spec:
             - name: EXIT
               value: 'true'
           image: oada/startup:{{ .Values.oada.tag }}
-          imagePullPolicy: {{ .Values.global.development | ternary "Always" "IfNotPresent" }}
+          #imagePullPolicy: {{ .Values.global.development | ternary "Always" "IfNotPresent" }}
