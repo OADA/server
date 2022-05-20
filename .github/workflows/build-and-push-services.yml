@@ -70,7 +70,7 @@ jobs:
       - name: Parse Semver
         id: semver
         if: ${{ steps.ref.outputs.release }}
-        uses: booxmedialtd/ws-action-parse-semver@v1.4.2
+        uses: booxmedialtd/ws-action-parse-semver@v1.4.3
         with:
           input_string: ${{ steps.ref.outputs.version }}
           #version_extractor_regex: '\/v(.*)$'
