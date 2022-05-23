@@ -67,8 +67,8 @@ export default async function tokenLookup(
     return response;
   }
 
-  // Get token from db.  Later on, we should speed this up
-  // by getting everything in one query.
+  // Get token from db.
+  // FIXME: We should speed this up by getting everything in one query.
   const t = await authorizations.findByToken(
     request.token.trim().replace(/^Bearer /, '')
   );

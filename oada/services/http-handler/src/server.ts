@@ -15,8 +15,8 @@
  * limitations under the License.
  */
 
+import { mixins, pino } from '@oada/pino-debug';
 import { KafkaError } from '@oada/lib-kafka';
-import { pino } from '@oada/pino-debug';
 
 import { plugin as formats } from '@oada/formats-server';
 
@@ -28,17 +28,22 @@ import users from './users.js';
 import websockets from './websockets.js';
 
 import fastify, { FastifyRequest } from 'fastify';
+import {
+  fastifyRequestContextPlugin,
+  requestContext,
+} from '@fastify/request-context';
 import bearerAuth from '@fastify/bearer-auth';
 import cors from '@fastify/cors';
 import fastifyAccepts from '@fastify/accepts';
 import fastifyGracefulShutdown from 'fastify-graceful-shutdown';
 import fastifyHealthcheck from 'fastify-healthcheck';
-import { fastifyRequestContextPlugin } from '@fastify/request-context';
 import fastifySensible from '@fastify/sensible';
 import helmet from '@fastify/helmet';
 
 import type { HTTPVersion, Handler } from 'find-my-way';
 import esMain from 'es-main';
+
+/* eslint no-process-exit: off */
 
 /**
  * Supported values for X-OADA-Ensure-Link header
@@ -48,7 +53,15 @@ export enum EnsureLink {
   Unversioned = 'unversioned',
 }
 
-const logger = pino({ name: 'http-handler' });
+// Set up logging stuff
+const logger = pino({
+  name: 'http-handler',
+});
+
+mixins.push(() => ({
+  reqId: requestContext.get('id'),
+}));
+
 export const app = fastify({
   logger,
   ignoreTrailingSlash: true,
@@ -113,178 +126,180 @@ export async function start(): Promise<void> {
 
 declare module '@fastify/request-context' {
   interface RequestContextData {
+    id: string;
     // Add graph lookup result to request context
     user: TokenResponse['doc'];
   }
 }
 
-/* eslint no-process-exit: off */
+await app.register(fastifyRequestContextPlugin, {
+  hook: 'onRequest',
+});
 
-async function init(): Promise<void> {
-  await app.register(fastifySensible, {
-    // Hide internal error cause from clients except in development
-    errorHandler: process.env.NODE_ENV === 'development' ? false : undefined,
-  });
+// Add id to request context
+app.addHook('onRequest', async (request) => {
+  request.requestContext.set('id', request.id);
+});
 
-  await app.register(fastifyAccepts);
+await app.register(fastifySensible, {
+  // Hide internal error cause from clients except in development
+  errorHandler: process.env.NODE_ENV === 'development' ? false : undefined,
+});
 
-  await app.register(fastifyGracefulShutdown);
+await app.register(fastifyAccepts);
 
-  /**
-   * @todo restrict this to localhost?
-   */
-  await app.register(fastifyHealthcheck, {
-    exposeUptime: process.env.NODE_ENV === 'development',
-    // By default everything is off, so give numbers to under-pressure
-    underPressureOptions: {
-      maxEventLoopDelay: 5000,
-      // MaxHeapUsedBytes: 100000000,
-      // maxRssBytes: 100000000,
-      maxEventLoopUtilization: 0.98,
-    },
-  });
+await app.register(fastifyGracefulShutdown);
 
-  /**
-   * Try to kill server on Kafka error.
-   *
-   * This is to handle an intermittent error on sending requests,
-   * likely from tulios/kafkajs#979
-   */
-  const { errorHandler } = app;
-  app.setErrorHandler(async (error, request, reply) => {
-    errorHandler(error, request, reply);
-    // TODO: Make kafka plugin for server?
-    if (error instanceof KafkaError) {
-      // Kill the server on Kafka Errors?
-      await close(error);
-    }
-  });
+/**
+ * @todo restrict this to localhost?
+ */
+await app.register(fastifyHealthcheck, {
+  exposeUptime: process.env.NODE_ENV === 'development',
+  // By default everything is off, so give numbers to under-pressure
+  underPressureOptions: {
+    maxEventLoopDelay: 5000,
+    // MaxHeapUsedBytes: 100000000,
+    // maxRssBytes: 100000000,
+    maxEventLoopUtilization: 0.98,
+  },
+});
 
-  await app.register(helmet, {
-    crossOriginResourcePolicy: {
-      policy: 'cross-origin',
-    },
-  });
+/**
+ * Try to kill server on Kafka error.
+ *
+ * This is to handle an intermittent error on sending requests,
+ * likely from tulios/kafkajs#979
+ */
+const { errorHandler } = app;
+app.setErrorHandler(async (error, request, reply) => {
+  errorHandler(error, request, reply);
+  // TODO: Make kafka plugin for server?
+  if (error instanceof KafkaError) {
+    // Kill the server on Kafka Errors?
+    await close(error);
+  }
+});
 
-  await app.register(fastifyRequestContextPlugin, {
-    hook: 'onRequest',
-  });
+await app.register(helmet, {
+  crossOriginResourcePolicy: {
+    policy: 'cross-origin',
+  },
+});
 
-  app.get('/favicon.ico', async (_request, reply) => reply.send());
+app.get('/favicon.ico', async (_request, reply) => reply.send());
 
-  // Turn on CORS for all domains, allow the necessary headers
-  await app.register(cors, {
-    strictPreflight: false,
-    exposedHeaders: [
-      'x-oada-rev',
-      'x-oada-path-leftover',
-      'location',
-      'content-location',
-    ],
-  });
+// Turn on CORS for all domains, allow the necessary headers
+await app.register(cors, {
+  strictPreflight: false,
+  exposedHeaders: [
+    'x-oada-rev',
+    'x-oada-path-leftover',
+    'location',
+    'content-location',
+  ],
+});
 
-  /**
-   * @todo why does onSend never run for us??
-   */
-  await app.register(formats);
+/**
+ * @todo why does onSend never run for us??
+ */
+await app.register(formats);
 
-  /**
-   * Handle WebSockets
-   *
-   * @todo Require token for connecting WebSockets?
-   */
-  await app.register(websockets);
+/**
+ * Handle WebSockets
+ *
+ * @todo Require token for connecting WebSockets?
+ */
+await app.register(websockets);
 
-  /**
-   * Create context for authenticated stuff
-   */
-  await app.register(async (aApp) => {
-    await aApp.register(bearerAuth, {
-      keys: new Set<string>(),
-      async auth(token: string, request: FastifyRequest) {
-        try {
-          const tok = await tokenLookup({
-            // Connection_id: request.id,
-            // domain: request.headers.host,
-            token,
-          });
+/**
+ * Create context for authenticated stuff
+ */
+await app.register(async (aApp) => {
+  await aApp.register(bearerAuth, {
+    keys: new Set<string>(),
+    async auth(token: string, request: FastifyRequest) {
+      try {
+        const tok = await tokenLookup({
+          // Connection_id: request.id,
+          // domain: request.headers.host,
+          token,
+        });
 
-          if (!tok.token_exists) {
-            request.log.debug('Token does not exist');
-            return false;
-          }
-
-          if (tok.doc.expired) {
-            request.log.debug('Token expired');
-            return false;
-          }
-
-          request.requestContext.set('user', tok.doc);
-
-          return true;
-        } catch (error: unknown) {
-          request.log.error(error);
+        if (!tok.token_exists) {
+          request.log.debug('Token does not exist');
           return false;
         }
-      },
-    });
 
-    /**
-     * Route /bookmarks to resources?
-     */
-    await aApp.register(resources, {
-      prefix: '/bookmarks',
-      prefixPath(request) {
-        const user = request.requestContext.get('user')!;
-        return user.bookmarks_id;
-      },
-    });
+        if (tok.doc.expired) {
+          request.log.debug('Token expired');
+          return false;
+        }
 
-    /**
-     * Route /shares to resources?
-     */
-    await aApp.register(resources, {
-      prefix: '/shares',
-      prefixPath(request) {
-        const user = request.requestContext.get('user')!;
-        return user.shares_id;
-      },
-    });
+        request.requestContext.set('user', tok.doc);
 
-    /**
-     * Handle /resources
-     */
-    await aApp.register(resources, {
-      prefix: '/resources',
-      prefixPath() {
-        return 'resources';
-      },
-    });
-
-    /**
-     * Handle /users
-     */
-    await aApp.register(users, {
-      prefix: '/users',
-    });
-
-    /**
-     * Handle /authorizations
-     */
-    await aApp.register(authorizations, {
-      prefix: '/authorizations',
-    });
+        return true;
+      } catch (error: unknown) {
+        request.log.error(error);
+        return false;
+      }
+    },
   });
 
-  if (esMain(import.meta)) {
-    try {
-      await start();
-    } catch (error: unknown) {
-      // eslint-disable-next-line unicorn/consistent-destructuring
-      app.log.error(error);
-      // eslint-disable-next-line unicorn/no-process-exit
-      process.exit(1);
-    }
+  /**
+   * Route /bookmarks to resources?
+   */
+  await aApp.register(resources, {
+    prefix: '/bookmarks',
+    prefixPath(request) {
+      const user = request.requestContext.get('user')!;
+      return user.bookmarks_id;
+    },
+  });
+
+  /**
+   * Route /shares to resources?
+   */
+  await aApp.register(resources, {
+    prefix: '/shares',
+    prefixPath(request) {
+      const user = request.requestContext.get('user')!;
+      return user.shares_id;
+    },
+  });
+
+  /**
+   * Handle /resources
+   */
+  await aApp.register(resources, {
+    prefix: '/resources',
+    prefixPath() {
+      return 'resources';
+    },
+  });
+
+  /**
+   * Handle /users
+   */
+  await aApp.register(users, {
+    prefix: '/users',
+  });
+
+  /**
+   * Handle /authorizations
+   */
+  await aApp.register(authorizations, {
+    prefix: '/authorizations',
+  });
+});
+
+if (esMain(import.meta)) {
+  try {
+    await start();
+  } catch (error: unknown) {
+    // eslint-disable-next-line unicorn/consistent-destructuring
+    app.log.error(error);
+    // eslint-disable-next-line unicorn/no-process-exit
+    process.exit(1);
   }
 }
 
@@ -305,5 +320,3 @@ async function close(error: Error): Promise<void> {
 
 process.on('uncaughtException', close);
 process.on('unhandledRejection', close);
-
-void init();

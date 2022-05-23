@@ -17,7 +17,6 @@
 
 /* eslint-disable unicorn/prefer-module */
 /* eslint-disable @typescript-eslint/no-require-imports */
-/* eslint-disable @typescript-eslint/no-var-requires */
 /* eslint-disable security/detect-non-literal-require */
 /* eslint-disable import/no-dynamic-require */
 
@@ -25,8 +24,9 @@ import pinoDebug, { Options } from 'pino-debug';
 
 import { resolve } from 'node:path';
 
-import _pino from 'pino';
+import _pino, { Logger, LoggerOptions } from 'pino';
 import debug from 'debug';
+import pinoCaller from 'pino-caller';
 
 /**
  * Default mappings of debug namespaces to pino levels
@@ -72,27 +72,33 @@ export function logLevel(): string {
   return 'silent';
 }
 
+export const mixins: Array<() => Record<string, unknown>> = [];
+
 /**
  * Get pino, wrapping it with pino-caller when in development environment
  */
-export function pino({
-  level = logLevel(),
-  ...options
-}: _pino.LoggerOptions = {}): _pino.Logger {
-  const p = _pino({ level, ...options });
-  return (
-    process.env.NODE_ENV === 'development'
-      ? // eslint-disable-next-line @typescript-eslint/no-unsafe-call
-        require('pino-caller')(p)
-      : p
-  ) as _pino.Logger;
+function createRootLogger(): Logger {
+  const logger = _pino({
+    level: logLevel(),
+    mixin() {
+      // eslint-disable-next-line sonarjs/no-empty-collection
+      const objs = mixins.map((f) => f());
+      return Object.assign({}, ...objs) as Record<string, unknown>;
+    },
+  });
+  return process.env.NODE_ENV === 'development' ? pinoCaller(logger) : logger;
+}
+
+const rootLogger = createRootLogger();
+export function pino(options: LoggerOptions = {}): Logger {
+  return rootLogger.child(options);
 }
 
 /**
  * Give use better defaults for pino-debug?
  */
 export default function oadaDebug(
-  logger: _pino.Logger = pino(),
+  logger: Logger = pino(),
   {
     // Turn off auto so only things enabled in DEBUG var get logged
     auto = false,

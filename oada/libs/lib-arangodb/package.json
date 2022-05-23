@@ -50,7 +50,7 @@
     "@oada/lib-config": "^3.0.1",
     "@oada/oadaify": "^2.1.0",
     "@oada/types": "^2.0.1",
-    "arangojs": "^7.7.0",
+    "arangojs": "^7.8.0",
     "bcryptjs": "^2.4.3",
     "clone-deep": "^4.0.1",
     "debug": "^4.3.4",
