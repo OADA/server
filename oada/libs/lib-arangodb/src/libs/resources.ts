@@ -704,7 +704,7 @@ export async function deleteResource(id: string): Promise<number> {
 export async function deletePartialResource(
   id: string,
   path: string | string[],
-  document: Partial<Resource> = {}
+  { _rev: rev, ...document }: Partial<Resource> = {}
 ): Promise<number> {
   const key = id.replace(/^resources\//, '');
   const pointer = new JsonPointer(path);
@@ -717,7 +717,6 @@ export async function deletePartialResource(
   const stringA = `(res${pathA}, '${pathB}')`;
   const hasString = `HAS${stringA}`;
 
-  const rev = document._rev;
   pointer.set(document, null);
 
   const name = aPath.pop();
