@@ -58,22 +58,23 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@commitlint/cli@npm:^17.0.0":
-  version: 17.0.0
-  resolution: "@commitlint/cli@npm:17.0.0"
+"@commitlint/cli@npm:^17.0.1":
+  version: 17.0.1
+  resolution: "@commitlint/cli@npm:17.0.1"
   dependencies:
     "@commitlint/format": ^17.0.0
     "@commitlint/lint": ^17.0.0
     "@commitlint/load": ^17.0.0
     "@commitlint/read": ^17.0.0
     "@commitlint/types": ^17.0.0
+    execa: ^5.0.0
     lodash: ^4.17.19
     resolve-from: 5.0.0
     resolve-global: 1.0.0
     yargs: ^17.0.0
   bin:
     commitlint: cli.js
-  checksum: ac7159458ee6d6271898795dd30fb74efb84e549934aabba189dcc495cf49c48b71ab3ef444175636895526300b914db9c72d59161591e26517fc1cab9f83461
+  checksum: 7a69ce6eeb1a8c2b573d73d92790cea8e36392edf76687e409d890ab6f67176566dc21b4ea2cd26d32adad3b25bf6c1ac7827030354af1ed57e809f866feb4df
   languageName: node
   linkType: hard
 
@@ -555,7 +556,7 @@ __metadata:
     passport-oauth2-client-password: ~0.1.2
     pem-jwk: ^2.0.0
     tslib: ^2.4.0
-    type-fest: ^2.12.2
+    type-fest: ^2.13.0
     urijs: ^1.19.11
     uuid: ^8.3.2
   bin:
@@ -743,7 +744,7 @@ __metadata:
     flat: ^5.0.2
     json-ptr: ^3.1.0
     tslib: ^2.4.0
-    type-fest: ^2.12.2
+    type-fest: ^2.13.0
   languageName: unknown
   linkType: soft
 
@@ -760,7 +761,7 @@ __metadata:
     dotenv: ^16.0.1
     json5: ^2.2.1
     tslib: ^2.4.0
-    typescript: ^4.6.4
+    typescript: ^4.7.2
     yaml: ^2.1.0
   languageName: unknown
   linkType: soft
@@ -834,7 +835,7 @@ __metadata:
     es-main: ^1.0.2
     tslib: ^2.4.0
     type-is: ^1.6.18
-    typescript: ^4.6.4
+    typescript: ^4.7.2
   languageName: unknown
   linkType: soft
 
@@ -874,8 +875,8 @@ __metadata:
     p-queue: ^7.2.0
     randomstring: ^1.2.2
     tslib: ^2.4.0
-    type-fest: ^2.12.2
-    typescript: ^4.6.4
+    type-fest: ^2.13.0
+    typescript: ^4.7.2
   languageName: unknown
   linkType: soft
 
@@ -1038,7 +1039,7 @@ __metadata:
     object-assign-deep: ^0.4.0
     timed-cache: ^1.1.5
     tslib: ^2.4.0
-    typescript: ^4.6.4
+    typescript: ^4.7.2
   languageName: unknown
   linkType: soft
 
@@ -7032,7 +7033,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "oada@workspace:."
   dependencies:
-    "@commitlint/cli": ^17.0.0
+    "@commitlint/cli": ^17.0.1
     "@commitlint/config-conventional": ^17.0.0
     "@tsconfig/node18": ^1.0.0
     "@types/eslint": ^8.4.2
@@ -7067,7 +7068,7 @@ __metadata:
     eslint-plugin-unicorn: ^42.0.0
     pino-pretty: ^7.6.1
     prettier: ^2.6.2
-    typescript: ^4.6.4
+    typescript: ^4.7.2
   languageName: unknown
   linkType: soft
 
@@ -9161,10 +9162,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"type-fest@npm:^2.12.2":
-  version: 2.12.2
-  resolution: "type-fest@npm:2.12.2"
-  checksum: ee69676da1f69d2b14bbec28c7b95220a3221ab14093f54bde179c59e185a80470859553eada535ec35d8637a245c2f0efe9d7c99cc46a43f3b4c7ef64db7957
+"type-fest@npm:^2.13.0":
+  version: 2.13.0
+  resolution: "type-fest@npm:2.13.0"
+  checksum: 3492384f759fdeaec7eaa07e79f70e777bf825cf8892690642fa9350818df4a8c50fd697fd1239ae7026064af4dd94e4d5eca27e781e0952ff302af0708a2e69
   languageName: node
   linkType: hard
 
@@ -9178,23 +9179,23 @@ __metadata:
   languageName: node
   linkType: hard
 
-"typescript@npm:^4.6.4":
-  version: 4.6.4
-  resolution: "typescript@npm:4.6.4"
+"typescript@npm:^4.6.4, typescript@npm:^4.7.2":
+  version: 4.7.2
+  resolution: "typescript@npm:4.7.2"
   bin:
     tsc: bin/tsc
     tsserver: bin/tsserver
-  checksum: e7bfcc39cd4571a63a54e5ea21f16b8445268b9900bf55aee0e02ad981be576acc140eba24f1af5e3c1457767c96cea6d12861768fb386cf3ffb34013718631a
+  checksum: 5163585e6b56410f77d5483b698d9489bbee8902c99029eb70cf6d21525a186530ce19a00951af84eefd4a131cc51d0959f5118e25e70ab61f45ac4057dbd1ef
   languageName: node
   linkType: hard
 
-"typescript@patch:typescript@^4.6.4#~builtin<compat/typescript>":
-  version: 4.6.4
-  resolution: "typescript@patch:typescript@npm%3A4.6.4#~builtin<compat/typescript>::version=4.6.4&hash=7ad353"
+"typescript@patch:typescript@^4.6.4#~builtin<compat/typescript>, typescript@patch:typescript@^4.7.2#~builtin<compat/typescript>":
+  version: 4.7.2
+  resolution: "typescript@patch:typescript@npm%3A4.7.2#~builtin<compat/typescript>::version=4.7.2&hash=7ad353"
   bin:
     tsc: bin/tsc
     tsserver: bin/tsserver
-  checksum: 1cb434fbc637d347be90e3a0c6cd05e33c38f941713c8786d3031faf1842c2c148ba91d2fac01e7276b0ae3249b8633f1660e32686cc7a8c6a8fd5361dc52c66
+  checksum: 7e2b9a9f4a70fb7616f1b0d986977f8e34a74f046202fa7f24fdee79589598277810fa216b3776c20c0683a9235872c73be34fdb93f67f98c1efaca40999422f
   languageName: node
   linkType: hard
 

@@ -70,6 +70,6 @@
     "@types/json-pointer": "^1.0.31",
     "@types/node": "^16.11.36",
     "ava": "4.2.0",
-    "type-fest": "^2.12.2"
+    "type-fest": "^2.13.0"
   }
 }
