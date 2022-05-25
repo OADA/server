@@ -27,6 +27,7 @@ import { resolve } from 'node:path';
 import _pino, { Logger, LoggerOptions } from 'pino';
 import debug from 'debug';
 import pinoCaller from 'pino-caller';
+import rTracer from 'cls-rtracer';
 
 /**
  * Default mappings of debug namespaces to pino levels
@@ -72,7 +73,9 @@ export function logLevel(): string {
   return 'silent';
 }
 
-export const mixins: Array<() => Record<string, unknown>> = [];
+export const mixins: Array<() => Record<string, unknown>> = [
+  () => ({ reqId: rTracer.id() }),
+];
 
 /**
  * Get pino, wrapping it with pino-caller when in development environment
@@ -81,7 +84,6 @@ function createRootLogger(): Logger {
   const logger = _pino({
     level: logLevel(),
     mixin() {
-      // eslint-disable-next-line sonarjs/no-empty-collection
       const objs = mixins.map((f) => f());
       return Object.assign({}, ...objs) as Record<string, unknown>;
     },

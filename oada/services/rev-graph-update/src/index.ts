@@ -41,7 +41,7 @@ const requests = new Map<string, SetRequired<WriteRequest, 'from_change_id'>>();
 
 // ---------------------------------------------------------
 // Kafka initializations:
-const responder = new Responder({
+const responder = new Responder<WriteResponse>({
   consumeTopic: config.get('kafka.topics.httpResponse'),
   group: 'rev-graph-update',
 });
@@ -159,7 +159,7 @@ responder.on<WriteRequest>('request', async (request) => {
       );
       // Create a new write request.
       const message = {
-        connection_id: null,
+        connection_id: null as unknown as string,
         type: 'write_request',
         resource_id: parent.resource_id,
         path: null,

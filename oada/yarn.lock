@@ -778,6 +778,7 @@ __metadata:
     "@types/uuid": ^8.3.4
     ava: 4.2.0
     bluebird: ^3.7.2
+    cls-rtracer: ^2.6.0
     debug: ^4.3.4
     kafkajs: ^2.0.1
     ksuid: ^3.0.0
@@ -843,6 +844,7 @@ __metadata:
   dependencies:
     "@types/debug": ^4.1.7
     "@types/node": ^16.11.36
+    cls-rtracer: ^2.6.0
     pino: ^7.11.0
     pino-caller: ^3.2.0
     pino-debug: ^2.0.0
@@ -2962,6 +2964,15 @@ __metadata:
     emitter-listener: ^1.0.1
     semver: ^5.4.1
   checksum: 3a8a4e30b03a81ec275eb9c079c49d4497013e7fa36259e86c9b6aff7990e85eebbc97552ed8a035c19403f0b825000df9bada5c1c0ac7cf1b2506c3a903df60
+  languageName: node
+  linkType: hard
+
+"cls-rtracer@npm:^2.6.0":
+  version: 2.6.0
+  resolution: "cls-rtracer@npm:2.6.0"
+  dependencies:
+    uuid: 8.3.1
+  checksum: c22c1e7ff8229aa77bfb449f16eaa542bd4e3d2e1ff244f40df2a9251d3793f047f8acdfa8b376d355a3b6498b19ea96345f94ab115f21f3b7b81724aa40b4f3
   languageName: node
   linkType: hard
 
@@ -9301,6 +9312,15 @@ __metadata:
   version: 1.0.1
   resolution: "utils-merge@npm:1.0.1"
   checksum: c81095493225ecfc28add49c106ca4f09cdf56bc66731aa8dabc2edbbccb1e1bfe2de6a115e5c6a380d3ea166d1636410b62ef216bb07b3feb1cfde1d95d5080
+  languageName: node
+  linkType: hard
+
+"uuid@npm:8.3.1":
+  version: 8.3.1
+  resolution: "uuid@npm:8.3.1"
+  bin:
+    uuid: dist/bin/uuid
+  checksum: e60e1d571d85f17a0c5a68010a300cf68c7bda976c2e9ae9ff672ee62556e62fd4e7d9e8d8712ec225056caacce28661b11f372c7977c4a2d23fbdada4d7d49a
   languageName: node
   linkType: hard
 

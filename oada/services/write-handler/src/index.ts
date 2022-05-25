@@ -57,7 +57,7 @@ const metaPointers = {
 
 let counter = 0;
 
-const responder = new Responder({
+const responder = new Responder<WriteRequest>({
   consumeTopic: config.get('kafka.topics.writeRequest'),
   produceTopic: config.get('kafka.topics.httpResponse'),
   group: 'write-handlers',
@@ -67,7 +67,7 @@ const responder = new Responder({
 // Per-resource write locks/queues
 const locks: Map<string, Promise<WriteResponse | void>> = new Map();
 const cache = new Cache<number | string>({ defaultTtl: 60 * 1000 });
-responder.on<WriteResponse, WriteRequest>('request', async (request) => {
+responder.on<WriteResponse>('request', async (request) => {
   if (counter++ > 500) {
     counter = 0;
     global.gc?.();
@@ -101,7 +101,7 @@ responder.on<WriteResponse, WriteRequest>('request', async (request) => {
 /**
  * Data passed from request to response
  */
-interface WriteContext {
+interface WriteContext extends KafkaBase {
   /**
    * @todo what is this?
    */

@@ -78,6 +78,7 @@ export interface ConstructorOptions {
  * Base interface for kafka messages (either request or response)
  */
 export interface KafkaBase {
+  // eslint-disable-next-line @typescript-eslint/ban-types
   connection_id?: string;
   msgtype?: string;
   code?: string;

@@ -30,6 +30,7 @@ import {
 import type { EachMessagePayload } from 'kafkajs';
 import debug from 'debug';
 import ksuid from 'ksuid';
+import rTracer from 'cls-rtracer';
 
 const trace = debug('@oada/lib-kafka:trace');
 const warn = debug('@oada/lib-kafka:warn');
@@ -50,7 +51,7 @@ export interface ConstructorOptions extends BaseConstructorOptions {
   consumeTopic: string;
   old?: boolean;
 }
-export class Responder extends Base {
+export class Responder<Request extends KafkaBase = KafkaBase> extends Base {
   readonly #timeout;
   readonly #old;
   protected requests: Map<string, Generator<KafkaBase, void> | true>;
@@ -73,12 +74,108 @@ export class Responder extends Base {
   }
 
   /**
+   * Handle a new incoming Kafka request
+   */
+  async #handleRequest<R>(
+    request: Request,
+    data: EachMessagePayload,
+    listener: (
+      request: Request,
+      data: EachMessagePayload
+    ) => Response<R> | Promise<Response<R>>
+  ) {
+    const { [REQ_ID_KEY]: id = '', time } = request;
+    await rTracer.runWithId(async () => {
+      trace(request, 'Received request');
+
+      // Check for old messages
+      if (!this.#old && Date.now() - time! >= this.#timeout) {
+        warn('Ignoring timed-out request');
+        return;
+      }
+
+      // Check for cancelling request
+      if (CANCEL_KEY in request) {
+        const gen = this.requests.get(id) as
+          | Generator<KafkaBase, void>
+          | undefined;
+        this.requests.delete(id);
+
+        if (typeof gen?.return === 'function') {
+          // Stop generator
+          gen.return();
+        }
+
+        return;
+      }
+
+      this.requests.set(id, true);
+      await this.ready;
+      try {
+        const resp = (await listener(request, data)) as Response;
+        await this.#respond(request, resp);
+      } catch (cError: unknown) {
+        // Catch and communicate errors over kafka?
+        error(cError);
+        const { code } = (cError ?? {}) as { code?: string };
+        await this.#respond(request, {
+          code: code ?? `${cError}`,
+        });
+      }
+
+      this.requests.delete(id);
+    }, id ?? rTracer.id());
+  }
+
+  /**
+   * Send response(s) back to the original request
+   */
+  async #respond(
+    { [REQ_ID_KEY]: id = '', domain, group, resp_partition: part = 0 }: Request,
+    resp: Response
+  ) {
+    if (!resp) {
+      return;
+    }
+
+    const it = isIterable(resp) ? resp : [resp];
+    this.requests.set(id, it as Generator<KafkaBase, void>);
+
+    for await (const r of it) {
+      trace(r, 'received response');
+      // eslint-disable-next-line security/detect-object-injection
+      if (r[REQ_ID_KEY] === null) {
+        // FIXME: Remove once everything migrated
+        const { string: newId } = await ksuid.random();
+        // eslint-disable-next-line security/detect-object-injection
+        r[REQ_ID_KEY] = newId;
+        // eslint-disable-next-line @typescript-eslint/no-empty-function
+        util.deprecate(() => {}, 'Please use ReResponder instead')();
+      } else {
+        // eslint-disable-next-line security/detect-object-injection
+        r[REQ_ID_KEY] = id;
+        // Check for cancelled requests
+        if (!this.requests.has(id)) {
+          throw new Error('Request cancelled');
+        }
+      }
+
+      const mesg = { ...r, domain, group };
+      trace(mesg, 'responding');
+      await this.produce({
+        mesg,
+        part,
+      });
+    }
+  }
+
+  /**
    * @todo Maybe rearrange type parameters? Maybe make them class params?
    */
-  override on<R, Request = KafkaBase>(
+  override on<R>(
     event: 'request',
     listener: (
-      reg: Request & KafkaBase,
+      reg: Request,
       data: EachMessagePayload
     ) => Response<R> | Promise<Response<R>>
   ): this;
@@ -93,88 +190,9 @@ export class Responder extends Base {
     listener: L
   ): this {
     if (event === 'request') {
-      // TODO: Probably a better way to handle this event...
+      // FIXME: Probably a better way to handle this event...
       return super.on(DATA, async (request, data) => {
-        const { domain, group, resp_partition: part = null, time } = request;
-        // eslint-disable-next-line security/detect-object-injection
-        const id = request[REQ_ID_KEY]!;
-        trace(request, 'Received request');
-
-        // Check for old messages
-        if (!this.#old && Date.now() - time! >= this.#timeout) {
-          warn('Ignoring timed-out request');
-          return;
-        }
-
-        // Check for cancelling request
-        if (CANCEL_KEY in request) {
-          const gen = this.requests.get(id) as
-            | Generator<KafkaBase, void>
-            | undefined;
-          this.requests.delete(id);
-
-          if (typeof gen?.return === 'function') {
-            // Stop generator
-            gen.return();
-          }
-
-          return;
-        }
-
-        const respond = async (resp: Response) => {
-          if (!resp) {
-            return;
-          }
-
-          const it = isIterable(resp) ? resp : [resp];
-          this.requests.set(id, it as Generator<KafkaBase, void>);
-
-          for await (const r of it) {
-            trace(r, 'received response');
-            // eslint-disable-next-line security/detect-object-injection
-            if (r[REQ_ID_KEY] === null) {
-              // TODO: Remove once everything migrated
-              // eslint-disable-next-line security/detect-object-injection
-              r[REQ_ID_KEY] = (await ksuid.random()).string;
-              // eslint-disable-next-line @typescript-eslint/no-empty-function
-              util.deprecate(() => {}, 'Please use ReResponder instead')();
-            } else {
-              // eslint-disable-next-line security/detect-object-injection
-              r[REQ_ID_KEY] = id;
-              // Check for cancelled requests
-              if (!this.requests.has(id)) {
-                throw new Error('Request cancelled');
-              }
-            }
-
-            const mesg = { ...r, domain, group };
-            trace(mesg, 'responding');
-            await this.produce({
-              mesg,
-              part,
-            });
-          }
-        };
-
-        this.requests.set(id, true);
-        await this.ready;
-        if (listener.length === 3) {
-          listener(request, data, respond);
-        } else {
-          try {
-            const resp = (await listener(request, data)) as Response;
-            await respond(resp);
-          } catch (cError: unknown) {
-            // Catch and communicate errors over kafka?
-            error(cError);
-            const { code } = (cError ?? {}) as { code?: string };
-            await respond({
-              code: code ?? `${cError}`,
-            });
-          }
-
-          this.requests.delete(id);
-        }
+        await this.#handleRequest(request as Request, data, listener);
       });
     }
 
