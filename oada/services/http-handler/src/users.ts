@@ -142,10 +142,7 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
     }
 
     // Check user's scope
-    request.log.trace(
-      'username-index: Checking user scope, req.user = %O',
-      authorization
-    );
+    request.log.trace(authorization, 'username-index: Checking user scope');
     const haveuserscope =
       Array.isArray(authorization.user_scope) &&
       (authorization.user_scope as string[]).find(

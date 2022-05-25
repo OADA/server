@@ -163,7 +163,7 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
       `/${fullpath}`,
       request.requestContext.get('user')!.user_id
     );
-    request.log.trace('GRAPH LOOKUP RESULT %O', resp);
+    request.log.trace(resp, 'Graph lookup result');
     if (resp.resource_id) {
       // Rewire URL to resource found by graph
       const url = `${resp.resource_id}${resp.path_leftover}`;
@@ -325,7 +325,7 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
       if (oadaGraph.path_leftover.startsWith('/_meta/_changes/')) {
         const rev = Number(oadaGraph.path_leftover.split('/')[3]!);
         const ch = await changes.getChangeArray(oadaGraph.resource_id, rev);
-        request.log.trace('CHANGE %O', ch);
+        request.log.trace(ch, 'Change');
         return ch;
       }
 
@@ -529,10 +529,9 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
       const { _id: bodyid } = await putBodies.savePutBody(
         request.body as string
       );
-      request.log.trace('PUT body saved');
+      request.log.trace(oadaGraph, 'PUT body saved');
 
-      request.log.trace('RESOURCE EXISTS %O', oadaGraph);
-      request.log.trace('RESOURCE EXISTS %O', resourceExists);
+      request.log.trace('Resource exists: %s', resourceExists);
       const ignoreLinks =
         (
           (request.headers['x-oada-ignore-links'] ?? '') as string

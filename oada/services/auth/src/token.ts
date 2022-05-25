@@ -136,7 +136,7 @@ async function create() {
 
 async function disable() {
   const auth = await authorizations.findByToken(token!);
-  trace('Found auth, it is %o', auth);
+  trace(auth, 'Found auth');
 
   return { ...auth, createTime: getNow(), expiresIn: 1 };
 }

@@ -110,7 +110,7 @@ export default class OAuth2 {
         }
 
         trace(
-          'oauth2#authorize: redirect_uri from URL (%s) does not match any on client cert: %O',
+          'oauth2#authorize: redirect_uri from URL (%s) does not match any on client cert: %s',
           redirectURI,
           client.redirect_uris
         );

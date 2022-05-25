@@ -59,13 +59,13 @@ test('should be able to produce a correct write_request message', async (t) => {
     authorizationid: `tuco123${randomstring.generate(7)}`,
   };
 
-  t.log('http_response message is: %o', r);
+  t.log(r, 'http_response message');
 
   // Now produce the message:
   // create the listener:
 
   const message = (await requester.send(r)) as WriteRequest;
-  t.log('received message: %o', message);
+  t.log(message, 'received message');
   // @ts-expect-error nonsense
   t.is(message.type, 'write_request');
   t.is(message.path_leftover, '/rocks-index/90j2klfdjss/_rev');

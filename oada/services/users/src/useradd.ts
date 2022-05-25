@@ -100,12 +100,12 @@ try {
     user,
   } as UserRequest)) as unknown as UserResponse;
 
-  trace('Finished kafka.send, have our response = %O', response);
+  trace(response, 'Finished kafka.send');
   // No need to keep hearing messages
   trace('Disconnecting from kafka');
   await kafkareq.disconnect();
 
-  trace('Checking response.code, response = %O', response);
+  trace(response, 'Checking response.code');
   if (response.code !== 'success') {
     console.error(
       chalk.red`FAILED TO RECEIVE SUCCESSFUL RESPONSE FROM USER SERVICE WHEN CREATING USER!`

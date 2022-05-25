@@ -282,7 +282,7 @@ export async function handleRequest(
         // TODO: Sanitize keys?
 
         trace(
-          '%s: Checking if resource exists (req.resourceExists = %o)',
+          '%s: Checking if resource exists (req.resourceExists = %s)',
           request.resource_id,
           request.resourceExists
         );

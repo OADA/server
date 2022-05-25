@@ -62,7 +62,7 @@ export async function getRemoteId(
     )
   ).all()) as RemoteID[];
 
-  trace('Found: %O', rids);
+  trace(rids, 'Found');
   return rids;
 }
 
@@ -82,7 +82,7 @@ export async function addRemoteId(
       } INTO ${remoteResources}`);
 }
 
-// TODO: Better way to handler errors?
+// FIXME: Better way to handler errors?
 // ErrorNum from: https://docs.arangodb.com/2.8/ErrorCodes/
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export const NotFoundError = {

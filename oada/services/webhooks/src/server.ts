@@ -127,7 +127,7 @@ responder.on<void>('request', async (request) => {
 
         // Handle merge _changes
         trace('Sending oada-put to: %s', sync.url);
-        trace('oada-put body: %O', body);
+        trace(body, 'oada-put body');
         await axios({
           method: 'put',
           url: sync.url,

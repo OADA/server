@@ -170,7 +170,7 @@ export function handleRequest(
       trace('Does user have write scope? %s', write);
       trace('contentType is %s', contentType);
       trace('write typeis %s %s', type, is);
-      trace('scope types %O', scopes.get(type));
+      trace(scopes.get(type), 'scope types');
       return is && write;
     });
   }

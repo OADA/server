@@ -212,7 +212,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         await handleRequest(message);
       } catch (cError: unknown) {
         error(cError);
-        error('Request was: %O', message);
+        error(message, 'Request');
         const errorResponse = {
           status: 500,
           requestId: message.requestId,

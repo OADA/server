@@ -47,7 +47,6 @@ const log = {
 
 log.info('-------------------------------------------------------------');
 log.info('Starting server for ./well-known/oada-configuration...');
-log.trace('config.get(wellKnown) = %O', config.get('wellKnown'));
 
 // Setup express:
 const app = express();

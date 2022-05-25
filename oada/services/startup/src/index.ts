@@ -37,12 +37,12 @@ if (exit) {
 }
 
 const server = http.createServer((request, response) => {
-  trace('Request received: %O', request);
+  trace(request, 'Request received');
   response.write('Hello');
   response.end();
 });
 server.on('listening', () => {
-  info('Startup finished, listening on %o', server.address());
+  info(server.address(), 'Startup finished, listening');
 });
 
 server.listen(port);

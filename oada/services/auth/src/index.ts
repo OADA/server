@@ -186,7 +186,7 @@ async function run() {
           // eslint-disable-next-line no-secrets/no-secrets
         )}: setting X-Frame-Options=SAMEORIGIN before rendering login`
       );
-      trace('login endpoint: Session = %O', request.session);
+      trace(request.session, 'login endpoint');
       response.header('X-Frame-Options', 'SAMEORIGIN');
       const isError = Boolean(request.query.error ?? request.session.errormsg);
       const errormsg = request.session.errormsg ?? 'Login failed.';
