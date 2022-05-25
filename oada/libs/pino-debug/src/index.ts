@@ -82,6 +82,7 @@ export const mixins: Array<() => Record<string, unknown>> = [
  */
 function createRootLogger(): Logger {
   const logger = _pino({
+    name: require.main?.id ?? process.env.npm_package_name,
     level: logLevel(),
     mixin() {
       const objs = mixins.map((f) => f());
