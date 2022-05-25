@@ -68,7 +68,10 @@ for await (const af of additionalScopesFiles) {
       scopes.set(k, scope); // Overwrite entire scope, or create new if doesn't exist
     }
   } catch (cError: unknown) {
-    error(cError, `Failed to require(scopes/additional-scopes/${af}})`);
+    error(
+      { error: cError },
+      `Failed to require(scopes/additional-scopes/${af}})`
+    );
   }
 }
 

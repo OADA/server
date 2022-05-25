@@ -346,7 +346,10 @@ for await (const dirname of await fs.readdir(domainsDirectory)) {
       domainConfigs.set(dConfig.domain, dConfig);
       break;
     } catch (cError: unknown) {
-      error(cError, `Could not read config for domain ${dirname}, skipping`);
+      error(
+        { error: cError },
+        `Could not read config for domain ${dirname}, skipping`
+      );
     }
   }
 }

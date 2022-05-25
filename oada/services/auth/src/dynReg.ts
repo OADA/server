@@ -155,7 +155,7 @@ const dynReg: RequestHandler = async (request, response) => {
     );
     response.status(201).json(result);
   } catch (cError: unknown) {
-    error(cError, 'Failed to validate client registration');
+    error({ error: cError }, 'Failed to validate client registration');
     if (cError instanceof RegistrationError) {
       response.status(400).json(cError);
     } else {

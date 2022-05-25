@@ -54,9 +54,7 @@ export enum EnsureLink {
 }
 
 // Set up logging stuff
-const logger = pino({
-  name: 'http-handler',
-});
+const logger = pino();
 
 mixins.push(() => ({
   reqId: requestContext.get('id'),
@@ -239,7 +237,7 @@ await app.register(async (aApp) => {
 
         return true;
       } catch (error: unknown) {
-        request.log.error(error);
+        request.log.error({ error });
         return false;
       }
     },
@@ -297,7 +295,7 @@ if (esMain(import.meta)) {
     await start();
   } catch (error: unknown) {
     // eslint-disable-next-line unicorn/consistent-destructuring
-    app.log.error(error);
+    app.log.error({ error });
     // eslint-disable-next-line unicorn/no-process-exit
     process.exit(1);
   }
@@ -308,7 +306,8 @@ if (esMain(import.meta)) {
  */
 async function close(error: Error): Promise<void> {
   try {
-    app.log.error(error, 'Attempting to cleanup server after error.');
+    // eslint-disable-next-line unicorn/consistent-destructuring
+    app.log.error({ error }, 'Attempting to cleanup server after error.');
     // Try to close server nicely
     await app.close();
   } finally {

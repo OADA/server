@@ -41,7 +41,7 @@ async function addClientToAuth(
       // Store client from db into authorization object
       return { client, ...auth };
     } catch (error: unknown) {
-      request.log.error('ERROR: authorization clientId not found in DB');
+      request.log.error({ error }, 'Authorization clientId not found in DB');
       throw error;
     }
   } else {

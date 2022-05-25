@@ -116,7 +116,7 @@ export class Responder<Request extends KafkaBase = KafkaBase> extends Base {
         await this.#respond(request, resp);
       } catch (cError: unknown) {
         // Catch and communicate errors over kafka?
-        error(cError);
+        error({ error: cError }, 'Error in listener');
         const { code } = (cError ?? {}) as { code?: string };
         await this.#respond(request, {
           code: code ?? `${cError}`,

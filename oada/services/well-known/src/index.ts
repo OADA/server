@@ -163,7 +163,7 @@ app.use(async (request, _response, next) => {
 
             // If failed to return, or json didn't parse:
           } catch (error: unknown) {
-            log.error(error, `The subservice URL ${url} failed`);
+            log.error({ error }, `The subservice URL ${url} failed`);
           }
         })
       );

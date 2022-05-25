@@ -55,7 +55,7 @@ function topicTimeout(topic: string): number {
 // Make it die on unhandled error
 // TODO: Figure out what is keeping node from dying on unhandled exception?
 function die(reason: Error) {
-  error(reason, 'Unhandled error');
+  error({ error: reason }, 'Unhandled error');
   process.abort();
 }
 
@@ -168,14 +168,14 @@ export class Base extends EventEmitter {
       // Disconnect kafka clients on uncaught exception
       try {
         await this.consumer.disconnect();
-      } catch (error_: unknown) {
-        error(error_);
+      } catch (cError: unknown) {
+        error({ error: cError }, 'Kafka consumer disconnect error');
       }
 
       try {
         await this.producer.disconnect();
-      } catch (error_: unknown) {
-        error(error_);
+      } catch (cError: unknown) {
+        error({ error: cError }, 'Kafka producer disconnect error');
       }
     });
 

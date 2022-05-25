@@ -203,7 +203,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
             cError as string
           ) as unknown as Record<string, unknown>,
         };
-        error(cError);
+        error({ error: cError });
         await sendResponse(errorResponse);
         return;
       }
@@ -211,8 +211,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       try {
         await handleRequest(message);
       } catch (cError: unknown) {
-        error(cError);
-        error(message, 'Request');
+        error({ error: cError, message }, 'Request handling error');
         const errorResponse = {
           status: 500,
           requestId: message.requestId,
@@ -335,7 +334,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         }
       } catch (cError: unknown) {
         if (cError && typeof cError === 'object' && 'response' in cError) {
-          error(cError);
+          error({ error: cError });
           const {
             response: { status, statusText, headers, data },
           } = cError as {
@@ -536,7 +535,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         }
       }
     } catch (cError: unknown) {
-      error(cError);
+      error({ error: cError });
     }
   });
 };

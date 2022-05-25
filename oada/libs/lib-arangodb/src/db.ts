@@ -57,12 +57,14 @@ class DatabaseWrapper extends Database {
           error.errorNum === ArangoErrorCode.DEADLOCK &&
           tries <= deadlockRetries
         ) {
-          warn(error, `Retrying query due to deadlock (retry #${tries})`);
+          warn({ error }, `Retrying query due to deadlock (retry #${tries})`);
           // eslint-disable-next-line no-await-in-loop
           await setTimeout(deadlockDelay);
           continue;
         }
 
+        // TODO: Should this be a warn or an error??
+        warn({ query, error }, 'Query failed');
         throw error as Error;
       }
     }

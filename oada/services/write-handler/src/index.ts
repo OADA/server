@@ -184,9 +184,6 @@ async function checkPreconditions(request: WriteRequest) {
       '/_rev'
     )) as unknown as number;
     if (!request['if-match'].includes(rev)) {
-      error(rev);
-      error(request['if-match']);
-      error(request);
       throw new Error('if-match failed');
     }
   }
@@ -197,9 +194,6 @@ async function checkPreconditions(request: WriteRequest) {
       '/_rev'
     )) as unknown as number;
     if (request['if-none-match'].includes(rev)) {
-      error(rev);
-      error(request['if-none-match']);
-      error(request);
       throw new Error('if-none-match failed');
     }
   }
@@ -458,7 +452,7 @@ export async function handleRequest(
     return await upsert;
   } catch (cError: unknown) {
     // Send errors over kafka
-    error(cError);
+    error({ error: cError });
     const { code, message = 'error' } = cError as {
       code?: string;
       message?: string;

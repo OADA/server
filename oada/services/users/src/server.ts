@@ -198,7 +198,10 @@ export async function handleReq(request: UserRequest): Promise<UserResponse> {
           trace(user, 'existing user found');
         }
       } else {
-        error(cError, 'Unknown error occurred when creating new user');
+        error(
+          { error: cError },
+          'Unknown error occurred when creating new user'
+        );
         throw cError as Error;
       }
     }
