@@ -63,8 +63,12 @@ class DatabaseWrapper extends Database {
           continue;
         }
 
-        // TODO: Should this be a warn or an error??
-        warn({ query, error }, 'Query failed');
+        // ???: Should this be a trace, a warn, or an error??
+        if (warn.enabled) {
+          const { query: aql, ...rest } = query;
+          warn({ error, ...rest }, `AQL Query failed:\n${aql}`);
+        }
+
         throw error as Error;
       }
     }
