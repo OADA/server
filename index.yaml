@@ -1,0 +1,14 @@
+apiVersion: v1
+entries:
+  oada:
+  - apiVersion: v2
+    appVersion: 3.2.0
+    created: "2022-05-26T20:56:26.372963745Z"
+    description: A Helm chart for the OADA server
+    digest: c0d53331971b0dc5be28290efb9f35c884b4039aaeb4b7842e6da347cb05131a
+    name: oada
+    type: application
+    urls:
+    - https://github.com/OADA/server/releases/download/oada-0.1.0/oada-0.1.0.tgz
+    version: 0.1.0
+generated: "2022-05-26T20:56:26.372977845Z"
