@@ -63,7 +63,7 @@ release @awlayton
 k8s @awlayton
 
 # Helm stuff
-helm @awlayton
+charts @awlayton
 
 # Andrew intially created all the files in .github with some additions by Aaron
 .github            @abalmos
