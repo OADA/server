@@ -27,9 +27,9 @@ Supports multiple release installs and non-default namespace.
 - At least one ingress controller
 
 Attempt to apply all prerequisites:
-`kubectl apply -k ../k8s/support`
+`kubectl apply -k ../../k8s/support`
 
-The above command might error on first run.
+The above command might error on the first run.
 After 2-3 times, it should run without error.
 
 ## Installation

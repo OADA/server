@@ -15,7 +15,7 @@
     },
     {
       "name": "⎈ Helm chart",
-      "path": "helm"
+      "path": "charts/oada"
     },
     {
       "name": "📦 @oada/lib-arangodb",

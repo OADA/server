@@ -2,12 +2,12 @@
   "files.exclude": {
     "oada": true,
     "k8s": true,
-    "helm": true
+    "charts": true
   },
   "search.exclude": {
     "oada": true,
     "k8s": true,
-    "helm": true
+    "charts": true
   },
   "prettier.prettierPath": "oada/.yarn/sdks/prettier/index.js",
   "typescript.tsdk": "oada/.yarn/sdks/typescript/lib",
