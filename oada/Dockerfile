@@ -101,6 +101,7 @@ COPY --from=code /oada/ /oada/
 
 ARG OADA_SERVICE
 ENV OADA_SERVICE=${OADA_SERVICE}
+ENV INSPECT=
 
 WORKDIR /oada/services/${OADA_SERVICE}
 
