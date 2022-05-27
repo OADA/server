@@ -90,7 +90,8 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
     const { string: newID } = await ksuid.random(); // Generate a random string for ID
     // generate an ID for this particular request
     if (!request.id) {
-      request.id = (await ksuid.random()).string;
+      const { string: rid } = await ksuid.random();
+      request.id = rid;
     }
 
     const resp = await requestUserWrite(request, newID);
@@ -108,7 +109,8 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
     request.log.debug('Users PUT(id: %s), body = %O', id, request.body);
     // Generate an ID for this particular request
     if (!request.id) {
-      request.id = (await ksuid.random()).string;
+      const { string: rid } = await ksuid.random();
+      request.id = rid;
     }
 
     const resp = await requestUserWrite(request, id);
@@ -123,7 +125,7 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
   // Lookup a username, limited to tokens and users with oada.admin.user scope
   fastify.get('/username-index/:uname', async (request, reply) => {
     const { uname } = request.params as { uname: string };
-    const authorization = request.requestContext.get('user')!;
+    const authorization = request.user;
 
     // Check token scope
     request.log.trace(

@@ -125,7 +125,12 @@ export async function start(): Promise<void> {
 declare module '@fastify/request-context' {
   interface RequestContextData {
     id: string;
-    // Add graph lookup result to request context
+  }
+}
+
+app.decorateRequest('user', null);
+declare module 'fastify' {
+  interface FastifyRequest {
     user: TokenResponse['doc'];
   }
 }
@@ -233,7 +238,7 @@ await app.register(async (aApp) => {
           return false;
         }
 
-        request.requestContext.set('user', tok.doc);
+        request.user = tok.doc;
 
         return true;
       } catch (error: unknown) {
@@ -249,8 +254,7 @@ await app.register(async (aApp) => {
   await aApp.register(resources, {
     prefix: '/bookmarks',
     prefixPath(request) {
-      const user = request.requestContext.get('user')!;
-      return user.bookmarks_id;
+      return request.user?.bookmarks_id ?? '/bookmarks';
     },
   });
 
@@ -260,8 +264,7 @@ await app.register(async (aApp) => {
   await aApp.register(resources, {
     prefix: '/shares',
     prefixPath(request) {
-      const user = request.requestContext.get('user')!;
-      return user.shares_id;
+      return request.user?.shares_id ?? '/shares';
     },
   });
 

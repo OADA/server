@@ -46,13 +46,20 @@ export interface Options {
   prefixPath(request: FastifyRequest): string;
 }
 
-declare module '@fastify/request-context' {
-  interface RequestContextData {
-    // Add path within OADA to request context
+declare module 'fastify' {
+  // eslint-disable-next-line @typescript-eslint/no-shadow
+  interface FastifyRequest {
+    /**
+     * Path within OADA for request
+     */
     oadaPath: string;
-    // Add graph lookup result to request context
+    /**
+     * Graph lookup result for request
+     */
     oadaGraph: resources.GraphLookup;
-    // Not sure why this is a separate thing?
+    /**
+     * Not sure why this is a separate thing?
+     */
     resourceExists: boolean;
   }
 }
@@ -87,9 +94,10 @@ function unflattenMeta(document: {
 }
 
 // Don't let users modify their shares?
-function noModifyShares(request: FastifyRequest, reply: FastifyReply) {
-  const path = request.requestContext.get('oadaPath')!;
-  const user = request.requestContext.get('user')!;
+function noModifyShares(
+  { user, oadaPath: path }: FastifyRequest,
+  reply: FastifyReply
+) {
   if (path.startsWith(`/${user.shares_id}`)) {
     reply.forbidden('User cannot modify their shares document');
   }
@@ -123,6 +131,8 @@ function parseETag(etag: string): { id?: string; rev: number } {
  * Fastify plugin for OADA /resources
  */
 const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
+  fastify.decorateRequest('oadaPath', null);
+
   /**
    * Try to cleanup our stuff on close
    */
@@ -147,7 +157,7 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
         ? // Treat POST as PUT put append random id
           join(url, id)
         : url.replace(/\/$/, '');
-    request.requestContext.set('oadaPath', path);
+    request.oadaPath = path;
   });
 
   /**
@@ -157,11 +167,11 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
     /**
      * The whole path from the request (e.g., /resources/123/link/abc)
      */
-    const fullpath = request.requestContext.get('oadaPath')!;
+    const fullpath = request.oadaPath;
 
     const resp = await resources.lookupFromUrl(
       `/${fullpath}`,
-      request.requestContext.get('user')!.user_id
+      request.user.user_id
     );
     request.log.trace(resp, 'Graph lookup result');
     if (resp.resource_id) {
@@ -170,14 +180,14 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
       // Log
       request.log.info('Graph lookup: %s => %s', fullpath, url);
       // Remove `/resources`? IDK
-      request.requestContext.set('oadaPath', url);
+      request.oadaPath = url;
       void reply.header('Content-Location', `/${url}`);
     } else {
       void reply.header('Content-Location', `/${fullpath}`);
     }
 
-    request.requestContext.set('oadaGraph', resp);
-    request.requestContext.set('resourceExists', resp.resourceExists);
+    request.oadaGraph = resp;
+    request.resourceExists = resp.resourceExists;
   });
 
   /**
@@ -187,15 +197,12 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
    * @todo Should this just be in each methods implenting function?
    */
   fastify.addHook('preHandler', async (request, reply) => {
-    const oadaGraph = request.requestContext.get('oadaGraph')!;
-    const user = request.requestContext.get('user')!;
-
     const response = permissionsRequest({
       // Connection_id: request.id,
       // domain: request.headers.host,
-      oadaGraph,
-      user_id: user.user_id,
-      scope: user.scope as Scope[],
+      oadaGraph: request.oadaGraph,
+      user_id: request.user.user_id,
+      scope: request.user.scope as Scope[],
       contentType: request.headers['content-type'],
       // RequestType: request.method.toLowerCase(),
     });
@@ -205,13 +212,13 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
       case 'PUT':
       case 'POST':
       case 'DELETE':
-        if (!oadaGraph.resource_id) {
+        if (!request.oadaGraph.resource_id) {
           // PUTing non-existant resource
           break;
         } else if (!response.permissions.owner && !response.permissions.write) {
           request.log.warn(
             '%s tried to PUT resource without proper permissions',
-            user.user_id
+            request.user.user_id
           );
           reply.forbidden(
             'User does not have write permission for this resource'
@@ -230,7 +237,7 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
         if (!response.permissions.owner && !response.permissions.read) {
           request.log.warn(
             '%s tried to GET resource without proper permissions',
-            user.user_id
+            request.user.user_id
           );
           reply.forbidden(
             'User does not have read permission for this resource'
@@ -252,8 +259,7 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
   /**
    * Return "path leftover" in a header if token/scope passes
    */
-  fastify.addHook('preHandler', async (request, reply) => {
-    const oadaGraph = request.requestContext.get('oadaGraph')!;
+  fastify.addHook('preHandler', async ({ oadaGraph }, reply) => {
     // ? Better header name?
     void reply.header('X-OADA-Path-Leftover', oadaGraph.path_leftover);
   });
@@ -262,18 +268,16 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
     '*',
     { exposeHeadRoute: true },
     async (request: FastifyRequest, reply: FastifyReply) => {
-      const oadaGraph = request.requestContext.get('oadaGraph')!;
-
-      const type = oadaGraph.type ?? 'application/json';
+      const type = request.oadaGraph.type ?? 'application/json';
       void reply.type(type);
       // TODO: Why does this not work as a fastify plugin??
       const headers = handleResponse(type);
       // TODO: Why does fastify strip content-type params??
       void reply.headers(headers);
 
-      const key = oadaGraph.resource_id.replace(/^resources\//, '');
-      void reply.header('X-OADA-Rev', oadaGraph.rev);
-      void reply.header('ETag', `"${key}/${oadaGraph.rev}"`);
+      const key = request.oadaGraph.resource_id.replace(/^resources\//, '');
+      void reply.header('X-OADA-Rev', request.oadaGraph.rev);
+      void reply.header('ETag', `"${key}/${request.oadaGraph.rev}"`);
 
       /**
        * Check preconditions before actually getting the body
@@ -284,7 +288,8 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
         ifMatch &&
         !ifMatch.some(
           ({ id, rev }) =>
-            (!id || id === oadaGraph.resource_id) && rev === oadaGraph.rev
+            (!id || id === request.oadaGraph.resource_id) &&
+            rev === request.oadaGraph.rev
         )
       ) {
         reply.preconditionFailed(
@@ -297,7 +302,9 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
       if (
         ifNoneMatch &&
         !ifNoneMatch.every(
-          ({ id, rev }) => id !== oadaGraph.resource_id && rev !== oadaGraph.rev
+          ({ id, rev }) =>
+            id !== request.oadaGraph.resource_id &&
+            rev !== request.oadaGraph.rev
         )
       ) {
         // Not modified
@@ -308,23 +315,26 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
       /**
        * Handle requests for /_meta/_changes?
        */
-      if (oadaGraph.path_leftover === '/_meta/_changes') {
-        const ch = await changes.getChanges(oadaGraph.resource_id);
+      if (request.oadaGraph.path_leftover === '/_meta/_changes') {
+        const ch = await changes.getChanges(request.oadaGraph.resource_id);
 
         const list: Record<number, Link> = {};
         for await (const _rev of ch) {
           list[Number(_rev)] = {
             _rev,
-            _id: `${oadaGraph.resource_id}/_meta/_changes/${_rev}`,
+            _id: `${request.oadaGraph.resource_id}/_meta/_changes/${_rev}`,
           };
         }
 
         return list;
       }
 
-      if (oadaGraph.path_leftover.startsWith('/_meta/_changes/')) {
-        const rev = Number(oadaGraph.path_leftover.split('/')[3]!);
-        const ch = await changes.getChangeArray(oadaGraph.resource_id, rev);
+      if (request.oadaGraph.path_leftover.startsWith('/_meta/_changes/')) {
+        const rev = Number(request.oadaGraph.path_leftover.split('/')[3]!);
+        const ch = await changes.getChangeArray(
+          request.oadaGraph.resource_id,
+          rev
+        );
         request.log.trace(ch, 'Change');
         return ch;
       }
@@ -335,11 +345,11 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
 
       if (
         is(type, ['json', '+json']) ||
-        oadaGraph.path_leftover.endsWith('/_meta')
+        request.oadaGraph.path_leftover.endsWith('/_meta')
       ) {
         const document = await resources.getResource(
-          oadaGraph.resource_id,
-          oadaGraph.path_leftover
+          request.oadaGraph.resource_id,
+          request.oadaGraph.path_leftover
         );
         request.log.trace({ document }, 'Document is');
 
@@ -352,8 +362,8 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
 
         request.log.info(
           'Resource: %s, Rev: %d',
-          oadaGraph.resource_id,
-          oadaGraph.rev
+          request.oadaGraph.resource_id,
+          request.oadaGraph.rev
         );
 
         const response: unknown = unflattenMeta(document);
@@ -372,8 +382,8 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
         }
       } else {
         // Get binary
-        if (oadaGraph.path_leftover) {
-          request.log.trace(oadaGraph.path_leftover);
+        if (request.oadaGraph.path_leftover) {
+          request.log.trace(request.oadaGraph.path_leftover);
           reply.notImplemented('Path Leftover on Binary GET');
           return;
         }
@@ -381,7 +391,7 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
         // Look up file size before streaming
         const { integrity, size } = await cacache.get.info(
           CACHE_PATH,
-          oadaGraph.resource_id
+          request.oadaGraph.resource_id
         );
 
         // Stream file to client
@@ -419,12 +429,11 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
       body,
       raw,
       log,
-      requestContext,
+      oadaPath: path,
     }: FastifyRequest,
     reply: FastifyReply,
     versioned = true
   ) {
-    const path = requestContext.get('oadaPath')!;
     // Create a new resource?
     log.trace('EnsureLink: creating new resource');
     const {
@@ -508,11 +517,6 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
 
       // Don't let users modify their shares?
       noModifyShares(request, reply);
-
-      const oadaGraph = request.requestContext.get('oadaGraph')!;
-      const resourceExists = request.requestContext.get('resourceExists')!;
-      const user = request.requestContext.get('user')!;
-      const path = request.requestContext.get('oadaPath')!;
       request.log.trace('Saving PUT body for request');
 
       /**
@@ -521,7 +525,7 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
       if (!request.is(['json', '+json'])) {
         await pipeline(
           request.raw,
-          cacache.put.stream(CACHE_PATH, oadaGraph.resource_id)
+          cacache.put.stream(CACHE_PATH, request.oadaGraph.resource_id)
         );
         request.body = '{}';
       }
@@ -529,31 +533,35 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
       const { _id: bodyid } = await putBodies.savePutBody(
         request.body as string
       );
-      request.log.trace(oadaGraph, 'PUT body saved');
+      request.log.trace({ oadaGraph: request.oadaGraph }, 'PUT body saved');
 
-      request.log.trace('Resource exists: %s', resourceExists);
+      request.log.trace('Resource exists: %s', request.resourceExists);
       const ignoreLinks =
         (
           (request.headers['x-oada-ignore-links'] ?? '') as string
         ).toLowerCase() === 'true';
       const ifMatch = parseETags(request.headers['if-match'])
-        ?.filter(({ id }) => [undefined, oadaGraph.resource_id].includes(id))
+        ?.filter(({ id }) =>
+          [undefined, request.oadaGraph.resource_id].includes(id)
+        )
         .map(({ rev }) => rev);
       const ifNoneMatch = parseETags(request.headers['if-none-match'])
-        ?.filter(({ id }) => [undefined, oadaGraph.resource_id].includes(id))
+        ?.filter(({ id }) =>
+          [undefined, request.oadaGraph.resource_id].includes(id)
+        )
         .map(({ rev }) => rev);
       const writeRequest: WriteRequest = {
         // @ts-expect-error stuff
         'connection_id': request.id as unknown,
-        resourceExists,
+        'resourceExists': request.resourceExists,
         'domain': request.hostname,
-        'url': path,
-        'resource_id': oadaGraph.resource_id,
-        'path_leftover': oadaGraph.path_leftover,
+        'url': request.oadaPath,
+        'resource_id': request.oadaGraph.resource_id,
+        'path_leftover': request.oadaGraph.path_leftover,
         // 'meta_id': oadaGraph['meta_id'],
-        'user_id': user.user_id,
-        'authorizationid': user.authorizationid,
-        'client_id': user.client_id,
+        'user_id': request.user.user_id,
+        'authorizationid': request.user.authorizationid,
+        'client_id': request.user.client_id,
         'contentType': request.headers['content-type'],
         bodyid,
         'if-match': ifMatch,
@@ -594,7 +602,7 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
           throw new Error(`Write failed with code "${resp.code ?? ''}"`);
       }
 
-      const key = oadaGraph.resource_id.replace(/^resources\//, '');
+      const key = request.oadaGraph.resource_id.replace(/^resources\//, '');
       return (
         reply
           // ? What is the right thing to return here?
@@ -610,15 +618,15 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
    * Handle DELETE
    */
   fastify.delete('*', async (request, reply) => {
-    let path = request.requestContext.get('oadaPath')!;
-    const user = request.requestContext.get('user')!;
-    let { rev: _, ...oadaGraph } = request.requestContext.get('oadaGraph')!;
-    let resourceExists = request.requestContext.get('resourceExists')!;
+    let path = request.oadaPath;
+    let { rev: _, ...oadaGraph } = request.oadaGraph;
+    // eslint-disable-next-line prefer-destructuring
+    let resourceExists = request.resourceExists;
 
     // Don't let users delete their shares?
     noModifyShares(request, reply);
     // Don't let users DELETE their bookmarks?
-    if (path === user.bookmarks_id) {
+    if (path === request.user.bookmarks_id) {
       reply.forbidden('User cannot delete their bookmarks');
       return;
     }
@@ -653,9 +661,9 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
       'resource_id': oadaGraph.resource_id,
       'path_leftover': oadaGraph.path_leftover,
       // 'meta_id': oadaGraph['meta_id'],
-      'user_id': user.user_id,
-      'authorizationid': user.authorizationid,
-      'client_id': user.client_id,
+      'user_id': request.user.user_id,
+      'authorizationid': request.user.authorizationid,
+      'client_id': request.user.client_id,
       'if-match': ifMatch,
       'if-none-match': ifNoneMatch,
       // 'bodyid': bodyid, // No body means delete?

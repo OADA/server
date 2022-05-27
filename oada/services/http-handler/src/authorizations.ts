@@ -72,7 +72,7 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
 
   fastify.get('/:authId', async (request, reply) => {
     const { authId } = request.params as { authId: string };
-    const { user_id: userid } = request.requestContext.get('user')!;
+    const { user_id: userid } = request.user;
 
     const auth = await authorizations.findById(authId);
     // Only let users see their own authorizations
@@ -106,16 +106,14 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
   );
 
   fastify.post('/', async (request, reply) => {
-    const user = request.requestContext.get('user')!;
-
     // TODO: Most of this could be done inside an Arango query...
     // TODO: Check scope of current token
     const auth = {
       // TODO: Which fields should be selectable by the client?
       user: {
-        _id: user.user_id,
+        _id: request.user.user_id,
       },
-      clientId: user.client_id,
+      clientId: request.user.client_id,
       createTime: Date.now(),
       expiresIn: 3600,
       // TODO: How to generate token?
@@ -124,9 +122,9 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
     };
 
     // Don't allow making tokens for other users unless admin.user
-    if (auth.user._id !== user.user_id) {
+    if (auth.user._id !== request.user.user_id) {
       if (
-        !user.scope.some(
+        !request.user.scope.some(
           (s) => s === 'oada.admin.user:all' || 'oada.admin.user:write'
         )
       ) {
