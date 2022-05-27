@@ -38,7 +38,7 @@ RUN yarn workspaces focus --all --production
 
 # Install all deps and run build step
 # Allows for workspaces to have build step (e.g., for TypeScript)
-FROM packages as build
+FROM packages AS dev
 
 # Install _all_ dependencies for build
 RUN yarn install --immutable
@@ -49,6 +49,10 @@ COPY . /oada/
 # Run again to be safe?
 RUN yarn install --immutable
 
+RUN yarn sdks vscode vim
+
+FROM dev AS build
+
 # Build and then remove yarn stuff
 RUN yarn build --verbose && rm -rfv .yarn .pnp.*
 
@@ -58,11 +62,6 @@ FROM node:${NODE_VER} AS code
 COPY --from=yarn /oada/ /oada/
 # Copy in built code
 COPY --from=build /oada/ /oada/
-
-# Remove uncompiled code (e.g. TS files, C/C++ of librdkafka)?
-SHELL ["/bin/ash", "-c"]
-RUN find /oada -name src -exec xargs rm -rfv {} +
-
 
 # Assemble "production" image
 FROM node:$NODE_VER AS production
@@ -97,10 +96,6 @@ CMD ["start"]
 RUN mkdir -p /oada/binary && chown node:node /oada/binary
 #VOLUME /oada/binary
 
-# Do not run services as root
-USER node
-ENV PORT=8080
-
 # Copy in the code
 COPY --from=code /oada/ /oada/
 
@@ -108,3 +103,16 @@ ARG OADA_SERVICE
 ENV OADA_SERVICE=${OADA_SERVICE}
 
 WORKDIR /oada/services/${OADA_SERVICE}
+
+# Do not run services as root
+USER node
+ENV PORT=8080
+
+FROM production as debug
+
+USER root
+
+COPY --from=dev /oada/ /oada/
+
+# Default to a production target
+FROM production

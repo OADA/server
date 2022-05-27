@@ -5,15 +5,19 @@
 **/.git*
 
 # Don't copy tests into images?
-**/test/**
-**/tests/**
-**/__test__/**
-**/__tests__/**
+**/test
+**/tests
+**/__test__
+**/__tests__
 **/*.spec.*
 **/*.test.*
 
 **/*.log
 **/.DS_Store
+
+# Docker stuff
+**/Dockerfile
+**/.dockerignore
 
 # Editor junk
 **/tags*
@@ -24,6 +28,13 @@
 **/.undodir
 **/.history
 **/.vim
+**/.vscode
+**/.eslintignore
+**/.eslintrc.*
+**/.prettierignore
+**/commitlint.config.*
+
+**/README.*
 
 # Built TS etc.
 **/dist
