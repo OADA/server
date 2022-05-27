@@ -11,7 +11,7 @@
   },
   "scripts": {
     "build": "yarn g:tsc",
-    "start": "node -r @oada/pino-debug --unhandled-rejections=strict --enable-source-maps dist/server.js",
+    "start": "node ${INSPECT} --enable-source-maps -r @oada/pino-debug --unhandled-rejections=strict dist/server.js",
     "test": "mocha"
   },
   "mocha": {

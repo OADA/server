@@ -52,6 +52,9 @@ services:
     expose:
       # expose only internally, not on host
       - '8080'
+    ports:
+      # Expose node inspect port
+      - 9230:9229
     environment:
       IGNORE_SCOPE:
     volumes:
@@ -74,11 +77,15 @@ services:
     environment:
       IGNORE_SCOPE:
 
+
   write-handler:
     extends:
       file: common.yml
       service: oada-uservice
     image: oada/write-handler:${OADA_VERSION-build}
+    ports:
+      # Expose node inspect port
+      - 9231:9229
     build:
       args:
         OADA_SERVICE: write-handler
@@ -183,7 +190,7 @@ services:
 
   # Arango is the main backend where core data and graph is stored
   arangodb:
-    image: arangodb:3.7.12
+    image: arangodb:3.9.1
     restart: unless-stopped
     networks:
       arango_net: {}
@@ -393,6 +400,7 @@ volumes:
   prometheus_config:
   grafana_data:
   grafana_prov:
+
 
 networks:
   arango_net: {}

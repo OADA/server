@@ -25,7 +25,7 @@
     "test-arango": "isTest=true mocha test/arango/index.js",
     "lint": "jshint --reporter node_modules/jshint-stylish .",
     "clean": "rm -rf test/oada-compliance && rm -rf coverage",
-    "start": "node -r @oada/pino-debug --unhandled-rejections=strict dist/index.js",
+    "start": "node ${INSPECT} -r @oada/pino-debug --unhandled-rejections=strict dist/index.js",
     "init": "node dist/init.js"
   },
   "mocha": {

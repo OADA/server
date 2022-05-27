@@ -11,8 +11,7 @@
     "test": "mocha",
     "build": "yarn g:tsc",
     "healthcheck": "node --enable-source-maps dist/healthcheck.js http://localhost:${PORT}/health",
-    "start": "node ${INSPECT} --enable-source-maps -r @oada/pino-debug --unhandled-rejections=strict dist/server.js",
-    "inspect": "yarn run --inspect start"
+    "start": "node ${INSPECT} --enable-source-maps -r @oada/pino-debug --unhandled-rejections=strict dist/server.js"
   },
   "mocha": {
     "require": [
