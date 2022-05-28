@@ -13,18 +13,21 @@
 # limitations under the License.
 
 x-release:
-  environment: &env # Default to loading packaged default config?
+  environment:
+    # Default to loading packaged default config?
+    &env
     CONFIG: ${OADA_CONFIG-/oada.config.mjs}
     NODE_ENV: ${NODE_ENV-production}
     DEBUG: ${DEBUG-*:error,*:warn,*:info}
-    PINO_LEVEL:
-    DEBUG_HIDE_DATE:
-    DEBUG_COLORS:
-    DEBUG_DEPTH:
-    DEBUG_SHOW_HIDDEN:
+    INSPECT: ${INSPECT-}
+    PINO_LEVEL: ~
+    DEBUG_HIDE_DATE: ~
+    DEBUG_COLORS: ~
+    DEBUG_DEPTH: ~
+    DEBUG_SHOW_HIDDEN: ~
     PINO_TRANSPORT: ${PINO_TRANSPORT-yarn g:pretty -clti pid,hostname}
-    DOMAIN:
-    NODE_TLS_REJECT_UNAUTHORIZED:
+    DOMAIN: ~
+    NODE_TLS_REJECT_UNAUTHORIZED: ~
     # Allow changing arangodb URL (e.g., to use external arango)
     ARANGODB_URL: ${ARANGODB_URL-http://arangodb:8529}
     # Allow changing kafka brokers (e.g., to use external kafka)
@@ -54,6 +57,7 @@ services:
     environment:
       <<: *env
       IGNORE_SCOPE:
+
 
   write-handler:
     environment:
@@ -96,21 +100,21 @@ services:
     #  put them into /config/keys/letsencrypt (see below)
     #  - /path/to/certs:/config/keys/letsencrypt:ro
     environment:
-      - PUID=1000
-      - PGID=1000
-      - TZ=America/New_york
-      - URL=${DOMAIN}
-      - SUBDOMAINS= #e.g., www
-      - VALIDATION=http
-      - CERTPROVIDER= #optional
-      - DNSPLUGIN= #optional
-      - PROPAGATION= #optional
-      - DUCKDNSTOKEN= #optional
-      - EMAIL= #optional
-      - ONLY_SUBDOMAINS=false #optional
-      - EXTRA_DOMAINS= #optional
-      - STAGING=false #optional
-      - MAXMINDDB_LICENSE_KEY= #optional
+      PUID: 1000
+      PGID: 1000
+      TZ: America/New_york
+      URL: ${DOMAIN}
+      SUBDOMAINS: #e.g., www
+      VALIDATION: http
+      CERTPROVIDER: #optional
+      DNSPLUGIN: #optional
+      PROPAGATION: #optional
+      DUCKDNSTOKEN: #optional
+      EMAIL: #optional
+      ONLY_SUBDOMAINS: false #optional
+      EXTRA_DOMAINS: #optional
+      STAGING: false #optional
+      MAXMINDDB_LICENSE_KEY: #optional
     volumes:
       - proxy_config:/config
     ports:
@@ -126,9 +130,9 @@ services:
       - arangodb_data:/var/lib/arangodb3
       - arangodb_apps_data:/var/lib/arangodb3-apps
     environment:
-      # - ARANGO_RANDOM_ROOT_PASSWORD=1
-      - ARANGO_NO_AUTH=1
-      - ARANGO_STORAGE_ENGINE=rocksdb
+      # ARANGO_RANDOM_ROOT_PASSWORD: 1
+      ARANGO_NO_AUTH: 1
+      ARANGO_STORAGE_ENGINE: rocksdb
 
   # You could use an external kafka instance instead.
   # The services just need hostname `kafka`
@@ -180,9 +184,9 @@ volumes:
   grafana_data:
   grafana_prov:
 
-# Set up Mutagen forwards
-# Only take effect if using `mutagen compose` rather than `docker-compose`
-# see https://mutagen.io/documentation/orchestration/compose
+    # Set up Mutagen forwards
+    # Only take effect if using `mutagen compose` rather than `docker-compose`
+    # see https://mutagen.io/documentation/orchestration/compose
 x-mutagen:
   forward:
     agrango:

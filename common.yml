@@ -18,17 +18,17 @@ services:
       NODE_ENV: ${NODE_ENV-development}
       INSPECT: ${INSPECT---inspect=0.0.0.0:9229}
       DEBUG: ${DEBUG-*}
-      PINO_LEVEL:
-      DEBUG_HIDE_DATE:
-      DEBUG_COLORS:
-      DEBUG_DEPTH:
-      DEBUG_SHOW_HIDDEN:
+      PINO_LEVEL: ~
+      DEBUG_HIDE_DATE: ~
+      DEBUG_COLORS: ~
+      DEBUG_DEPTH: ~
+      DEBUG_SHOW_HIDDEN: ~
       # Should just be an external script someone can run on their instance?
       arangodb__ensureDefaults: true
       DOMAIN: ${DOMAIN:-localhost}
-      NODE_TLS_REJECT_UNAUTHORIZED:
-      PINO_TRANSPORT:
-      PROFILE_AQL:
+      NODE_TLS_REJECT_UNAUTHORIZED: ~
+      PINO_TRANSPORT: ~
+      PROFILE_AQL: ~
       # Allow changing arangodb URL (e.g., to use external arango)
       ARANGODB_URL: ${ARANGODB_URL-http://arangodb:8529}
       # Allow changing kafka brokers (e.g., to use external kafka)
