@@ -25,11 +25,11 @@ import { config } from '../config.js';
 import { OADAified, oadaify } from '@oada/oadaify';
 
 import { User, findById } from './users.js';
+import { ArangoError } from './errors.js';
 import { db as database } from '../db.js';
 import { sanitizeResult } from '../util.js';
 
-import { ArangoError } from './errors.js';
-import { JsonPointer } from 'json-ptr';
+import { JsonPointer, PathSegments } from 'json-ptr';
 import { aql } from 'arangojs';
 import cloneDeep from 'clone-deep';
 import debug from 'debug';
@@ -110,8 +110,7 @@ export async function lookupFromUrl(
   for (const [index, urlPiece] of Object.entries(pieces)) {
     // Need to be sure `i` is a number and not a string
     // otherwise indexes don't work...
-    filters = aql`
-      ${filters}
+    filters = aql`${filters}
       FILTER p.edges[${Number(index)}].name IN [${urlPiece}, null]`;
   }
 
@@ -412,10 +411,7 @@ export async function getParents(id: string) {
       aql`
         WITH ${edgesCollection}, ${graphNodes}, ${resources}
         FOR v, e IN 0..1
-          INBOUND ${
-            // eslint-disable-next-line sonarjs/no-nested-template-literals
-            `graphNodes/${id.replace(/\//, ':')}`
-          }
+          INBOUND ${`graphNodes/${id.replace(/\//, ':')}`}
           ${edgesCollection}
           FILTER e.versioned == true
           LET res = DOCUMENT(v.resource_id)
@@ -448,22 +444,22 @@ export async function getParents(id: string) {
 export async function getNewDescendants(id: string, rev: string | number) {
   const cursor = await database.query(
     aql`
-        WITH ${graphNodes}, ${edgesCollection}, ${resources}
-        LET node = FIRST(
-          FOR node in ${graphNodes}
-            FILTER node.resource_id == ${id}
-            RETURN node
-        )
+      WITH ${graphNodes}, ${edgesCollection}, ${resources}
+      LET node = FIRST(
+        FOR node in ${graphNodes}
+          FILTER node.resource_id == ${id}
+          RETURN node
+      )
 
-        FOR v, e, p IN 0..${MAX_DEPTH} OUTBOUND node ${edgesCollection}
-          FILTER p.edges[*].versioned ALL == true
-          FILTER v.is_resource
-          LET ver = SPLIT(DOCUMENT(LAST(p.vertices).resource_id)._oada_rev, '-', 1)
-          // FILTER TO_NUMBER(ver) >= ${Number.parseInt(rev as string, 10)}
-          RETURN DISTINCT {
-            id: v.resource_id,
-            changed: TO_NUMBER(ver) >= ${Number.parseInt(rev as string, 10)}
-          }`
+      FOR v, e, p IN 0..${MAX_DEPTH} OUTBOUND node ${edgesCollection}
+        FILTER p.edges[*].versioned ALL == true
+        FILTER v.is_resource
+        LET ver = SPLIT(DOCUMENT(LAST(p.vertices).resource_id)._oada_rev, '-', 1)
+        // FILTER TO_NUMBER(ver) >= ${Number.parseInt(rev as string, 10)}
+        RETURN DISTINCT {
+          id: v.resource_id,
+          changed: TO_NUMBER(ver) >= ${Number.parseInt(rev as string, 10)}
+        }`
   );
   return cursor as AsyncIterableIterator<{ id: string; changed: boolean }>;
 }
@@ -472,25 +468,25 @@ export async function getChanges(id: string, rev: string | number) {
   // Currently utilizes fixed depth search "7..7" to get data points down
   const cursor = await database.query(
     aql`
-        WITH ${graphNodes}, ${edgesCollection}, ${resources}
-        LET node = FIRST(
-          FOR node in ${graphNodes}
-            FILTER node.resource_id == ${id}
-            RETURN node
-        )
+      WITH ${graphNodes}, ${edgesCollection}, ${resources}
+      LET node = FIRST(
+        FOR node in ${graphNodes}
+          FILTER node.resource_id == ${id}
+          RETURN node
+      )
 
-        LET objs = (FOR v, e, p IN 7..7 OUTBOUND node ${edgesCollection}
-          FILTER v.is_resource
-          LET ver = SPLIT(DOCUMENT(v.resource_id)._oada_rev, '-', 1)
-          FILTER TO_NUMBER(ver) >= ${Number.parseInt(rev as string, 10)}
-          RETURN DISTINCT {
-            id: v.resource_id,
-            rev: DOCUMENT(v.resource_id)._oada_rev
-          }
-        )
-        FOR obj in objs
-          LET doc = DOCUMENT(obj.id)
-          RETURN {id: obj.id, changes: doc._meta._changes[obj.rev]}`
+      LET objs = (FOR v, e, p IN 7..7 OUTBOUND node ${edgesCollection}
+        FILTER v.is_resource
+        LET ver = SPLIT(DOCUMENT(v.resource_id)._oada_rev, '-', 1)
+        FILTER TO_NUMBER(ver) >= ${Number.parseInt(rev as string, 10)}
+        RETURN DISTINCT {
+          id: v.resource_id,
+          rev: DOCUMENT(v.resource_id)._oada_rev
+        }
+      )
+      FOR obj in objs
+        LET doc = DOCUMENT(obj.id)
+        RETURN {id: obj.id, changes: doc._meta._changes[obj.rev]}`
   );
   return cursor as AsyncIterableIterator<{ id: string; changes: string }>;
 }
@@ -677,23 +673,23 @@ export async function deleteResource(id: string): Promise<number> {
   // Query deletes resource, its nodes, and outgoing edges (but not incoming)
   const cursor = await database.query(
     aql`
-        LET res = FIRST(
-          REMOVE { '_key': ${key} } IN ${resources}
+      LET res = FIRST(
+        REMOVE { '_key': ${key} } IN ${resources}
+        RETURN OLD
+      )
+      LET nodes = (
+        FOR node in ${graphNodes}
+          FILTER node['resource_id'] == res._id
+          REMOVE node IN ${graphNodes} OPTIONS { ignoreErrors: true }
           RETURN OLD
-        )
-        LET nodes = (
-          FOR node in ${graphNodes}
-            FILTER node['resource_id'] == res._id
-            REMOVE node IN ${graphNodes}
-            RETURN OLD
-        )
-        LET edges = (
-          FOR node IN nodes
-            FOR edge IN ${edgesCollection}
-              FILTER edge['_from'] == node._id
-              REMOVE edge IN ${edgesCollection}
-        )
-        RETURN res._oada_rev`
+      )
+      LET edges = (
+        FOR node IN nodes
+          FOR edge IN ${edgesCollection}
+            FILTER edge['_from'] == node._id
+            REMOVE edge IN ${edgesCollection} OPTIONS { ignoreErrors: true }
+      )
+      RETURN res._oada_rev`
   );
   return (await cursor.next()) as number;
 }
@@ -703,80 +699,81 @@ export async function deleteResource(id: string): Promise<number> {
  */
 export async function deletePartialResource(
   id: string,
-  path: string | string[],
+  inPath: string | PathSegments,
   { _rev: rev, ...document }: Partial<Resource> = {}
 ): Promise<number> {
   const key = id.replace(/^resources\//, '');
-  const pointer = new JsonPointer(path);
-  const aPath = Array.isArray(path) ? path : pointer.path;
+  const pointer = new JsonPointer(inPath);
 
-  // TODO: Less gross way to check existence of JSON pointer in AQL??
-  let pathA = aPath.slice(0, -1).join("']['");
-  pathA = pathA ? `['${pathA}']` : pathA;
-  const [pathB] = aPath.slice(-1) as [string];
-  const stringA = `(res${pathA}, '${pathB}')`;
-  const hasString = `HAS${stringA}`;
+  const path = pointer.path.slice();
+  const name = path.pop();
 
-  pointer.set(document, null);
+  const resource = aql`DOCUMENT(${resources}, ${key})`;
+  // Recursively get the sub-objects of the resource along path
+  let subResource = aql`${resource}`;
+  for (const p of path) {
+    subResource = aql`${subResource}[${p}]`;
+  }
 
-  const name = aPath.pop();
-  const sPath = JsonPointer.create(aPath).toString() || null;
-  const cursor = await database.query({
-    query: `
-        LET res = DOCUMENT(${resources.name}, '${key}')
-        LET has = ${hasString}
-
-        RETURN {has, rev: res._oada_rev}`,
-    bindVars: {},
-  });
+  const cursor = await database.query(
+    aql`
+      RETURN {
+        has: HAS(${subResource}, ${name}),
+        rev: ${resource}._oada_rev
+      }`
+  );
   const hasObject = (await cursor.next()) as { has: boolean; rev: number };
   if (hasObject.has) {
-    // TODO: Why the heck does arango error if I update resource before graph?
+    pointer.set(document, null);
+    const sPath = JsonPointer.create(path).toString() || null;
+
+    // ???: Why the heck does arango error if I update resource before graph?
     const updateCursor = await database.query(
       aql`
-          LET start = FIRST(
-            FOR node IN ${graphNodes}
-              LET path = node.path || null
-              FILTER node['resource_id'] == ${id} AND path == ${sPath}
-              RETURN node._id
-          )
-          LET vs = (
-            FOR v, e, p IN 1..${MAX_DEPTH} OUTBOUND start ${edgesCollection}
-              OPTIONS { bfs: true, uniqueVertices: 'global' }
-              FILTER p.edges[0].name == ${name}
-              FILTER p.vertices[*].resource_id ALL == ${id}
-              RETURN v._id
-          )
+        LET start = FIRST(
+          FOR node IN ${graphNodes}
+            LET path = node.path || null
+            FILTER node['resource_id'] == ${id} AND path == ${sPath}
+            RETURN node._id
+        )
+        LET vs = (
+          FOR v, e, p IN 1..${MAX_DEPTH} OUTBOUND start ${edgesCollection}
+            OPTIONS { bfs: true, uniqueVertices: 'global' }
+            FILTER p.edges[0].name == ${name}
+            FILTER p.vertices[*].resource_id ALL == ${id}
+            RETURN v._id
+        )
 
-          LET estart = (
-            FOR v, e IN 1..1 OUTBOUND start ${edgesCollection}
-              FILTER e.name == ${name}
+        LET estart = (
+          FOR v, e IN 1..1 OUTBOUND start ${edgesCollection}
+            FILTER e.name == ${name}
+            RETURN e
+        )
+        LET ev = (
+          FOR vd IN vs
+            FOR v, e IN 1..1 ANY vd ${edgesCollection}
               RETURN e
-          )
-          LET ev = (
-            FOR vd IN vs
-              FOR v, e IN 1..1 ANY vd ${edgesCollection}
-                RETURN e
-          )
+        )
 
-          LET es = (
-            FOR e IN APPEND(ev, estart)
-              REMOVE e IN ${edgesCollection}
-          )
-          LET vd = (
-            FOR v IN vs
-              REMOVE v IN ${graphNodes}
-          )
+        LET es = (
+          FOR e IN APPEND(ev, estart)
+            // ???: Why the heck does this REMOVE sometimes has not found error?
+            REMOVE e IN ${edgesCollection} OPTIONS { ignoreErrors: true }
+        )
+        LET vd = (
+          FOR v IN vs
+            REMOVE v IN ${graphNodes} OPTIONS { ignoreErrors: true }
+        )
 
-          LET newres = MERGE_RECURSIVE(
-            ${document},
-            {
-              _oada_rev: ${rev},
-              _meta: {_rev: ${rev}}
-            }
-          )
-          UPDATE ${key} WITH newres IN ${resources} OPTIONS { keepNull: false }
-          RETURN OLD._oada_rev`
+        LET newres = MERGE_RECURSIVE(
+          ${document},
+          {
+            _oada_rev: ${rev},
+            _meta: {_rev: ${rev}}
+          }
+        )
+        UPDATE ${key} WITH newres IN ${resources} OPTIONS { keepNull: false }
+        RETURN OLD._oada_rev`
     );
     return (await updateCursor.next()) as number;
   }

@@ -203,9 +203,8 @@ export async function handleRequest(
   request: WriteRequest
 ): Promise<WriteResponse> {
   request.source = request.source ?? '';
-  request.resourceExists = request.resourceExists
-    ? request.resourceExists
-    : false; // Fixed bug if this is undefined
+  // Fixes bug if this is undefined
+  request.resourceExists = request.resourceExists ?? false;
   let id = request.resource_id.replace(/^\//, '');
 
   // Get body and check permission in parallel
@@ -251,7 +250,7 @@ export async function handleRequest(
             // TODO: This is gross
             const aPath = Array.from(path);
             method = async (pid, partial) =>
-              resources.deletePartialResource(pid, aPath as string[], partial);
+              resources.deletePartialResource(pid, aPath, partial);
             trace(
               'Setting method = deletePartialResource(%s, %o, %O)',
               id,
