@@ -14,42 +14,39 @@ fi
 # Pull desired version of images
 docker-compose pull
 
-# Preserve header comment
-yq eval '. | ["#", headComment] | join(" ")' $OVERRIDES
-echo
-
 # Add comment with version?
 echo "# OADA release ${RELEASE_VERSION} compose file ($(date))\n"
 
 # Load config, clean anything potentially not fit for release, merge overrides
 docker-compose \
-    --env-file=${SCRIPTPATH}/.env \
-    -f ${SCRIPTPATH}/../docker-compose.yml \
-    -f ${OVERRIDES} \
+    --env-file="${SCRIPTPATH}/.env" \
+    -f "${SCRIPTPATH}/../docker-compose.yml" \
+    -f "${OVERRIDES}" \
     config --resolve-image-digests | {
     #  Remove build info
-    yq eval 'del(.. | select(has("build")).build)' -
+    yq 'del(.. | select(has("build")).build)'
 } | {
     #  Remove dev volumes?
-    yq eval 'del(.. | select(has("volumes")).volumes)' -
+    yq 'del(.. | select(has("volumes")).volumes)'
 } | {
     #  Remove dev environments?
-    yq eval 'del(.. | select(has("environment")).environment)' -
+    yq 'del(.. | select(has("environment")).environment)'
 } | {
     #  Remove dev ports?
-    yq eval 'del(.. | select(has("ports")).ports)' -
+    yq 'del(.. | select(has("ports")).ports)'
+} | {
+    #  Remove name
+    yq 'del(.. | select(has("name")).name)'
 } | {
     # Merge in release settings
-    yq eval-all \
-        '{"x-release": .x-release} * select(fi == 0) * select(fi == 1)' \
-        - ${OVERRIDES}
+    yq "load(\"${OVERRIDES}\") * . * load(\"${OVERRIDES}\")"
 } | {
     # Explode anchors
     # They are technically valid yaml but they were giving me issues
-    yq eval 'explode(.)' -
+    yq 'explode(.)'
 } | {
     # Sort the output by key
-    yq eval 'sortKeys(..)' -
+    yq 'sortKeys(..)'
 } | {
     # Allow pulling our images by tag OADA_VERSION, or default to this digest
     sed "s/image: oada\/\(.*\)\(@.*\)/image: oada\/\1:\${OADA_VERSION:-$OADA_VERSION\2}/"

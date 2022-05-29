@@ -13,9 +13,7 @@
 # limitations under the License.
 
 x-release:
-  environment:
-    # Default to loading packaged default config?
-    &env
+  environment: &env # Default to loading packaged default config?
     CONFIG: ${OADA_CONFIG-/oada.config.mjs}
     NODE_ENV: ${NODE_ENV-production}
     DEBUG: ${DEBUG-*:error,*:warn,*:info}
@@ -57,7 +55,6 @@ services:
     environment:
       <<: *env
       IGNORE_SCOPE:
-
 
   write-handler:
     environment:

@@ -356,7 +356,7 @@ jobs:
       - name: Set up yq
         uses: chrisdickinson/setup-yq@latest
         with:
-          yq-version: v4.5.1
+          yq-version: v4.25.2
 
       - name: Login to DockerHub
         uses: docker/login-action@v2.0.0
