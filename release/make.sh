@@ -36,14 +36,17 @@ docker-compose \
     yq 'del(.. | select(has("ports")).ports)'
 } | {
     #  Remove name
-    yq 'del(.. | select(has("name")).name)'
+    yq 'del(.name)'
 } | {
     # Merge in release settings
-    yq "load(\"${OVERRIDES}\") * . * load(\"${OVERRIDES}\")"
+    yq "load(\"${OVERRIDES}\") *n ."
 } | {
     # Explode anchors
     # They are technically valid yaml but they were giving me issues
     yq 'explode(.)'
+} | {
+    #  Remove x-release
+    yq 'del(.x-release)'
 } | {
     # Sort the output by key
     yq 'sortKeys(..)'

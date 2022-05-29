@@ -184,10 +184,11 @@ volumes:
   grafana_data:
   grafana_prov:
 
-    # Set up Mutagen forwards
-    # Only take effect if using `mutagen compose` rather than `docker-compose`
-    # see https://mutagen.io/documentation/orchestration/compose
+
 x-mutagen:
+  # Set up Mutagen forwards
+  # Only take effect if using `mutagen compose` rather than `docker-compose`
+  # see https://mutagen.io/documentation/orchestration/compose
   forward:
     agrango:
       source: 'tcp:localhost:8529'
