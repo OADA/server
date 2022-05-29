@@ -13,7 +13,9 @@
 # limitations under the License.
 
 x-release:
-  environment: &env # Default to loading packaged default config?
+  environment:
+    # Default to loading packaged default config?
+    &env
     CONFIG: ${OADA_CONFIG-/oada.config.mjs}
     NODE_ENV: ${NODE_ENV-production}
     DEBUG: ${DEBUG-*:error,*:warn,*:info}
@@ -55,6 +57,7 @@ services:
     environment:
       <<: *env
       IGNORE_SCOPE:
+
 
   write-handler:
     environment:
@@ -108,7 +111,7 @@ services:
       PROPAGATION: #optional
       DUCKDNSTOKEN: #optional
       EMAIL: #optional
-      ONLY_SUBDOMAINS: false #optional
+      ONLY_SUBDOMAINS: 'false' #optional
       EXTRA_DOMAINS: #optional
       STAGING: false #optional
       MAXMINDDB_LICENSE_KEY: #optional

@@ -164,21 +164,21 @@ services:
     networks:
       http_net: {}
     environment:
-      - PUID=1000
-      - PGID=1000
-      - TZ=America/New_york
-      - URL=${DOMAIN:-localhost}
-      - SUBDOMAINS= #e.g., www
-      - VALIDATION=http
-      - CERTPROVIDER= #optional
-      - DNSPLUGIN= #optional
-      - PROPAGATION= #optional
-      - DUCKDNSTOKEN= #optional
-      - EMAIL= #optional
-      - ONLY_SUBDOMAINS=false #optional
-      - EXTRA_DOMAINS= #optional
-      - STAGING=true #optional (set false for release)
-      - MAXMINDDB_LICENSE_KEY= #optional
+      PUID: 1000
+      PGID: 1000
+      TZ: America/New_york
+      URL: ${DOMAIN:-localhost}
+      SUBDOMAINS: #e.g., www
+      VALIDATION: http
+      CERTPROVIDER: #optional
+      DNSPLUGIN: #optional
+      PROPAGATION: #optional
+      DUCKDNSTOKEN: #optional
+      EMAIL: #optional
+      ONLY_SUBDOMAINS: 'false' #optional
+      EXTRA_DOMAINS: #optional
+      STAGING: true #optional (set false for release)
+      MAXMINDDB_LICENSE_KEY: #optional
     volumes:
       - proxy_config:/config
       # Hack in self-signed ssl for localhost
