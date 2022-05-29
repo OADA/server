@@ -177,7 +177,7 @@ services:
       EMAIL: #optional
       ONLY_SUBDOMAINS: 'false' #optional
       EXTRA_DOMAINS: #optional
-      STAGING: true #optional (set false for release)
+      STAGING: 'true' #optional (set false for release)
       MAXMINDDB_LICENSE_KEY: #optional
     volumes:
       - proxy_config:/config

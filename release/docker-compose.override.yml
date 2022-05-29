@@ -113,7 +113,7 @@ services:
       EMAIL: #optional
       ONLY_SUBDOMAINS: 'false' #optional
       EXTRA_DOMAINS: #optional
-      STAGING: false #optional
+      STAGING: 'false' #optional
       MAXMINDDB_LICENSE_KEY: #optional
     volumes:
       - proxy_config:/config
