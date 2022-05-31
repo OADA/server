@@ -64,12 +64,12 @@
     "@oada/write-handler": "^3.0.1",
     "@types/cacache": "^15.0.1",
     "@types/debug": "^4.1.7",
-    "@types/node": "^16.11.36",
+    "@types/node": "^16.11.38",
     "@types/type-is": "^1.6.3",
     "@types/uuid": "^8.3.4",
     "@types/ws": "^8.5.3",
     "connect": "^3.7.0",
-    "find-my-way": "^4.5.0",
+    "find-my-way": "^4.5.1",
     "light-my-request": "^5.0.0"
   }
 }

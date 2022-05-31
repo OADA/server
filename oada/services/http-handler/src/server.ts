@@ -55,13 +55,31 @@ export enum EnsureLink {
 
 // Set up logging stuff
 const logger = pino();
+const serializers = {
+  // Customize logging for requests
+  req(request: FastifyRequest) {
+    return {
+      method: request.method,
+      url: request.url,
+      version: request.headers?.['accept-version'],
+      hostname: request.hostname,
+      userAgent: request.headers?.['user-agent'],
+      remoteAddress: request.ip,
+      remotePort: request.socket?.remotePort,
+    };
+  },
+};
 
 mixins.push(() => ({
   reqId: requestContext.get('id'),
 }));
 
 export const app = fastify({
-  logger,
+  logger: {
+    ...logger,
+    // HACK: fastify overrides existing serializers. This circumvents that...
+    serializers,
+  },
   ignoreTrailingSlash: true,
   constraints: {
     oadaEnsureLink: {
