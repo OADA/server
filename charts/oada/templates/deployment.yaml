@@ -64,10 +64,17 @@ spec:
           name: {{ $name }}
           resources:
             {{- toYaml $.Values.oada.resources | nindent 12 }}
-          {{ if $v.http -}}
+          {{ if or $v.http $.Values.oada.inspect -}}
           ports:
-            - containerPort: 8080
-          {{ end -}}
+            {{ if $v.http -}}
+            - name: http
+              containerPort: 8080
+            {{- end }}
+            {{ if $.Values.oada.inspect -}}
+            - name: inspect
+              containerPort: 9229
+            {{- end }}
+          {{- end }}
           volumeMounts:
             {{ if eq $k "http-handler" -}}
             - mountPath: /oada/binary

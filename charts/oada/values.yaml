@@ -11,6 +11,8 @@ oada:
   services:
     http-handler:
       http: true
+    well-known:
+      http: true
     auth:
       http: true
     shares: {}
@@ -18,7 +20,6 @@ oada:
     sync-handler: {}
     users: {}
     webhooks: {}
-    well-known: {}
     write-handler: {}
   # oada.users is a list of users to be created
   users:
@@ -28,6 +29,8 @@ oada:
         - all:all
         - oada.admin.user:all
   resources: {}
+  # oada.inspect wether to enable the node inspector for OADA services
+  inspect: false
 
 autoscaling:
   enabled: false

@@ -44,7 +44,7 @@ services:
       args:
         OADA_SERVICE: http-handler
     healthcheck:
-      test: [ 'CMD', 'yarn', 'healthcheck' ]
+      test: ['CMD', 'yarn', 'healthcheck']
     depends_on:
       - startup
     networks:
@@ -76,7 +76,6 @@ services:
       http_net: {}
     environment:
       IGNORE_SCOPE:
-
 
   write-handler:
     extends:
@@ -204,7 +203,7 @@ services:
       # - ARANGO_RANDOM_ROOT_PASSWORD=1
       ARANGO_NO_AUTH: 1
       ARANGO_STORAGE_ENGINE: rocksdb
-    command: [ 'arangod', '--server.statistics=false' ]
+    command: ['arangod', '--server.statistics=false']
 
   # Redpanda is API compatible with kafka.
   redpanda:
@@ -400,7 +399,6 @@ volumes:
   prometheus_config:
   grafana_data:
   grafana_prov:
-
 
 networks:
   arango_net: {}

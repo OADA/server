@@ -23,7 +23,7 @@ metadata:
     app.kubernetes.io/instance: {{ .Release.Name }}
     {{- include "oada.chart.labels" . | nindent 4 }}
 {{- if not .Values.global.development }}
-immutable: true
+#immutable: true
 {{- end }}
 data:
   CONFIG: /oada.config.mjs
@@ -36,6 +36,9 @@ data:
   NODE_ENV: development
   NODE_TLS_REJECT_UNAUTHORIZED: '0'
   arangodb__ensureDefaults: 'true'
+  {{ if .Values.oada.inspect -}}
+  INSPECT: '--inspect=0.0.0.0:9229'
+  {{ end -}}
   {{ else -}}
   NODE_ENV: production
   {{- end }}
