@@ -27,7 +27,8 @@ metadata:
 {{- end }}
 data:
   CONFIG: /oada.config.mjs
-  DEBUG: {{ .Values.global.development | ternary "*" "*:fatal,*:error,*:warn,*:info" | quote }}
+  DEBUG: {{ .Values.debug | join "," | quote }}
+  PINO_LEVEL: {{ .Values.pino.level }}
   DOMAIN: {{ .Values.oada.domain }}
   ARANGODB_URL: {{ include "oada.arango.connection" . }}
   ARANGODB_DATABASE: {{ .Values.arangodb.database }}

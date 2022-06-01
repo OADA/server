@@ -147,6 +147,7 @@
       "oada/services/auth/public/domains/*": true
     },
     "cSpell.words": [
+      "aborsculpt",
       "arango",
       "arangodb",
       "arangojs",

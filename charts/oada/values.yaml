@@ -32,6 +32,12 @@ oada:
   # oada.inspect wether to enable the node inspector for OADA services
   inspect: false
 
+debug:
+  - '*'
+
+pino:
+  level: info
+
 autoscaling:
   enabled: false
   minReplicas: 1

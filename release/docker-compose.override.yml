@@ -18,9 +18,9 @@ x-release:
     &env
     CONFIG: ${OADA_CONFIG-/oada.config.mjs}
     NODE_ENV: ${NODE_ENV-production}
-    DEBUG: ${DEBUG-*:error,*:warn,*:info}
+    DEBUG: ${DEBUG-*}
     INSPECT: ${INSPECT-}
-    PINO_LEVEL: ~
+    PINO_LEVEL: ${PINO_LEVEL-info}
     DEBUG_HIDE_DATE: ~
     DEBUG_COLORS: ~
     DEBUG_DEPTH: ~

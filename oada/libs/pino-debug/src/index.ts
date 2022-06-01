@@ -78,9 +78,10 @@ export const mixins: Array<() => Record<string, unknown>> = [
 ];
 
 /**
- * Get pino, wrapping it with pino-caller when in development environment
+ * Get pino, wrapping it with fanciness when in development environment
  */
 function createRootLogger(): Logger {
+  const development = process.env.NODE_ENV === 'development';
   const logger = _pino({
     name: require.main?.id ?? process.env.npm_package_name,
     level: logLevel(),
@@ -89,7 +90,7 @@ function createRootLogger(): Logger {
       return Object.assign({}, ...objs) as Record<string, unknown>;
     },
   });
-  return process.env.NODE_ENV === 'development' ? pinoCaller(logger) : logger;
+  return development ? pinoCaller(logger) : logger;
 }
 
 const rootLogger = createRootLogger();
