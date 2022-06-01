@@ -23,7 +23,16 @@ see [the `oada` folder](oada/).
 
 ## Installing
 
-### Running a release
+### Kubernetes
+
+There is a Helm chart of the OADA server.
+It is the preferred method of using the server now.
+
+See [charts/oada](charts/oada) for more information.
+
+### docker-compose
+
+#### Running a release in docker-compose
 
 Download one of our [releases] and start it using [docker-compose].
 
@@ -33,7 +42,7 @@ cd folder/containing/release/docker-compose
 DOMAIN=yourdomain.com docker-compose up -d
 ```
 
-### Running as localhost
+#### Running as localhost with docker-compose
 
 localhost doesn't work out of the box because you need to create a self-signed SSL certificate and map it into your OADA installation.
 

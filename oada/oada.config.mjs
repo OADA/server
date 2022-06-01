@@ -181,7 +181,7 @@ export default {
       // eslint-disable-next-line camelcase
       well_known_version: '1.1.0',
       // eslint-disable-next-line camelcase
-      oada_version: '2.1.1',
+      oada_version: '3.3.0',
       // eslint-disable-next-line camelcase
       oada_base_uri: './',
       // eslint-disable-next-line camelcase
