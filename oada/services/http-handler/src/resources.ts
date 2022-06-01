@@ -34,7 +34,7 @@ import { config } from './config.js';
 import requester from './requester.js';
 
 import type { FastifyPluginAsync, FastifyReply, FastifyRequest } from 'fastify';
-import type { Link } from '@oada/types/oada/link/v1';
+import type { Link } from '@oada/types/oada/link/v1.js';
 import cacache from 'cacache';
 import { is } from 'type-is';
 import ksuid from 'ksuid';
@@ -268,7 +268,11 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
     '*',
     { exposeHeadRoute: true },
     async (request: FastifyRequest, reply: FastifyReply) => {
-      const type = request.oadaGraph.type ?? 'application/json';
+      const isMeta = request.oadaGraph.path_leftover.startsWith('/_meta');
+      // ???: Should _meta have parent's type as a media type parameter?
+      const type = isMeta
+        ? 'application/vnd.oada.meta+json'
+        : request.oadaGraph.type ?? 'application/json';
       void reply.type(type);
       // TODO: Why does this not work as a fastify plugin??
       const headers = handleResponse(type);
@@ -313,7 +317,7 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
       }
 
       /**
-       * Handle requests for /_meta/_changes?
+       * Handle requests for /_meta/_changes
        */
       if (request.oadaGraph.path_leftover === '/_meta/_changes') {
         const ch = await changes.getChanges(request.oadaGraph.resource_id);
@@ -343,17 +347,14 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
       // TODO: Make getResource accept an array of paths and return an array of
       //       results. I think we can do that in one arango query
 
-      if (
-        is(type, ['json', '+json']) ||
-        request.oadaGraph.path_leftover.endsWith('/_meta')
-      ) {
+      if (isMeta || is(type, ['json', '+json'])) {
         const document = await resources.getResource(
           request.oadaGraph.resource_id,
           request.oadaGraph.path_leftover
         );
         request.log.trace({ document }, 'Document is');
 
-        // TODO: Allow null values in OADA?
+        // ???: Allow null values in OADA?
         if (document === undefined || document === null) {
           request.log.error('Resource not found');
           reply.notFound();
