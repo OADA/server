@@ -6,7 +6,7 @@ oada:
   # oada.ingress is whether to create ingresses into the OADA API
   ingress: true
   # oada.tag is the Docker tag for the OADA images
-  tag: edge
+  tag: ~
   # oada.services is the list of oada services to deploy
   services:
     http-handler:
@@ -29,13 +29,13 @@ oada:
         - all:all
         - oada.admin.user:all
   resources: {}
-  # oada.inspect wether to enable the node inspector for OADA services
-  inspect: false
 
+# debug is the list of debug.js namespaces to enable/disable
 debug:
   - '*'
 
 pino:
+  # pino.level is the level of messages to send to the pino transport
   level: info
 
 autoscaling:
@@ -62,7 +62,7 @@ kafka:
   # If this is not empty, the Redpanda service will not be deployed.
   # If this is empty, the redpanda operator will be used to deploy a cluster.
   brokers: []
-  # kafka.image is the Docker image to use for arangodb
+  # kafka.image is the Docker image to use for Kafka
   image: vectorized/redpanda
   # kafka.tag is the Docker tag for the Kafka/Redpanda images
   tag: v22.1.3

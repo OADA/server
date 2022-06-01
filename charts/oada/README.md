@@ -30,11 +30,17 @@ Attempt to apply all prerequisites:
 `kubectl apply -k ../../k8s/support`
 
 The above command might error on the first run.
-After 2-3 times, it should run without error.
+After 2-3 times, it _should_ run without error.
+
+**If the above does not work for you,
+google how to set up the listed prerequisites for your specific k8s cluster.**
 
 ## Installation
 
+Add the helm chart repo
+`helm repo add oada https://charts.openag.io/`
+
 Install the Helm chart:
-`helm install oada .`
+`helm install oada oada`
 
 See the [values.yaml](values.yaml) for various configuration options.

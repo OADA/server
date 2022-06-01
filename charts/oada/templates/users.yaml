@@ -13,6 +13,7 @@
    * See the License for the specific language governing permissions and
    * limitations under the License.
    */}}
+{{- $tag := default .Chart.AppVersion .Values.oada.tag -}}
 {{- range .Values.oada.users -}}
 {{- $secretName := print "user-" .name "-" $.Release.Name -}}
 apiVersion: v1
@@ -52,11 +53,16 @@ spec:
           args:
             - job
             - init-{{ $.Release.Name }}
+        - name: wait-for-users
+          image: {{ $.Values.k8sWaitFor.image }}:{{ $.Values.k8sWaitFor.tag }}
+          args:
+            - pod
+            - '-l app.kubernetes.io/name=users,app.kubernetes.io/instance={{ $.Release.Name }}'
         - name: user-add
           envFrom:
             - configMapRef:
                 name: {{ $.Chart.Name }}-configmap-{{ $.Release.Name }}
-          image: oada/users:{{ $.Values.oada.tag }}
+          image: oada/users:{{ $tag }}
           #imagePullPolicy: {{ $.Values.global.development | ternary "Always" "IfNotPresent" }}
           command: ["/usr/bin/dumb-init", "--rewrite", "15:2", "--", "/bin/sh"]
           args: ["-c", "yarn workspace @oada/users run add -u {{ .name }} -a {{ .admin | default false }} "]
@@ -71,8 +77,9 @@ spec:
                 secretKeyRef:
                   name: {{ $secretName }}
                   key: token
-          image: oada/users:{{ $.Values.oada.tag }}
+          image: oada/users:{{ $tag }}
           #imagePullPolicy: {{ $.Values.global.development | ternary "Always" "IfNotPresent" }}
           command: ["/usr/bin/dumb-init", "--rewrite", "15:2", "--", "/bin/sh"]
           args: ["-c", "yarn workspace @oada/auth run token create -u {{ .name }} -s {{ .scope | join "," }} ${TOKEN} "]
+---
 {{- end -}}

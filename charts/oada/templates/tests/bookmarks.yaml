@@ -14,6 +14,7 @@
    * limitations under the License.
    */}}
 {{- $user := first .Values.oada.users -}}
+---
 apiVersion: v1
 kind: Pod
 metadata:

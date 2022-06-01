@@ -13,6 +13,7 @@
    * See the License for the specific language governing permissions and
    * limitations under the License.
    */}}
+{{- $tag := default .Chart.AppVersion .Values.oada.tag -}}
 {{- range $k, $v := .Values.oada.services -}}
 {{/* Deploy the OADA uservice `$k` */}}
 {{- $name := print $k "-" $.Release.Name -}}
@@ -52,7 +53,7 @@ spec:
         - envFrom:
             - configMapRef:
                 name: {{ $.Chart.Name }}-configmap-{{ $.Release.Name }}
-          image: {{ print "oada/" $k ":" $.Values.oada.tag }}
+          image: {{ print "oada/" $k ":" $tag }}
           #imagePullPolicy: {{ $.Values.global.development | ternary "Always" "IfNotPresent" }}
           command: ["/usr/bin/dumb-init", "--rewrite", "15:2", "--", "/bin/sh"]
           args: ["-c", "yarn workspace @oada/{{ $k }} run start"]
@@ -64,13 +65,13 @@ spec:
           name: {{ $name }}
           resources:
             {{- toYaml $.Values.oada.resources | nindent 12 }}
-          {{ if or $v.http $.Values.oada.inspect -}}
+          {{ if or $v.http $.Values.global.development -}}
           ports:
             {{ if $v.http -}}
             - name: http
               containerPort: 8080
             {{- end }}
-            {{ if $.Values.oada.inspect -}}
+            {{ if $.Values.global.development -}}
             - name: inspect
               containerPort: 9229
             {{- end }}
@@ -123,4 +124,4 @@ spec:
     {{- end }}
 {{- end }}
 ---
-{{- end -}}
+{{ end -}}

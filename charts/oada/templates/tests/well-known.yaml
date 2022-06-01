@@ -14,6 +14,7 @@
    * limitations under the License.
    */}}
 {{- range tuple "oada-configuration" "openid-configuration" -}}
+---
 apiVersion: v1
 kind: Pod
 metadata:
@@ -34,5 +35,4 @@ spec:
         {{- end }}
         - http://well-known-{{ $.Release.Name }}/.well-known/{{ . }}
   restartPolicy: Never
----
 {{- end -}}

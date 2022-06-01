@@ -37,9 +37,7 @@ data:
   NODE_ENV: development
   NODE_TLS_REJECT_UNAUTHORIZED: '0'
   arangodb__ensureDefaults: 'true'
-  {{ if .Values.oada.inspect -}}
   INSPECT: '--inspect=0.0.0.0:9229'
-  {{ end -}}
   {{ else -}}
   NODE_ENV: production
   {{- end }}
