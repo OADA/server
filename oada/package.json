@@ -9,11 +9,11 @@
     "g:eslint": "cd $INIT_CWD && eslint",
     "build": "yarn build",
     "g:tsc": "cd $INIT_CWD && tsc -b",
-    "g:pretty": "pino-pretty -lt"
+    "g:pino-pretty": "pino-pretty"
   },
   "devDependencies": {
-    "@commitlint/cli": "^17.0.1",
-    "@commitlint/config-conventional": "^17.0.0",
+    "@commitlint/cli": "^17.0.2",
+    "@commitlint/config-conventional": "^17.0.2",
     "@tsconfig/node18": "^1.0.0",
     "@types/eslint": "^8.4.2",
     "@types/mocha": "^9.1.1",
@@ -49,7 +49,7 @@
     "typescript": "^4.7.2"
   },
   "dependencies": {
-    "pino-pretty": "^7.6.1"
+    "pino-pretty": "^8.0.0"
   },
   "engines": {
     "node": ">=18.0.0"

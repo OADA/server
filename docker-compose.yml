@@ -251,6 +251,15 @@ services:
       # Prometheus/HTTP Admin port
       - '9644'
 
+  pino-pretty:
+    deploy:
+      replicas: 0
+    image: oada/startup:${OADA_VERSION-build}
+    restart: never
+    command: g:pino-pretty -C /.pino-prettyrc
+    volumes:
+      - ./.pino-prettyrc:/.pino-prettyrc
+
   prometheus:
     image: prom/prometheus
     profiles:

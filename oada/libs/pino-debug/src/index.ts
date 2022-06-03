@@ -102,7 +102,7 @@ export function pino(options: LoggerOptions = {}): Logger {
  * Give use better defaults for pino-debug?
  */
 export default function oadaDebug(
-  logger: Logger = pino(),
+  logger: Logger = rootLogger,
   {
     // Turn off auto so only things enabled in DEBUG var get logged
     auto = false,

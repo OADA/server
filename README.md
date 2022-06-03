@@ -5,7 +5,7 @@
 [![License](https://img.shields.io/github/license/OADA/server)](LICENSE)
 
 This project is a reference implementation of an OADA-conformant API server.
-It can be used to host easily run your own OADA instance,
+It can be used to host your own OADA instance,
 or for comparison when creating an OADA-conformant API implementation.
 
 The repository and releases come with configurations for easily running
@@ -44,10 +44,13 @@ DOMAIN=yourdomain.com docker-compose up -d
 
 #### Running as localhost with docker-compose
 
-localhost doesn't work out of the box because you need to create a self-signed SSL certificate and map it into your OADA installation.
+localhost doesn't work out of the box because you need to
+create a self-signed SSL certificate and map it into your OADA installation.
 
-To generate a certificate, get [mkcert](https://github.com/FiloSottile/mkcert) (Works on pretty much every platform).
-Then, install `mkcert` to your machine's local certificate authority (so when you make requests to your OADA, it will trust the self-signed certificate)
+To generate a certificate, get [mkcert](https://github.com/FiloSottile/mkcert)
+(works on pretty much every platform).
+Then, install `mkcert` to your machine's local certificate authority
+(so when you make requests to your OADA, it will trust the self-signed certificate)
 
 ```shell
 # Only do this if you did not previously have mkcert installed.
@@ -62,8 +65,10 @@ mkcert -cert-file ./localhost/fullchain.pem -key-file ./localhost/privkey.pem lo
 # The certificate is at "./localhost/fullchain.pem" and the key at "./localhost/privkey.pem"
 ```
 
-Finally, tell OADA to use it by mapping it into the docker-compose service definition for the proxy.
-NOTE: if you already have a `docker-compose.override.yml`, do not run this command as it will overwrite it.
+Finally, tell OADA to use it by mapping it
+into the docker-compose service definition for the proxy.
+NOTE: if you already have a `docker-compose.override.yml`,
+do not run this command as it will overwrite it.
 
 ```shell
 # Configure docker to map in the new cert as an override:
@@ -110,7 +115,6 @@ DOMAIN=yourdomain.com docker-compose up -d
 ```
 
 Note that running from the git is **not** recommended for production use.
-
 
 ## Configuration
 

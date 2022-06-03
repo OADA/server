@@ -78,7 +78,6 @@ export interface ConstructorOptions {
  * Base interface for kafka messages (either request or response)
  */
 export interface KafkaBase {
-  // eslint-disable-next-line @typescript-eslint/ban-types
   connection_id?: string;
   msgtype?: string;
   code?: string;
@@ -144,11 +143,16 @@ export class Base extends EventEmitter {
        * Make kafkajs logging nicer?
        */
       logCreator() {
-        return ({ namespace, label, log: { message, ...extra } }) => {
+        return ({ namespace, label, log }) => {
           const l = label as keyof KafkajsDebug;
           // eslint-disable-next-line security/detect-object-injection
-          const log = getKafkajsDebug(namespace)[l];
-          log(extra, message);
+          const logger = getKafkajsDebug(namespace)[l];
+          if (log instanceof Error) {
+            logger({ err: log }, log.message);
+          } else {
+            const { message, ...extra } = log;
+            logger(extra, message);
+          }
         };
       },
       brokers: config.get('kafka.broker'),

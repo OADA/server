@@ -47,7 +47,7 @@
     "@oada/permissions-handler": "^3.0.1",
     "@oada/pino-debug": "^3.0.1",
     "@oada/types": "^2.0.1",
-    "cacache": "^16.1.0",
+    "cacache": "^16.1.1",
     "debug": "^4.3.4",
     "es-main": "^1.0.2",
     "fastify": "^3.29.0",
