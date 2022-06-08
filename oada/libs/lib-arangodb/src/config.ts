@@ -58,6 +58,20 @@ export const { config, schema } = await libConfig({
       default: 'oada',
       env: 'ARANGODB_DATABASE',
     },
+    auth: {
+      username: {
+        doc: 'Username for arangodb authentication',
+        format: String,
+        default: 'root',
+        env: 'ARANGODB_USERNAME',
+      },
+      password: {
+        doc: 'Password for arangodb authentication',
+        format: String,
+        default: '',
+        env: 'ARANGODB_PASSWORD',
+      },
+    },
     // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
     collections: {
       users: {
@@ -198,3 +212,8 @@ export const { config, schema } = await libConfig({
     default: process.env.NODE_ENV === 'test',
   },
 });
+
+if (config.get('isTest')) {
+  const database = config.get('arangodb.database');
+  config.set('arangodb.database', `${database}-test`);
+}

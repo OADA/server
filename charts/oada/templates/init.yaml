@@ -50,6 +50,18 @@ spec:
             - configMapRef:
                 name: {{ .Chart.Name }}-configmap-{{ .Release.Name }}
           env:
+            - name: ARANGODB_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "oada.arango.rootPassword" . }}
+                  key: username
+                  optional: {{ .Values.global.development }}
+            - name: ARANGODB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "oada.arango.rootPassword" . }}
+                  key: password
+                  optional: {{ .Values.global.development }}
             - name: EXIT
               value: 'true'
           image: oada/startup:{{ $tag }}

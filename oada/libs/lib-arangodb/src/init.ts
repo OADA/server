@@ -38,6 +38,7 @@ const info = debug('arango:init:info');
 // ------------------------------------------------------------
 // First setup some shorter variable names:
 const databaseName = config.get('arangodb.database');
+const auth = config.get('arangodb.auth');
 const cols = config.get('arangodb.collections');
 const colsarr = Object.values(cols);
 
@@ -46,6 +47,7 @@ export async function run(): Promise<void> {
   // Can't use ./db because we're creating the actual database
   const systemDB = arangojs({
     url: config.get('arangodb.connectionString'),
+    auth,
   });
 
   try {

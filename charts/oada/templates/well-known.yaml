@@ -49,7 +49,7 @@ spec:
   tls:
     - hosts:
         - '{{ .Values.oada.domain }}'
-      secretName: tls-{{ .Release.Name }}
+      secretName: {{ include "oada.tls" . }}
   rules:
     - host: '{{ .Values.oada.domain }}'
       http:

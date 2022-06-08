@@ -34,6 +34,7 @@ const warn = debug('arangodb#aql:warn');
 const { profile } = config.get('arangodb.aql');
 const deadlockRetries = config.get('arangodb.retry.deadlock.retries');
 const deadlockDelay = config.get('arangodb.retry.deadlock.delay');
+const auth = config.get('arangodb.auth');
 
 class DatabaseWrapper extends Database {
   // @ts-expect-error nonsense
@@ -77,12 +78,9 @@ class DatabaseWrapper extends Database {
   }
 }
 
-if (config.get('isTest')) {
-  config.set('arangodb.database', 'oada-test');
-}
-
 const database = new DatabaseWrapper({
   url: config.get('arangodb.connectionString'),
+  auth,
   databaseName: config.get('arangodb.database'),
   precaptureStackTraces: process.env.NODE_ENV !== 'production',
 });

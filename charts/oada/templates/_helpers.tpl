@@ -29,8 +29,18 @@ app.kubernetes.io/part-of: oada
   {{ .Values.arangodb.connection | default $connection }}
 {{- end -}}
 
+{{/* ArangoDB root password Secret */}}
+{{- define "oada.arango.rootPassword" -}}
+  arangodb-root-password-{{ .Release.Name }}
+{{- end -}}
+
 {{/* Kafka/Redpanda brokers to use */}}
 {{- define "oada.kafka.brokers" -}}
   {{- $brokers := print "redpanda-" .Release.Name ":9092" -}}
   {{ .Values.kafka.brokers | join "," | default $brokers }}
+{{- end -}}
+
+{{/* TLS secret */}}
+{{- define "oada.tls" -}}
+  tls-{{ .Release.Name }}
 {{- end -}}

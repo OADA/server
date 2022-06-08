@@ -12,8 +12,15 @@ spec:
   image: {{ .Values.arangodb.image }}:{{ .Values.arangodb.tag }}
   mode: Single
   environment: {{ .Values.global.development | ternary "Development" "Production" }}
+  externalAccess:
+    {{/* Disable external access for Production */}}
+    type: {{ .Values.global.development | ternary "Auto" "None" }}
   tls:
     caSecretName: None
-  auth:
-    jwtSecretName: None
+  {{- if not .Values.global.development }}
+  {{/* Create root password for Production */}}
+  bootstrap:
+    passwordSecretNames:
+      root: {{ include "oada.arango.rootPassword" . }}
+  {{- end }}
 {{- end }}
