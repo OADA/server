@@ -28,7 +28,7 @@
   },
   "dependencies": {
     "@oada/error": "^2.0.1",
-    "@oada/formats-server": "^2.0.0",
+    "@oada/formats-server": "^3.0.0",
     "@oada/lib-config": "^3.0.1",
     "@oada/pino-debug": "^3.0.1",
     "@oada/well-known-json": "^2.0.1",

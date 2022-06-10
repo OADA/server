@@ -41,15 +41,15 @@ function sanitizeDatabaseResult(user: users.DBUser | undefined) {
 }
 
 async function requestUserWrite(request: FastifyRequest, id: string) {
-  const authorization = request.requestContext.get('user');
+  const { user: authorization, hostname, body } = request;
   // TODO: Sanitize POST body?
   const resp = (await requester.send(
     {
       connection_id: request.id as string,
-      domain: request.hostname,
+      domain: hostname,
       token: authorization,
       authorization,
-      user: request.body,
+      user: body,
       userid: id, // Need for PUT, ignored for POST
     } as UserRequest,
     config.get('kafka.topics.userRequest')
@@ -180,8 +180,7 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
   });
 
   fastify.get('/me', async (request, reply) => {
-    const { user_id: id } = request.requestContext.get('user')!;
-    await replyUser(id, reply);
+    await replyUser(request.user.user_id, reply);
   });
 
   // TODO: don't return stuff to anyone anytime

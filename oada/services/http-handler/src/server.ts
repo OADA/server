@@ -58,10 +58,11 @@ const logger = pino();
 const serializers = {
   // Customize logging for requests
   req(request: FastifyRequest) {
+    const version = request.headers?.['accept-version'];
     return {
       method: request.method,
       url: request.url,
-      version: request.headers?.['accept-version'],
+      version: version ? `${version}` : undefined,
       hostname: request.hostname,
       userAgent: request.headers?.['user-agent'],
       remoteAddress: request.ip,
@@ -159,13 +160,10 @@ await app.register(fastifyRequestContextPlugin, {
 
 // Add id to request context
 app.addHook('onRequest', async (request) => {
-  request.requestContext.set('id', request.id);
+  requestContext.set('id', request.id);
 });
 
-await app.register(fastifySensible, {
-  // Hide internal error cause from clients except in development
-  errorHandler: process.env.NODE_ENV === 'development' ? false : undefined,
-});
+await app.register(fastifySensible);
 
 await app.register(fastifyAccepts);
 

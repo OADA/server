@@ -17,10 +17,10 @@
 
 import { join } from 'node:path';
 
-import { authorizations, clients } from '@oada/lib-arangodb';
-
 import type { FastifyPluginAsync, FastifyRequest } from 'fastify';
 import { v4 as uuid } from 'uuid';
+
+import { authorizations, clients } from '@oada/lib-arangodb';
 
 export interface Options {
   prefix: string;
@@ -57,8 +57,7 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
   // Authorizations routes
   // TODO: How the heck should this work??
   fastify.get('/', async (request, reply) => {
-    const { user_id: userid } = request.requestContext.get('user')!;
-    const results = await authorizations.findByUser(userid);
+    const results = await authorizations.findByUser(request.user.user_id);
 
     // eslint-disable-next-line @typescript-eslint/ban-types
     const response: Record<string, authorizations.Authorization | null> = {};
@@ -155,12 +154,11 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
   // TODO: Should another microservice revoke authorizations?
   fastify.delete('/:authId', async (request, reply) => {
     const { authId } = request.params as { authId: string };
-    const user = request.requestContext.get('user')!;
 
     const auth = await authorizations.findById(authId);
 
     // Only let users see their own authorizations
-    if (auth?.user._id !== user.user_id) {
+    if (auth?.user._id !== request.user.user_id) {
       reply.forbidden();
       return;
     }
