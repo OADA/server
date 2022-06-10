@@ -173,7 +173,7 @@ await app.register(fastifyGracefulShutdown);
  * @todo restrict this to localhost?
  */
 await app.register(fastifyHealthcheck, {
-  exposeUptime: process.env.NODE_ENV === 'development',
+  exposeUptime: process.env.NODE_ENV !== 'production',
   // By default everything is off, so give numbers to under-pressure
   underPressureOptions: {
     maxEventLoopDelay: 5000,
@@ -258,7 +258,7 @@ await app.register(async (aApp) => {
 
         return true;
       } catch (error: unknown) {
-        request.log.error({ error });
+        request.log.error({ error }, 'Token error');
         return false;
       }
     },
@@ -314,7 +314,7 @@ if (esMain(import.meta)) {
     await start();
   } catch (error: unknown) {
     // eslint-disable-next-line unicorn/consistent-destructuring
-    app.log.error({ error });
+    app.log.fatal({ error }, 'Failed to start server');
     // eslint-disable-next-line unicorn/no-process-exit
     process.exit(1);
   }
@@ -326,7 +326,7 @@ if (esMain(import.meta)) {
 async function close(error: Error): Promise<void> {
   try {
     // eslint-disable-next-line unicorn/consistent-destructuring
-    app.log.error({ error }, 'Attempting to cleanup server after error.');
+    app.log.fatal({ error }, 'Attempting to cleanup server after error.');
     // Try to close server nicely
     await app.close();
   } finally {

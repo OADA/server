@@ -356,7 +356,6 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
 
         // ???: Allow null values in OADA?
         if (document === undefined || document === null) {
-          request.log.error('Resource not found');
           reply.notFound();
           return;
         }
