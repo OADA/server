@@ -28,6 +28,7 @@
   ],
   "scripts": {
     "build": "yarn g:tsc",
+    "clean": "yarn run build --clean",
     "init": "node dist/init.js",
     "test": "yarn run build test && ava"
   },
@@ -70,6 +71,6 @@
     "@types/json-pointer": "^1.0.31",
     "@types/node": "^16.11.39",
     "ava": "4.2.0",
-    "type-fest": "^2.13.0"
+    "type-fest": "^2.13.1"
   }
 }

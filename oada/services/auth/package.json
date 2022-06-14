@@ -24,7 +24,7 @@
     "test": "c8 mocha",
     "test-arango": "isTest=true mocha test/arango/index.js",
     "lint": "jshint --reporter node_modules/jshint-stylish .",
-    "clean": "rm -rf test/oada-compliance && rm -rf coverage",
+    "clean": "rm -rf test/oada-compliance && rm -rf coverage && yarn run build --clean",
     "start": "node ${INSPECT} -r @oada/pino-debug --unhandled-rejections=strict dist/index.js",
     "init": "node dist/init.js"
   },
@@ -93,7 +93,7 @@
     "@types/minimist": "^1.2.2",
     "@types/morgan": "^1.9.3",
     "@types/oauth2orize": "^1.8.10",
-    "@types/passport": "^1.0.8",
+    "@types/passport": "^1.0.9",
     "@types/passport-http-bearer": "^1.0.37",
     "@types/passport-local": "^1.0.34",
     "@types/passport-oauth2-client-password": "^0.1.2",
@@ -101,6 +101,6 @@
     "@types/urijs": "^1.19.19",
     "@types/uuid": "^8.3.4",
     "c8": "^7.11.3",
-    "type-fest": "^2.13.0"
+    "type-fest": "^2.13.1"
   }
 }

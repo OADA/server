@@ -11,6 +11,7 @@
   },
   "scripts": {
     "build": "yarn g:tsc",
+    "clean": "yarn run build --clean",
     "start": "node ${INSPECT} --enable-source-maps -r @oada/pino-debug --unhandled-rejections=strict dist/server.js"
   },
   "bin": {

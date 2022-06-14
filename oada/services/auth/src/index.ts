@@ -373,8 +373,9 @@ async function run() {
       }
     );
 
-    app.get(config.get('auth.endpoints.logout'), (request, response) => {
-      request.logout();
+    app.get(config.get('auth.endpoints.logout'), async (request, response) => {
+      const logout = util.promisify(request.logout);
+      await logout();
       response.redirect(request.get('Referrer')!);
     });
 

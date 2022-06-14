@@ -9,6 +9,7 @@
   },
   "scripts": {
     "build": "yarn g:tsc",
+    "clean": "yarn run build --clean",
     "test": "yarn run build test && ava"
   },
   "ava": {

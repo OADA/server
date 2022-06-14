@@ -130,7 +130,7 @@ export interface UserRequest {
   userid?: string;
   user: User;
   authorization?: {
-    scope: string | string[];
+    scope: string | readonly string[];
   };
 }
 
@@ -140,6 +140,10 @@ export interface UserResponse {
   user?: users.User & { _id: users.UserID };
 }
 responder.on<UserResponse, UserRequest>('request', handleReq);
+
+function isArray(value: unknown): value is unknown[] | readonly unknown[] {
+  return Array.isArray(value);
+}
 
 export async function handleReq(request: UserRequest): Promise<UserResponse> {
   // TODO: Sanitize?
@@ -151,7 +155,7 @@ export async function handleReq(request: UserRequest): Promise<UserResponse> {
   // While this could fit in permissions_handler, since users are not really resources (i.e. no graph),
   // we'll add a check here that the user has oada.admin.user:write or oada.admin.user:all scope
   const authorization = cloneDeep(request.authorization) ?? { scope: '' };
-  const tokenscope = Array.isArray(authorization.scope)
+  const tokenscope = isArray(authorization.scope)
     ? authorization.scope.join(' ')
     : authorization.scope; // Force to space-separated string
   if (

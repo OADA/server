@@ -12,6 +12,7 @@
   "scripts": {
     "test": "yarn run build test && ava",
     "build": "yarn g:tsc",
+    "clean": "yarn run build --clean",
     "start": "node ${INSPECT} --enable-source-maps -r @oada/pino-debug --unhandled-rejections=strict dist/index.js"
   },
   "ava": {
@@ -48,7 +49,7 @@
     "@types/node": "^16.11.39",
     "@types/randomstring": "^1.1.8",
     "ava": "4.2.0",
-    "type-fest": "^2.13.0",
+    "type-fest": "^2.13.1",
     "typescript": "^4.7.3"
   }
 }

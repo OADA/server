@@ -20,6 +20,7 @@
   "scripts": {
     "test": "yarn run build test && ava",
     "build": "yarn g:tsc",
+    "clean": "yarn run build --clean",
     "start": "node ${INSPECT} --enable-source-maps --expose-gc -r @oada/pino-debug --unhandled-rejections=strict dist/index.js"
   },
   "ava": {

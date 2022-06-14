@@ -9,6 +9,7 @@
   },
   "scripts": {
     "build": "yarn g:tsc",
+    "clean": "yarn run build --clean",
     "start": "node ${INSPECT} -r @oada/pino-debug --enable-source-maps --unhandled-rejections=strict dist/server.js",
     "test": "mocha"
   },

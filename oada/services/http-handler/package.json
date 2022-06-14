@@ -10,6 +10,7 @@
   "scripts": {
     "test": "mocha",
     "build": "yarn g:tsc",
+    "clean": "yarn run build --clean",
     "healthcheck": "node --enable-source-maps dist/healthcheck.js http://localhost:${PORT}/health",
     "start": "node ${INSPECT} --enable-source-maps -r @oada/pino-debug --unhandled-rejections=strict dist/server.js"
   },
@@ -50,9 +51,9 @@
     "cacache": "^16.1.1",
     "debug": "^4.3.4",
     "es-main": "^1.0.2",
-    "fastify": "^4.0.0",
+    "fastify": "^4.0.2",
     "fastify-graceful-shutdown": "^3.1.0",
-    "fastify-healthcheck": "^3.1.0",
+    "fastify-healthcheck": "^4.0.0",
     "json-ptr": "^3.1.0",
     "ksuid": "^3.0.0",
     "tslib": "^2.4.0",

@@ -8,18 +8,19 @@
   "scripts": {
     "g:eslint": "cd $INIT_CWD && eslint",
     "build": "yarn build",
+    "clean": "yarn build -A -c clean",
     "g:tsc": "cd $INIT_CWD && tsc -b",
     "g:pino-pretty": "pino-pretty"
   },
   "devDependencies": {
     "@commitlint/cli": "^17.0.2",
     "@commitlint/config-conventional": "^17.0.2",
-    "@tsconfig/node18": "^1.0.0",
+    "@tsconfig/node18": "^1.0.1",
     "@types/eslint": "^8.4.3",
     "@types/mocha": "^9.1.1",
     "@types/node": "^16.11.39",
-    "@typescript-eslint/eslint-plugin": "^5.27.1",
-    "@typescript-eslint/parser": "^5.27.1",
+    "@typescript-eslint/eslint-plugin": "^5.28.0",
+    "@typescript-eslint/parser": "^5.28.0",
     "@yarnpkg/sdks": "^3.0.0-rc.9",
     "eslint": "^8.17.0",
     "eslint-config-prettier": "^8.5.0",
@@ -45,7 +46,7 @@
     "eslint-plugin-security": "^1.5.0",
     "eslint-plugin-sonarjs": "^0.13.0",
     "eslint-plugin-unicorn": "^42.0.0",
-    "prettier": "^2.6.2",
+    "prettier": "^2.7.0",
     "typescript": "^4.7.3"
   },
   "dependencies": {

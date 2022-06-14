@@ -12,6 +12,7 @@
   },
   "scripts": {
     "build": "yarn g:tsc",
+    "clean": "yarn run build --clean",
     "start": "node --enable-source-maps -r pino-debug dist/server.js"
   },
   "author": "Alex Layton <alex@layton.in>",
