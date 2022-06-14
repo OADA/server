@@ -16,6 +16,8 @@
 
 # OADA Helm chart
 
+[![Artifact Hub](https://img.shields.io/endpoint?url=https://artifacthub.io/badge/repository/oada)](https://artifacthub.io/packages/helm/oada/oada)
+
 Helm chart for installing the OADA server in a k8s cluster.
 Supports multiple release installs and non-default namespace.
 
