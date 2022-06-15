@@ -30,14 +30,14 @@ spec:
       restartPolicy: OnFailure
       serviceAccountName: service-account-{{ .Release.Name }}
       initContainers:
-        {{- if not .Values.arangodb.connection }}
+        {{- if eq (include "oada.arango.deploy" .) "true" -}}
         - name: wait-for-arangodb
           image: {{ .Values.k8sWaitFor.image }}:{{ .Values.k8sWaitFor.tag }}
           args:
             - service
             - arangodb-{{ .Release.Name }}
         {{- end }}
-        {{- if not .Values.kafka.brokers }}
+        {{- if eq (include "oada.kafka.deploy" .) "true" -}}
         - name: wait-for-redpanda
           image: {{ .Values.k8sWaitFor.image }}:{{ .Values.k8sWaitFor.tag }}
           args:

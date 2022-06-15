@@ -23,6 +23,11 @@ app.kubernetes.io/component: backend
 app.kubernetes.io/part-of: oada
 {{- end -}}
 
+{{/* Whether to deploy an ArangoDB cluster with this release */}}
+{{- define "oada.arango.deploy" -}}
+  {{ empty .Values.arangodb.connection | and (.Capabilities.APIVersions.Has "database.arangodb.com/v1") }}
+{{- end -}}
+
 {{/* ArangoDB connection to use */}}
 {{- define "oada.arango.connection" -}}
   {{- $connection := print "http://arangodb-" .Release.Name ":8529" -}}
@@ -32,6 +37,11 @@ app.kubernetes.io/part-of: oada
 {{/* ArangoDB root password Secret */}}
 {{- define "oada.arango.rootPassword" -}}
   arangodb-root-password-{{ .Release.Name }}
+{{- end -}}
+
+{{/* Whether to deploy a Kafka/Redpanda cluster with this release */}}
+{{- define "oada.kafka.deploy" -}}
+  {{ empty .Values.kafka.brokers | and (.Capabilities.APIVersions.Has "redpanda.vectorized.io/v1alpha1") }}
 {{- end -}}
 
 {{/* Kafka/Redpanda brokers to use */}}

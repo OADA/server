@@ -84,39 +84,14 @@ spec:
     - host: '{{ .Values.oada.domain }}'
       http:
         paths:
-          - path: /resources
+          {{/* Loop through API endpoint prefixes */}}
+          {{- range tuple "/resources" "/bookmarks" "/shares" "/users" "/authorizations" }}
+          - path: {{ . }}
             pathType: Prefix
             backend:
               service:
-                name: http-handler-{{ .Release.Name }}
+                name: http-handler-{{ $.Release.Name }}
                 port:
                   name: http
-          - path: /bookmarks
-            pathType: Prefix
-            backend:
-              service:
-                name: http-handler-{{ .Release.Name }}
-                port:
-                  name: http
-          - path: /shares
-            pathType: Prefix
-            backend:
-              service:
-                name: http-handler-{{ .Release.Name }}
-                port:
-                  name: http
-          - path: /users
-            pathType: Prefix
-            backend:
-              service:
-                name: http-handler-{{ .Release.Name }}
-                port:
-                  name: http
-          - path: /authorizations
-            pathType: Prefix
-            backend:
-              service:
-                name: http-handler-{{ .Release.Name }}
-                port:
-                  name: http
+          {{- end }}
 {{- end }}

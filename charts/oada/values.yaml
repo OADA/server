@@ -55,7 +55,7 @@ arangodb:
   # arangodb.image is the Docker image to use for arangodb
   image: arangodb/arangodb
   # arangodb.tag is the Docker tag for the ArangoDB images
-  tag: 3.9.1
+  tag: 3.9.2
 
 kafka:
   # kafka.brokers is an array of an external Kafka brokers.
@@ -69,7 +69,7 @@ kafka:
 
 k8sWaitFor:
   image: groundnuty/k8s-wait-for
-  tag: v1.5.1
+  tag: v1.6
 
 global:
   # global.development is whether to enable development/debug features not meant for production use

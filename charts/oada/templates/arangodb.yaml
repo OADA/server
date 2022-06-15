@@ -1,5 +1,5 @@
-{{- if not .Values.arangodb.connection }}
-apiVersion: 'database.arangodb.com/v1'
+{{- if eq (include "oada.arango.deploy" .) "true" }}
+apiVersion: database.arangodb.com/v1
 kind: ArangoDeployment
 metadata:
   namespace: {{ .Release.Namespace }}

@@ -1,4 +1,4 @@
-{{- if not .Values.kafka.brokers }}
+{{- if eq (include "oada.kafka.deploy" .) "true" }}
 apiVersion: redpanda.vectorized.io/v1alpha1
 kind: Cluster
 metadata:
