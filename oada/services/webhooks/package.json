@@ -32,7 +32,7 @@
     "tslib": "^2.4.0"
   },
   "devDependencies": {
-    "@oada/types": "^3.0.0",
+    "@oada/types": "^3.0.2",
     "@oada/write-handler": "^3.0.1",
     "@types/bluebird": "^3.5.36",
     "@types/debug": "^4.1.7"

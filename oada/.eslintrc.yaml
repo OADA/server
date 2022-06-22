@@ -1,14 +1,7 @@
 root: true
 
-parser: '@typescript-eslint/parser'
-
-parserOptions:
-  ecmaVersion: 2020
-  project:
-    - '**/tsconfig.json'
-    - '../../**/tsconfig.eslint.json'
-
 extends:
+  - 'plugin:@typescript-eslint/recommended'
   - plugin:node/recommended
   - plugin:github/recommended
   - plugin:promise/recommended
@@ -19,10 +12,12 @@ extends:
   - plugin:unicorn/recommended
   - plugin:security/recommended
   - plugin:sonarjs/recommended
+  - plugin:ava/recommended
   - xo
   - prettier
 
 plugins:
+  - '@typescript-eslint'
   - node
   - github
   - promise
@@ -35,7 +30,14 @@ plugins:
   - security
   - no-secrets
   - sonarjs
+  - ava
   - notice
+
+parser: '@typescript-eslint/parser'
+
+parserOptions:
+  ecmaVersion: 2020
+  project: './**/tsconfig.*'
 
 overrides:
   - files: '*.ts'
@@ -46,14 +48,14 @@ overrides:
       - prettier
     parserOptions:
       ecmaVersion: 2020
-      project: '**/tsconfig.json'
+      project: './**/tsconfig.*'
     rules:
       '@typescript-eslint/naming-convention':
         [
           error,
           { selector: default, format: [camelCase] },
-          { selector: enumMember, format: [PascalCase] },
           { selector: objectLiteralProperty, format: null },
+          { selector: enumMember, format: [PascalCase] },
           { selector: typeProperty, format: null },
 
           {
@@ -83,6 +85,7 @@ overrides:
           warn,
           {
             args: after-used,
+            ignoreRestSiblings: true,
             varsIgnorePattern: '^_',
             argsIgnorePattern: '^_',
           },
@@ -129,3 +132,7 @@ rules:
   no-constructor-bind/no-constructor-bind: error
   no-constructor-bind/no-constructor-state: error
   sort-imports: [warn, { allowSeparatedGroups: true }]
+  ava/no-ignored-test-files: off
+  ava/no-import-test-files: off
+  ava/no-skip-test: warn
+  ava/no-skip-assert: warn

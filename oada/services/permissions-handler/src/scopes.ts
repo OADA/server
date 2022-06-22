@@ -23,7 +23,6 @@
  */
 
 /* eslint-disable sonarjs/no-duplicate-string */
-/* eslint-disable no-secrets/no-secrets */
 
 const scopes = {
   'all': ['*/*'],

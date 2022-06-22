@@ -21,7 +21,7 @@ import test from 'ava';
 
 import randomstring from 'randomstring';
 
-import config from '../dist/config.js';
+import { config } from '../dist/config.js';
 
 import { Requester } from '@oada/lib-kafka';
 import type { WriteRequest } from '@oada/write-handler';
@@ -31,7 +31,7 @@ import { stopResp } from '../';
 
 const { httpResponse, writeResponse } = config.get('kafka.topics');
 const requester = new Requester({
-  consumeTopic: httpResponse,
+  consumeTopic: httpResponse!,
   produceTopic: writeResponse,
   group: 'rev-graph-update-test',
 });
@@ -39,6 +39,19 @@ const requester = new Requester({
 test.before(init.run);
 test.before(async () => {
   await once(requester, 'ready');
+});
+
+// -------------------------------------------------------
+// After tests are done, get rid of our temp database
+// -------------------------------------------------------
+test.after(init.cleanup);
+test.after(async (t) => {
+  t.timeout(10_000);
+  await requester.disconnect();
+});
+test.after(async (t) => {
+  t.timeout(10_000);
+  await stopResp();
 });
 
 // --------------------------------------------------
@@ -74,21 +87,7 @@ test('should be able to produce a correct write_request message', async (t) => {
   t.is(message.user_id, r.doc.user_id);
   t.is(message.authorizationid, r.authorizationid);
   t.is(message.body, r._rev);
-  // @ts-expect-error nonsense
   t.is(message.connection_id, r.connection_id);
   // @ts-expect-error nonsense
   t.is(message.url, '');
-});
-
-// -------------------------------------------------------
-// After tests are done, get rid of our temp database
-// -------------------------------------------------------
-test.after(init.cleanup);
-test.after(async (t) => {
-  t.timeout(10_000);
-  await requester.disconnect();
-});
-test.after(async (t) => {
-  t.timeout(10_000);
-  await stopResp();
 });

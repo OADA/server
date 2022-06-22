@@ -151,7 +151,6 @@ async function run() {
         trace(
           `GET ${config.get(
             'auth.endpoints.authorize'
-            // eslint-disable-next-line no-secrets/no-secrets
           )}: setting X-Frame-Options=SAMEORIGIN before oauth2.authorize`
         );
         response.header('X-Frame-Options', 'SAMEORIGIN');
@@ -177,13 +176,11 @@ async function run() {
     // Login page: someone has navigated or been redirected to the login page.
     // Populate based on the domain.
     // If session already has a userid, then just use that.
-    // eslint-disable-next-line no-secrets/no-secrets
     // Deepcode ignore NoRateLimitingForExpensiveWebOperation: This runs behind a reverse-proxy
     app.get(config.get('auth.endpoints.login'), (request, response) => {
       trace(
         `GET ${config.get(
           'auth.endpoints.login'
-          // eslint-disable-next-line no-secrets/no-secrets
         )}: setting X-Frame-Options=SAMEORIGIN before rendering login`
       );
       trace(request.session, 'login endpoint');

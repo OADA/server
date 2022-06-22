@@ -22,11 +22,8 @@ import test, { ExecutionContext } from 'ava';
 
 import { Change, connect } from '@oada/client';
 
-// eslint-disable-next-line no-secrets/no-secrets
 const topID = `resources/WRITEHANDLERTEST_TOP1`;
-// eslint-disable-next-line no-secrets/no-secrets
 const middleID = `resources/WRITEHANDLERTEST_MIDDLE1`;
-// eslint-disable-next-line no-secrets/no-secrets
 const bottomID = `resources/WRITEHANDLERTEST_BOTTOM1`;
 
 const con = await connect({

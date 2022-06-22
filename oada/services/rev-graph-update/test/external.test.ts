@@ -22,16 +22,14 @@ import test, { ExecutionContext } from 'ava';
 // DO NOT include ../ because we are testing externally.  Including here will cause admin copy of it
 // to receive some of the kafka responses.
 
-import oada from '@oada/client';
+import { connect } from '@oada/client';
 
 const contentType = 'application/vnd.oada.revgraphtest.1+json';
 const topID = 'resources/REVGRAPHTEST_TOP1';
-// eslint-disable-next-line no-secrets/no-secrets
 const middleID = 'resources/REVGRAPHTEST_MIDDLE1';
-// eslint-disable-next-line no-secrets/no-secrets
 const bottomID = 'resources/REVGRAPHTEST_BOTTOM1';
 
-const con = await oada.connect({
+const con = await connect({
   // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
   domain: process.env.DOMAIN || 'localhost',
   // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing

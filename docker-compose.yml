@@ -44,7 +44,7 @@ services:
       args:
         OADA_SERVICE: http-handler
     healthcheck:
-      test: ['CMD', 'yarn', 'healthcheck']
+      test: [ 'CMD', 'yarn', 'healthcheck' ]
     depends_on:
       - startup
     networks:
@@ -76,6 +76,7 @@ services:
       http_net: {}
     environment:
       IGNORE_SCOPE:
+
 
   write-handler:
     extends:
@@ -203,11 +204,11 @@ services:
       # - ARANGO_RANDOM_ROOT_PASSWORD=1
       ARANGO_NO_AUTH: 1
       ARANGO_STORAGE_ENGINE: rocksdb
-    command: ['arangod', '--server.statistics=false']
+    command: [ 'arangod', '--server.statistics=false' ]
 
   # Redpanda is API compatible with kafka.
   redpanda:
-    image: vectorized/redpanda:v21.4.13
+    image: vectorized/redpanda:v22.1.3
     restart: unless-stopped
     networks:
       kafka_net:
@@ -222,7 +223,6 @@ services:
       - /bin/sh
       - -c
       # Configure then run redpanda?
-      # TODO: Better way to set this?
       - |
         rpk redpanda mode $$REDPANDA_MODE &&
         rpk $$@
@@ -281,7 +281,6 @@ services:
       - prometheus_config:/etc/prometheus
 
   # Generate redpanda config for prometheus
-  # TODO: Better way to do this?
   rpk-prometheus-conf:
     extends:
       service: redpanda
@@ -321,8 +320,6 @@ services:
   # Provision a grafana dashboard provider.
   #
   # Loads all dashboards in /var/lib/grafana/dashboards
-  #
-  # TODO: Better way to do this?
   grafana-provision-dashboards:
     image: grafana/grafana
     profiles:
@@ -349,7 +346,6 @@ services:
         ' > /etc/grafana/provisioning/dashboards/dashboards.yml
 
   # Provision our prometheus instance as a grafana datasource
-  # TODO: Better way to do this?
   grafana-provision-prometheus:
     image: grafana/grafana
     profiles:
@@ -375,7 +371,6 @@ services:
         ' > /etc/grafana/provisioning/datasources/prometheus.yml
 
   # Generate dashboard for our redpanda with our prometheus instance
-  # TODO: Better way to do this?
   rpk-grafana-dashboard:
     extends:
       service: redpanda
@@ -408,6 +403,7 @@ volumes:
   prometheus_config:
   grafana_data:
   grafana_prov:
+
 
 networks:
   arango_net: {}

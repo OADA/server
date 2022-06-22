@@ -264,10 +264,10 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
     void reply.header('X-OADA-Path-Leftover', oadaGraph.path_leftover);
   });
 
-  fastify.get(
-    '*',
-    { exposeHeadRoute: true },
-    async (request: FastifyRequest, reply: FastifyReply) => {
+  fastify.route({
+    url: '*',
+    method: ['HEAD', 'GET'],
+    async handler(request, reply) {
       const isMeta = request.oadaGraph.path_leftover.startsWith('/_meta');
       // ???: Should _meta have parent's type as a media type parameter?
       const type = isMeta
@@ -280,8 +280,10 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
       void reply.headers(headers);
 
       const key = request.oadaGraph.resource_id.replace(/^resources\//, '');
-      void reply.header('X-OADA-Rev', request.oadaGraph.rev);
-      void reply.header('ETag', `"${key}/${request.oadaGraph.rev}"`);
+      void reply.headers({
+        'X-OADA-Rev': request.oadaGraph.rev,
+        'ETag': `"${key}/${request.oadaGraph.rev}"`,
+      });
 
       /**
        * Check preconditions before actually getting the body
@@ -312,8 +314,7 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
         )
       ) {
         // Not modified
-        await reply.code(304).send();
-        return;
+        return reply.code(304).send();
       }
 
       /**
@@ -375,7 +376,8 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
           case 'json':
           case type:
             // ? Better way to ensure string gets JSON serialized?
-            return reply.serializer(JSON.stringify).send(response);
+            void reply.serializer(JSON.stringify);
+            return response;
           default: {
             reply.notAcceptable();
           }
@@ -398,8 +400,8 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
         void reply.header('Content-Length', size);
         return cacache.get.stream.byDigest(CACHE_PATH, integrity);
       }
-    }
-  );
+    },
+  });
 
   // Parse JSON content types as text (but do not parse JSON yet)
   fastify.addContentTypeParser(

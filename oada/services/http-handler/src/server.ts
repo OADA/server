@@ -27,7 +27,7 @@ import resources from './resources.js';
 import users from './users.js';
 import websockets from './websockets.js';
 
-import fastify, { FastifyRequest } from 'fastify';
+import Fastify, { FastifyReply, FastifyRequest } from 'fastify';
 import {
   fastifyRequestContextPlugin,
   requestContext,
@@ -69,13 +69,23 @@ const serializers = {
       remotePort: request.socket?.remotePort,
     };
   },
+  // Customize logging for responses
+  res(reply: FastifyReply) {
+    return {
+      statusCode: reply.statusCode,
+      contentLocation: reply.getHeader('content-location'),
+      rev: reply.getHeader('X-OADA-Rev'),
+      pathLeftover: reply.getHeader('X-OADA-Path-Leftover'),
+    };
+  },
 };
 
 mixins.push(() => ({
   reqId: requestContext.get('id'),
 }));
 
-export const app = fastify({
+// eslint-disable-next-line new-cap
+export const fastify = Fastify({
   logger: {
     ...logger,
     // HACK: fastify overrides existing serializers. This circumvents that...
@@ -86,30 +96,19 @@ export const app = fastify({
     oadaEnsureLink: {
       name: 'oadaEnsureLink',
       storage() {
-        const handlers: Map<unknown, Handler<HTTPVersion.V1>> = new Map();
-        // eslint-disable-next-line @typescript-eslint/ban-types
-        let defaultHandler: Handler<HTTPVersion.V1> | null = null;
+        const handlers = new Map<unknown, Handler<HTTPVersion.V1>>();
         return {
           get(key) {
-            return handlers.get(key) ?? defaultHandler;
+            return handlers.get(key) ?? handlers.get(true) ?? null;
           },
           set(key, value) {
-            if (key === true) {
-              defaultHandler = value;
-            } else {
-              handlers.set(key, value);
-            }
+            handlers.set(key, value);
           },
           del(key) {
-            if (key === true) {
-              defaultHandler = null;
-            } else {
-              handlers.delete(key);
-            }
+            handlers.delete(key);
           },
           empty() {
             handlers.clear();
-            defaultHandler = null;
           },
         };
       },
@@ -130,15 +129,18 @@ export const app = fastify({
 
 if (process.env.NODE_ENV !== 'production') {
   // Add request id header for debugging purposes
-  app.addHook('onSend', async (request, reply, payload) => {
-    await reply.header('X-Request-Id', request.id);
+  fastify.addHook('onSend', async (request, reply, payload) => {
+    void reply.header('X-Request-Id', request.id);
     return payload;
   });
 }
 
 export async function start(): Promise<void> {
-  await app.listen(config.get('server.port'), '0.0.0.0');
-  app.log.info('OADA Server started on port %d', config.get('server.port'));
+  await fastify.listen({
+    port: config.get('server.port'),
+    host: '::',
+  });
+  fastify.log.info('OADA Server started on port %d', config.get('server.port'));
 }
 
 declare module '@fastify/request-context' {
@@ -147,32 +149,32 @@ declare module '@fastify/request-context' {
   }
 }
 
-app.decorateRequest('user', null);
+fastify.decorateRequest('user', null);
 declare module 'fastify' {
   interface FastifyRequest {
     user: TokenResponse['doc'];
   }
 }
 
-await app.register(fastifyRequestContextPlugin, {
+await fastify.register(fastifyRequestContextPlugin, {
   hook: 'onRequest',
 });
 
 // Add id to request context
-app.addHook('onRequest', async (request) => {
+fastify.addHook('onRequest', async (request) => {
   requestContext.set('id', request.id);
 });
 
-await app.register(fastifySensible);
+await fastify.register(fastifySensible);
 
-await app.register(fastifyAccepts);
+await fastify.register(fastifyAccepts);
 
-await app.register(fastifyGracefulShutdown);
+await fastify.register(fastifyGracefulShutdown);
 
 /**
  * @todo restrict this to localhost?
  */
-await app.register(fastifyHealthcheck, {
+await fastify.register(fastifyHealthcheck, {
   exposeUptime: process.env.NODE_ENV !== 'production',
   // By default everything is off, so give numbers to under-pressure
   underPressureOptions: {
@@ -189,8 +191,8 @@ await app.register(fastifyHealthcheck, {
  * This is to handle an intermittent error on sending requests,
  * likely from tulios/kafkajs#979
  */
-const { errorHandler } = app;
-app.setErrorHandler(async (error, request, reply) => {
+const { errorHandler } = fastify;
+fastify.setErrorHandler(async (error, request, reply) => {
   errorHandler(error, request, reply);
   // TODO: Make kafka plugin for server?
   if (error instanceof KafkaError) {
@@ -199,16 +201,14 @@ app.setErrorHandler(async (error, request, reply) => {
   }
 });
 
-await app.register(helmet, {
+await fastify.register(helmet, {
   crossOriginResourcePolicy: {
     policy: 'cross-origin',
   },
 });
 
-app.get('/favicon.ico', async (_request, reply) => reply.send());
-
 // Turn on CORS for all domains, allow the necessary headers
-await app.register(cors, {
+await fastify.register(cors, {
   strictPreflight: false,
   exposedHeaders: [
     'x-oada-rev',
@@ -221,20 +221,20 @@ await app.register(cors, {
 /**
  * @todo why does onSend never run for us??
  */
-await app.register(formats);
+await fastify.register(formats);
 
 /**
  * Handle WebSockets
  *
  * @todo Require token for connecting WebSockets?
  */
-await app.register(websockets);
+await fastify.register(websockets);
 
 /**
  * Create context for authenticated stuff
  */
-await app.register(async (aApp) => {
-  await aApp.register(bearerAuth, {
+await fastify.register(async (instance) => {
+  await instance.register(bearerAuth, {
     keys: new Set<string>(),
     async auth(token: string, request: FastifyRequest) {
       try {
@@ -267,7 +267,7 @@ await app.register(async (aApp) => {
   /**
    * Route /bookmarks to resources?
    */
-  await aApp.register(resources, {
+  await instance.register(resources, {
     prefix: '/bookmarks',
     prefixPath(request) {
       return request.user?.bookmarks_id ?? '/bookmarks';
@@ -277,7 +277,7 @@ await app.register(async (aApp) => {
   /**
    * Route /shares to resources?
    */
-  await aApp.register(resources, {
+  await instance.register(resources, {
     prefix: '/shares',
     prefixPath(request) {
       return request.user?.shares_id ?? '/shares';
@@ -287,7 +287,7 @@ await app.register(async (aApp) => {
   /**
    * Handle /resources
    */
-  await aApp.register(resources, {
+  await instance.register(resources, {
     prefix: '/resources',
     prefixPath() {
       return 'resources';
@@ -297,14 +297,14 @@ await app.register(async (aApp) => {
   /**
    * Handle /users
    */
-  await aApp.register(users, {
+  await instance.register(users, {
     prefix: '/users',
   });
 
   /**
    * Handle /authorizations
    */
-  await aApp.register(authorizations, {
+  await instance.register(authorizations, {
     prefix: '/authorizations',
   });
 });
@@ -314,7 +314,7 @@ if (esMain(import.meta)) {
     await start();
   } catch (error: unknown) {
     // eslint-disable-next-line unicorn/consistent-destructuring
-    app.log.fatal({ error }, 'Failed to start server');
+    fastify.log.fatal({ error }, 'Failed to start server');
     // eslint-disable-next-line unicorn/no-process-exit
     process.exit(1);
   }
@@ -326,9 +326,9 @@ if (esMain(import.meta)) {
 async function close(error: Error): Promise<void> {
   try {
     // eslint-disable-next-line unicorn/consistent-destructuring
-    app.log.fatal({ error }, 'Attempting to cleanup server after error.');
+    fastify.log.fatal({ error }, 'Attempting to cleanup server after error.');
     // Try to close server nicely
-    await app.close();
+    await fastify.close();
   } finally {
     // Always exit
     // eslint-disable-next-line unicorn/no-process-exit

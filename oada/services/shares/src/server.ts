@@ -46,7 +46,7 @@ function checkRequest(request: KafkaBase): request is WriteResponse {
   return request?.msgtype === 'write-response' && request?.code === 'success';
 }
 
-responder.on<WriteRequest>('request', async function* handleRequest(request) {
+responder.on<WriteRequest>('request', async function* (request) {
   if (!checkRequest(request)) {
     return;
   }
@@ -62,12 +62,12 @@ responder.on<WriteRequest>('request', async function* handleRequest(request) {
       change?.type === 'merge' &&
       typeof change.body?._meta === 'object' &&
       change.body._meta &&
-      '_permissions' in change.body?._meta
+      '_permissions' in (change.body?._meta ?? {})
     ) {
       const { _permissions: permissions } = change.body._meta as {
         _permissions: Record<string, unknown>;
       };
-      for (const id of Object.keys(permissions)) {
+      for await (const id of Object.keys(permissions)) {
         trace('Change made on user: %s', id);
         const user = await users.findById(id);
         if (!user) {
