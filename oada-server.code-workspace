@@ -114,7 +114,7 @@
     "typescript.tsdk": "oada/.yarn/sdks/typescript/lib",
     "typescript.enablePromptUseWorkspaceTsdk": true,
     "eslint.nodePath": "../../.yarn/sdks",
-    "eslint.workingDirectories": ["./oada/"],
+    "eslint.workingDirectories": [{ "directory": "./oada/", "!cwd": true }],
     "files.exclude": {
       ".actrc": true,
       ".history": true,

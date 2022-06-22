@@ -5,14 +5,77 @@
   "version": "0.2.0",
   "configurations": [
     {
+      "name": "k8s: Attach to http-handler",
+      "presentation": {
+        "group": "k8s"
+      },
+      "type": "cloudcode.kubernetes",
+      "request": "attach",
+      "language": "Node",
+      "debugPort": "inspect",
+      "podSelector": {
+        "app.kubernetes.io/name": "http-handler"
+      },
+      "smartStep": true,
+      "localRoot": "${workspaceFolder}/oada/",
+      "remoteRoot": "/oada/"
+    },
+    {
+      "name": "k8s: Attach to write-handler",
+      "presentation": {
+        "group": "k8s"
+      },
+      "type": "cloudcode.kubernetes",
+      "request": "attach",
+      "language": "Node",
+      "debugPort": "inspect",
+      "podSelector": {
+        "app.kubernetes.io/name": "write-handler"
+      },
+      "smartStep": true,
+      "localRoot": "${workspaceFolder}/oada/",
+      "remoteRoot": "/oada/"
+    },
+    {
+      "name": "k8s: Attach to auth",
+      "presentation": {
+        "group": "k8s"
+      },
+      "type": "cloudcode.kubernetes",
+      "request": "attach",
+      "language": "Node",
+      "debugPort": "inspect",
+      "podSelector": {
+        "app.kubernetes.io/name": "auth"
+      },
+      "smartStep": true,
+      "localRoot": "${workspaceFolder}/oada/",
+      "remoteRoot": "/oada/"
+    },
+    {
       "type": "node",
       "request": "attach",
-      "name": "Docker: Attach to service container",
+      "name": "Attach to service",
       "smartStep": true,
       "localRoot": "${workspaceFolder}/oada/",
       "remoteRoot": "/oada/",
       "resolveSourceMapLocations": null,
       "port": "${input:port}"
+    }
+  ],
+  "compounds": [
+    {
+      "name": "k8s: Attach to OADA services",
+      "configurations": [
+        "k8s: Attach to http-handler",
+        "k8s: Attach to write-handler",
+        "k8s: Attach to auth"
+      ],
+      "presentation": {
+        "group": "k8s",
+        "order": 1
+      },
+      "stopAll": true
     }
   ],
   "inputs": [
