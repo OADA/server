@@ -55,7 +55,7 @@ arangodb:
   # arangodb.image is the Docker image to use for arangodb
   image: arangodb/arangodb
   # arangodb.tag is the Docker tag for the ArangoDB images
-  tag: 3.9.2
+  tag: 3.9.1
 
 kafka:
   # kafka.brokers is an array of an external Kafka brokers.
