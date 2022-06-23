@@ -3,6 +3,22 @@ entries:
   oada:
   - apiVersion: v2
     appVersion: 3.4.1
+    created: "2022-06-23T17:15:18.60500007Z"
+    description: A Helm chart for the OADA API server
+    digest: 21136ff687079af6039f8bed9ece06ca350723cb029ee7fa3dac1ada47b27bc6
+    icon: https://avatars.githubusercontent.com/u/6750653
+    maintainers:
+    - email: alex@layton.in
+      name: awlayton
+    name: oada
+    sources:
+    - https://github.com/OADA/server
+    type: application
+    urls:
+    - https://github.com/OADA/server/releases/download/oada-1.2.2/oada-1.2.2.tgz
+    version: 1.2.2
+  - apiVersion: v2
+    appVersion: 3.4.1
     created: "2022-06-22T19:09:46.812129578Z"
     description: A Helm chart for the OADA API server
     digest: bc1933bdd740d0382f0254e6615a73eed791c0c6488428e5529a9655a912b16a
@@ -75,4 +91,4 @@ entries:
     urls:
     - https://github.com/OADA/server/releases/download/oada-0.1.0/oada-0.1.0.tgz
     version: 0.1.0
-generated: "2022-06-22T19:09:46.812146878Z"
+generated: "2022-06-23T17:15:18.60503177Z"
