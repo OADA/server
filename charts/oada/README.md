@@ -29,7 +29,8 @@ Supports multiple release installs and non-default namespace.
 - At least one ingress controller
 
 Attempt to apply all prerequisites:
-`kubectl apply -k ../../k8s/support`
+
+[`kubectl apply -k https://www.github.com/OADA/server/k8s/support`][support]
 
 The above command might error on the first run.
 After 2-3 times, it _should_ run without error.
@@ -43,6 +44,8 @@ Add the helm chart repo
 `helm repo add oada https://charts.openag.io/`
 
 Install the Helm chart:
-`helm install oada oada`
+`helm install my-oada oada/oada`
 
 See the [values.yaml](values.yaml) for various configuration options.
+
+[support]: ../../k8s/support/kustomization.yaml
