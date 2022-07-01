@@ -8,5 +8,11 @@ maintainers:
   - name: awlayton
     email: alex@layton.in
 type: application
-version: 1.2.2
+version: 1.2.3
 appVersion: '3.4.1'
+annotations:
+  artifacthub.io/recommendations: |
+    - url: https://artifacthub.io/packages/helm/cert-manager/cert-manager
+    - url: https://docs.redpanda.com/docs/quickstart/kubernetes-qs-cloud/#step-4-use-helm-to-install-the-redpanda-operator
+    - url: https://github.com/arangodb/kube-arangodb#installation-of-latest-release-using-helm
+    - url: https://artifacthub.io/packages/helm/ingress-nginx/ingress-nginx
