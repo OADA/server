@@ -25,7 +25,7 @@ x-release:
     DEBUG_COLORS: ~
     DEBUG_DEPTH: ~
     DEBUG_SHOW_HIDDEN: ~
-    PINO_TRANSPORT: ${PINO_TRANSPORT-yarn g:pretty -clti pid,hostname}
+    PINO_TRANSPORT: ~
     DOMAIN: ~
     NODE_TLS_REJECT_UNAUTHORIZED: ~
     # Allow changing arangodb URL (e.g., to use external arango)
