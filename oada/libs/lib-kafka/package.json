@@ -35,7 +35,7 @@
     "bluebird": "^3.7.2",
     "cls-rtracer": "^2.6.0",
     "debug": "^4.3.4",
-    "kafkajs": "^2.0.2",
+    "kafkajs": "^2.1.0",
     "ksuid": "^3.0.0",
     "tslib": "^2.4.0",
     "uuid": "^8.3.2"
