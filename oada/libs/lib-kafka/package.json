@@ -33,7 +33,7 @@
   "dependencies": {
     "@oada/lib-config": "^3.0.1",
     "bluebird": "^3.7.2",
-    "cls-rtracer": "^2.6.0",
+    "cls-rtracer": "^2.6.2",
     "debug": "^4.3.4",
     "kafkajs": "^2.1.0",
     "ksuid": "^3.0.0",
@@ -45,7 +45,7 @@
     "@types/bluebird": "^3.5.36",
     "@types/convict": "^6.1.1",
     "@types/debug": "^4.1.7",
-    "@types/node": "^18.0.0",
+    "@types/node": "^18.0.3",
     "@types/uuid": "^8.3.4",
     "ava": "4.0.0-rc.1"
   }

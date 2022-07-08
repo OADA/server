@@ -18,7 +18,7 @@
   "author": "Alex Layton <alex@layton.in>",
   "license": "ISC",
   "dependencies": {
-    "cls-rtracer": "^2.6.0",
+    "cls-rtracer": "^2.6.2",
     "pino": "^8.1.0",
     "pino-caller": "^3.2.0",
     "pino-debug": "^2.0.0",
@@ -26,7 +26,7 @@
   },
   "devDependencies": {
     "@types/debug": "^4.1.7",
-    "@types/node": "^18.0.0"
+    "@types/node": "^18.0.3"
   },
   "peerDependencies": {
     "debug": "*"
