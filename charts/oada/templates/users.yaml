@@ -62,6 +62,19 @@ spec:
           envFrom:
             - configMapRef:
                 name: {{ $.Chart.Name }}-configmap-{{ $.Release.Name }}
+          env:
+            - name: ARANGODB_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "oada.arango.rootPassword" $ }}
+                  key: username
+                  optional: {{ $.Values.global.development }}
+            - name: ARANGODB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "oada.arango.rootPassword" $ }}
+                  key: password
+                  optional: {{ $.Values.global.development }}
           image: oada/users:{{ $tag }}
           #imagePullPolicy: {{ $.Values.global.development | ternary "Always" "IfNotPresent" }}
           command: ["/usr/bin/dumb-init", "--rewrite", "15:2", "--", "/bin/sh"]
@@ -77,6 +90,18 @@ spec:
                 secretKeyRef:
                   name: {{ $secretName }}
                   key: token
+            - name: ARANGODB_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "oada.arango.rootPassword" $ }}
+                  key: username
+                  optional: {{ $.Values.global.development }}
+            - name: ARANGODB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "oada.arango.rootPassword" $ }}
+                  key: password
+                  optional: {{ $.Values.global.development }}
           image: oada/users:{{ $tag }}
           #imagePullPolicy: {{ $.Values.global.development | ternary "Always" "IfNotPresent" }}
           command: ["/usr/bin/dumb-init", "--rewrite", "15:2", "--", "/bin/sh"]
