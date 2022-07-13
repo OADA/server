@@ -136,7 +136,7 @@ async function create() {
 
 async function disable() {
   const auth = await authorizations.findByToken(token!);
-  trace(auth, 'Found auth');
+  trace({ auth }, 'Found auth');
 
   return { ...auth, createTime: getNow(), expiresIn: 1 };
 }
@@ -164,4 +164,7 @@ if (update) {
   // @ts-expect-error stuff
   await authorizations.save(update);
   console.info(chalk.green`Successfully wrote token`);
+  if (!token) {
+    console.info(chalk.blue`${update.token}`);
+  }
 }
