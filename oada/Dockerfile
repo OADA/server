@@ -1,4 +1,4 @@
-ARG NODE_VER=18-alpine
+ARG NODE_VER=18.5-alpine
 
 # Copy in package files and any needed apt packages?
 FROM node:${NODE_VER} AS packages

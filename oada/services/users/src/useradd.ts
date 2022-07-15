@@ -15,28 +15,32 @@
  * limitations under the License.
  */
 
-/* eslint-disable no-console, no-process-exit, unicorn/no-process-exit -- This is a cli command */
+/* eslint-disable no-process-exit, unicorn/no-process-exit -- This is a cli command */
+
+import '@oada/pino-debug';
+import { config } from './config.js';
 
 import { Requester } from '@oada/lib-kafka';
 import { users } from '@oada/lib-arangodb';
-
-import type { User, UserRequest, UserResponse } from './server.js';
-import { config } from './config.js';
 
 import chalk from 'chalk';
 import debug from 'debug';
 import minimist from 'minimist';
 import promptly from 'promptly';
 
+import type { User, UserRequest, UserResponse } from './server.js';
+
 const argv = minimist(process.argv.slice(2));
 
+const info = debug('useradd:info');
+const error = debug('useradd:error');
 const trace = debug('useradd:trace');
 
 async function findUserByUsername(username: string) {
   const like = await users.like({ username });
   // eslint-disable-next-line no-unreachable-loop
   for await (const user of like) {
-    trace(user, 'findUserByUsername: Finished users.like');
+    trace({ user }, 'findUserByUsername: Finished users.like');
     return user;
   }
 
@@ -46,8 +50,8 @@ async function findUserByUsername(username: string) {
 // The main event:
 try {
   if (argv.h || argv.help) {
-    console.log(
-      chalk.yellow`useradd [-u username] [-p password] [ -a (if you want user to have admin privileges to create other users)]`
+    error(
+      chalk.yellow`useradd [-u username] [-p password] [-a (if you want user to have admin privileges to create other users)]`
     );
     process.exit();
   }
@@ -71,7 +75,7 @@ try {
     argv.username ||
     (await promptly.prompt('Username: '))) as string;
   if (await findUserByUsername(username)) {
-    console.error(chalk.red`Username ${username} already exists`);
+    error(chalk.red`Username ${username} already exists`);
     process.exit(1);
   }
 
@@ -100,14 +104,14 @@ try {
     user,
   } as UserRequest)) as unknown as UserResponse;
 
-  trace(response, 'Finished kafka.send');
+  trace({ response }, 'Finished kafka.send');
   // No need to keep hearing messages
   trace('Disconnecting from kafka');
   await kafkareq.disconnect();
 
-  trace(response, 'Checking response.code');
+  trace({ response }, 'Checking response.code');
   if (response.code !== 'success') {
-    console.error(
+    error(
       chalk.red`FAILED TO RECEIVE SUCCESSFUL RESPONSE FROM USER SERVICE WHEN CREATING USER!`
     );
     process.exit(1);
@@ -115,8 +119,8 @@ try {
 
   // Now we have a user
   const su = response.user;
-  console.info(chalk.green`User {cyan ${su!._id}} now exists`);
-} catch (error: unknown) {
-  console.error(error);
+  info(chalk.green`User {cyan ${su!._id}} now exists`);
+} catch (cError: unknown) {
+  error({ error: cError });
   process.exit(1);
 }

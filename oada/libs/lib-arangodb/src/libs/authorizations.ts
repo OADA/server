@@ -62,22 +62,22 @@ export async function findByToken(
         RETURN t`
   );
   // eslint-disable-next-line @typescript-eslint/ban-types
-  const t = (await cursor.next()) as Authorization | null;
+  const auth = (await cursor.next()) as Authorization | null;
 
-  if (!t) {
+  if (!auth) {
     return undefined;
   }
 
   // No longer needed with new _id scheme
   // t._id = t._key;
 
-  trace('Found authorization by token (%O), filling out user by user._id', t);
-  const user = await findUserById(t.user._id);
+  trace({ auth }, 'Found authorization by token, filling out user by user._id');
+  const user = await findUserById(auth.user._id);
   if (!user) {
-    throw new Error(`Invalid user ${t.user._id} for token ${token}`);
+    throw new Error(`Invalid user ${auth.user._id} for token ${token}`);
   }
 
-  return sanitizeResult({ ...t, user });
+  return sanitizeResult({ ...auth, user });
 }
 
 // TODO: Add index on user id
@@ -93,22 +93,22 @@ export async function findByUser(
 
 export async function save({
   _id,
-  ...t
+  ...auth
 }: Partial<Authorization> & { token: string }): Promise<
   Authorization | undefined
 > {
   // Make sure nothing but id is in user info
-  const user = t.user && { _id: t.user._id };
+  const user = auth.user && { _id: auth.user._id };
   // Have to get rid of illegal document handle _id
 
   const _key = _id?.replace(/^authorizations\//, '');
 
-  trace('save: Replacing/Inserting token %s', t);
+  trace({ auth }, 'save: Replacing/Inserting token');
 
   // Overwrite will replace the given token if it already exists
-  await authorizations.save({ ...t, user, _key }, { overwrite: true });
+  await authorizations.save({ ...auth, user, _key }, { overwrite: true });
 
-  return findByToken(t.token);
+  return findByToken(auth.token);
 }
 
 export async function revoke(token: Authorization | string): Promise<void> {

@@ -20,14 +20,18 @@
 /* eslint-disable security/detect-non-literal-require */
 /* eslint-disable import/no-dynamic-require */
 
-import pinoDebug, { Options } from 'pino-debug';
-
 import { resolve } from 'node:path';
+
+// !!! This needs to be imported before _anything_ using pino or debug
+import pinoDebug from 'pino-debug';
 
 import _pino, { Logger, LoggerOptions } from 'pino';
 import debug from 'debug';
+import isInteractive from 'is-interactive';
 import pinoCaller from 'pino-caller';
 import rTracer from 'cls-rtracer';
+
+const interactive = isInteractive();
 
 /**
  * Default mappings of debug namespaces to pino levels
@@ -69,6 +73,11 @@ export function logLevel(): string {
     }
   }
 
+  if (interactive) {
+    // Default to info for interactive shells?
+    return 'info';
+  }
+
   // Assume silent
   return 'silent';
 }
@@ -82,49 +91,49 @@ export const mixins: Array<() => Record<string, unknown>> = [
  */
 function createRootLogger(): Logger {
   const development = process.env.NODE_ENV === 'development';
-  const logger = _pino({
+  const redact =
+    process.env.PINO_REDACT?.split(',') ??
+    (interactive
+      ? []
+      : [
+          'password',
+          '*.password',
+          '*.*.password',
+          'token',
+          '*.token',
+          '*.*.token',
+        ]);
+  const level = logLevel();
+  const transport = interactive ? { target: 'pino-pretty' } : undefined;
+  const log = _pino({
     name: require.main?.id ?? process.env.npm_package_name,
-    level: logLevel(),
+    level,
+    transport,
+    redact,
     mixin() {
       const objs = mixins.map((f) => f());
       return Object.assign({}, ...objs) as Record<string, unknown>;
     },
   });
-  return development ? pinoCaller(logger) : logger;
-}
+  const logger = development ? pinoCaller(log) : log;
 
-const rootLogger = createRootLogger();
-export function pino(options: LoggerOptions = {}): Logger {
-  return rootLogger.child(options);
-}
-
-/**
- * Give use better defaults for pino-debug?
- */
-export default function oadaDebug(
-  logger: Logger = rootLogger,
-  {
-    // Turn off auto so only things enabled in DEBUG var get logged
-    auto = false,
-    map: mMap,
-    ...rest
-  }: Options = {}
-): void {
   // Load mappings from files
   const fMap = (process.env.OADA_PINO_MAP &&
     require(resolve(process.cwd(), process.env.OADA_PINO_MAP))) as  // Nosemgrep: javascript.lang.security.detect-non-literal-require.detect-non-literal-require
     | undefined
     | Record<string, string>;
   // Merge in mappings
-  const map = { ...defaultMap, ...fMap, ...mMap };
-  pinoDebug(logger, { auto, map, ...rest });
+  const map = { ...defaultMap, ...fMap };
+  pinoDebug(logger, {
+    // Turn off auto so only things enabled in DEBUG var get logged
+    auto: interactive,
+    map,
+  });
+
+  return logger;
 }
 
-if (
-  module.parent &&
-  module.parent.parent === null &&
-  module.parent.filename === null
-) {
-  // Preloaded with -r flag
-  oadaDebug();
+const rootLogger = createRootLogger();
+export function pino(options: LoggerOptions = {}): Logger {
+  return rootLogger.child(options);
 }

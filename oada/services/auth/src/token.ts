@@ -15,7 +15,9 @@
  * limitations under the License.
  */
 
-/* eslint-disable no-console, no-process-exit, unicorn/no-process-exit -- This is a cli command */
+/* eslint-disable no-process-exit, unicorn/no-process-exit -- This is a cli command */
+
+import '@oada/pino-debug';
 
 import chalk from 'chalk';
 import debug from 'debug';
@@ -25,28 +27,28 @@ import { v4 } from 'uuid';
 import { authorizations, users } from '@oada/lib-arangodb';
 
 const argv = minimist(process.argv.slice(2));
+
+const info = debug('token:info');
+const error = debug('token:error');
 const trace = debug('token:trace');
 
 const [command, token] = argv._;
 
 const usage = () => {
-  console.error(
-    chalk.yellow`USAGE: node token.js <extend | create | disable> [-e <new expiresIn>] [-c <new createTime> | -n] [-u <userid | username>] [-s <scope_str>] [token]`
+  error(
+    // eslint-disable-next-line sonarjs/no-nested-template-literals
+    `${chalk.yellow`USAGE: node token.js <extend | create | disable> [-e <new expiresIn>] [-c <new createTime> | -n] [-u <userid | username>] [-s <scope_str>] [token]`}
+extend:
+\t-e expiresIn: milliseconds (defaults to 0 (never))
+\t-n: set createTime to now
+\t-c <time>: set createTime to <time>
+\t<token>: last arg must be the token you want to extend
+create:
+\t-u <userid | username>: create token for user if it has a slash, it is assumed to be a userid (like users/12345). Otherwise, it is assumed to be a username.
+\t-s <scope_string>: comma-separated list of scopes, defaults to all:all
+disable:
+\t<token>: disable <token> by making it expired`
   );
-  console.error('extend:');
-  console.error('\t-e expiresIn: milliseconds (defaults to 0 (never))');
-  console.error('\t-n: set createTime to now');
-  console.error('\t-c <time>: set createTime to <time>');
-  console.error('\t<token>: last arg must be the token you want to extend');
-  console.error('create:');
-  console.error(
-    '\t-u <userid | username>: create token for user if it has a slash, it is assumed to be a userid (like users/12345). Otherwise, it is assumed to be a username.'
-  );
-  console.error(
-    '\t-s <scope_string>: comma-separated list of scopes, defaults to all:all'
-  );
-  console.error('disable:');
-  console.error('\t<token>: disable <token> by making it expired');
 };
 
 /* Example authorization:
@@ -88,7 +90,7 @@ async function extend() {
     throw new Error('Unable to find auth matching token');
   }
 
-  trace(auth, 'Found auth');
+  trace({ auth }, 'Found auth');
   return {
     ...auth,
     expiresIn,
@@ -101,7 +103,7 @@ async function extend() {
 async function create() {
   trace('Running create');
   if (!argv.u) {
-    console.error('You must provide a userid (users/123) or a username (bob)');
+    error('You must provide a userid (users/123) or a username (bob)');
     usage();
     return;
   }
@@ -112,11 +114,11 @@ async function create() {
     const u = await users.findByUsername(userid);
     userid = u!._id;
     if (!userid) {
-      console.error(`Unable to find username ${argv.u}.  Aborting.`);
+      error('Unable to find username %s. Aborting.', argv.u);
       return;
     }
 
-    console.info(`Looked up username ${argv.u} and found userid ${userid}`);
+    info('Looked up username %s and found userid %s', argv.u, userid);
   }
 
   const scope = argv.s ? `${argv.s}`.split(',') : ['all:all'];
@@ -160,11 +162,8 @@ switch (command) {
 }
 
 if (update) {
-  trace(update, 'Sending updated token');
+  trace({ update }, 'Sending updated token');
   // @ts-expect-error stuff
   await authorizations.save(update);
-  console.info(chalk.green`Successfully wrote token`);
-  if (!token) {
-    console.info(chalk.blue`${update.token}`);
-  }
+  info({ ...update }, chalk.green`Successfully wrote token`);
 }

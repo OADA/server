@@ -18,10 +18,10 @@
     "@tsconfig/node18": "^1.0.1",
     "@types/eslint": "^8.4.5",
     "@types/mocha": "^9.1.1",
-    "@types/node": "^18.0.3",
+    "@types/node": "^18.0.4",
     "@typescript-eslint/eslint-plugin": "^5.30.6",
     "@typescript-eslint/parser": "^5.30.6",
-    "@yarnpkg/sdks": "^3.0.0-rc.11",
+    "@yarnpkg/sdks": "^3.0.0-rc.12",
     "eslint": "^8.19.0",
     "eslint-config-prettier": "^8.5.0",
     "eslint-config-xo": "^0.41.0",
@@ -57,7 +57,7 @@
     "node": ">=18.0.0"
   },
   "volta": {
-    "node": "18.1.0"
+    "node": "18.5.0"
   },
   "packageManager": "yarn@3.2.1"
 }

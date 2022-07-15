@@ -65,7 +65,7 @@
     "express-session": "^1.17.3",
     "helmet": "^5.1.0",
     "jsonwebtoken": "^8.5.1",
-    "jwt-bearer-client-auth": "^2.0.1",
+    "jwt-bearer-client-auth": "^2.0.2",
     "minimist": "^1.2.6",
     "morgan": "^1.10.0",
     "oauth2orize": "^1.11.1",
