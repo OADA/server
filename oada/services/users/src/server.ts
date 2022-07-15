@@ -121,7 +121,7 @@ async function createNewUser(request: UserRequest): Promise<users.User> {
 
   // Update the new user with the new bookmarks
   await users.update(user);
-  trace('Created user %s', user._id);
+  trace({ user }, 'Created user');
 
   return { password, ...user };
 }
@@ -194,7 +194,7 @@ export async function handleReq(request: UserRequest): Promise<UserResponse> {
       ) {
         createUser = false;
         trace(
-          request.user,
+          { user: request.user },
           'Tried to create user, but it already existed (same username). Returning as if we had created it'
         );
         const like = await users.like({ username: request.user.username });
@@ -231,7 +231,7 @@ export async function handleReq(request: UserRequest): Promise<UserResponse> {
     // Don't log passwords
     const { password, ...user } =
       'new' in currentUser ? currentUser.new : currentUser;
-    trace(user, 'Finished with update, responding with success');
+    trace({ user }, 'Finished with update, responding with success');
   }
 
   return {
