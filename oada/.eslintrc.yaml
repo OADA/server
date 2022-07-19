@@ -90,6 +90,7 @@ overrides:
             argsIgnorePattern: '^_',
           },
         ]
+      '@typescript-eslint/consistent-type-definitions': [warn, interface]
 
 rules:
   notice/notice:

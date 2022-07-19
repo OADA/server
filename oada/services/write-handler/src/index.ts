@@ -26,11 +26,10 @@ import {
 } from '@oada/lib-arangodb';
 import { KafkaBase, Responder } from '@oada/lib-kafka';
 
-import type Change from '@oada/types/oada/change/v2.js';
 import type Resource from '@oada/types/oada/resource.js';
 
+import { JsonPointer, PathSegments } from 'json-ptr';
 import Cache from 'timed-cache';
-import { JsonPointer } from 'json-ptr';
 import debug from 'debug';
 import objectAssignDeep from 'object-assign-deep';
 
@@ -56,6 +55,14 @@ const metaPointers = {
    * Reusable JSON Pointer to `/_meta/_changes`
    */
   changes: JsonPointer.create('/_meta/_changes'),
+  /**
+   * Reusable JSON Pointer to `/_meta/modifiedBy`
+   */
+  modifiedBy: JsonPointer.create('/_meta/modifiedBy'),
+  /**
+   * Reusable JSON Pointer to `/_meta/modified`
+   */
+  modified: JsonPointer.create('/_meta/modified'),
 } as const;
 
 let counter = 0;
@@ -68,7 +75,7 @@ const responder = new Responder<WriteRequest>({
 
 // Only run one write at a time?
 // Per-resource write locks/queues
-const locks: Map<string, Promise<WriteResponse | void>> = new Map();
+const locks = new Map<string, Promise<WriteResponse | void>>();
 const cache = new Cache<number | string>({ defaultTtl: 60 * 1000 });
 responder.on<WriteResponse>('request', async (request) => {
   if (counter++ > 500) {
@@ -200,6 +207,29 @@ async function checkPreconditions(request: WriteRequest) {
       throw new Error('if-none-match failed');
     }
   }
+
+  const rev =
+    cache.get(request.resource_id) ??
+    ((await resources.getResource(
+      request.resource_id,
+      '/_rev'
+    )) as unknown as number);
+
+  if (request.rev && rev !== request.rev) {
+    throw new Error('rev mismatch');
+  }
+
+  return rev;
+}
+
+function mergeDeep<T>(target: T, path: PathSegments, body: unknown) {
+  if (path.length > 0) {
+    const toMerge = {};
+    JsonPointer.set(toMerge, path, body, true);
+    return objectAssignDeep(target, toMerge);
+  }
+
+  return objectAssignDeep(target, body);
 }
 
 /**
@@ -209,45 +239,33 @@ async function doWrite(
   request: WriteRequest,
   body: unknown
 ): Promise<{ id: string; rev?: number; orev?: number; changeId?: string }> {
-  let changeType: Change[0]['type'];
-  let id = request.resource_id.replace(/^\//, '');
+  const isDelete = body === undefined;
+  const changeType = isDelete ? 'delete' : 'merge';
+  const id = request.resource_id.replace(/^\//, '');
 
   trace({ id, body }, 'Writing body');
-  await checkPreconditions(request);
-
-  const cacheRev =
-    cache.get(request.resource_id) ??
-    ((await resources.getResource(
-      request.resource_id,
-      '/_rev'
-    )) as unknown as number);
-
-  if (request.rev && cacheRev !== request.rev) {
-    throw new Error('rev mismatch');
-  }
+  const cacheRev = await checkPreconditions(request);
 
   let path = JsonPointer.decode(request.path_leftover);
-  let method = resources.putResource;
-  changeType = 'merge';
+  const method: typeof resources.putResource = isDelete
+    ? async (pid, partial) =>
+        resources.deletePartialResource(pid, Array.from(path), partial)
+    : resources.putResource;
   const object: DeepPartial<Resource> = {};
 
   // Perform delete
-  if (body === undefined) {
+  if (isDelete) {
     trace('Body is undefined, doing delete');
     if (path.length > 0) {
       trace('Delete path = %s', path);
-      // TODO: This is gross
-      const aPath = Array.from(path);
-      method = async (pid, partial) =>
-        resources.deletePartialResource(pid, aPath, partial);
+      // HACK: This is gross
       trace(
         'Setting method = deletePartialResource(%s, %o, %O)',
         id,
-        aPath,
+        path,
         object
       );
       body = null;
-      changeType = 'delete';
       trace(`Setting changeType = 'delete'`);
     } else {
       if (!request.resourceExists) {
@@ -261,7 +279,7 @@ async function doWrite(
   }
 
   const ts = Date.now() / 1000;
-  // TODO: Sanitize keys?
+  // FIXME: Sanitize keys?
 
   trace(
     '%s: Checking if resource exists (req.resourceExists = %s)',
@@ -274,11 +292,10 @@ async function doWrite(
       request.resource_id,
       request.path_leftover
     );
-    id = request.resource_id.replace(/^\//, '');
     path = path.slice(2);
 
     // Initialize resource stuff
-    Object.assign(object, {
+    objectAssignDeep(object, {
       _type: request.contentType,
       _meta: {
         _id: `${id}/_meta`,
@@ -295,32 +312,8 @@ async function doWrite(
 
   // Create object to recursively merge into the resource
   trace({ path }, 'Recursively merging path into arango object');
-  const endK = path.pop();
-  if (endK === undefined) {
-    objectAssignDeep(object, body);
-  } else {
-    let o = object as Record<string, unknown>;
-    for (const k of path) {
-      trace('Adding path for key %s', k);
-      if (!(k in o)) {
-        // TODO: Support arrays better?
-        o[k] = {};
-      }
-
-      o = o[k] as Record<string, unknown>;
-    }
-
-    o[endK] = body as DeepPartial<Resource>;
-  }
-
+  mergeDeep(object, path, body);
   trace({ body: object }, 'Setting body on arango object');
-
-  // Update meta
-  const meta: Partial<Resource['_meta']> & Record<string, unknown> = {
-    modifiedBy: request.user_id,
-    modified: ts,
-  };
-  object._meta = objectAssignDeep(object._meta ?? {}, meta);
 
   // Increment rev number
   let rev = Number.parseInt((cacheRev || 0) as string, 10) + 1;
@@ -340,15 +333,19 @@ async function doWrite(
     }
   }
 
+  // Update _meta
+  metaPointers.modifiedBy.set(object, request.user_id, true);
+  metaPointers.modified.set(object, ts, true);
   object._rev = rev;
   metaPointers.rev.set(object, rev, true);
-
   /**
    * ???: What should the order of precedence be?
    */
-  const type = object?._type || object?._meta?._type || undefined;
-  object._type = type;
-  metaPointers.type.set(object, type, true);
+  const type = object?._type ?? object?._meta?._type;
+  if (type) {
+    object._type = type;
+    metaPointers.type.set(object, type, true);
+  }
 
   /**
    * ???: Error is body contains a non-matching `_id`
@@ -381,9 +378,6 @@ async function doWrite(
     },
     true
   );
-
-  // Update rev of meta?
-  object._meta._rev = rev;
 
   const orev = await method(id, object, !request.ignoreLinks);
   return {
