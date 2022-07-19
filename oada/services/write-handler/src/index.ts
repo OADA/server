@@ -49,6 +49,10 @@ const metaPointers = {
    */
   rev: JsonPointer.create('/_meta/_rev'),
   /**
+   * Reusable JSON Pointer to `/_meta/_type`
+   */
+  type: JsonPointer.create('/_meta/_type'),
+  /**
    * Reusable JSON Pointer to `/_meta/_changes`
    */
   changes: JsonPointer.create('/_meta/_changes'),
@@ -338,6 +342,13 @@ async function doWrite(
 
   object._rev = rev;
   metaPointers.rev.set(object, rev, true);
+
+  /**
+   * ???: What should the order of precedence be?
+   */
+  const type = object?._type || object?._meta?._type || undefined;
+  object._type = type;
+  metaPointers.type.set(object, type, true);
 
   /**
    * ???: Error is body contains a non-matching `_id`
