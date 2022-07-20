@@ -50,6 +50,11 @@ app.kubernetes.io/part-of: oada
   {{ .Values.kafka.brokers | join "," | default $brokers }}
 {{- end -}}
 
+{{/* Whether add Prometheus monitors */}}
+{{- define "oada.prometheus" -}}
+  {{ .Values.prometheus | default (.Capabilities.APIVersions.Has "monitoring.coreos.com/v1") }}
+{{- end -}}
+
 {{/* TLS secret */}}
 {{- define "oada.tls" -}}
   tls-{{ .Release.Name }}

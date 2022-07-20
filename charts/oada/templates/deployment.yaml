@@ -136,5 +136,24 @@ spec:
         targetAverageUtilization: {{ $.Values.autoscaling.targetMemoryUtilizationPercentage }}
     {{- end }}
 {{- end }}
+{{- if eq (include "oada.prometheus" $) "true" }}
+---
+apiVersion: monitoring.coreos.com/v1
+kind: PodMonitor
+metadata:
+  namespace: {{ $.Release.Namespace }}
+  name: {{ $name }}
+  labels:
+    app.kubernetes.io/name: {{ $k }}
+    app.kubernetes.io/instance: {{ $.Release.Name }}
+    {{- include "oada.chart.labels" $ | nindent 4 }}
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ $k }}
+      app.kubernetes.io/instance: {{ $.Release.Name }}
+  podMetricsEndpoints:
+  - port: prometheus
+{{- end }}
 ---
 {{ end -}}

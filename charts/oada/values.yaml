@@ -71,6 +71,9 @@ k8sWaitFor:
   image: groundnuty/k8s-wait-for
   tag: v1.6
 
+# prometheus is whether to add prometheus monitors for oada
+prometheus: ~
+
 global:
   # global.development is whether to enable development/debug features not meant for production use
   development: false
