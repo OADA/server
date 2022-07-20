@@ -33,5 +33,8 @@
     "exit": true
   },
   "author": "Yaguang Zhang",
-  "license": "Apache-2.0"
+  "license": "Apache-2.0",
+  "volta": {
+    "node": "18.5.0"
+  }
 }

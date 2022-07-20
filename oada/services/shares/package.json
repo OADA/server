@@ -25,6 +25,7 @@
     "@oada/lib-arangodb": "^3.0.1",
     "@oada/lib-config": "^3.0.1",
     "@oada/lib-kafka": "^3.0.1",
+    "@oada/lib-prom": "workspace:^",
     "@oada/pino-debug": "^3.0.1",
     "debug": "^4.3.4",
     "tslib": "^2.4.0"
@@ -32,5 +33,8 @@
   "devDependencies": {
     "@oada/write-handler": "^3.0.1",
     "@types/debug": "^4.1.7"
+  },
+  "volta": {
+    "node": "18.5.0"
   }
 }

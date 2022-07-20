@@ -25,6 +25,7 @@
     "@oada/lib-arangodb": "^3.0.1",
     "@oada/lib-config": "^3.0.1",
     "@oada/lib-kafka": "^3.0.1",
+    "@oada/lib-prom": "workspace:^",
     "@oada/pino-debug": "^3.0.1",
     "axios": "^0.27.2",
     "bluebird": "^3.7.2",
@@ -36,5 +37,8 @@
     "@oada/write-handler": "^3.0.1",
     "@types/bluebird": "^3.5.36",
     "@types/debug": "^4.1.7"
+  },
+  "volta": {
+    "node": "18.5.0"
   }
 }

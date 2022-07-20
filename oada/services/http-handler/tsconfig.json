@@ -10,6 +10,7 @@
     { "path": "../../libs/lib-config" },
     { "path": "../../libs/lib-kafka" },
     { "path": "../../libs/lib-arangodb" },
+    { "path": "../../libs/lib-prom" },
     { "path": "../permissions-handler" },
     { "path": "../write-handler" }
   ]

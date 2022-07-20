@@ -1,3 +1,4 @@
+# syntax=docker/dockerfile:1
 ARG NODE_VER=18.5-alpine
 
 # Copy in package files and any needed apt packages?
@@ -6,13 +7,14 @@ FROM node:${NODE_VER} AS packages
 WORKDIR /oada
 
 # Need to list out every package.json we need from monorepo for caching stuff...
-COPY ./yarn.lock ./.yarnrc.yml /oada/
-COPY ./.yarn /oada/.yarn
+COPY --link ./yarn.lock ./.yarnrc.yml /oada/
+COPY --link ./.yarn /oada/.yarn
 # TODO: How to COPY all package.json files with glob?
 COPY ./package.json /oada/package.json
 COPY ./libs/lib-arangodb/package.json /oada/libs/lib-arangodb/package.json
 COPY ./libs/lib-config/package.json /oada/libs/lib-config/package.json
 COPY ./libs/lib-kafka/package.json /oada/libs/lib-kafka/package.json
+COPY ./libs/lib-prom/package.json /oada/libs/lib-prom/package.json
 COPY ./libs/pino-debug/package.json /oada/libs/pino-debug/package.json
 COPY ./services/auth/package.json /oada/services/auth/package.json
 COPY ./services/http-handler/package.json /oada/services/http-handler/package.json
@@ -31,7 +33,7 @@ RUN yarn workspaces focus --all --production
 FROM packages AS yarn
 
 # Copy in actual code
-COPY . /oada/
+COPY --link . /oada/
 
 # Run again to be safe?
 RUN yarn workspaces focus --all --production
@@ -44,7 +46,7 @@ FROM packages AS dev
 RUN yarn install --immutable
 
 # Copy in actual code
-COPY . /oada/
+COPY --link . /oada/
 
 # Run again to be safe?
 RUN yarn install --immutable

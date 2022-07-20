@@ -78,7 +78,6 @@ spec:
           name: {{ $name }}
           resources:
             {{- toYaml $.Values.oada.resources | nindent 12 }}
-          {{ if or $v.http $.Values.global.development -}}
           ports:
             {{ if $v.http -}}
             - name: http
@@ -88,7 +87,8 @@ spec:
             - name: inspect
               containerPort: 9229
             {{- end }}
-          {{- end }}
+            - name: prometheus
+              containerPort: 3000
           volumeMounts:
             {{ if eq $k "http-handler" -}}
             - mountPath: /oada/binary

@@ -42,6 +42,7 @@
     "@oada/lib-arangodb": "^3.0.1",
     "@oada/lib-config": "^3.0.1",
     "@oada/lib-kafka": "^3.0.1",
+    "@oada/lib-prom": "workspace:^",
     "@oada/pino-debug": "^3.0.1",
     "debug": "^4.3.4",
     "json-ptr": "^3.1.1",
@@ -59,5 +60,8 @@
     "@types/object-assign-deep": "^0.4.0",
     "ava": "4.0.0-rc.1",
     "typescript": "^4.7.4"
+  },
+  "volta": {
+    "node": "18.5.0"
   }
 }

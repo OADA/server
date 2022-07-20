@@ -15,10 +15,12 @@
  * limitations under the License.
  */
 
+import { config } from './config.js';
+
+import '@oada/lib-prom';
+
 import { ArangoError, ArangoErrorCode, users } from '@oada/lib-arangodb';
 import { ResponderRequester } from '@oada/lib-kafka';
-
-import { config } from './config.js';
 
 import cloneDeep from 'clone-deep';
 import debug from 'debug';

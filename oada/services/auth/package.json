@@ -45,6 +45,7 @@
     "@oada/id-client": "^2.0.8",
     "@oada/lib-arangodb": "^3.0.1",
     "@oada/lib-config": "^3.0.1",
+    "@oada/lib-prom": "workspace:^",
     "@oada/lookup": "^2.0.0",
     "@oada/pino-debug": "^3.0.1",
     "@oada/types": "^3.0.3",
@@ -99,7 +100,10 @@
     "@types/pem-jwk": "^2.0.0",
     "@types/urijs": "^1.19.19",
     "@types/uuid": "^8.3.4",
-    "c8": "^7.11.3",
-    "type-fest": "^2.16.0"
+    "c8": "^7.12.0",
+    "type-fest": "^2.17.0"
+  },
+  "volta": {
+    "node": "18.5.0"
   }
 }

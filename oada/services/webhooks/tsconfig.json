@@ -8,6 +8,7 @@
   "references": [
     { "path": "../../libs/pino-debug" },
     { "path": "../../libs/lib-config" },
+    { "path": "../../libs/lib-prom" },
     { "path": "../../libs/lib-kafka" },
     { "path": "../../libs/lib-arangodb" },
     { "path": "../write-handler" }

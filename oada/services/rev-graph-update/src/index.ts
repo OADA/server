@@ -15,13 +15,15 @@
  * limitations under the License.
  */
 
+import { config } from './config.js';
+
+import '@oada/lib-prom';
+
 import { KafkaBase, Requester, Responder } from '@oada/lib-kafka';
 import { resources } from '@oada/lib-arangodb';
 
 // Import message format from write-handler
 import type { WriteRequest, WriteResponse } from '@oada/write-handler';
-
-import { config } from './config.js';
 
 import Ajv, { JTDSchemaType } from 'ajv/dist/jtd.js';
 import PQueue from 'p-queue';

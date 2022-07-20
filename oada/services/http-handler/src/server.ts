@@ -16,6 +16,8 @@
  */
 
 import { mixins, pino } from '@oada/pino-debug';
+
+import '@oada/lib-prom';
 import { KafkaError } from '@oada/lib-kafka';
 
 import { plugin as formats } from '@oada/formats-server';

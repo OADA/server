@@ -15,12 +15,15 @@
  * limitations under the License.
  */
 
+import { config } from './config.js';
+
+import '@oada/lib-prom';
+
 import { URL } from 'node:url';
 import fs from 'node:fs';
 
 import { Responder } from '@oada/lib-kafka';
 
-import { config } from './config.js';
 import scopeTypes from './scopes.js';
 
 import debug from 'debug';

@@ -30,6 +30,10 @@
       "path": "oada/libs/lib-kafka"
     },
     {
+      "name": "📦 @oada/lib-prom",
+      "path": "oada/libs/lib-prom"
+    },
+    {
       "name": "📦 @oada/pino-debug",
       "path": "oada/libs/pino-debug"
     },
@@ -192,7 +196,9 @@
       "trellisfw",
       "unflatten",
       "unversioned",
-      "urijs"
+      "urijs",
+      "Yaguang",
+      "Zhang"
     ],
     "eslint.packageManager": "yarn",
     "eslint.useESLintClass": true,

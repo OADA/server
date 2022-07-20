@@ -23,10 +23,12 @@
 // internal requests to every internal service to retrieve the
 // latest well-known documents.
 
+import { config } from './config.js';
+
+import '@oada/lib-prom';
+
 import type { ServerOptions } from 'node:http';
 import https from 'node:https';
-
-import { config } from './config.js';
 
 import axios from 'axios';
 import cors from 'cors';

@@ -15,6 +15,10 @@
  * limitations under the License.
  */
 
+import { config } from './config.js';
+
+import '@oada/lib-prom';
+
 import { URL } from 'node:url';
 import { join } from 'node:path';
 
@@ -23,8 +27,6 @@ import { remoteResources, resources } from '@oada/lib-arangodb';
 import type { Resource } from '@oada/lib-arangodb/dist/libs/resources';
 
 import type { WriteResponse } from '@oada/write-handler';
-
-import { config } from './config.js';
 
 import axios from 'axios';
 import debug from 'debug';

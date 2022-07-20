@@ -7,6 +7,7 @@
   "include": ["src"],
   "references": [
     { "path": "../../libs/pino-debug" },
+    { "path": "../../libs/lib-prom" },
     { "path": "../../libs/lib-config" }
   ]
 }

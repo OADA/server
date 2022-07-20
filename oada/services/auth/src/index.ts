@@ -17,6 +17,8 @@
 
 import { config, domainConfigs } from './config.js';
 
+import '@oada/lib-prom';
+
 import https from 'node:https';
 import path from 'node:path';
 import url from 'node:url';

@@ -71,6 +71,9 @@
     "@types/json-pointer": "^1.0.31",
     "@types/node": "^18.0.6",
     "ava": "4.0.0-rc.1",
-    "type-fest": "^2.16.0"
+    "type-fest": "^2.17.0"
+  },
+  "volta": {
+    "node": "18.5.0"
   }
 }

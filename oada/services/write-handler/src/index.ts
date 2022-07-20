@@ -17,6 +17,8 @@
 
 import { config } from './config.js';
 
+import '@oada/lib-prom';
+
 import {
   ArangoError,
   ArangoErrorCode,

@@ -34,6 +34,7 @@
     "@oada/lib-arangodb": "^3.0.1",
     "@oada/lib-config": "^3.0.1",
     "@oada/lib-kafka": "^3.0.1",
+    "@oada/lib-prom": "workspace:^",
     "@oada/pino-debug": "^3.0.1",
     "ajv": "^8.11.0",
     "debug": "^4.3.4",
@@ -49,7 +50,10 @@
     "@types/node": "^18.0.6",
     "@types/randomstring": "^1.1.8",
     "ava": "4.0.0-rc.1",
-    "type-fest": "^2.16.0",
+    "type-fest": "^2.17.0",
     "typescript": "^4.7.4"
+  },
+  "volta": {
+    "node": "18.5.0"
   }
 }

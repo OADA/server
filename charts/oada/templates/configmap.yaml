@@ -29,6 +29,7 @@ data:
   CONFIG: /oada.config.mjs
   DEBUG: {{ .Values.debug | join "," | quote }}
   PINO_LEVEL: {{ .Values.pino.level }}
+  PROM_HOST: '::'
   DOMAIN: {{ .Values.oada.domain }}
   {{ if eq (include "oada.arango.deploy" .) "true" -}}
   ARANGODB_URL: {{ include "oada.arango.connection" . }}
