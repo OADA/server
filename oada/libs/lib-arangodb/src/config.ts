@@ -18,6 +18,7 @@
 import libConfig from '@oada/lib-config';
 
 import type { CreateCollectionOptions } from 'arangojs/collection';
+import type { EdgeDefinitionOptions } from 'arangojs/graph';
 
 export interface Collection {
   name: string;
@@ -28,6 +29,11 @@ export interface Collection {
   defaults?: string;
   edgeCollection?: boolean;
   ensureDefaults?: boolean;
+}
+
+export interface Graph {
+  name: string;
+  edges: EdgeDefinitionOptions[];
 }
 
 /**
@@ -172,8 +178,37 @@ export const { config, schema } = await libConfig({
           createOptions: { isVolatile: false },
         },
       },
-      // Gross hack because convict types don't understand assert
+      // HACK: convict types don't understand assert
     } as Record<string, { default: Collection }>,
+    // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+    graphs: {
+      resources: {
+        format: Object, // Graph,,
+        default: {
+          name: 'resources',
+          edges: [
+            {
+              collection: 'edges',
+              to: 'graphNodes',
+              from: 'graphNodes',
+            },
+          ],
+        },
+      },
+      changes: {
+        format: Object, // Graph,,
+        default: {
+          name: 'changes',
+          edges: [
+            {
+              collection: 'changeEdges',
+              to: 'changes',
+              from: 'changes',
+            },
+          ],
+        },
+      },
+    } as Record<string, { default: Graph }>,
     retry: {
       deadlock: {
         retries: {

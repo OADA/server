@@ -239,6 +239,27 @@ export async function run(): Promise<void> {
           }
         }
       }
+
+      for await (const [name, options] of Object.entries(
+        config.get('arangodb.graphs')
+      )) {
+        const graph = database.graph(options.name);
+        if (await graph.exists()) {
+          trace('Skipping pre-existing graph %s', name);
+          continue;
+        }
+
+        trace('Initializing graph %s', name);
+        const edges = options.edges.map(({ collection, to, from }) => ({
+          // Resolve collection names based on collections config
+          collection: config.get(
+            `arangodb.collections.${collection as string}.name`
+          ),
+          to: config.get(`arangodb.collections.${to as string}.name`),
+          from: config.get(`arangodb.collections.${from as string}.name`),
+        }));
+        await graph.create(edges);
+      }
     } finally {
       database.close();
     }

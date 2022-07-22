@@ -21,8 +21,8 @@ export default [
   {
     _id: 'changeEdges/default:changeEdges_rocks_123',
     path: '/rocks',
-    _from: 'changes/resources:default:resources_bookmarks_123',
-    _to: 'changes/resources:default:resources_rocks_123',
+    _from: 'changes/default:resources_bookmarks_123',
+    _to: 'changes/default:resources_rocks_123',
   },
 
   // --------------------------------------------------------
@@ -30,8 +30,8 @@ export default [
   {
     _id: 'changeEdges/default:changeEdges_rocks-index_123',
     path: '/rocks-index',
-    _from: 'changes/resources:default:resources_rocks_123',
-    _to: 'changes/resources:default:resources_rocks_123:rocks-index',
+    _from: 'changes/default:resources_rocks_123',
+    _to: 'changes/default:resources_rocks_123:rocks-index',
   },
 
   // --------------------------------------------------------
@@ -39,8 +39,8 @@ export default [
   {
     _id: 'changeEdges/default:changeEdges_90j2klfdjss_123',
     path: '/90jsklfdjss',
-    _from: 'changes/resources:default:resources_rocks_123:rocks-index',
-    _to: 'changes/resources:default:resources_rock_123',
+    _from: 'changes/default:resources_rocks_123:rocks-index',
+    _to: 'changes/default:resources_rock_123',
   },
 
   // -------------------------------------------------------
@@ -48,15 +48,15 @@ export default [
   {
     _id: 'changeEdges/default:changeEdges_trellisfw_123',
     path: '/trellisfw',
-    _from: 'changes/resources:default:resources_bookmarks_999',
-    _to: 'changes/resources:default:resources_trellisfw_999',
+    _from: 'changes/default:resources_bookmarks_999',
+    _to: 'changes/default:resources_trellisfw_999',
   },
   // --------------------------------------------------------
   // /bookmarks/trellisfw/clients
   {
     _id: 'changeEdges/default:changeEdges_clients_123',
     path: '/clients',
-    _from: 'changes/resources:default:resources_trellisfw_999',
-    _to: 'changes/resources:default:resources_clients_999',
+    _from: 'changes/default:resources_trellisfw_999',
+    _to: 'changes/default:resources_clients_999',
   },
 ];

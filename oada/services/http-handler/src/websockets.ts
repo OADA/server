@@ -151,7 +151,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     );
     // Add our state stuff?
     let isAlive = true;
-    const watches: Map<string, Watch> = new Map();
+    const watches = new Map<string, Watch>();
 
     // Set up periodic ping/pong and timeout on socket
     const interval = setInterval(() => {
@@ -522,13 +522,13 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         request.resource_id,
         request._rev
       );
-      trace(change, `Emitted change for ${request.resource_id}`);
+      trace({ change }, `Emitted change for ${request.resource_id}`);
       emitter.emit(request.resource_id, {
         path_leftover: request.path_leftover,
         change,
       });
       if (change?.[0]?.type === 'delete') {
-        trace(change, 'Delete change received');
+        trace({ change }, 'Delete change received');
         if (request.resource_id && request.path_leftover === '') {
           debug('Removing all listeners to: %s', request.resource_id);
           emitter.removeAllListeners(request.resource_id);

@@ -32,6 +32,7 @@ const changes = database.collection(
 const changeEdges = database.collection(
   config.get('arangodb.collections.changeEdges.name')
 );
+const changeGraph = database.graph(config.get('arangodb.graphs.changes.name'));
 
 const MAX_DEPTH = 100;
 
@@ -113,7 +114,7 @@ export async function getChange(
           RETURN change
         )
         LET path = LAST(
-          FOR v, e, p IN 0..${MAX_DEPTH} OUTBOUND change ${changeEdges}
+          FOR v, e, p IN 0..${MAX_DEPTH} OUTBOUND change GRAPH ${changeGraph}
           RETURN p
         )
         RETURN path`
@@ -177,7 +178,7 @@ export async function getChangeArray(
           FILTER change.number == ${Number.parseInt(changeRev as string, 10)}
           RETURN change
         )
-        FOR v, e, p IN 0..${MAX_DEPTH} OUTBOUND change ${changeEdges}
+        FOR v, e, p IN 0..${MAX_DEPTH} OUTBOUND change GRAPH ${changeGraph}
           SORT LENGTH(p.edges), v.number
           RETURN p`
   );
@@ -225,7 +226,7 @@ export async function getRootChange(
           RETURN change
         )
         LET path = LAST(
-          FOR v, e, p IN 0..${MAX_DEPTH} OUTBOUND change ${changeEdges}
+          FOR v, e, p IN 0..${MAX_DEPTH} OUTBOUND change GRAPH ${changeGraph}
           RETURN v
         )
         RETURN path`

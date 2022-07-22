@@ -49,6 +49,9 @@ const graphNodes = database.collection(
 const edgesCollection = database.collection(
   config.get('arangodb.collections.edges.name')
 );
+const resourceGraph = database.graph(
+  config.get('arangodb.graphs.resources.name')
+);
 
 const MAX_DEPTH = 100; // TODO: Is this good?
 
@@ -115,9 +118,9 @@ export async function lookupFromUrl(
   }
 
   const query = aql`
-    WITH ${edgesCollection}, ${graphNodes}
+    WITH ${graphNodes}
     LET path = LAST(
-      FOR v, e, p IN 0..${pieces.length} OUTBOUND ${startNode} ${edgesCollection}
+      FOR v, e, p IN 0..${pieces.length} OUTBOUND ${startNode} GRAPH ${resourceGraph}
         ${filters}
         RETURN p
     )
@@ -409,10 +412,10 @@ export async function getParents(id: string) {
   try {
     const cursor = await database.query(
       aql`
-        WITH ${edgesCollection}, ${graphNodes}, ${resources}
+        WITH ${graphNodes}, ${resources}
         FOR v, e IN 0..1
           INBOUND ${`graphNodes/${id.replace(/\//, ':')}`}
-          ${edgesCollection}
+          GRAPH ${resourceGraph}
           FILTER e.versioned == true
           LET res = DOCUMENT(v.resource_id)
           RETURN {
@@ -444,14 +447,14 @@ export async function getParents(id: string) {
 export async function getNewDescendants(id: string, rev: string | number) {
   const cursor = await database.query(
     aql`
-      WITH ${graphNodes}, ${edgesCollection}, ${resources}
       LET node = FIRST(
         FOR node in ${graphNodes}
           FILTER node.resource_id == ${id}
           RETURN node
       )
 
-      FOR v, e, p IN 0..${MAX_DEPTH} OUTBOUND node ${edgesCollection}
+      WITH ${graphNodes}, ${resources}
+      FOR v, e, p IN 0..${MAX_DEPTH} OUTBOUND node GRAPH ${resourceGraph}
         FILTER p.edges[*].versioned ALL == true
         FILTER v.is_resource
         LET ver = SPLIT(DOCUMENT(LAST(p.vertices).resource_id)._oada_rev, '-', 1)
@@ -468,21 +471,22 @@ export async function getChanges(id: string, rev: string | number) {
   // Currently utilizes fixed depth search "7..7" to get data points down
   const cursor = await database.query(
     aql`
-      WITH ${graphNodes}, ${edgesCollection}, ${resources}
+      WITH ${graphNodes}, ${resources}
       LET node = FIRST(
         FOR node in ${graphNodes}
           FILTER node.resource_id == ${id}
           RETURN node
       )
 
-      LET objs = (FOR v, e, p IN 7..7 OUTBOUND node ${edgesCollection}
-        FILTER v.is_resource
-        LET ver = SPLIT(DOCUMENT(v.resource_id)._oada_rev, '-', 1)
-        FILTER TO_NUMBER(ver) >= ${Number.parseInt(rev as string, 10)}
-        RETURN DISTINCT {
-          id: v.resource_id,
-          rev: DOCUMENT(v.resource_id)._oada_rev
-        }
+      LET objs = (
+        FOR v, e, p IN 7..7 OUTBOUND node GRAPH ${resourceGraph}
+          FILTER v.is_resource
+          LET ver = SPLIT(DOCUMENT(v.resource_id)._oada_rev, '-', 1)
+          FILTER TO_NUMBER(ver) >= ${Number.parseInt(rev as string, 10)}
+          RETURN DISTINCT {
+            id: v.resource_id,
+            rev: DOCUMENT(v.resource_id)._oada_rev
+          }
       )
       FOR obj in objs
         LET doc = DOCUMENT(obj.id)
@@ -737,7 +741,7 @@ export async function deletePartialResource(
             RETURN node._id
         )
         LET vs = (
-          FOR v, e, p IN 1..${MAX_DEPTH} OUTBOUND start ${edgesCollection}
+          FOR v, e, p IN 1..${MAX_DEPTH} OUTBOUND start GRAPH ${resourceGraph}
             OPTIONS { bfs: true, uniqueVertices: 'global' }
             FILTER p.edges[0].name == ${name}
             FILTER p.vertices[*].resource_id ALL == ${id}
@@ -745,13 +749,13 @@ export async function deletePartialResource(
         )
 
         LET estart = (
-          FOR v, e IN 1..1 OUTBOUND start ${edgesCollection}
+          FOR v, e IN 1..1 OUTBOUND start GRAPH ${resourceGraph}
             FILTER e.name == ${name}
             RETURN e
         )
         LET ev = (
           FOR vd IN vs
-            FOR v, e IN 1..1 ANY vd ${edgesCollection}
+            FOR v, e IN 1..1 ANY vd GRAPH ${resourceGraph}
               RETURN e
         )
 
