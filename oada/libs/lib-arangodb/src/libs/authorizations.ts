@@ -43,9 +43,9 @@ export interface Authorization {
 
 export async function findById(id: string): Promise<Authorization | undefined> {
   const cursor = await database.query(aql`
-      FOR t IN ${authorizations}
-        FILTER t._key == ${id}
-        RETURN UNSET(t, '_key')`);
+    FOR t IN ${authorizations}
+      FILTER t._key == ${id}
+      RETURN UNSET(t, '_key')`);
 
   // eslint-disable-next-line @typescript-eslint/ban-types
   const t = (await cursor.next()) as Authorization | null;

@@ -61,22 +61,22 @@ export async function getChanges(
 ): Promise<AsyncIterableIterator<number>> {
   return database.query(
     aql`
-        FOR change in ${changes}
-          FILTER change.resource_id == ${resourceId}
-          RETURN change.number`
+      FOR change in ${changes}
+        FILTER change.resource_id == ${resourceId}
+        RETURN change.number`
   );
 }
 
 export async function getMaxChangeRev(resourceId: string): Promise<number> {
   const cursor = await database.query(
     aql`
-        RETURN FIRST(
-          FOR change in ${changes}
-            FILTER change.resource_id == ${resourceId}
-            SORT change.number DESC
-            LIMIT 1
-            RETURN change.number
-        )`
+      RETURN FIRST(
+        FOR change in ${changes}
+          FILTER change.resource_id == ${resourceId}
+          SORT change.number DESC
+          LIMIT 1
+          RETURN change.number
+      )`
   );
 
   return ((await cursor.next()) as number) || 0;
@@ -107,17 +107,17 @@ export async function getChange(
 
   const cursor = await database.query(
     aql`
-        LET change = FIRST(
-          FOR change in ${changes}
-          FILTER change.resource_id == ${resourceId}
-          FILTER change.number == ${Number.parseInt(changeRev as string, 10)}
-          RETURN change
-        )
-        LET path = LAST(
-          FOR v, e, p IN 0..${MAX_DEPTH} OUTBOUND change GRAPH ${changeGraph}
-          RETURN p
-        )
-        RETURN path`
+      LET change = FIRST(
+        FOR change in ${changes}
+        FILTER change.resource_id == ${resourceId}
+        FILTER change.number == ${Number.parseInt(changeRev as string, 10)}
+        RETURN change
+      )
+      LET path = LAST(
+        FOR v, e, p IN 0..${MAX_DEPTH} OUTBOUND change GRAPH ${changeGraph}
+        RETURN p
+      )
+      RETURN path`
   );
 
   const result = (await cursor.next()) as {
@@ -172,15 +172,15 @@ export async function getChangeArray(
 
   const cursor = await database.query(
     aql`
-        LET change = FIRST(
-          FOR change in ${changes}
-          FILTER change.resource_id == ${resourceId}
-          FILTER change.number == ${Number.parseInt(changeRev as string, 10)}
-          RETURN change
-        )
-        FOR v, e, p IN 0..${MAX_DEPTH} OUTBOUND change GRAPH ${changeGraph}
-          SORT LENGTH(p.edges), v.number
-          RETURN p`
+      LET change = FIRST(
+        FOR change in ${changes}
+        FILTER change.resource_id == ${resourceId}
+        FILTER change.number == ${Number.parseInt(changeRev as string, 10)}
+        RETURN change
+      )
+      FOR v, e, p IN 0..${MAX_DEPTH} OUTBOUND change GRAPH ${changeGraph}
+        SORT LENGTH(p.edges), v.number
+        RETURN p`
   );
   // Iterate over the graph
   return cursor.map((document) => toChangeObject(document)); // Convert to change object
@@ -219,17 +219,17 @@ export async function getRootChange(
 ): Promise<{ edges: ChangeEdge[]; vertices: ChangeVertex[] }> {
   const cursor = await database.query(
     aql`
-        LET change = FIRST(
-          FOR change in ${changes}
-          FILTER change.resource_id == ${resourceId}
-          FILTER change.number == ${Number.parseInt(changeRev as string, 10)}
-          RETURN change
-        )
-        LET path = LAST(
-          FOR v, e, p IN 0..${MAX_DEPTH} OUTBOUND change GRAPH ${changeGraph}
-          RETURN v
-        )
-        RETURN path`
+      LET change = FIRST(
+        FOR change in ${changes}
+        FILTER change.resource_id == ${resourceId}
+        FILTER change.number == ${Number.parseInt(changeRev as string, 10)}
+        RETURN change
+      )
+      LET path = LAST(
+        FOR v, e, p IN 0..${MAX_DEPTH} OUTBOUND change GRAPH ${changeGraph}
+        RETURN v
+      )
+      RETURN path`
   );
 
   return (await cursor.next()) as {
@@ -265,27 +265,27 @@ export async function putChange({
   trace({ change }, 'putChange: inserting change');
   const cursor = await database.query(
     aql`
-        LET doc = FIRST(
-          INSERT {
-            body: ${change},
-            type: ${type},
-            resource_id: ${resId},
-            number: ${number},
-            authorization_id: ${authorizationId ?? null},
-            user_id: ${userId ?? null}
-          } IN ${changes}
-          RETURN NEW
-        )
+      LET doc = FIRST(
+        INSERT {
+          body: ${change},
+          type: ${type},
+          resource_id: ${resId},
+          number: ${number},
+          authorization_id: ${authorizationId ?? null},
+          user_id: ${userId ?? null}
+        } IN ${changes}
+        RETURN NEW
+      )
 
-        LET children = (
-          FOR child IN ${children}
-            INSERT {
-              _to: child,
-              _from: doc._id,
-              path: ${path ?? null}
-            } in ${changeEdges}
-        )
-        RETURN doc._id`
+      LET children = (
+        FOR child IN ${children}
+          INSERT {
+            _to: child,
+            _from: doc._id,
+            path: ${path ?? null}
+          } in ${changeEdges}
+      )
+      RETURN doc._id`
   );
   return (await cursor.next()) as string;
 }

@@ -103,9 +103,9 @@ export async function findByUsername(
 ): Promise<DBUser | undefined> {
   const cursor = await database.query(
     aql`
-        FOR u IN ${users}
-          FILTER u.username == ${username}
-          RETURN u`
+      FOR u IN ${users}
+        FILTER u.username == ${username}
+        RETURN u`
   );
   const user = (await cursor.next()) as DBUser;
 
@@ -118,10 +118,10 @@ export async function findByOIDCUsername(
 ): Promise<DBUser | undefined> {
   const cursor = await database.query(
     aql`
-        FOR u IN ${users}
-          FILTER u.oidc.username == ${oidcUsername}
-          FILTER u.oidc.iss == ${oidcDomain}
-          RETURN u`
+      FOR u IN ${users}
+        FILTER u.oidc.username == ${oidcUsername}
+        FILTER u.oidc.iss == ${oidcDomain}
+        RETURN u`
   );
   const user = (await cursor.next()) as DBUser;
 
@@ -138,10 +138,10 @@ export async function findByOIDCToken(idToken: {
 }): Promise<DBUser | undefined> {
   const cursor = await database.query(
     aql`
-        FOR u IN ${users}
-          FILTER u.oidc.sub == ${idToken.sub}
-          FILTER u.oidc.iss == ${idToken.iss}
-          RETURN u`
+      FOR u IN ${users}
+        FILTER u.oidc.sub == ${idToken.sub}
+        FILTER u.oidc.iss == ${idToken.iss}
+        RETURN u`
   );
   const user = (await cursor.next()) as DBUser;
 
