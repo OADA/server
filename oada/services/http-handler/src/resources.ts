@@ -169,14 +169,14 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
      */
     const fullpath = request.oadaPath;
 
-    const resp = await resources.lookupFromUrl(
+    const result = await resources.lookupFromUrl(
       `/${fullpath}`,
       request.user.user_id
     );
-    request.log.trace(resp, 'Graph lookup result');
-    if (resp.resource_id) {
+    request.log.trace({ result }, 'Graph lookup result');
+    if (result.resource_id) {
       // Rewire URL to resource found by graph
-      const url = `${resp.resource_id}${resp.path_leftover}`;
+      const url = `${result.resource_id}${result.path_leftover}`;
       // Log
       request.log.info('Graph lookup: %s => %s', fullpath, url);
       // Remove `/resources`? IDK
@@ -186,8 +186,8 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
       void reply.header('Content-Location', `/${fullpath}`);
     }
 
-    request.oadaGraph = resp;
-    request.resourceExists = resp.resourceExists;
+    request.oadaGraph = result;
+    request.resourceExists = result.resourceExists;
   });
 
   /**
@@ -207,7 +207,7 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
       // RequestType: request.method.toLowerCase(),
     });
 
-    request.log.trace(response, 'permissions response');
+    request.log.trace({ response }, 'permissions response');
     switch (request.method) {
       case 'PUT':
       case 'POST':
@@ -402,6 +402,9 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
       }
     },
   });
+
+  // Removes both built-in content type parsers
+  fastify.removeContentTypeParser(['application/json', 'text/plain']);
 
   // Parse JSON content types as text (but do not parse JSON yet)
   fastify.addContentTypeParser(
