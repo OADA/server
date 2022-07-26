@@ -20,13 +20,28 @@ import { config } from './config.js';
 import { createServer } from 'node:http';
 
 import { collectDefaultMetrics, contentType, register } from 'prom-client';
+import type NStats from 'nstats';
 
 collectDefaultMetrics({ register });
+
+let stats: NStats.NStats | undefined;
+
+const nstatsOptional = await import('nstats');
+export const nstats: typeof NStats = (...parameters) => {
+  stats = nstatsOptional.default(...parameters);
+  return stats;
+};
 
 const server = createServer(async (_, response) => {
   try {
     const metrics = await register.metrics();
     response.writeHead(200, { 'Content-Type': contentType });
+
+    if (stats) {
+      response.write(stats.toPrometheus());
+      response.write('\n');
+    }
+
     response.end(metrics);
   } catch (error: unknown) {
     response.writeHead(500);

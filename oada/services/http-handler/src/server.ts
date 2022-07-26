@@ -17,8 +17,8 @@
 
 import { mixins, pino } from '@oada/pino-debug';
 
-import '@oada/lib-prom';
 import { KafkaError } from '@oada/lib-kafka';
+import { nstats } from '@oada/lib-prom';
 
 import { plugin as formats } from '@oada/formats-server';
 
@@ -310,6 +310,11 @@ await fastify.register(async (instance) => {
     prefix: '/authorizations',
   });
 });
+
+const stats = nstats(fastify.websocketServer);
+const plugin = stats.fastify();
+plugin[Symbol.for('plugin-meta')].fastify = '>=3.0.0';
+await fastify.register(plugin);
 
 if (esMain(import.meta)) {
   try {

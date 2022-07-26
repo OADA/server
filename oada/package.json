@@ -53,6 +53,9 @@
   "dependencies": {
     "pino-pretty": "^8.1.0"
   },
+  "resolutions": {
+    "fastify-plugin": "4.0.0"
+  },
   "engines": {
     "node": ">=18.0.0"
   },

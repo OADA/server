@@ -39,9 +39,14 @@
     "@ava/typescript": "^3.0.1",
     "@types/convict": "^6.1.1",
     "@types/node": "^18.6.1",
-    "ava": "4.0.0-rc.1"
+    "@types/ws": "^8.5.3",
+    "ava": "4.0.0-rc.1",
+    "fastify-plugin": "^4.0.0"
   },
   "volta": {
     "node": "18.5.0"
+  },
+  "optionalDependencies": {
+    "nstats": "^4.2.0"
   }
 }

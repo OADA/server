@@ -175,6 +175,7 @@
       "kustomize",
       "mkcert",
       "nosemgrep",
+      "nstats",
       "oada",
       "oadadeploy",
       "oadaified",
