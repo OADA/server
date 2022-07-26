@@ -1,7 +1,7 @@
 {
   "name": "@oada/permissions-handler",
   "description": "",
-  "version": "3.5.0",
+  "version": "3.5.1",
   "type": "module",
   "author": "",
   "license": "Apache-2.0",
@@ -22,10 +22,10 @@
     ]
   },
   "dependencies": {
-    "@oada/lib-config": "^3.5.0",
-    "@oada/lib-kafka": "^3.5.0",
+    "@oada/lib-config": "^3.5.1",
+    "@oada/lib-kafka": "^3.5.1",
     "@oada/lib-prom": "workspace:^",
-    "@oada/pino-debug": "^3.5.0",
+    "@oada/pino-debug": "^3.5.1",
     "debug": "^4.3.4",
     "es-main": "^1.2.0",
     "tslib": "^2.4.0",

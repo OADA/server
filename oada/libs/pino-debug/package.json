@@ -1,6 +1,6 @@
 {
   "name": "@oada/pino-debug",
-  "version": "3.5.0",
+  "version": "3.5.1",
   "description": "OADA pino-debug wrapper",
   "main": "dist/index.js",
   "engines": {
