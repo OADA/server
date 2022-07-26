@@ -49,9 +49,8 @@ const graphNodes = database.collection(
 const edgesCollection = database.collection(
   config.get('arangodb.collections.edges.name')
 );
-const resourceGraph = database.graph(
-  config.get('arangodb.graphs.resources.name')
-);
+// HACK: Should use database.graph but there is a bug with aql template tags
+const resourceGraph = config.get('arangodb.graphs.resources.name');
 
 const MAX_DEPTH = 100; // TODO: Is this good?
 
@@ -511,7 +510,7 @@ export async function putResource(
 
   const links = checkLinks ? await addLinks(object) : [];
   info('Upserting resource %s', object._key);
-  trace(links, 'Upserting links');
+  trace({ links }, 'Upserting links');
 
   // TODO: Should it check that graphNodes exist but are wrong?
   let q;

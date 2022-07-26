@@ -32,7 +32,8 @@ const changes = database.collection(
 const changeEdges = database.collection(
   config.get('arangodb.collections.changeEdges.name')
 );
-const changeGraph = database.graph(config.get('arangodb.graphs.changes.name'));
+// HACK: Should use database.graph but there is a bug with aql template tags
+const changeGraph = config.get('arangodb.graphs.changes.name');
 
 const MAX_DEPTH = 100;
 
