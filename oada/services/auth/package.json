@@ -1,6 +1,6 @@
 {
   "name": "@oada/auth",
-  "version": "3.0.1",
+  "version": "3.5.0",
   "description": "Reference implementation of OADA Authentication and Authorization server.",
   "bin": {
     "token": "./dist/token.js"
@@ -43,11 +43,11 @@
     "@oada/certs": "^4.1.1",
     "@oada/error": "^2.0.1",
     "@oada/id-client": "^2.0.8",
-    "@oada/lib-arangodb": "^3.0.1",
-    "@oada/lib-config": "^3.0.1",
+    "@oada/lib-arangodb": "^3.5.0",
+    "@oada/lib-config": "^3.5.0",
     "@oada/lib-prom": "workspace:^",
     "@oada/lookup": "^2.0.0",
-    "@oada/pino-debug": "^3.0.1",
+    "@oada/pino-debug": "^3.5.0",
     "@oada/types": "^3.0.6",
     "@oada/well-known-json": "^2.0.1",
     "arangojs": "^7.8.0",

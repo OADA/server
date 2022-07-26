@@ -1,6 +1,6 @@
 {
   "name": "@oada/lib-kafka",
-  "version": "3.0.1",
+  "version": "3.5.0",
   "description": "OADA Kafka library",
   "main": "./dist/index.js",
   "type": "module",
@@ -31,7 +31,7 @@
   "author": "Alex Layton <alex@layton.in>",
   "license": "Apache-2.0",
   "dependencies": {
-    "@oada/lib-config": "^3.0.1",
+    "@oada/lib-config": "^3.5.0",
     "bluebird": "^3.7.2",
     "cls-rtracer": "^2.6.2",
     "debug": "^4.3.4",
@@ -41,7 +41,7 @@
     "uuid": "^8.3.2"
   },
   "devDependencies": {
-    "@ava/typescript": "^3.0.1",
+    "@ava/typescript": "^3.5.0",
     "@types/bluebird": "^3.5.36",
     "@types/convict": "^6.1.1",
     "@types/debug": "^4.1.7",
