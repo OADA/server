@@ -48,7 +48,7 @@
     "@oada/lib-prom": "workspace:^",
     "@oada/lookup": "^2.0.0",
     "@oada/pino-debug": "^3.5.1",
-    "@oada/types": "^3.0.6",
+    "@oada/types": "^3.1.1",
     "@oada/well-known-json": "^2.0.1",
     "arangojs": "^7.8.0",
     "axios": "^0.27.2",

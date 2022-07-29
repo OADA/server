@@ -17,12 +17,11 @@
 
 import { config } from './config.js';
 
-import { EventEmitter } from 'node:events';
 import { strict as assert } from 'node:assert';
 import { promisify } from 'node:util';
 
+import EventEmitter from 'eventemitter3';
 import type { FastifyPluginAsync } from 'fastify';
-import { JsonPointer } from 'json-ptr';
 import type LightMyRequest from 'light-my-request';
 import type WebSocket from 'ws';
 import fastifyWebsocket from '@fastify/websocket';
@@ -54,13 +53,13 @@ const warn = log('websockets:warn');
 const debug = log('websockets:debug');
 const trace = log('websockets:trace');
 
-const emitter = new EventEmitter();
+const emitter = new EventEmitter<string, { change: Change }>();
 
 class Watch {
   /**
-   * @description Maps requestId to path_leftover
+   * @description Set of `requestId`s
    */
-  readonly requests = new Map<string, string>();
+  readonly requests = new Set<string>();
   readonly resourceId;
 
   readonly #send: (value: unknown) => Promise<void>;
@@ -82,9 +81,9 @@ class Watch {
     emitter.removeListener(this.resourceId, this.#cb);
   }
 
-  async sendChange(resp: SocketChange) {
-    trace(resp, 'Sending change');
-    await this.#send(JSON.stringify(resp));
+  async sendChange(change: SocketChange) {
+    trace({ change }, 'Sending change');
+    await this.#send(JSON.stringify(change));
   }
 
   #handler({ change }: { change: Change }): void {
@@ -94,30 +93,10 @@ class Watch {
     const message = {
       resourceId,
       change,
-      requestId: [] as string[],
-      path_leftover: [] as string[],
+      requestId: Array.from(requests) as [string, ...string[]],
     };
-    for (const [requestId, pathLeftover] of requests) {
-      // Find requests with changes
-      const pathChange: unknown = JsonPointer.get(
-        change?.[0]?.body ?? {},
-        pathLeftover
-      );
-      if (pathChange === undefined) {
-        // No relevant change
-        continue;
-      }
 
-      message.requestId.push(requestId);
-      message.path_leftover.push(pathLeftover);
-    }
-
-    if (message.requestId.length <= 0) {
-      // No-one to notify?
-      return;
-    }
-
-    void this.sendChange(message as SocketChange);
+    void this.sendChange(message);
   }
 }
 
@@ -382,7 +361,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
 
           const watch =
             watches.get(resourceId) ?? new Watch(resourceId, socket);
-          watch.requests.set(message.requestId, pathLeftover);
+          watch.requests.add(message.requestId);
           watches.set(resourceId, watch);
 
           // Emit all new changes from the given rev in the request
@@ -429,7 +408,6 @@ const plugin: FastifyPluginAsync = async (fastify) => {
               await watch.sendChange({
                 requestId: [message.requestId],
                 resourceId,
-                path_leftover: [pathLeftover],
                 change,
               });
             }
@@ -517,6 +495,11 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       return;
     }
 
+    if (emitter.listeners(request.resource_id).length === 0) {
+      // No WATCHes
+      return;
+    }
+
     try {
       const change = await changes.getChangeArray(
         request.resource_id,
@@ -524,7 +507,6 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       );
       trace({ change }, `Emitted change for ${request.resource_id}`);
       emitter.emit(request.resource_id, {
-        path_leftover: request.path_leftover,
         change,
       });
       if (change?.[0]?.type === 'delete') {
