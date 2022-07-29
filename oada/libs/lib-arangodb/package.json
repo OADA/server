@@ -50,7 +50,7 @@
   "dependencies": {
     "@oada/lib-config": "^3.5.1",
     "@oada/oadaify": "^2.1.0",
-    "@oada/types": "^3.0.6",
+    "@oada/types": "^3.1.1",
     "arangojs": "^7.8.0",
     "bcryptjs": "^2.4.3",
     "clone-deep": "^4.0.1",
@@ -69,7 +69,7 @@
     "@types/deep-equal": "^1.0.1",
     "@types/flat": "^5.0.2",
     "@types/json-pointer": "^1.0.31",
-    "@types/node": "^18.6.1",
+    "@types/node": "^18.6.2",
     "ava": "4.0.0-rc.1",
     "type-fest": "^2.17.0"
   },
