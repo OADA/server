@@ -12,6 +12,8 @@ spec:
   image: {{ .Values.arangodb.image }}:{{ .Values.arangodb.tag }}
   mode: Single
   environment: {{ .Values.global.development | ternary "Development" "Production" }}
+  metrics:
+    enabled: {{ include "oada.prometheus" . }}
   externalAccess:
     {{/* Disable external access for Production */}}
     type: {{ .Values.global.development | ternary "Auto" "None" }}

@@ -42,4 +42,25 @@ spec:
           enabled: true
       {{- end }}
     developerMode: {{ .Values.global.development }}
+{{- if eq (include "oada.prometheus" $) "true" }}
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  namespace: {{ .Release.Namespace }}
+  name: redpanda-{{ .Release.Name }}
+  labels:
+    app.kubernetes.io/name: redpanda
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    {{- include "oada.chart.labels" . | nindent 4 }}
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: redpanda
+      app.kubernetes.io/instance: {{ .Release.Name }}
+  endpoints:
+  - port: admin
+  namespaceSelector:
+    any: false
+{{- end }}
 {{- end }}

@@ -154,6 +154,8 @@ spec:
       app.kubernetes.io/instance: {{ $.Release.Name }}
   podMetricsEndpoints:
   - port: prometheus
+  namespaceSelector:
+    any: false
 {{- end }}
 ---
 {{ end -}}
