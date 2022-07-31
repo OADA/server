@@ -542,7 +542,7 @@ __metadata:
     "@oada/lib-prom": "workspace:^"
     "@oada/lookup": ^2.0.0
     "@oada/pino-debug": ^3.5.1
-    "@oada/types": ^3.1.1
+    "@oada/types": ^3.1.2
     "@oada/well-known-json": ^2.0.1
     "@types/bcryptjs": ^2.4.2
     "@types/body-parser": ^1.19.2
@@ -591,7 +591,7 @@ __metadata:
     passport-oauth2-client-password: ~0.1.2
     pem-jwk: ^2.0.0
     tslib: ^2.4.0
-    type-fest: ^2.17.0
+    type-fest: ^2.18.0
     urijs: ^1.19.11
     uuid: ^8.3.2
   bin:
@@ -710,12 +710,12 @@ __metadata:
     "@oada/oadaify": ^2.1.0
     "@oada/permissions-handler": ^3.5.1
     "@oada/pino-debug": ^3.5.1
-    "@oada/types": ^3.1.1
+    "@oada/types": ^3.1.2
     "@oada/users": "workspace:services/users"
     "@oada/write-handler": ^3.5.1
     "@types/cacache": ^15.0.1
     "@types/debug": ^4.1.7
-    "@types/node": ^18.6.2
+    "@types/node": ^18.6.3
     "@types/type-is": ^1.6.3
     "@types/uuid": ^8.3.4
     "@types/ws": ^8.5.3
@@ -763,7 +763,7 @@ __metadata:
     "@ava/typescript": ^3.0.1
     "@oada/lib-config": ^3.5.1
     "@oada/oadaify": ^2.1.0
-    "@oada/types": ^3.1.1
+    "@oada/types": ^3.1.2
     "@types/bcryptjs": ^2.4.2
     "@types/clone-deep": ^4.0.1
     "@types/convict": ^6.1.1
@@ -771,7 +771,7 @@ __metadata:
     "@types/deep-equal": ^1.0.1
     "@types/flat": ^5.0.2
     "@types/json-pointer": ^1.0.31
-    "@types/node": ^18.6.2
+    "@types/node": ^18.6.3
     arangojs: ^7.8.0
     ava: 4.0.0-rc.1
     bcryptjs: ^2.4.3
@@ -781,7 +781,7 @@ __metadata:
     flat: ^5.0.2
     json-ptr: ^3.1.1
     tslib: ^2.4.0
-    type-fest: ^2.17.0
+    type-fest: ^2.18.0
   languageName: unknown
   linkType: soft
 
@@ -811,7 +811,7 @@ __metadata:
     "@types/bluebird": ^3.5.36
     "@types/convict": ^6.1.1
     "@types/debug": ^4.1.7
-    "@types/node": ^18.6.2
+    "@types/node": ^18.6.3
     "@types/uuid": ^8.3.4
     ava: 4.0.0-rc.1
     bluebird: ^3.7.2
@@ -831,7 +831,7 @@ __metadata:
     "@ava/typescript": ^3.0.1
     "@oada/lib-config": ^3.5.1
     "@types/convict": ^6.1.1
-    "@types/node": ^18.6.2
+    "@types/node": ^18.6.3
     "@types/ws": ^8.5.3
     ava: 4.0.0-rc.1
     fastify-plugin: ^4.0.0
@@ -886,7 +886,7 @@ __metadata:
     "@oada/lib-prom": "workspace:^"
     "@oada/pino-debug": ^3.5.1
     "@types/debug": ^4.1.7
-    "@types/node": ^18.6.2
+    "@types/node": ^18.6.3
     "@types/type-is": ^1.6.3
     debug: ^4.3.4
     es-main: ^1.2.0
@@ -901,7 +901,7 @@ __metadata:
   resolution: "@oada/pino-debug@workspace:libs/pino-debug"
   dependencies:
     "@types/debug": ^4.1.7
-    "@types/node": ^18.6.2
+    "@types/node": ^18.6.3
     cls-rtracer: ^2.6.2
     is-interactive: ^1.0.0
     pino: ^8.3.1
@@ -927,15 +927,15 @@ __metadata:
     "@oada/pino-debug": ^3.5.1
     "@oada/write-handler": ^3.5.1
     "@types/debug": ^4.1.7
-    "@types/node": ^18.6.2
+    "@types/node": ^18.6.3
     "@types/randomstring": ^1.1.8
     ajv: ^8.11.0
     ava: 4.0.0-rc.1
     debug: ^4.3.4
-    p-queue: ^7.2.0
+    p-queue: ^7.3.0
     randomstring: ^1.2.2
     tslib: ^2.4.0
-    type-fest: ^2.17.0
+    type-fest: ^2.18.0
     typescript: ^4.7.4
   languageName: unknown
   linkType: soft
@@ -963,7 +963,7 @@ __metadata:
     "@oada/lib-arangodb": ^3.5.1
     "@oada/pino-debug": ^3.5.1
     "@types/debug": ^4.1.7
-    "@types/node": ^18.6.2
+    "@types/node": ^18.6.3
     debug: ^4.3.4
     tslib: ^2.4.0
   languageName: unknown
@@ -980,22 +980,22 @@ __metadata:
     "@oada/pino-debug": ^3.5.1
     "@oada/write-handler": ^3.5.1
     "@types/debug": ^4.1.7
-    "@types/node": ^18.6.2
+    "@types/node": ^18.6.3
     axios: ^0.27.2
     debug: ^4.3.4
     tslib: ^2.4.0
   languageName: unknown
   linkType: soft
 
-"@oada/types@npm:^3.1.1":
-  version: 3.1.1
-  resolution: "@oada/types@npm:3.1.1"
+"@oada/types@npm:^3.1.1, @oada/types@npm:^3.1.2":
+  version: 3.1.2
+  resolution: "@oada/types@npm:3.1.2"
   dependencies:
     ajv: 8.11.0
     ajv-formats: ^2.1.1
     ajv-formats-draft2019: ^1.6.1
     tslib: ^2.4.0
-  checksum: 5bd1c88a7c3f37e705675278d59ae26bf1bfc7c31f1877943a2a5965f076aa80927ddadfb26e88c44c7505a488086388ad945ae97465d38cbb44d4721bee48e9
+  checksum: f6f34522cf7a97a6dd786ea23bc9ecb793a6d72357c2a8be3656b57d12d0df219dc35181056c664164bb5deb458ffc60b7560a04831fc74ec62268e19a0d3809
   languageName: node
   linkType: hard
 
@@ -1033,7 +1033,7 @@ __metadata:
     "@oada/lib-kafka": ^3.5.1
     "@oada/lib-prom": "workspace:^"
     "@oada/pino-debug": ^3.5.1
-    "@oada/types": ^3.1.1
+    "@oada/types": ^3.1.2
     "@oada/write-handler": ^3.5.1
     "@types/bluebird": ^3.5.36
     "@types/debug": ^4.1.7
@@ -1092,10 +1092,10 @@ __metadata:
     "@oada/lib-kafka": ^3.5.1
     "@oada/lib-prom": "workspace:^"
     "@oada/pino-debug": ^3.5.1
-    "@oada/types": ^3.1.1
+    "@oada/types": ^3.1.2
     "@types/debug": ^4.1.7
     "@types/json-pointer": ^1.0.31
-    "@types/node": ^18.6.2
+    "@types/node": ^18.6.3
     "@types/object-assign-deep": ^0.4.0
     ava: 4.0.0-rc.1
     debug: ^4.3.4
@@ -1534,10 +1534,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:*, @types/node@npm:>=12, @types/node@npm:>=13.13.4, @types/node@npm:^18.6.2":
-  version: 18.6.2
-  resolution: "@types/node@npm:18.6.2"
-  checksum: 644c460baedb1fbbd55369ab621167cb39ddaa727fd4fcf4bc7080183cf936d7ff8c2c886ba93ff42768d6f7a579a540e6d1e63d3adba4e5758fb13671ae68ce
+"@types/node@npm:*, @types/node@npm:>=12, @types/node@npm:>=13.13.4, @types/node@npm:^18.6.3":
+  version: 18.6.3
+  resolution: "@types/node@npm:18.6.3"
+  checksum: 38495b8fd27200d2b7ab9ccd8c1e2475d2411fba15330f2cba869a85ef79dd42382a2658c8dd298ace8c21ed3bfafcdea408faecd74928b144377d07d00e7c8c
   languageName: node
   linkType: hard
 
@@ -7255,7 +7255,7 @@ __metadata:
     "@tsconfig/node18": ^1.0.1
     "@types/eslint": ^8.4.5
     "@types/mocha": ^9.1.1
-    "@types/node": ^18.6.2
+    "@types/node": ^18.6.3
     "@typescript-eslint/eslint-plugin": ^5.31.0
     "@typescript-eslint/parser": ^5.31.0
     "@yarnpkg/sdks": ^3.0.0-rc.14
@@ -7583,13 +7583,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"p-queue@npm:^7.2.0":
-  version: 7.2.0
-  resolution: "p-queue@npm:7.2.0"
+"p-queue@npm:^7.2.0, p-queue@npm:^7.3.0":
+  version: 7.3.0
+  resolution: "p-queue@npm:7.3.0"
   dependencies:
     eventemitter3: ^4.0.7
     p-timeout: ^5.0.2
-  checksum: 53630ee58a96558f8a835a56679cec7caca4db08724167f009cd04811f24911e9de0804f1dfea68fe7e6b29c8cd727d50b0273d8e943fed09e305656994e57c8
+  checksum: eda8b8d4dac9456d1722c8ee0892bbb2e7f7b79d1f90b6cc1bac5fb9dcf3120285f90c28a68dc2f66bc9e46c7d7d42ad206a2c4d83e7aad27a0226ae042081ee
   languageName: node
   linkType: hard
 
@@ -9454,10 +9454,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"type-fest@npm:^2.17.0":
-  version: 2.17.0
-  resolution: "type-fest@npm:2.17.0"
-  checksum: cb626b7434f463632643ee8681c900d17739decd820f28ed2e77de7fb8fc406f30f3e86b1b8f26a76f94fbf781e96347febaa8d06b5cef21fdc5f65ded86ad05
+"type-fest@npm:^2.18.0":
+  version: 2.18.0
+  resolution: "type-fest@npm:2.18.0"
+  checksum: 0737128d9d77b93793c6ee443e304462a792f5b723a6be035d6cb488c5610a8baa00522805421341c04324c80efba9849885bbfbc5a9623d0672fe8712969f62
   languageName: node
   linkType: hard
 
