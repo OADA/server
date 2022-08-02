@@ -18,13 +18,13 @@
 import libConfig from '@oada/lib-config';
 
 export const { config, schema } = await libConfig({
+  trustProxy: {
+    format: Array,
+    default: ['uniquelocal'],
+    env: 'TRUST_PROXY',
+    arg: 'trust-proxy',
+  },
   wellKnown: {
-    'forceProtocol': {
-      doc: 'use this to force https prefixes on URLs. Useful when behind a proxy.',
-      format: ['https', 'http'],
-      nullable: true,
-      default: null,
-    },
     'server': {
       port: {
         format: 'port',
@@ -66,11 +66,15 @@ export const { config, schema } = await libConfig({
     },
     'mergeSubServices': {
       format: Array,
-      default: [] as Array<{
-        resource: string;
-        base: string;
-        addPrefix?: string;
-      }>,
+      default: [] as Array<
+        | {
+            base: string;
+            addPrefix?: string;
+          }
+        | string
+      >,
+      env: 'WELLKNOWN_SUBSERVICES',
+      arg: 'wellknown-subservices',
     },
     'oada-configuration': {
       format: Object,
@@ -100,7 +104,7 @@ if (!config.get('wellKnown.oada-configuration.oada_base_uri')) {
   config.set(
     'wellKnown.wellKnown.server.oada-configuration.oada_base_uri',
     `${server.mode}//${server.domain}${server.port ? `:${server.port}` : ''}${
-      server.path_prefix ? server.path_prefix : ''
+      server.path_prefix ?? ''
     }`
   );
 }

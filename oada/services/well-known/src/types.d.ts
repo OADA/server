@@ -1,6 +1,5 @@
 /**
- * @license
- * Copyright 2017-2021 Open Ag Data Alliance
+ * Copyright 2022 Open Ag Data Alliance
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,16 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-declare module 'es-main' {
-  function esMain(meta: unknown): boolean;
-  export = esMain;
-}
-
-// Make TS understand assert better
-declare module 'assert' {
-  function internal(value: unknown, message?: string | Error): asserts value;
-}
 
 declare module 'nstats' {
   import type { Server as HTTPServer } from 'node:http';

@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2017-2021 Open Ag Data Alliance
+ * Copyright 2022 Open Ag Data Alliance
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.

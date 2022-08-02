@@ -53,6 +53,22 @@
       "remoteRoot": "/oada/"
     },
     {
+      "name": "k8s: Attach to well-known",
+      "presentation": {
+        "group": "k8s"
+      },
+      "type": "cloudcode.kubernetes",
+      "request": "attach",
+      "language": "Node",
+      "debugPort": "inspect",
+      "podSelector": {
+        "app.kubernetes.io/name": "well-known"
+      },
+      "smartStep": true,
+      "localRoot": "${workspaceFolder}/oada/",
+      "remoteRoot": "/oada/"
+    },
+    {
       "type": "node",
       "request": "attach",
       "name": "Attach to service",
@@ -69,7 +85,8 @@
       "configurations": [
         "k8s: Attach to http-handler",
         "k8s: Attach to write-handler",
-        "k8s: Attach to auth"
+        "k8s: Attach to auth",
+        "k8s: Attach to well-known"
       ],
       "presentation": {
         "group": "k8s",

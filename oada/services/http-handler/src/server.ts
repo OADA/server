@@ -17,6 +17,8 @@
 
 import { mixins, pino } from '@oada/pino-debug';
 
+import { config } from './config.js';
+
 import { KafkaError } from '@oada/lib-kafka';
 import { nstats } from '@oada/lib-prom';
 
@@ -24,7 +26,6 @@ import { plugin as formats } from '@oada/formats-server';
 
 import tokenLookup, { TokenResponse } from './tokenLookup.js';
 import authorizations from './authorizations.js';
-import { config } from './config.js';
 import resources from './resources.js';
 import users from './users.js';
 import websockets from './websockets.js';
@@ -86,8 +87,10 @@ mixins.push(() => ({
   reqId: requestContext.get('id'),
 }));
 
+const trustProxy = config.get('trustProxy');
 // eslint-disable-next-line new-cap
 export const fastify = Fastify({
+  trustProxy,
   logger: {
     ...logger,
     // HACK: fastify overrides existing serializers. This circumvents that...
@@ -137,12 +140,13 @@ if (process.env.NODE_ENV !== 'production') {
   });
 }
 
+const port = config.get('server.port');
 export async function start(): Promise<void> {
   await fastify.listen({
-    port: config.get('server.port'),
+    port,
     host: '::',
   });
-  fastify.log.info('OADA Server started on port %d', config.get('server.port'));
+  fastify.log.info('OADA Server started on port %d', port);
 }
 
 declare module '@fastify/request-context' {
