@@ -38,6 +38,7 @@ data:
   {{ if eq (include "oada.kafka.deploy" .) "true" -}}
   KAFKA_BROKERS: {{ include "oada.kafka.brokers" . }}
   {{- end }}
+  WELLKNOWN_SUBSERVICES: http://auth-{{ .Release.Name }}
   {{ if .Values.global.development -}}
   NODE_ENV: development
   NODE_TLS_REJECT_UNAUTHORIZED: '0'

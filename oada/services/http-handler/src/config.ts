@@ -18,6 +18,12 @@
 import libConfig from '@oada/lib-config';
 
 export const { config, schema } = await libConfig({
+  'trustProxy': {
+    format: Array,
+    default: ['uniquelocal'],
+    env: 'TRUST_PROXY',
+    arg: 'trust-proxy',
+  },
   'server': {
     port: {
       format: 'port',
