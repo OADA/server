@@ -49,7 +49,7 @@
     "@oada/lookup": "^2.0.0",
     "@oada/pino-debug": "^3.5.1",
     "@oada/types": "^3.1.2",
-    "@oada/well-known-json": "^2.0.1",
+    "@oada/well-known-json": "^4.0.0",
     "arangojs": "^7.8.0",
     "axios": "^0.27.2",
     "bcryptjs": "^2.4.3",
