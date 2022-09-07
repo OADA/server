@@ -36,8 +36,8 @@ import { Responder } from '@oada/lib-kafka';
 
 import type Change from '@oada/types/oada/change/v2.js';
 import type SocketChange from '@oada/types/oada/websockets/change.js';
-import type SocketResponse from '@oada/types/oada/websockets/response.js';
 import type SocketRequest from '@oada/types/oada/websockets/request.js';
+import type SocketResponse from '@oada/types/oada/websockets/response.js';
 import type { WriteResponse } from '@oada/write-handler';
 import {
   // Runtime check for request type
@@ -86,7 +86,8 @@ class Watch {
   async sendChange(change: SocketChange) {
     trace({ change }, 'Sending change');
     // HACK: for backwards compatibility with older clients
-    change.path_leftover = change.path_leftover ?? [];
+    change.path_leftover =
+      change.path_leftover ?? change.requestId.map(() => '');
     await this.#send(JSON.stringify(change));
   }
 
