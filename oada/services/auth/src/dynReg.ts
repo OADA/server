@@ -20,12 +20,12 @@ import { config } from './config.js';
 import type { RequestHandler } from 'express';
 import debug from 'debug';
 
-import Metadata, {
-  assert as assertMetadata,
-} from '@oada/types/oauth-dyn-reg/metadata.js';
+import type Metadata from '@oada/types/oauth-dyn-reg/metadata.js';
+import { assert as assertMetadata } from '@oada/types/oauth-dyn-reg/metadata.js';
 import { validate } from '@oada/certs';
 
-import { IClient, save } from './db/models/client.js';
+import type { IClient } from './db/models/client.js';
+import { save } from './db/models/client.js';
 
 /**
  * @see {@link https://datatracker.ietf.org/doc/html/rfc7591#section-3.2.2}

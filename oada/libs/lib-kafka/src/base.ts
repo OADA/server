@@ -20,14 +20,9 @@ import process from 'node:process';
 
 import { config } from './config.js';
 
-import {
-  Consumer,
-  EachMessagePayload,
-  Kafka,
-  Producer,
-  logLevel,
-} from 'kafkajs';
+import type { Consumer, EachMessagePayload, Producer, logLevel } from 'kafkajs';
 import Bluebird from 'bluebird';
+import { Kafka } from 'kafkajs';
 import debug from 'debug';
 
 // Const info = debug('@oada/lib-kafka:info');
@@ -98,7 +93,7 @@ type KafkajsDebug = Record<
   keyof Omit<typeof logLevel, 'NOTHING'>,
   debug.Debugger
 >;
-const kafkajsDebugs: Map<string, KafkajsDebug> = new Map();
+const kafkajsDebugs = new Map<string, KafkajsDebug>();
 function getKafkajsDebug(namespace: string): KafkajsDebug {
   const d = kafkajsDebugs.get(namespace);
   if (d) {

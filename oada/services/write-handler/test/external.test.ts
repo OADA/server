@@ -15,12 +15,14 @@
  * limitations under the License.
  */
 
-import test, { ExecutionContext } from 'ava';
+import type { ExecutionContext } from 'ava';
+import test from 'ava';
 
 // DO NOT include ../ because we are testing externally.  Including here will cause admin copy of it
 // to receive some of the kafka responses.
 
-import { Change, connect } from '@oada/client';
+import type { Change } from '@oada/client';
+import { connect } from '@oada/client';
 
 const topID = `resources/WRITEHANDLERTEST_TOP1`;
 const middleID = `resources/WRITEHANDLERTEST_MIDDLE1`;

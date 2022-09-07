@@ -17,16 +17,15 @@
 
 import type EventEmitter from 'node:events';
 
-import { Base, DATA, KafkaBase } from './base.js';
-import {
-  Requester,
-  ConstructorOptions as RequesterOptions,
-} from './Requester.js';
-import {
-  Responder,
+import { Base, DATA } from './base.js';
+import type {
   ConstructorOptions as ResponderOptions,
   Response,
 } from './Responder.js';
+import type { KafkaBase } from './base.js';
+import { Requester } from './Requester.js';
+import type { ConstructorOptions as RequesterOptions } from './Requester.js';
+import { Responder } from './Responder.js';
 
 import type Bluebird from 'bluebird';
 import type { EachMessagePayload } from 'kafkajs';

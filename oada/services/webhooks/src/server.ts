@@ -19,14 +19,15 @@ import { config } from './config.js';
 
 import '@oada/lib-prom';
 
-import { KafkaBase, Responder } from '@oada/lib-kafka';
 import { changes, resources } from '@oada/lib-arangodb';
+import type { KafkaBase } from '@oada/lib-kafka';
+import { Responder } from '@oada/lib-kafka';
 
-import type Resource from '@oada/types/oada/resource';
+import type Resource from '@oada/types/oada/resource.js';
 import type { WriteResponse } from '@oada/write-handler';
 
 import Bluebird from 'bluebird';
-import axios from 'axios';
+import { default as axios } from 'axios';
 import debug from 'debug';
 
 const trace = debug('webhooks:trace');

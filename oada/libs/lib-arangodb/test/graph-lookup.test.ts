@@ -49,6 +49,16 @@ test.before(async (t) => {
   }
 });
 
+// -------------------------------------------------------
+// After tests are done, get rid of our temp database
+// -------------------------------------------------------
+test.after(async () => {
+  //    Db.useDatabase('_system') // arango only lets you drop a database from the _system db
+  //   return db.dropDatabase(dbname)
+  //   .then(() => { console.log('Successfully cleaned up test database '+dbname) })
+  //   .catch(err => console.log('Could not drop test database '+dbname+' after the tests! err = ', err))
+});
+
 // --------------------------------------------------
 // The tests!
 // --------------------------------------------------
@@ -68,14 +78,4 @@ test('should also return the leftover path for non-resource URLs', async (t) => 
   const result = await lookupFromUrl(rocksIndexUrl, userid);
   t.is(result.resource_id, rocksIndexResourceId);
   t.is(result.path_leftover, rocksIndexPathLeft);
-});
-
-// -------------------------------------------------------
-// After tests are done, get rid of our temp database
-// -------------------------------------------------------
-test.after(async () => {
-  //    Db.useDatabase('_system') // arango only lets you drop a database from the _system db
-  //   return db.dropDatabase(dbname)
-  //   .then(() => { console.log('Successfully cleaned up test database '+dbname) })
-  //   .catch(err => console.log('Could not drop test database '+dbname+' after the tests! err = ', err))
 });

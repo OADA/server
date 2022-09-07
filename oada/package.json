@@ -13,19 +13,19 @@
     "g:pino-pretty": "pino-pretty"
   },
   "devDependencies": {
-    "@commitlint/cli": "^17.0.3",
-    "@commitlint/config-conventional": "^17.0.3",
+    "@commitlint/cli": "^17.1.2",
+    "@commitlint/config-conventional": "^17.1.0",
     "@tsconfig/node18": "^1.0.1",
-    "@types/eslint": "^8.4.5",
+    "@types/eslint": "^8.4.6",
     "@types/mocha": "^9.1.1",
-    "@types/node": "^18.6.3",
-    "@typescript-eslint/eslint-plugin": "^5.32.0",
-    "@typescript-eslint/parser": "^5.32.0",
-    "@yarnpkg/sdks": "^3.0.0-rc.14",
-    "eslint": "^8.21.0",
+    "@types/node": "^18.7.15",
+    "@typescript-eslint/eslint-plugin": "^5.36.2",
+    "@typescript-eslint/parser": "^5.36.2",
+    "@yarnpkg/sdks": "^3.0.0-rc.18",
+    "eslint": "^8.23.0",
     "eslint-config-prettier": "^8.5.0",
-    "eslint-config-xo": "^0.41.0",
-    "eslint-config-xo-typescript": "^0.52.0",
+    "eslint-config-xo": "^0.42.0",
+    "eslint-config-xo-typescript": "^0.53.0",
     "eslint-formatter-pretty": "^4.1.0",
     "eslint-import-resolver-node": "^0.3.6",
     "eslint-plugin-array-func": "^3.1.7",
@@ -42,16 +42,16 @@
     "eslint-plugin-notice": "^0.9.10",
     "eslint-plugin-optimize-regex": "^1.2.1",
     "eslint-plugin-prettier": "^4.2.1",
-    "eslint-plugin-promise": "^6.0.0",
-    "eslint-plugin-regexp": "^1.8.0",
+    "eslint-plugin-promise": "^6.0.1",
+    "eslint-plugin-regexp": "^1.9.0",
     "eslint-plugin-security": "^1.5.0",
-    "eslint-plugin-sonarjs": "^0.14.0",
+    "eslint-plugin-sonarjs": "^0.15.0",
     "eslint-plugin-unicorn": "^43.0.2",
     "prettier": "^2.7.1",
-    "typescript": "^4.7.4"
+    "typescript": "^4.8.2"
   },
   "dependencies": {
-    "pino-pretty": "^8.1.0"
+    "pino-pretty": "^9.1.0"
   },
   "resolutions": {
     "fastify-plugin": "4.0.0"
@@ -62,5 +62,5 @@
   "volta": {
     "node": "18.5.0"
   },
-  "packageManager": "yarn@3.2.2"
+  "packageManager": "yarn@3.2.3"
 }

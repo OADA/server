@@ -17,25 +17,28 @@
 
 /* eslint-disable @typescript-eslint/ban-types */
 
-import type { Link } from '@oada/types/oada/link/v1';
-import type Resource from '@oada/types/oada/resource';
+import type { Link } from '@oada/types/oada/link/v1.js';
+import type Resource from '@oada/types/oada/resource.js';
 
 import { config } from '../config.js';
 
-import { OADAified, oadaify } from '@oada/oadaify';
+import type { OADAified } from '@oada/oadaify';
+import { oadaify } from '@oada/oadaify';
 
-import { User, findById } from './users.js';
 import { ArangoError } from './errors.js';
+import type { User } from './users.js';
 import { db as database } from '../db.js';
+import { findById } from './users.js';
 import { sanitizeResult } from '../util.js';
 
-import { JsonPointer, PathSegments } from 'json-ptr';
+import { JsonPointer } from 'json-ptr';
+import type { PathSegments } from 'json-ptr';
 import { aql } from 'arangojs';
 import cloneDeep from 'clone-deep';
 import debug from 'debug';
 
 type IResource = OADAified<Resource>;
-export { IResource as Resource };
+export type { IResource as Resource };
 
 const info = debug('arangodb#resources:info');
 const trace = debug('arangodb#resources:trace');
@@ -216,19 +219,19 @@ export async function lookupFromUrl(
   result.permissions.reverse().some((p) => {
     if (p) {
       if (permissions.read === undefined) {
-        permissions.read = p.read === null ? undefined : p.read;
+        permissions.read = p.read ?? undefined;
       }
 
       if (permissions.write === undefined) {
-        permissions.read = p.write === null ? undefined : p.write;
+        permissions.read = p.write ?? undefined;
       }
 
       if (permissions.owner === undefined) {
-        permissions.owner = p.owner === null ? undefined : p.owner;
+        permissions.owner = p.owner ?? undefined;
       }
 
       if (permissions.type === undefined) {
-        permissions.type = p.type === null ? undefined : p.type;
+        permissions.type = p.type ?? undefined;
       }
 
       if (

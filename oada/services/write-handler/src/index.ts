@@ -26,12 +26,14 @@ import {
   putBodies,
   resources,
 } from '@oada/lib-arangodb';
-import { KafkaBase, Responder } from '@oada/lib-kafka';
+import type { KafkaBase } from '@oada/lib-kafka';
+import { Responder } from '@oada/lib-kafka';
 
 import type Resource from '@oada/types/oada/resource.js';
 
-import { JsonPointer, PathSegments } from 'json-ptr';
 import Cache from 'timed-cache';
+import { JsonPointer } from 'json-ptr';
+import type { PathSegments } from 'json-ptr';
 import debug from 'debug';
 import objectAssignDeep from 'object-assign-deep';
 
@@ -224,7 +226,11 @@ async function checkPreconditions(request: WriteRequest) {
   return rev;
 }
 
-function mergeDeep<T>(target: T, path: PathSegments, body: unknown) {
+function mergeDeep<T extends Record<string, unknown>>(
+  target: T,
+  path: PathSegments,
+  body: unknown
+) {
   if (path.length > 0) {
     const toMerge = {};
     JsonPointer.set(toMerge, path, body, true);

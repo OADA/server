@@ -27,7 +27,7 @@
 import { config } from './config.js';
 import { hashPw } from './libs/users.js';
 
-import arangojs from 'arangojs';
+import { Database } from 'arangojs';
 import debug from 'debug';
 import equal from 'deep-equal';
 
@@ -45,7 +45,7 @@ const colsarr = Object.values(cols);
 // eslint-disable-next-line complexity, sonarjs/cognitive-complexity
 export async function run(): Promise<void> {
   // Can't use ./db because we're creating the actual database
-  const systemDB = arangojs({
+  const systemDB = new Database({
     url: config.get('arangodb.connectionString'),
     auth,
   });
@@ -166,7 +166,7 @@ export async function run(): Promise<void> {
 
         // TODO: clean up this any nonsense
         for await (const document of data) {
-          if (!document || !document._id) {
+          if (!document?._id) {
             warn('doc is undefined for collection %s', colinfo.name);
           }
 
@@ -271,7 +271,7 @@ export async function run(): Promise<void> {
 // Cleanup will delete the test database if in test mode
 export async function cleanup(): Promise<void> {
   // Can't use ./db because we're creating the actual database
-  const systemDB = arangojs({
+  const systemDB = new Database({
     url: config.get('arangodb.connectionString'),
   });
 

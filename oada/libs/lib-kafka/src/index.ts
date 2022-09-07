@@ -18,7 +18,7 @@
 // @ts-expect-error the types are not correct
 export { KafkaJSError as KafkaError } from 'kafkajs/src/errors.js';
 
-export { KafkaBase } from './base.js';
+export type { KafkaBase } from './base.js';
 export { Responder } from './Responder.js';
 export { ReResponder } from './ReResponder.js';
 export { Requester } from './Requester.js';

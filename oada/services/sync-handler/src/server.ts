@@ -22,13 +22,14 @@ import '@oada/lib-prom';
 import { URL } from 'node:url';
 import { join } from 'node:path';
 
-import { KafkaBase, Responder } from '@oada/lib-kafka';
 import { remoteResources, resources } from '@oada/lib-arangodb';
-import type { Resource } from '@oada/lib-arangodb/dist/libs/resources';
+import type { KafkaBase } from '@oada/lib-kafka';
+import type { Resource } from '@oada/lib-arangodb/dist/libs/resources.js';
+import { Responder } from '@oada/lib-kafka';
 
 import type { WriteResponse } from '@oada/write-handler';
 
-import axios from 'axios';
+import { default as axios } from 'axios';
 import debug from 'debug';
 
 const info = debug('sync-handler:info');

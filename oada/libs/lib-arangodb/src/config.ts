@@ -17,8 +17,8 @@
 
 import libConfig from '@oada/lib-config';
 
-import type { CreateCollectionOptions } from 'arangojs/collection';
-import type { EdgeDefinitionOptions } from 'arangojs/graph';
+import type { CreateCollectionOptions } from 'arangojs/collection.js';
+import type { EdgeDefinitionOptions } from 'arangojs/graph.js';
 
 export interface Collection {
   name: string;

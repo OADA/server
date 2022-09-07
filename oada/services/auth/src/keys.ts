@@ -20,7 +20,8 @@ import { config } from './config.js';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 
-import { JWK, pem2jwk } from 'pem-jwk';
+import type { JWK } from 'pem-jwk';
+import { pem2jwk } from 'pem-jwk';
 
 /**
  * Loads in all PEM files at config.keys.signPems to sign IdTokens with.
