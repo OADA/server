@@ -24,23 +24,25 @@ import EventEmitter from 'eventemitter3';
 import type { FastifyPluginAsync } from 'fastify';
 import type LightMyRequest from 'light-my-request';
 import type WebSocket from 'ws';
-import fastifyWebsocket from '@fastify/websocket';
+import { default as fastifyWebsocket } from '@fastify/websocket';
 import { is } from 'type-is';
 import log from 'debug';
 
 import { OADAError } from '@oada/error';
 
-import { KafkaBase, Responder } from '@oada/lib-kafka';
 import { changes, resources } from '@oada/lib-arangodb';
+import type { KafkaBase } from '@oada/lib-kafka';
+import { Responder } from '@oada/lib-kafka';
 
-import SocketRequest, {
-  // Runtime check for request type
-  assert as assertRequest,
-} from '@oada/types/oada/websockets/request.js';
 import type Change from '@oada/types/oada/change/v2.js';
 import type SocketChange from '@oada/types/oada/websockets/change.js';
 import type SocketResponse from '@oada/types/oada/websockets/response.js';
+import type SocketRequest from '@oada/types/oada/websockets/request.js';
 import type { WriteResponse } from '@oada/write-handler';
+import {
+  // Runtime check for request type
+  assert as assertRequest,
+} from '@oada/types/oada/websockets/request.js';
 
 /**
  * @todo Actually figure out how "forgetting history" should work...
@@ -83,6 +85,8 @@ class Watch {
 
   async sendChange(change: SocketChange) {
     trace({ change }, 'Sending change');
+    // HACK: for backwards compatibility with older clients
+    change.path_leftover = change.path_leftover ?? [];
     await this.#send(JSON.stringify(change));
   }
 
