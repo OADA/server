@@ -16,8 +16,8 @@
  */
 
 declare module 'connect-arango' {
-  import { Class } from 'type-fest';
-  import { Config } from 'arangojs';
+  import type { Class } from 'type-fest';
+  import type { Config } from 'arangojs';
   import session from 'express-session';
   class ArangoSore extends session.Store {}
   export interface Options {

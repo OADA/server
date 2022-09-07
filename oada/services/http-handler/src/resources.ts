@@ -20,11 +20,9 @@ import { pipeline } from 'node:stream/promises';
 
 import { changes, putBodies, resources } from '@oada/lib-arangodb';
 
-import {
-  Scope,
-  handleRequest as permissionsRequest,
-} from '@oada/permissions-handler';
 import type { WriteRequest, WriteResponse } from '@oada/write-handler';
+import type { Scope } from '@oada/permissions-handler';
+import { handleRequest as permissionsRequest } from '@oada/permissions-handler';
 
 import { _meta } from '@oada/oadaify';
 import { handleResponse } from '@oada/formats-server';

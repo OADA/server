@@ -16,11 +16,11 @@
  */
 
 declare module 'es-main' {
-  function esMain(meta: any): boolean;
+  function esMain(meta: unknown): boolean;
   export = esMain;
 }
 
 // Make TS understand assert better
 declare module 'assert' {
-  function internal(value: any, message?: string | Error): asserts value;
+  function internal(value: unknown, message?: string | Error): asserts value;
 }

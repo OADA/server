@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-import type Change from '@oada/types/oada/change/v2';
+import type Change from '@oada/types/oada/change/v2.js';
 
 import { config } from '../config.js';
 import { db as database } from '../db.js';

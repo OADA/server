@@ -315,7 +315,7 @@ if (typeof pfx === 'string') {
 // Load all the domain configs at startup
 const domainsDirectory = config.get('domainsDir');
 trace('using domainsDir = %s', domainsDirectory);
-export const domainConfigs: Map<string, DomainConfig> = new Map();
+export const domainConfigs = new Map<string, DomainConfig>();
 export interface DomainConfig {
   domain: string;
   baseuri: string;

@@ -24,12 +24,13 @@ import path from 'node:path';
 import url from 'node:url';
 import util from 'node:util';
 
-import express, { RequestHandler } from 'express';
+import type { RequestHandler } from 'express';
 import bodyParser from 'body-parser';
+import express from 'express';
 import session from 'express-session';
 
 import URI from 'urijs';
-import axios from 'axios';
+import { default as axios } from 'axios';
 import connectArango from 'connect-arango';
 import cors from 'cors';
 import debug from 'debug';

@@ -27,7 +27,7 @@ import { Requester } from '@oada/lib-kafka';
 import type { WriteRequest } from '@oada/write-handler';
 import { init } from '@oada/lib-arangodb';
 
-import { stopResp } from '../';
+import { stopResp } from '../dist/index.js';
 
 const { httpResponse, writeResponse } = config.get('kafka.topics');
 const requester = new Requester({

@@ -17,7 +17,8 @@
 
 import { setTimeout } from 'node:timers/promises';
 
-import test, { ExecutionContext } from 'ava';
+import type { ExecutionContext } from 'ava';
+import test from 'ava';
 
 // DO NOT include ../ because we are testing externally.  Including here will cause admin copy of it
 // to receive some of the kafka responses.

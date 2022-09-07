@@ -23,9 +23,9 @@ import { config } from './config.js';
 
 import { ArangoError, ArangoErrorCode } from './libs/errors.js';
 
-import type { AqlQuery } from 'arangojs/aql';
+import type { AqlQuery } from 'arangojs/aql.js';
 import { Database } from 'arangojs';
-import type { QueryOptions } from 'arangojs/database';
+import type { QueryOptions } from 'arangojs/database.js';
 import debug from 'debug';
 
 const trace = debug('arangodb#aql:trace');

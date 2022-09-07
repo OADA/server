@@ -15,9 +15,10 @@
  * limitations under the License.
  */
 
-import { User, findById as findUserById } from './users.js';
+import type { User } from './users.js';
 import { config } from '../config.js';
 import { db as database } from '../db.js';
+import { findById as findUserById } from './users.js';
 import { sanitizeResult } from '../util.js';
 
 import { aql } from 'arangojs';

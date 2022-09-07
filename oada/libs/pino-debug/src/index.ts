@@ -25,7 +25,8 @@ import { resolve } from 'node:path';
 // !!! This needs to be imported before _anything_ using pino or debug
 import pinoDebug from 'pino-debug';
 
-import _pino, { Logger, LoggerOptions } from 'pino';
+import type { Logger, LoggerOptions } from 'pino';
+import _pino from 'pino';
 import debug from 'debug';
 import isInteractive from 'is-interactive';
 import pinoCaller from 'pino-caller';

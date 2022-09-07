@@ -18,9 +18,10 @@
 import type { Opaque } from 'type-fest';
 import { aql } from 'arangojs';
 
-import { DBUser, UserID, findById } from './users.js';
+import type { DBUser, UserID } from './users.js';
 import { config } from '../config.js';
 import { db as database } from '../db.js';
+import { findById } from './users.js';
 import { sanitizeResult } from '../util.js';
 
 export type CodeID = Opaque<string, Code>;

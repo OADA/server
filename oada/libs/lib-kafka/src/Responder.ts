@@ -17,14 +17,10 @@
 
 import util from 'node:util';
 
-import {
-  Base,
+import { Base, CANCEL_KEY, DATA, REQ_ID_KEY, topicTimeout } from './base.js';
+import type {
   ConstructorOptions as BaseConstructorOptions,
-  CANCEL_KEY,
-  DATA,
   KafkaBase,
-  REQ_ID_KEY,
-  topicTimeout,
 } from './base.js';
 
 import type { EachMessagePayload } from 'kafkajs';
@@ -42,6 +38,7 @@ function isIterable<T>(
   value: T | Iterable<T> | AsyncIterable<T>
 ): value is Iterable<T> | AsyncIterable<T> {
   return (
+    value &&
     typeof value === 'object' &&
     (Symbol.iterator in value || Symbol.asyncIterator in value)
   );

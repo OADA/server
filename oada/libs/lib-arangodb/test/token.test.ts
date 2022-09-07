@@ -17,7 +17,9 @@
 
 import test from 'ava';
 
-import { authorizations, init } from '../';
+import type { UserID } from '../src/libs/users.js';
+
+import { authorizations, init } from '../dist/index.js';
 
 // TODO: Would be nice to just expose these examples on oadaLib itself --- feel
 // like we will want them for all of the microservice tests
@@ -34,7 +36,7 @@ test('should find a token', async (t) => {
   t.is(tok?.createTime, token.createTime);
   t.is(tok?.expiresIn, token.expiresIn);
   t.assert(typeof tok?.user === 'object');
-  t.is(tok?.user?._id, token.user._id);
+  t.is(tok?.user?._id, token.user._id as UserID);
   t.is(tok?.clientId, token.clientId);
 });
 
@@ -56,7 +58,7 @@ test('should save a token', async (t) => {
   t.is(tok?.createTime, token.createTime);
   t.is(tok?.expiresIn, token.expiresIn);
   t.assert(typeof tok?.user === 'object');
-  t.is(tok?.user._id, user._id);
+  t.is(tok?.user._id, user._id as UserID);
   t.is(tok?.clientId, token.clientId);
 });
 

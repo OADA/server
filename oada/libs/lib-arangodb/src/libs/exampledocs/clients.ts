@@ -15,6 +15,8 @@
  * limitations under the License.
  */
 
+/* eslint-disable no-secrets/no-secrets */
+
 export default [
   {
     _id: 'clients/default:clients-123',

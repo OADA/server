@@ -15,16 +15,17 @@
  * limitations under the License.
  */
 
-import type { CollectionReadOptions } from 'arangojs/collection';
+import type { CollectionReadOptions } from 'arangojs/collection.js';
 import type { Opaque } from 'type-fest';
 import { aql } from 'arangojs';
 import bcrypt from 'bcryptjs';
 import debug from 'debug';
 import flatten from 'flat';
 
-import { Selector, sanitizeResult } from '../util.js';
+import type { Selector } from '../util.js';
 import { config } from '../config.js';
 import { db as database } from '../db.js';
+import { sanitizeResult } from '../util.js';
 
 const info = debug('arangodb#resources:info');
 

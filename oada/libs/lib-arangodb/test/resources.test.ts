@@ -17,15 +17,19 @@
 
 import test from 'ava';
 
-import { init, resources } from '../';
+import { init, resources } from '../dist/index.js';
 
 test.before(async () => init.run());
 
 test('should find parents based on resource id', async (t) => {
   const p = await resources.getParents('/resources:default:resources_rock_123');
-  t.is(p?.[0]?.path, '/rocks-index/90j2klfdjss');
-  t.is(p?.[0]?.resource_id, 'resources/default:resources_rocks_123');
-  t.is(p?.[0]?.contentType, 'application/vnd.oada.rocks.1+json');
+  t.plan(3);
+  for await (const parent of p) {
+    t.is(parent.path, '/rocks-index/90j2klfdjss');
+    t.is(parent.resource_id, 'resources/default:resources_rocks_123');
+    t.is(parent.contentType, 'application/vnd.oada.rocks.1+json');
+    break;
+  }
 });
 
 test.after(async () => init.cleanup());

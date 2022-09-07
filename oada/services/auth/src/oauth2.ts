@@ -26,9 +26,10 @@ import passport from 'passport';
 
 import { trustedCDP } from '@oada/lookup';
 
-import { Client, findById } from './db/models/client.js';
 import { issueCode, issueToken, issueTokenFromCode } from './utils.js';
+import type { Client } from './db/models/client.js';
 import type { User } from './db/models/user.js';
+import { findById } from './db/models/client.js';
 
 const trace = debug('oauth2:trace');
 

@@ -17,15 +17,17 @@
 
 import cloneDeep from 'clone-deep';
 
-import type { Client, DBClient } from '../models/client';
+import type { Client, DBClient } from '../models/client.js';
 // @ts-expect-error IDEK
 import clients from './clients.json';
 
+const database = new Map<string, DBClient>(Object.entries(clients));
+
 export function findById(id: string) {
-  return id in clients ? cloneDeep<DBClient>(clients[id]) : null;
+  return cloneDeep(database.get(id)) ?? null;
 }
 
 export async function save(client: Client) {
-  clients[client.clientId] = cloneDeep(client);
+  database.set(client.clientId, client as DBClient);
   return findById(client.clientId);
 }

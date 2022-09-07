@@ -18,7 +18,8 @@
 import { extname } from 'node:path';
 
 import 'dotenv/config';
-import convict, { Config, Schema } from 'convict';
+import type { Config, Schema } from 'convict';
+import convict from 'convict';
 import json5 from 'json5';
 // @ts-expect-error no types for this
 import moment from 'convict-format-with-moment';

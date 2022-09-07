@@ -24,24 +24,26 @@ import { nstats } from '@oada/lib-prom';
 
 import { plugin as formats } from '@oada/formats-server';
 
-import tokenLookup, { TokenResponse } from './tokenLookup.js';
+import type { TokenResponse } from './tokenLookup.js';
 import authorizations from './authorizations.js';
 import resources from './resources.js';
+import tokenLookup from './tokenLookup.js';
 import users from './users.js';
 import websockets from './websockets.js';
 
-import Fastify, { FastifyReply, FastifyRequest } from 'fastify';
+import type { FastifyReply, FastifyRequest } from 'fastify';
 import {
   fastifyRequestContextPlugin,
   requestContext,
 } from '@fastify/request-context';
+import { fastify as Fastify } from 'fastify';
 import bearerAuth from '@fastify/bearer-auth';
-import cors from '@fastify/cors';
-import fastifyAccepts from '@fastify/accepts';
-import fastifyGracefulShutdown from 'fastify-graceful-shutdown';
-import fastifyHealthcheck from 'fastify-healthcheck';
-import fastifySensible from '@fastify/sensible';
-import helmet from '@fastify/helmet';
+import { default as cors } from '@fastify/cors';
+import { default as fastifyAccepts } from '@fastify/accepts';
+import { default as fastifyGracefulShutdown } from 'fastify-graceful-shutdown';
+import { default as fastifyHealthcheck } from 'fastify-healthcheck';
+import { default as fastifySensible } from '@fastify/sensible';
+import { default as helmet } from '@fastify/helmet';
 
 import type { HTTPVersion, Handler } from 'find-my-way';
 import esMain from 'es-main';

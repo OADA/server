@@ -17,15 +17,17 @@
 
 import cloneDeep from 'clone-deep';
 
-import type { Token } from '../models/token';
+import type { Token } from '../models/token.js';
 // @ts-expect-error IDEK
 import tokens from './tokens.json';
 
+const database = new Map<string, Token>(Object.entries(tokens));
+
 export function findByToken(token: string) {
-  return cloneDeep<Token>(tokens[token]);
+  return cloneDeep(database.get(token));
 }
 
 export function save(token: Token) {
-  tokens[token.token] = cloneDeep(token);
+  database.set(token.token, cloneDeep(token));
   return findByToken(token.token);
 }

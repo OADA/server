@@ -129,7 +129,7 @@ passport.use(
           '#ClientPassword.Strategy: verifying jwt, tokenEndpoint = %s',
           tokenEndpoint
         );
-        const valid = await jwtBearerClientAuth.verify({
+        const valid: unknown = await jwtBearerClientAuth.verify({
           token: cSecret, // Arg0: client secret
           hint: keyHint, // Arg1: jwks_uri or jwks (i.e. public key or where to find public key)
           issuer: cId, // Arg2: issuer ID: simplest to just make the same as clientID,

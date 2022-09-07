@@ -17,25 +17,18 @@
 
 import EventEmitter from 'node:events';
 
-import {
-  Base,
-  CANCEL_KEY,
-  ConstructorOptions,
-  DATA,
-  KafkaBase,
-  REQ_ID_KEY,
-  topicTimeout,
-} from './base.js';
+import { Base, CANCEL_KEY, DATA, REQ_ID_KEY, topicTimeout } from './base.js';
+import type { ConstructorOptions, KafkaBase } from './base.js';
 
 import Bluebird from 'bluebird';
 import ksuid from 'ksuid';
 
 export class Requester extends Base {
-  #timeouts: Map<string, number> = new Map();
-  protected requests: Map<
+  #timeouts = new Map<string, number>();
+  protected requests = new Map<
     string,
     (error: Error | undefined, response: KafkaBase) => void
-  > = new Map();
+  >();
 
   constructor({
     consumeTopic,
@@ -146,4 +139,4 @@ export class Requester extends Base {
   }
 }
 
-export { ConstructorOptions } from './base.js';
+export type { ConstructorOptions } from './base.js';

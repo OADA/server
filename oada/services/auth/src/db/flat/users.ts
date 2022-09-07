@@ -17,22 +17,17 @@
 
 import cloneDeep from 'clone-deep';
 
-import type { DBUser } from '../models/user';
+import type { DBUser } from '../models/user.js';
 // @ts-expect-error IDEK
 import users from './users.json';
 
-export function findByUsername(username: string) {
-  if (users[username]) {
-    return cloneDeep<DBUser>(users[username]);
-  }
+const database = new Map<string, DBUser>(Object.entries(users));
 
-  return null;
+export function findByUsername(username: string) {
+  return cloneDeep(database.get(username)) ?? null;
 }
 
 export function findByUsernamePassword(username: string, password: string) {
-  if (users[username]?.password === password) {
-    return cloneDeep<DBUser>(users[username]);
-  }
-
-  return null;
+  const user = database.get(username);
+  return user?.password === password ? cloneDeep(user) : null;
 }

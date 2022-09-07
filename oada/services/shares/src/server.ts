@@ -19,8 +19,9 @@ import { config } from './config.js';
 
 import '@oada/lib-prom';
 
-import { KafkaBase, ReResponder } from '@oada/lib-kafka';
 import { changes, users } from '@oada/lib-arangodb';
+import type { KafkaBase } from '@oada/lib-kafka';
+import { ReResponder } from '@oada/lib-kafka';
 
 import type { WriteRequest, WriteResponse } from '@oada/write-handler';
 
