@@ -501,7 +501,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     }
 
     /**
-     * TODO: Fix this check for when parents have listeners
+     * TODO: Fix this check for when parents have listeners?
     if (emitter.listeners(request.resource_id).length === 0) {
       // No WATCHes
       return;
