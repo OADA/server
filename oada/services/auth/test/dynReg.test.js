@@ -15,21 +15,23 @@
  * limitations under the License.
  */
 
-const httpMocks = require('node-mocks-http');
-const mockRequest = httpMocks.createRequest;
-const mockRes = httpMocks.createResponse;
-const _ = require('lodash');
-const { v4: uuid } = require('uuid');
-const chai = require('chai');
+import url from 'node:url';
+
+import { jwk2pem, pem2jwk } from 'pem-jwk';
+import {
+  createRequest as mockRequest,
+  createResponse as mockResponse,
+} from 'node-mocks-http';
+import _ from 'lodash';
+import chai from 'chai';
+import debug from 'debug';
+import jwt from 'jsonwebtoken';
+import keypair from 'keypair';
+import nock from 'nock';
+import { v4 as uuid } from 'uuid';
+
 chai.use(require('chai-as-promised'));
 const { expect } = chai;
-const nock = require('nock');
-const url = require('url');
-const jwt = require('jsonwebtoken');
-const { jwk2pem } = require('pem-jwk');
-const { pem2jwk } = require('pem-jwk');
-const keypair = require('keypair');
-const debug = require('debug');
 const nocklog = debug('oada-ref-auth:dynReg:test:nocklog');
 const trace = debug('oada-ref-auth:dynReg:test:trace');
 
@@ -43,7 +45,7 @@ const mockdb = {
     const clientId = uuid();
     mockdb.clients[clientId] = _.cloneDeep(clientreg);
     mockdb.clients[clientId].clientId = clientId;
-    return Promise.resolve(mockdb.clients[clientId]);
+    return mockdb.clients[clientId];
   },
 };
 
@@ -167,7 +169,7 @@ describe('dynReg middleware', () => {
 
   it('should respond with 400 if no software_statement', () => {
     const request = mockRequest({ method: 'POST', body: {} });
-    const res = mockRes();
+    const res = mockResponse();
     return dynReg(request, res).then(() => {
       expect(res.statusCode).to.equal(400);
     });
@@ -179,7 +181,7 @@ describe('dynReg middleware', () => {
       method: 'POST',
       body: { software_statement: trusted_signed_client_reg },
     });
-    const res = mockRes();
+    const res = mockResponse();
     return dynReg(request, res).then(() => {
       expect(res.statusCode).to.equal(201);
       const clientreg = res._getJSONData();
@@ -198,7 +200,7 @@ describe('dynReg middleware', () => {
       method: 'POST',
       body: { software_statement: untrusted_signed_client_reg },
     });
-    const res = mockRes();
+    const res = mockResponse();
     return dynReg(request, res).then(() => {
       expect(res.statusCode).to.equal(201);
       const clientreg = res._getJSONData();
@@ -217,7 +219,7 @@ describe('dynReg middleware', () => {
       method: 'POST',
       body: { software_statement: untrusted_jwk_signed_client_reg },
     });
-    const res = mockRes();
+    const res = mockResponse();
     return dynReg(request, res).then(() => {
       expect(res.statusCode).to.equal(201);
       const clientreg = res._getJSONData();
@@ -236,7 +238,7 @@ describe('dynReg middleware', () => {
       method: 'POST',
       body: { software_statement: trusted_jwk_signed_client_reg },
     });
-    const res = mockRes();
+    const res = mockResponse();
     return dynReg(request, res).then(() => {
       expect(res.statusCode).to.equal(201);
       const clientreg = res._getJSONData();

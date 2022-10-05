@@ -30,10 +30,10 @@ import express from 'express';
 import session from 'express-session';
 
 import URI from 'urijs';
-import { default as axios } from 'axios';
 import connectArango from 'connect-arango';
 import cors from 'cors';
 import debug from 'debug';
+import got from 'got';
 import helmet from 'helmet';
 import isMain from 'es-main';
 import morgan from 'morgan';
@@ -322,13 +322,17 @@ async function run() {
           const uri = new URI(idToken.iss);
           uri.path('/.well-known/openid-configuration');
           // eslint-disable-next-line @typescript-eslint/no-base-to-string
-          const { data: cfg } = await axios.get(uri.toString());
+          const cfg = await got(uri.toString()).json<{
+            userinfo_endpoint: string;
+          }>();
 
-          const { data: userinfo } = await axios.get(cfg.userinfo_endpoint, {
+          const userinfo = await got(cfg.userinfo_endpoint, {
             headers: {
               Authorization: `Bearer ${token}`,
             },
-          });
+          }).json<{
+            preferred_username: string;
+          }>();
 
           user = await findByOIDCUsername(
             userinfo.preferred_username,

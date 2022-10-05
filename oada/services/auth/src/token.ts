@@ -146,15 +146,21 @@ async function disable() {
 let update = null;
 trace('argv._[0] = %s', argv._[0]);
 switch (command) {
-  case 'extend':
+  case 'extend': {
     update = await extend();
     break;
-  case 'create':
+  }
+
+  case 'create': {
     update = await create();
     break;
-  case 'disable':
+  }
+
+  case 'disable': {
     update = await disable();
     break;
+  }
+
   default: {
     usage();
     process.exit();

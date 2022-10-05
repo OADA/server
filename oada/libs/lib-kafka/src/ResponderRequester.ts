@@ -15,7 +15,8 @@
  * limitations under the License.
  */
 
-import type EventEmitter from 'node:events';
+import type { EachMessagePayload } from 'kafkajs';
+import type EventEmitter from 'eventemitter3';
 
 import { Base, DATA } from './base.js';
 import type {
@@ -27,15 +28,12 @@ import { Requester } from './Requester.js';
 import type { ConstructorOptions as RequesterOptions } from './Requester.js';
 import { Responder } from './Responder.js';
 
-import type Bluebird from 'bluebird';
-import type { EachMessagePayload } from 'kafkajs';
-
 import debug from 'debug';
 
 const trace = debug('@oada/lib-kafka:trace');
 
 class DummyResponder extends Responder {
-  constructor(options: ResponderOptions, ready: Bluebird<void>) {
+  constructor(options: ResponderOptions, ready: Promise<unknown>) {
     super(options);
     this.ready = ready;
   }
@@ -45,7 +43,7 @@ class DummyResponder extends Responder {
   }
 }
 class DummyRequester extends Requester {
-  constructor(options: RequesterOptions, ready: Bluebird<void>) {
+  constructor(options: RequesterOptions, ready: Promise<unknown>) {
     super(options);
     this.ready = ready;
   }
@@ -158,16 +156,21 @@ export class ResponderRequester extends Base {
     listener: (...arguments_: any[]) => unknown
   ): this {
     switch (event) {
-      case 'ready':
+      case 'ready': {
         super.on('ready', listener);
         break;
-      case DATA:
+      }
+
+      case DATA: {
         super.on(DATA, listener);
         break;
-      default:
+      }
+
+      default: {
         this.#requester.on(event, listener);
         this.#responder.on(event, listener);
         break;
+      }
     }
 
     return this;

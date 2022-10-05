@@ -37,12 +37,14 @@ const con = await connect({
   token: process.env.TOKEN || 'god',
 });
 
+test.after(async () => {
+  await cleanup();
+});
+
 test.beforeEach(async (t) => {
   await cleanup();
   await buildTree(t);
 });
-
-test.after(async () => cleanup());
 
 test('Should properly update the _rev on parent when a child is changed', async (t) => {
   t.timeout(5000);

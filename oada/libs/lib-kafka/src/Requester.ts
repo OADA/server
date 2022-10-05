@@ -15,20 +15,19 @@
  * limitations under the License.
  */
 
-import EventEmitter from 'node:events';
+import { once } from 'node:events';
+import { setTimeout } from 'node:timers/promises';
+
+import EventEmitter from 'eventemitter3';
+import ksuid from 'ksuid';
 
 import { Base, CANCEL_KEY, DATA, REQ_ID_KEY, topicTimeout } from './base.js';
 import type { ConstructorOptions, KafkaBase } from './base.js';
 
-import Bluebird from 'bluebird';
-import ksuid from 'ksuid';
+export class KafkaRequestTimeoutError extends Error {}
 
 export class Requester extends Base {
   #timeouts = new Map<string, number>();
-  protected requests = new Map<
-    string,
-    (error: Error | undefined, response: KafkaBase) => void
-  >();
 
   constructor({
     consumeTopic,
@@ -41,9 +40,7 @@ export class Requester extends Base {
     super.on(DATA, (resp) => {
       // eslint-disable-next-line security/detect-object-injection
       const id = resp[REQ_ID_KEY];
-      const done = id ? this.requests.get(id) : undefined;
-
-      done?.(undefined, resp);
+      this.emit(`response-${id}`, resp);
     });
 
     if (this.produceTopic) {
@@ -72,26 +69,28 @@ export class Requester extends Base {
     const timeout = this.#timeouts.get(topic) ?? topicTimeout(topic);
     this.#timeouts.set(topic, timeout);
 
-    const requestDone = Bluebird.fromCallback((done) => {
-      this.requests.set(id, done);
+    const requestDone = once(this, `response-${id}`) as Promise<[KafkaBase]>;
+    // TODO: Handle partitions?
+    await this.produce({
+      mesg: { ...request, [REQ_ID_KEY]: id, resp_partition: '0' },
+      topic,
+      part: null,
     });
-    try {
-      // TODO: Handle partitions?
-      await this.produce({
-        mesg: { ...request, [REQ_ID_KEY]: id, resp_partition: '0' },
-        topic,
-        part: null,
-      });
-      return (await requestDone.timeout(
-        timeout,
-        `${topic} timeout`
-      )) as KafkaBase;
-    } finally {
-      this.requests.delete(id);
-    }
+    const [response] = await Promise.race([
+      requestDone,
+      this.#timeout(timeout, `${topic} timeout`),
+    ]);
+    return response;
   }
 
-  // Like send but return an event emitter to allow multiple responses
+  async #timeout(timeout: number, message?: string): Promise<never> {
+    await setTimeout(timeout);
+    throw new KafkaRequestTimeoutError(message ?? 'timeout');
+  }
+
+  /**
+   * Like send but return an event emitter to allow multiple responses
+   */
   async emitter(
     request: KafkaBase,
     // eslint-disable-next-line @typescript-eslint/ban-types
@@ -111,21 +110,15 @@ export class Requester extends Base {
     // TODO: Handle partitions?
     request.resp_partition = 0;
 
-    this.requests.set(id, (_error, response) =>
-      emitter.emit('response', response)
-    );
+    this.on(`response-${id}`, (response) => emitter.emit('response', response));
     const close = async () => {
-      try {
-        // Send cancel message to other end
-        const mesg = {
-          [REQ_ID_KEY]: id,
-          [CANCEL_KEY]: true,
-        };
+      // Send cancel message to other end
+      const mesg = {
+        [REQ_ID_KEY]: id,
+        [CANCEL_KEY]: true,
+      };
 
-        await this.produce({ mesg, topic, part: null });
-      } finally {
-        this.requests.delete(id);
-      }
+      await this.produce({ mesg, topic, part: null });
     };
 
     await this.produce({

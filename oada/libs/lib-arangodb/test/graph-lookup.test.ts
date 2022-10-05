@@ -52,7 +52,7 @@ test.before(async (t) => {
 // -------------------------------------------------------
 // After tests are done, get rid of our temp database
 // -------------------------------------------------------
-test.after(async () => {
+test.after(() => {
   //    Db.useDatabase('_system') // arango only lets you drop a database from the _system db
   //   return db.dropDatabase(dbname)
   //   .then(() => { console.log('Successfully cleaned up test database '+dbname) })
@@ -72,10 +72,8 @@ test('should also return the leftover path for non-resource URLs', async (t) => 
   const result = await lookupFromUrl(rockPickedUrl, userid);
   t.is(result.resource_id, rockResourceId);
   t.is(result.path_leftover, rockPickedPathLeft);
-});
 
-test('should also return the leftover path for non-resource URLs', async (t) => {
-  const result = await lookupFromUrl(rocksIndexUrl, userid);
-  t.is(result.resource_id, rocksIndexResourceId);
-  t.is(result.path_leftover, rocksIndexPathLeft);
+  const result2 = await lookupFromUrl(rocksIndexUrl, userid);
+  t.is(result2.resource_id, rocksIndexResourceId);
+  t.is(result2.path_leftover, rocksIndexPathLeft);
 });

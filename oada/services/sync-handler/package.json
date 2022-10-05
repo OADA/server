@@ -29,14 +29,14 @@
     "@oada/lib-kafka": "^3.5.1",
     "@oada/lib-prom": "workspace:^",
     "@oada/pino-debug": "^3.5.1",
-    "axios": "^0.27.2",
     "debug": "^4.3.4",
+    "got": "^12.5.1",
     "tslib": "^2.4.0"
   },
   "devDependencies": {
     "@oada/write-handler": "^3.5.1",
     "@types/debug": "^4.1.7",
-    "@types/node": "^18.7.18"
+    "@types/node": "^18.8.2"
   },
   "volta": {
     "node": "18.5.0"

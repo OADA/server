@@ -62,10 +62,8 @@ export async function run(): Promise<void> {
     trace('Checking if database exists');
     // ---------------------------------------------------------------------
     // Start the show: Figure out if the database exists
-    const dbs = (await systemDB.listDatabases()).filter(
-      (d) => d === databaseName
-    );
-    if (dbs.length > 0) {
+    const dbs = await systemDB.listDatabases();
+    if (dbs.includes(databaseName)) {
       if (
         (!config.get('isProduction') && process.env.RESETDATABASE === 'yes') ||
         config.get('isTest')

@@ -15,14 +15,17 @@
  * limitations under the License.
  */
 
-import type Change from '@oada/types/oada/change/v2.js';
-
-import { config } from '../config.js';
-import { db as database } from '../db.js';
-
 import { JsonPointer } from 'json-ptr';
 import { aql } from 'arangojs';
 import debug from 'debug';
+
+import {
+  type Change,
+  assert as assertChangeArray,
+} from '@oada/types/oada/change/v2.js';
+
+import { config } from '../config.js';
+import { db as database } from '../db.js';
 
 const trace = debug('arangodb#resources:trace');
 
@@ -50,12 +53,16 @@ export interface ChangeEdge {
 /**
  * The type for the vertices of the OADA change graph
  */
-export type ChangeVertex = Change[0] & {
+export type ChangeVertex = Change & {
   number: number;
   hash: string;
   userid: string;
   authorizationid: string;
 };
+
+export function assertChange(value: unknown): asserts value is Change {
+  assertChangeArray([value]);
+}
 
 export async function getChanges(
   resourceId: string
@@ -93,10 +100,10 @@ export async function getMaxChangeRev(resourceId: string): Promise<number> {
 export async function getChange(
   resourceId: string,
   changeRev: string | number
-): Promise<Change[0] | undefined> {
-  // TODO: This is meant to handle when resources are deleted directly. Edge
-  // cases remain to be tested. Does this suffice regarding the need send down a
-  // bare tree?
+): Promise<Change | undefined> {
+  // FIXME: This is meant to handle when resources are deleted directly.
+  // Edge cases remain to be tested.
+  // Does this suffice regarding the need send down a bare tree?
   if (!changeRev) {
     return {
       resource_id: resourceId,
@@ -122,7 +129,7 @@ export async function getChange(
   );
 
   const result = (await cursor.next()) as {
-    vertices: Array<Change[0]>;
+    vertices: Change[];
     edges: Array<{ path: string }>;
   };
 
@@ -147,7 +154,8 @@ export async function getChange(
     }
   }
 
-  return change as Change[0];
+  assertChange(change);
+  return change;
 }
 
 /**
@@ -156,10 +164,10 @@ export async function getChange(
 export async function getChangeArray(
   resourceId: string,
   changeRev: string | number
-): Promise<Change> {
-  // TODO: This is meant to handle when resources are deleted directly. Edge
-  // cases remain to be tested. Does this suffice regarding the need send down a
-  // bare tree?
+): Promise<Change[]> {
+  // FIXME: This is meant to handle when resources are deleted directly.
+  // Edge cases remain to be tested.
+  // Does this suffice regarding the need send down a bare tree?
   if (!changeRev) {
     return [
       {
@@ -190,7 +198,7 @@ export async function getChangeArray(
 function toChangeObject(arangoPathObject: {
   edges: readonly ChangeEdge[];
   vertices: readonly ChangeVertex[];
-}): Change[0] {
+}): Change {
   // Get path
   let path = '';
   for (const edge of arangoPathObject.edges) {
@@ -206,12 +214,14 @@ function toChangeObject(arangoPathObject: {
   const { body, resource_id, type } = lastV;
   // Return change object
   trace({ body }, 'toChangeObj: returning change object with body');
-  return {
+  const change = {
     resource_id,
     path,
     body,
     type,
-  } as Change[0];
+  };
+  assertChange(change);
+  return change;
 }
 
 export async function getRootChange(
@@ -249,12 +259,12 @@ export async function putChange({
   userId,
   authorizationId,
 }: {
-  change: Change[0]['body'];
-  resId: Change[0]['resource_id'];
+  change: Change['body'];
+  resId: Change['resource_id'];
   rev: number | string;
-  type: Change[0]['type'];
+  type: Change['type'];
   children: string[];
-  path?: Change[0]['path'];
+  path?: Change['path'];
   userId?: string;
   authorizationId?: string;
 }): Promise<string> {

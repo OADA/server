@@ -159,6 +159,7 @@ declare module '@fastify/request-context' {
 
 fastify.decorateRequest('user', null);
 declare module 'fastify' {
+  // eslint-disable-next-line @typescript-eslint/no-shadow
   interface FastifyRequest {
     user: TokenResponse['doc'];
   }

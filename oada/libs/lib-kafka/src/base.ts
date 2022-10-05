@@ -15,13 +15,13 @@
  * limitations under the License.
  */
 
-import EventEmitter from 'node:events';
-import process from 'node:process';
-
 import { config } from './config.js';
 
+import { once } from 'node:events';
+import process from 'node:process';
+
 import type { Consumer, EachMessagePayload, Producer, logLevel } from 'kafkajs';
-import Bluebird from 'bluebird';
+import EventEmitter from 'eventemitter3';
 import { Kafka } from 'kafkajs';
 import debug from 'debug';
 
@@ -111,14 +111,15 @@ function getKafkajsDebug(namespace: string): KafkajsDebug {
 }
 
 export class Base extends EventEmitter {
+  protected static done = Symbol('kafka-base-done');
+
   readonly consumeTopic;
   readonly produceTopic;
   readonly group;
   readonly #kafka: Kafka;
-  #done!: (error_?: unknown) => void;
   protected consumer;
   protected producer;
-  protected ready: Bluebird<void>;
+  protected ready: Promise<unknown>;
 
   constructor({
     consumeTopic,
@@ -178,9 +179,7 @@ export class Base extends EventEmitter {
       }
     });
 
-    this.ready = Bluebird.fromCallback((done) => {
-      this.#done = done;
-    });
+    this.ready = once(this, Base.done);
   }
 
   override on(
@@ -263,11 +262,11 @@ export class Base extends EventEmitter {
         },
       });
     } catch (error_: unknown) {
-      this.#done(error_);
+      this.emit('error', error_);
       return;
     }
 
-    this.#done();
+    this.emit(Base.done);
   }
 }
 

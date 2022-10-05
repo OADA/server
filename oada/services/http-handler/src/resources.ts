@@ -209,7 +209,7 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
     switch (request.method) {
       case 'PUT':
       case 'POST':
-      case 'DELETE':
+      case 'DELETE': {
         if (!request.oadaGraph.resource_id) {
           // PUTing non-existant resource
           break;
@@ -229,9 +229,10 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
         }
 
         break;
+      }
 
       case 'HEAD':
-      case 'GET':
+      case 'GET': {
         if (!response.permissions.owner && !response.permissions.read) {
           request.log.warn(
             '%s tried to GET resource without proper permissions',
@@ -248,9 +249,12 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
         }
 
         break;
-      default:
+      }
+
+      default: {
         reply.badRequest('Unsupported method');
         break;
+      }
     }
   });
 
@@ -372,10 +376,12 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
         reply.vary('Accept');
         switch (accept.type(['json', type])) {
           case 'json':
-          case type:
+          case type: {
             // ? Better way to ensure string gets JSON serialized?
             void reply.serializer(JSON.stringify);
             return response;
+          }
+
           default: {
             reply.notAcceptable();
           }
@@ -578,31 +584,41 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
 
       request.log.trace('Received write response');
       switch (resp.code) {
-        case 'success':
+        case 'success': {
           break;
+        }
 
-        case 'permission':
+        case 'permission': {
           reply.forbidden('User does not own this resource');
           return;
+        }
 
-        case 'if-match failed':
+        case 'if-match failed': {
           reply.preconditionFailed(
             'If-Match header does not match current resource _rev'
           );
           return;
+        }
 
-        case 'if-none-match failed':
+        case 'if-none-match failed': {
           reply.preconditionFailed(
             'If-None-Match header contains current resource _rev'
           );
           return;
+        }
 
-        case 'bad request':
+        case 'bad request': {
           reply.unprocessableEntity(resp.error_message);
           return;
+        }
 
-        default:
-          throw new Error(`Write failed with code "${resp.code ?? ''}"`);
+        default: {
+          const error = new Error(
+            `Write failed with unknown code "${resp.code ?? ''}"`
+          );
+          reply.log.error({ error, resp }, 'Kafka request errored');
+          throw error;
+        }
       }
 
       const key = request.oadaGraph.resource_id.replace(/^resources\//, '');
@@ -680,8 +696,10 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
 
     request.log.trace('Received delete response');
     switch (resp.code) {
-      case 'success':
+      case 'success': {
         break;
+      }
+
       case 'not_found':
       case 'permission': {
         // ? Is 403 a good response for DELETE on non-existent?
@@ -703,8 +721,9 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
         return;
       }
 
-      default:
+      default: {
         throw new Error(`Delete failed with code "${resp.code ?? ''}"`);
+      }
     }
 
     const key = oadaGraph.resource_id.replace(/^resources\//, '');

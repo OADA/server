@@ -289,14 +289,19 @@ export const { config, schema } = await libConfig({
 // @ts-ignore
 if (config.get('auth.server.port') === null) {
   switch (config.get('auth.server.mode')) {
-    case 'https':
+    case 'https': {
       config.set('auth.server.port', 443);
       break;
-    case 'http':
+    }
+
+    case 'http': {
       config.set('auth.server.port', 80);
       break;
-    default:
+    }
+
+    default: {
       throw new TypeError(`Unknown mode: ${config.get('auth.server.mode')}`);
+    }
   }
 }
 

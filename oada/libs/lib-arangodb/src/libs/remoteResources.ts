@@ -41,13 +41,12 @@ export interface RemoteID {
 export async function getRemoteId(
   id: string | readonly string[],
   domain: string
-): Promise<RemoteID[]> {
+): Promise<AsyncIterable<RemoteID>> {
   const ids = Array.isArray(id) ? id : [id];
 
   trace('Looking up remote IDs for %s at %s', ids, domain);
-  const rids = (await (
-    await database.query(
-      aql`
+  const rids = await database.query(
+    aql`
         FOR id IN ${ids}
           LET rid = FIRST(
             FOR rRes IN ${remoteResources}
@@ -59,8 +58,7 @@ export async function getRemoteId(
             rid: rid,
             id: id
           }`
-    )
-  ).all()) as RemoteID[];
+  );
 
   trace(rids, 'Found');
   return rids;

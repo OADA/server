@@ -21,12 +21,12 @@ import EventEmitter, { once } from 'node:events';
 
 import test from 'ava';
 
-import { Consumer, Kafka, Producer } from 'kafkajs';
+import type { Consumer, Producer } from 'kafkajs';
+import { Kafka } from 'kafkajs';
 import { v4 as uuid } from 'uuid';
 
-import Bluebird from 'bluebird';
+import { KafkaRequestTimeoutError, Requester } from '../dist/Requester.js';
 import type { KafkaBase } from '../src/base.js';
-import { Requester } from '../dist/Requester.js';
 
 const REQ_TOPIC = 'test_requests';
 const RES_TOPIC = 'test_responses';
@@ -43,11 +43,6 @@ test.before(async (t) => {
   await producer.connect();
 });
 
-test.after(async (t) => {
-  t.timeout(60_000);
-  await producer.disconnect();
-});
-
 let cons: Consumer;
 test.before(async (t) => {
   t.timeout(10_000);
@@ -59,15 +54,20 @@ test.before(async (t) => {
   await cons.connect();
 });
 
-test.after(async (t) => {
-  t.timeout(10_000);
-  await cons.disconnect();
-});
-
 test.before(async () => {
   await cons.stop();
   await cons.subscribe({ topic: REQ_TOPIC });
   // Cons.consume();
+});
+
+test.after(async (t) => {
+  t.timeout(60_000);
+  await producer.disconnect();
+});
+
+test.after(async (t) => {
+  t.timeout(10_000);
+  await cons.disconnect();
 });
 
 let request: Requester;
@@ -93,7 +93,7 @@ test('should make a request', async () => {
 
   const emitter = new EventEmitter();
   await cons.run({
-    eachMessage: async ({ message: { value } }) => {
+    async eachMessage({ message: { value } }) {
       // Assume all messages are JSON
       const v: unknown = value && JSON.parse(value.toString());
       emitter.emit('message', v);
@@ -125,7 +125,7 @@ test('should receive a response', async () => {
 
   const emitter = new EventEmitter();
   await cons.run({
-    eachMessage: async ({ message: { value } }) => {
+    async eachMessage({ message: { value } }) {
       // Assume all messages are JSON
       const v: unknown = value && JSON.parse(value.toString());
 
@@ -157,6 +157,6 @@ test('should timeout when no response', async (t) => {
   const object: KafkaBase = { connection_id: id, msgtype: 'test' };
 
   await t.throwsAsync(request.send(object), {
-    instanceOf: Bluebird.TimeoutError,
+    instanceOf: KafkaRequestTimeoutError,
   });
 });

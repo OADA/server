@@ -4,3 +4,6 @@ tests
 .yarn
 .pnp.*
 .history
+coverage
+.coverage
+node_modules

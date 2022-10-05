@@ -15,9 +15,9 @@
  * limitations under the License.
  */
 
-const _ = require('lodash');
-const { expect } = require('chai');
-const oadaLib = require('@oada/lib-arangodb');
+import _ from 'lodash';
+import { expect } from 'chai';
+import oadaLib from '@oada/lib-arangodb';
 const libs = {
   users: require('../../db/arango/users'),
   codes: require('../../db/arango/codes'),

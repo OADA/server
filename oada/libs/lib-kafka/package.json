@@ -32,9 +32,9 @@
   "license": "Apache-2.0",
   "dependencies": {
     "@oada/lib-config": "^3.5.1",
-    "bluebird": "^3.7.2",
     "cls-rtracer": "^2.6.2",
     "debug": "^4.3.4",
+    "eventemitter3": "^4.0.7",
     "kafkajs": "^2.2.0",
     "ksuid": "^3.0.0",
     "tslib": "^2.4.0",
@@ -42,10 +42,9 @@
   },
   "devDependencies": {
     "@ava/typescript": "^3.0.1",
-    "@types/bluebird": "^3.5.36",
     "@types/convict": "^6.1.1",
     "@types/debug": "^4.1.7",
-    "@types/node": "^18.7.18",
+    "@types/node": "^18.8.2",
     "@types/uuid": "^8.3.4",
     "ava": "4.3.3"
   },
