@@ -47,11 +47,10 @@
     "@oada/client": "^4.3.2",
     "@oada/write-handler": "^3.5.1",
     "@types/debug": "^4.1.7",
-    "@types/node": "^18.7.18",
+    "@types/node": "^18.8.2",
     "@types/randomstring": "^1.1.8",
     "ava": "4.3.3",
-    "type-fest": "^2.19.0",
-    "typescript": "^4.8.3"
+    "type-fest": "^3.0.0"
   },
   "volta": {
     "node": "18.5.0"

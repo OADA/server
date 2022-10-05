@@ -57,10 +57,13 @@ async function requestUserWrite(request: FastifyRequest, id: string) {
 
   // eslint-disable-next-line sonarjs/no-small-switch
   switch (resp.code) {
-    case 'success':
+    case 'success': {
       return resp;
-    default:
+    }
+
+    default: {
       throw new Error(`write failed with code ${resp.code}`);
+    }
   }
 }
 

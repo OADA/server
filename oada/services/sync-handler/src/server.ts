@@ -29,8 +29,8 @@ import { Responder } from '@oada/lib-kafka';
 
 import type { WriteResponse } from '@oada/write-handler';
 
-import { default as axios } from 'axios';
 import debug from 'debug';
+import got from 'got';
 
 const info = debug('sync-handler:info');
 const trace = debug('sync-handler:trace');
@@ -63,14 +63,14 @@ responder.on<WriteResponse>('request', async (request) => {
     return;
   }
 
-  const id = request.resource_id;
-  trace('Saw change for resource %s', id);
+  const resourceId = request.resource_id;
+  trace('Saw change for resource %s', resourceId);
 
   // Let rev = req['_rev'];
   const oRev = request._orev ?? 0;
   // TODO: Add AQL query for just syncs and newest change?
   const syncs = Object.entries(
-    ((await resources.getResource(id, `/_meta/${META_KEY}`))?.syncs ??
+    ((await resources.getResource(resourceId, `/_meta/${META_KEY}`))?.syncs ??
       {}) as Record<string, { url: string; domain: string; token: string }>
   )
     // Ignore sync entries that aren't objects
@@ -81,13 +81,13 @@ responder.on<WriteResponse>('request', async (request) => {
     return;
   }
 
-  trace('Processing syncs for resource %s', id);
+  trace('Processing syncs for resource %s', resourceId);
 
-  const descendants = await resources.getNewDescendants(id, oRev);
+  const descendants = await resources.getNewDescendants(resourceId, oRev);
   const changes: Record<string, Promise<Resource | undefined>> = {};
   const ids: string[] = [];
   for await (const desc of descendants) {
-    trace('New descendant for %s: %O', id, desc);
+    trace('New descendant for %s: %O', resourceId, desc);
     ids.push(desc.id);
 
     if (!desc.changed) {
@@ -101,10 +101,10 @@ responder.on<WriteResponse>('request', async (request) => {
   // TODO: Probably should not be keeping the tokens under _meta...
   const puts = Promise.all(
     syncs.map(async ([key, { url, domain, token }]) => {
-      info('Running sync %s for resource %s', key, id);
+      info('Running sync %s for resource %s', key, resourceId);
       trace('Sync %s: %O', key, { url, domain, token });
       // Need separate changes map for each sync since they run concurrently
-      const lChanges = { ...changes }; // Shallow copy
+      const lChanges = new Map(Object.entries(changes));
 
       if (process.env.NODE_ENV !== 'production') {
         /**
@@ -116,16 +116,16 @@ responder.on<WriteResponse>('request', async (request) => {
       }
 
       // TODO: Cache this?
-      const {
-        data: { oada_base_uri: apiroot },
-      } = await axios.get<{ oada_base_uri: string }>(
+      const { oada_base_uri: apiroot } = await got(
         `https://${domain}/.well-known/oada-configuration`
-      );
+      ).json<{ oada_base_uri: string }>();
 
       // Ensure each local resource has a corresponding remote one
-      let rids = (await remoteResources.getRemoteId(ids, domain))
-        // Map the top resource to supplied URL
-        .map((rid) => (rid.id === id ? { id, rid: url } : rid));
+      let rids: remoteResources.RemoteID[] = [];
+      for await (const rid of await remoteResources.getRemoteId(ids, domain)) {
+        rids.push(rid.id === resourceId ? { id: resourceId, rid: url } : rid);
+      }
+
       // Create missing rids
       const newrids = await Promise.all(
         rids
@@ -133,33 +133,31 @@ responder.on<WriteResponse>('request', async (request) => {
           .map(async ({ id }) => {
             trace('Creating remote ID for %s at %s', id, domain);
 
-            const url = join(apiroot, 'resources');
+            const path = join(apiroot, 'resources');
             // Create any missing remote IDs
             const {
               headers: { location: loc },
-            } = await axios.post<void, { headers: { location: string } }>(
-              url,
-              {},
-              {
-                headers: {
-                  authorization: token,
-                },
-              }
-            );
+            } = await got.post(path, {
+              json: {},
+              headers: {
+                authorization: token,
+              },
+            });
 
             // TODO: Less gross way of create new remote resources?
-            lChanges[id] = resources.getResource(id);
+            lChanges.set(id, resources.getResource(id));
 
             // Parse resource ID from Location header
-            const newID = new URL(loc, url)
+            const newID = new URL(loc!, path)
               .toString()
-              .replace(url, 'resources/');
+              .replace(path, 'resources/');
             return {
               rid: newID,
               id,
             };
           })
       );
+
       // Add all remote IDs at once
       if (newrids.length === 0) {
         return;
@@ -168,7 +166,7 @@ responder.on<WriteResponse>('request', async (request) => {
       // Record new remote ID
       await remoteResources.addRemoteId(newrids, domain);
 
-      trace('Created remote ID for %s at %s: %O', id, domain, newrids);
+      trace('Created remote ID for %s at %s: %O', resourceId, domain, newrids);
 
       rids = rids.filter(({ rid }) => rid).concat(newrids);
       // Create mapping of IDs here to IDs there
@@ -177,7 +175,7 @@ responder.on<WriteResponse>('request', async (request) => {
       );
       return Promise.all(
         rids.map(async ({ id, rid }) => {
-          const change = await lChanges[id];
+          const change = await lChanges.get(id);
           if (!change) {
             return;
           }
@@ -192,14 +190,16 @@ responder.on<WriteResponse>('request', async (request) => {
             function (this: unknown, k, v: unknown) {
               switch (k) {
                 case '_meta': // Don't send resources's _meta
-                case '_rev': // Don't send resource's _rev
+                case '_rev': {
+                  // Don't send resource's _rev
                   if (this === change) {
                     return;
                   }
 
                   return v;
+                }
 
-                case '_id':
+                case '_id': {
                   if (this === change) {
                     // Don't send resource's _id
                     return;
@@ -213,17 +213,20 @@ responder.on<WriteResponse>('request', async (request) => {
                   warn('Could not resolve link to %s at %s', v, domain);
                   // TODO: What to do in this case?
                   return '';
-                default:
+                }
+
+                default: {
                   return v;
+                }
               }
             }
           );
 
           // TODO: Support DELETE
-          const put = axios({
+          const put = got({
             method: 'put',
             url: join(apiroot, rid),
-            data: body,
+            body,
             headers: {
               'content-type': `${type}`,
               'authorization': token,

@@ -21,7 +21,8 @@ import EventEmitter, { on, once } from 'node:events';
 
 import test from 'ava';
 
-import { Consumer, Kafka, Producer } from 'kafkajs';
+import type { Consumer, Producer } from 'kafkajs';
+import { Kafka } from 'kafkajs';
 import { v4 as uuid } from 'uuid';
 
 import type { KafkaBase } from '../src/base.js';
@@ -42,11 +43,6 @@ test.before(async (t) => {
   await producer.connect();
 });
 
-test.after(async (t) => {
-  t.timeout(60_000);
-  await producer.disconnect();
-});
-
 let cons: Consumer;
 test.before(async (t) => {
   t.timeout(10_000);
@@ -58,15 +54,20 @@ test.before(async (t) => {
   await cons.connect();
 });
 
-test.after(async (t) => {
-  t.timeout(10_000);
-  await cons.disconnect();
-});
-
 test.before(async () => {
   await cons.stop();
   await cons.subscribe({ topic: RES_TOPIC });
   // Cons.consume();
+});
+
+test.after(async (t) => {
+  t.timeout(60_000);
+  await producer.disconnect();
+});
+
+test.after(async (t) => {
+  t.timeout(10_000);
+  await cons.disconnect();
 });
 
 let responder: Responder;
@@ -156,7 +157,7 @@ test('should respond to a request', async (t) => {
   const emitter = new EventEmitter();
   await cons.run({
     // eslint-disable-next-line @typescript-eslint/no-shadow
-    eachMessage: async ({ message: { value } }) => {
+    async eachMessage({ message: { value } }) {
       // Assume all messages are JSON
       const v: unknown = value && JSON.parse(value.toString());
       emitter.emit('message', v);

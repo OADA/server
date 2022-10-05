@@ -31,7 +31,7 @@ import { stopResp } from '../dist/index.js';
 
 const { httpResponse, writeResponse } = config.get('kafka.topics');
 const requester = new Requester({
-  consumeTopic: httpResponse!,
+  consumeTopic: httpResponse,
   produceTopic: writeResponse,
   group: 'rev-graph-update-test',
 });

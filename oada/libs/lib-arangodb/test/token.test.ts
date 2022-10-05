@@ -28,6 +28,8 @@ import exampleUsers from '../dist/libs/exampledocs/users.js';
 
 test.before(init.run);
 
+test.after(init.cleanup);
+
 test('should find a token', async (t) => {
   const token = exampleTokens[0]!;
 
@@ -45,7 +47,8 @@ test('should save a token', async (t) => {
   const user = exampleUsers[0]!;
 
   await authorizations.save({
-    ...token, // @ts-expect-error
+    ...token,
+    // @ts-expect-error
     _key: `${token._key}-no-duplicates`,
     token: 'abc-no-duplicates',
     user: {
@@ -61,5 +64,3 @@ test('should save a token', async (t) => {
   t.is(tok?.user._id, user._id as UserID);
   t.is(tok?.clientId, token.clientId);
 });
-
-test.after(init.cleanup);

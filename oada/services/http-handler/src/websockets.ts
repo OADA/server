@@ -227,7 +227,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         },
       };
       switch (message.method) {
-        case 'ping':
+        case 'ping': {
           debug('ping');
           // Send an empty response
           await sendResponse({
@@ -235,6 +235,8 @@ const plugin: FastifyPluginAsync = async (fastify) => {
             status: 204, // HTTP 204: No Content
           });
           return;
+        }
+
         case 'unwatch': {
           debug('closing watch', message.requestId);
 
@@ -270,25 +272,35 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         }
 
         case 'watch': // Standard watch it just a HEAD
-        case 'head-watch':
+        case 'head-watch': {
           request.method = 'head';
           break;
-        case 'get-watch':
+        }
+
+        case 'get-watch': {
           request.method = 'get';
           break;
-        case 'put-watch':
+        }
+
+        case 'put-watch': {
           request.method = 'put';
           break;
-        case 'post-watch':
+        }
+
+        case 'post-watch': {
           request.method = 'post';
           break;
-        case 'delete-watch':
+        }
+
+        case 'delete-watch': {
           request.method = 'delete';
           break;
+        }
 
-        default:
+        default: {
           request.method = message.method;
           break;
+        }
       }
 
       request.payload = JSON.stringify(message.data);
@@ -421,19 +433,20 @@ const plugin: FastifyPluginAsync = async (fastify) => {
           break;
         }
 
-        default:
+        default: {
           break;
+        }
       }
 
       switch (message.method) {
         case 'delete-watch':
-        case 'delete':
+        case 'delete': {
           if (parts.length === 3) {
             // It is a resource
             emitter.removeAllListeners(resourceId);
           }
+        }
 
-        // eslint-disable-next-line no-fallthrough
         case 'get-watch':
         case 'get': {
           // Can only send JSON over websockets
@@ -458,7 +471,6 @@ const plugin: FastifyPluginAsync = async (fastify) => {
           }
         }
 
-        // eslint-disable-next-line no-fallthrough
         default: {
           const headers: Record<string, string> = {};
           for (const [k, v] of Object.entries(response.headers)) {
