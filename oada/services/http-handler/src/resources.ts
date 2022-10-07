@@ -161,7 +161,7 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
   /**
    * Perform the OADA "graph lookup"
    */
-  fastify.addHook('preHandler', async (request, reply) => {
+  fastify.addHook('preHandler', async (request) => {
     /**
      * The whole path from the request (e.g., /resources/123/link/abc)
      */
@@ -179,9 +179,6 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
       request.log.info('Graph lookup: %s => %s', fullpath, url);
       // Remove `/resources`? IDK
       request.oadaPath = url;
-      void reply.header('Content-Location', `/${url}`);
-    } else {
-      void reply.header('Content-Location', `/${fullpath}`);
     }
 
     request.oadaGraph = result;
@@ -259,11 +256,12 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
   });
 
   /**
-   * Return "path leftover" in a header if token/scope passes
+   * Return certain headers if token/scope passes
    */
-  fastify.addHook('preHandler', async ({ oadaGraph }, reply) => {
+  fastify.addHook('preHandler', async ({ oadaGraph, oadaPath }, reply) => {
     // ? Better header name?
     void reply.header('X-OADA-Path-Leftover', oadaGraph.path_leftover);
+    void reply.header('Content-Location', `/${oadaPath}`);
   });
 
   fastify.route({
@@ -401,6 +399,7 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
         );
 
         // Stream file to client
+        // deepcode ignore ContentLengthInCode: this is server-side
         void reply.header('Content-Length', size);
         return cacache.get.stream.byDigest(CACHE_PATH, integrity);
       }

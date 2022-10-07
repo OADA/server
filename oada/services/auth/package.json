@@ -52,7 +52,7 @@
     "@oada/well-known-json": "^4.0.0",
     "arangojs": "^7.8.0",
     "bcryptjs": "^2.4.3",
-    "body-parser": "^1.20.0",
+    "body-parser": "^1.20.1",
     "chalk": "^5.1.0",
     "clone-deep": "^4.0.1",
     "connect-arango": "^0.2.0",

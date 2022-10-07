@@ -18,7 +18,7 @@
     "@tsconfig/node18": "^1.0.1",
     "@types/eslint": "^8.4.6",
     "@types/mocha": "^10.0.0",
-    "@types/node": "^18.8.2",
+    "@types/node": "^18.8.3",
     "@typescript-eslint/eslint-plugin": "^5.39.0",
     "@typescript-eslint/parser": "^5.39.0",
     "@yarnpkg/sdks": "^3.0.0-rc.22",
@@ -46,12 +46,12 @@
     "eslint-plugin-regexp": "^1.9.0",
     "eslint-plugin-security": "^1.5.0",
     "eslint-plugin-sonarjs": "^0.15.0",
-    "eslint-plugin-unicorn": "^44.0.1",
+    "eslint-plugin-unicorn": "^44.0.2",
     "prettier": "^2.7.1",
     "typescript": "4.8.2"
   },
   "dependencies": {
-    "pino-pretty": "^9.1.0"
+    "pino-pretty": "^9.1.1"
   },
   "resolutions": {
     "fastify-plugin": "4.0.0"
@@ -62,5 +62,5 @@
   "volta": {
     "node": "18.5.0"
   },
-  "packageManager": "yarn@3.2.3"
+  "packageManager": "yarn@3.2.4"
 }
