@@ -53,7 +53,7 @@
     "debug": "^4.3.4",
     "es-main": "^1.2.0",
     "eventemitter3": "^4.0.7",
-    "fastify": "4.7.0",
+    "fastify": "4.8.1",
     "fastify-graceful-shutdown": "^3.4.0",
     "fastify-healthcheck": "^4.2.0",
     "json-ptr": "^3.1.1",
