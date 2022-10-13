@@ -26,7 +26,7 @@ import { Kafka } from 'kafkajs';
 import { v4 as uuid } from 'uuid';
 
 import { KafkaRequestTimeoutError, Requester } from '../dist/Requester.js';
-import type { KafkaBase } from '../src/base.js';
+import type { KafkaBase } from '../src/Base.js';
 
 const REQ_TOPIC = 'test_requests';
 const RES_TOPIC = 'test_responses';

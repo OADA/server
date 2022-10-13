@@ -17,7 +17,8 @@
 
 import http from 'node:http';
 
-import { init } from '@oada/lib-arangodb';
+import { init as initArangoDB } from '@oada/lib-arangodb';
+import { init as initKafka } from '@oada/lib-kafka';
 
 import debug from 'debug';
 
@@ -27,9 +28,9 @@ const info = debug('startup:info');
 const port = process.env.PORT ?? 8080;
 const exit = process.env.EXIT ?? false;
 
-info('Startup is creating the database');
-await init.run();
-info('Database created/ensured.');
+info('Startup is initializing ArangoDB and Kafka');
+await Promise.all([initArangoDB.run(), initKafka.run()]);
+info('Initialization complete');
 
 if (exit) {
   // eslint-disable-next-line no-process-exit, unicorn/no-process-exit

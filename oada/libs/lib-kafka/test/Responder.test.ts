@@ -25,7 +25,7 @@ import type { Consumer, Producer } from 'kafkajs';
 import { Kafka } from 'kafkajs';
 import { v4 as uuid } from 'uuid';
 
-import type { KafkaBase } from '../src/base.js';
+import type { KafkaBase } from '../src/Base.js';
 import { Responder } from '../dist/Responder.js';
 
 const REQ_TOPIC = 'test_requests';

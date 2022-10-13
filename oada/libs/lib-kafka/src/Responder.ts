@@ -17,11 +17,15 @@
 
 import util from 'node:util';
 
-import { Base, CANCEL_KEY, DATA, REQ_ID_KEY, topicTimeout } from './base.js';
-import type {
-  ConstructorOptions as BaseConstructorOptions,
-  KafkaBase,
-} from './base.js';
+import {
+  Base,
+  type ConstructorOptions as BaseConstructorOptions,
+  CANCEL_KEY,
+  DATA,
+  type KafkaBase,
+  REQ_ID_KEY,
+  topicTimeout,
+} from './Base.js';
 
 import type { EachMessagePayload } from 'kafkajs';
 import debug from 'debug';

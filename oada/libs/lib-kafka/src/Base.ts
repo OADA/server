@@ -20,10 +20,11 @@ import { config } from './config.js';
 import { once } from 'node:events';
 import process from 'node:process';
 
-import type { Consumer, EachMessagePayload, Producer, logLevel } from 'kafkajs';
+import type { Consumer, EachMessagePayload, Producer } from 'kafkajs';
 import EventEmitter from 'eventemitter3';
-import { Kafka } from 'kafkajs';
 import debug from 'debug';
+
+import Kafka from './Kafka.js';
 
 // Const info = debug('@oada/lib-kafka:info');
 const error = debug('@oada/lib-kafka:error');
@@ -55,7 +56,7 @@ function die(reason: Error) {
 }
 
 export interface ConstructorOptions {
-  consumeTopic: string | string[];
+  consumeTopic: string | readonly string[];
   // eslint-disable-next-line @typescript-eslint/ban-types
   produceTopic?: string | null;
   group: string;
@@ -86,34 +87,14 @@ export interface KafkaBase {
   domain?: string;
 }
 
-/**
- * Make kafkajs logging nicer?
- */
-type KafkajsDebug = Record<
-  keyof Omit<typeof logLevel, 'NOTHING'>,
-  debug.Debugger
->;
-const kafkajsDebugs = new Map<string, KafkajsDebug>();
-function getKafkajsDebug(namespace: string): KafkajsDebug {
-  const d = kafkajsDebugs.get(namespace);
-  if (d) {
-    return d;
-  }
-
-  const newDebug = {
-    ERROR: debug(`kafkajs:${namespace}:error`),
-    WARN: debug(`kafkajs:${namespace}:warn`),
-    INFO: debug(`kafkajs:${namespace}:info`),
-    DEBUG: debug(`kafkajs:${namespace}:debug`),
-  };
-  kafkajsDebugs.set(namespace, newDebug);
-  return newDebug;
+function isArray(value: unknown): value is unknown[] | readonly unknown[] {
+  return Array.isArray(value);
 }
 
 export class Base extends EventEmitter {
   protected static done = Symbol('kafka-base-done');
 
-  readonly consumeTopic;
+  readonly consumeTopics;
   readonly produceTopic;
   readonly group;
   readonly #kafka: Kafka;
@@ -130,29 +111,11 @@ export class Base extends EventEmitter {
   }: ConstructorOptions) {
     super();
 
-    this.consumeTopic = consumeTopic;
+    this.consumeTopics = isArray(consumeTopic) ? consumeTopic : [consumeTopic];
     this.produceTopic = produceTopic;
     this.group = group;
 
-    this.#kafka = new Kafka({
-      /**
-       * Make kafkajs logging nicer?
-       */
-      logCreator() {
-        return ({ namespace, label, log }) => {
-          const l = label as keyof KafkajsDebug;
-          // eslint-disable-next-line security/detect-object-injection
-          const logger = getKafkajsDebug(namespace)[l];
-          if (log instanceof Error) {
-            logger({ err: log }, log.message);
-          } else {
-            const { message, ...extra } = log;
-            logger(extra, message);
-          }
-        };
-      },
-      brokers: config.get('kafka.broker'),
-    });
+    this.#kafka = new Kafka();
 
     this.consumer =
       consumer ??
@@ -245,10 +208,7 @@ export class Base extends EventEmitter {
       await this.consumer.connect();
       await this.producer.connect();
 
-      for (const topic of Array.isArray(this.consumeTopic)
-        ? this.consumeTopic
-        : [this.consumeTopic]) {
-        // eslint-disable-next-line no-await-in-loop
+      for await (const topic of this.consumeTopics) {
         await this.consumer.subscribe({ topic });
       }
 
