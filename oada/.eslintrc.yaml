@@ -19,6 +19,7 @@ extends:
 plugins:
   - '@typescript-eslint'
   - node
+  - escompat
   - github
   - promise
   - regexp

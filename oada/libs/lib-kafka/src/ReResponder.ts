@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-import { DATA, REQ_ID_KEY } from './base.js';
+import { DATA, REQ_ID_KEY } from './Base.js';
 import { Responder } from './Responder.js';
 
 import ksuid from 'ksuid';

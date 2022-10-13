@@ -21,8 +21,15 @@ import { setTimeout } from 'node:timers/promises';
 import EventEmitter from 'eventemitter3';
 import ksuid from 'ksuid';
 
-import { Base, CANCEL_KEY, DATA, REQ_ID_KEY, topicTimeout } from './base.js';
-import type { ConstructorOptions, KafkaBase } from './base.js';
+import {
+  Base,
+  CANCEL_KEY,
+  type ConstructorOptions,
+  DATA,
+  type KafkaBase,
+  REQ_ID_KEY,
+  topicTimeout,
+} from './Base.js';
 
 export class KafkaRequestTimeoutError extends Error {}
 
@@ -132,4 +139,4 @@ export class Requester extends Base {
   }
 }
 
-export type { ConstructorOptions } from './base.js';
+export type { ConstructorOptions } from './Base.js';

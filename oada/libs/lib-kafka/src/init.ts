@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2017-2021 Open Ag Data Alliance
+ * Copyright 2022 Open Ag Data Alliance
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,12 +15,25 @@
  * limitations under the License.
  */
 
-// @ts-expect-error the types are not correct
-export { KafkaJSError as KafkaError } from 'kafkajs/src/errors.js';
+import { config } from './config.js';
 
-export * as init from './init.js';
-export type { KafkaBase } from './Base.js';
-export { Responder } from './Responder.js';
-export { ReResponder } from './ReResponder.js';
-export { Requester } from './Requester.js';
-export { ResponderRequester } from './ResponderRequester.js';
+import Kafka from './Kafka.js';
+
+/**
+ * Ensure our Kafka topics exist
+ */
+export async function run(): Promise<void> {
+  const kafka = new Kafka();
+  const topics = config.get('kafka.topics');
+
+  const admin = kafka.admin();
+  await admin.connect();
+  try {
+    await admin.createTopics({
+      waitForLeaders: false,
+      topics: Object.values(topics).map((topic) => ({ topic })),
+    });
+  } finally {
+    await admin.disconnect();
+  }
+}

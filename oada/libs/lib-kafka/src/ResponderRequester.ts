@@ -18,15 +18,16 @@
 import type { EachMessagePayload } from 'kafkajs';
 import type EventEmitter from 'eventemitter3';
 
-import { Base, DATA } from './base.js';
-import type {
-  ConstructorOptions as ResponderOptions,
-  Response,
+import { Base, DATA, type KafkaBase } from './Base.js';
+import {
+  Requester,
+  type ConstructorOptions as RequesterOptions,
+} from './Requester.js';
+import {
+  Responder,
+  type ConstructorOptions as ResponderOptions,
+  type Response,
 } from './Responder.js';
-import type { KafkaBase } from './base.js';
-import { Requester } from './Requester.js';
-import type { ConstructorOptions as RequesterOptions } from './Requester.js';
-import { Responder } from './Responder.js';
 
 import debug from 'debug';
 
@@ -109,12 +110,12 @@ export class ResponderRequester extends Base {
     // Mux the consumer between requester and responder
     this.on(DATA, (value: KafkaBase, data, ...rest) => {
       trace(data, 'Received data: %o', value);
-      if (data.topic === this.#requester.consumeTopic) {
+      if (this.#requester.consumeTopics.includes(data.topic)) {
         trace('Muxing data to requester');
         this.#requester.emit(DATA, value, data, ...rest);
       }
 
-      if (data.topic === this.#responder.consumeTopic) {
+      if (this.#responder.consumeTopics.includes(data.topic)) {
         if (!this.#respondOwn && value.group === this.group) {
           // Don't respond to own requests
           return;
