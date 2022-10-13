@@ -190,7 +190,7 @@ services:
 
   # Arango is the main backend where core data and graph is stored
   arangodb:
-    image: arangodb:3.9.1
+    image: arangodb:3.9.3
     restart: unless-stopped
     networks:
       arango_net: {}
@@ -208,7 +208,7 @@ services:
 
   # Redpanda is API compatible with kafka.
   redpanda:
-    image: vectorized/redpanda:v22.1.3
+    image: vectorized/redpanda:v22.2.5
     restart: unless-stopped
     networks:
       kafka_net:

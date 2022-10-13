@@ -28,7 +28,7 @@
     "@oada/lib-prom": "workspace:^",
     "@oada/pino-debug": "^3.5.1",
     "debug": "^4.3.4",
-    "got": "^12.5.1",
+    "got": "^12.5.2",
     "tslib": "^2.4.0"
   },
   "devDependencies": {
