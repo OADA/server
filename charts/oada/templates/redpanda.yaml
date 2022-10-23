@@ -60,6 +60,9 @@ spec:
       app.kubernetes.io/instance: {{ .Release.Name }}
   endpoints:
   - port: admin
+    path: /public_metrics
+  - port: admin
+    path: /metrics
   namespaceSelector:
     any: false
 {{- end }}

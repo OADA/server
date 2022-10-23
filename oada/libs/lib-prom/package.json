@@ -38,10 +38,10 @@
   "devDependencies": {
     "@ava/typescript": "^3.0.1",
     "@types/convict": "^6.1.1",
-    "@types/node": "^18.8.5",
+    "@types/node": "^18.11.3",
     "@types/ws": "^8.5.3",
-    "ava": "4.3.3",
-    "fastify-plugin": "^4.2.1"
+    "ava": "5.0.1",
+    "fastify-plugin": "^4.3.0"
   },
   "volta": {
     "node": "18.5.0"
