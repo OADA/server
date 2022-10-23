@@ -1,6 +1,6 @@
 {
   "name": "@oada/rev-graph-update",
-  "version": "3.5.1",
+  "version": "3.6.0",
   "type": "module",
   "description": "",
   "author": "",
@@ -31,11 +31,11 @@
     }
   },
   "dependencies": {
-    "@oada/lib-arangodb": "^3.5.1",
-    "@oada/lib-config": "^3.5.1",
-    "@oada/lib-kafka": "^3.5.1",
+    "@oada/lib-arangodb": "^3.6.0",
+    "@oada/lib-config": "^3.6.0",
+    "@oada/lib-kafka": "^3.6.0",
     "@oada/lib-prom": "workspace:^",
-    "@oada/pino-debug": "^3.5.1",
+    "@oada/pino-debug": "^3.6.0",
     "ajv": "^8.11.0",
     "debug": "^4.3.4",
     "p-queue": "^7.3.0",
@@ -45,7 +45,7 @@
   "devDependencies": {
     "@ava/typescript": "^3.0.1",
     "@oada/client": "^4.4.1",
-    "@oada/write-handler": "^3.5.1",
+    "@oada/write-handler": "^3.6.0",
     "@types/debug": "^4.1.7",
     "@types/node": "^18.11.3",
     "@types/randomstring": "^1.1.8",

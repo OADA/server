@@ -1,6 +1,6 @@
 {
   "name": "@oada/well-known",
-  "version": "3.5.1",
+  "version": "3.6.0",
   "type": "module",
   "description": "Microservice for serving well-known at an OADA cloud.  Plays nicely with oada-ref-auth-js.",
   "repository": {
@@ -32,9 +32,9 @@
     "@fastify/cors": "^8.1.0",
     "@fastify/helmet": "^10.0.2",
     "@oada/formats-server": "^3.3.0",
-    "@oada/lib-config": "^3.5.1",
+    "@oada/lib-config": "^3.6.0",
     "@oada/lib-prom": "workspace:^",
-    "@oada/pino-debug": "^3.5.1",
+    "@oada/pino-debug": "^3.6.0",
     "@oada/well-known-json": "^4.0.0",
     "debug": "^4.3.4",
     "fastify": "^4.9.2",
