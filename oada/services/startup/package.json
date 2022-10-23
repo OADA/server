@@ -1,6 +1,6 @@
 {
   "name": "@oada/startup",
-  "version": "3.5.1",
+  "version": "3.6.0",
   "type": "module",
   "description": "Handles startup of services for docker in OADA docker implementation.",
   "main": "dist/index.js",
@@ -29,9 +29,9 @@
   },
   "homepage": "https://github.com/oada/oada-srvc-startup#readme",
   "dependencies": {
-    "@oada/lib-arangodb": "^3.5.1",
-    "@oada/lib-kafka": "^3.5.1",
-    "@oada/pino-debug": "^3.5.1",
+    "@oada/lib-arangodb": "^3.6.0",
+    "@oada/lib-kafka": "^3.6.0",
+    "@oada/pino-debug": "^3.6.0",
     "debug": "^4.3.4",
     "tslib": "^2.4.0"
   },

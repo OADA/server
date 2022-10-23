@@ -565,11 +565,11 @@ __metadata:
     "@oada/certs": ^4.1.1
     "@oada/error": ^2.0.1
     "@oada/id-client": ^2.0.8
-    "@oada/lib-arangodb": ^3.5.1
-    "@oada/lib-config": ^3.5.1
+    "@oada/lib-arangodb": ^3.6.0
+    "@oada/lib-config": ^3.6.0
     "@oada/lib-prom": "workspace:^"
     "@oada/lookup": ^2.0.0
-    "@oada/pino-debug": ^3.5.1
+    "@oada/pino-debug": ^3.6.0
     "@oada/types": ^3.3.0
     "@oada/well-known-json": ^4.0.0
     "@types/bcryptjs": ^2.4.2
@@ -731,16 +731,16 @@ __metadata:
     "@fastify/websocket": ^7.1.0
     "@oada/error": ^2.0.1
     "@oada/formats-server": ^3.3.0
-    "@oada/lib-arangodb": ^3.5.1
-    "@oada/lib-config": ^3.5.1
-    "@oada/lib-kafka": ^3.5.1
+    "@oada/lib-arangodb": ^3.6.0
+    "@oada/lib-config": ^3.6.0
+    "@oada/lib-kafka": ^3.6.0
     "@oada/lib-prom": "workspace:^"
     "@oada/oadaify": ^2.1.0
-    "@oada/permissions-handler": ^3.5.1
-    "@oada/pino-debug": ^3.5.1
+    "@oada/permissions-handler": ^3.6.0
+    "@oada/pino-debug": ^3.6.0
     "@oada/types": ^3.3.0
     "@oada/users": "workspace:services/users"
-    "@oada/write-handler": ^3.5.1
+    "@oada/write-handler": ^3.6.0
     "@types/cacache": ^15.0.1
     "@types/debug": ^4.1.7
     "@types/node": ^18.11.3
@@ -784,12 +784,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@oada/lib-arangodb@^3.5.1, @oada/lib-arangodb@workspace:libs/lib-arangodb":
+"@oada/lib-arangodb@^3.6.0, @oada/lib-arangodb@workspace:libs/lib-arangodb":
   version: 0.0.0-use.local
   resolution: "@oada/lib-arangodb@workspace:libs/lib-arangodb"
   dependencies:
     "@ava/typescript": ^3.0.1
-    "@oada/lib-config": ^3.5.1
+    "@oada/lib-config": ^3.6.0
     "@oada/oadaify": ^2.1.0
     "@oada/types": ^3.3.0
     "@types/bcryptjs": ^2.4.2
@@ -813,7 +813,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@oada/lib-config@^3.5.1, @oada/lib-config@workspace:libs/lib-config":
+"@oada/lib-config@^3.6.0, @oada/lib-config@workspace:libs/lib-config":
   version: 0.0.0-use.local
   resolution: "@oada/lib-config@workspace:libs/lib-config"
   dependencies:
@@ -829,12 +829,12 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@oada/lib-kafka@^3.5.1, @oada/lib-kafka@workspace:libs/lib-kafka":
+"@oada/lib-kafka@^3.6.0, @oada/lib-kafka@workspace:libs/lib-kafka":
   version: 0.0.0-use.local
   resolution: "@oada/lib-kafka@workspace:libs/lib-kafka"
   dependencies:
     "@ava/typescript": ^3.0.1
-    "@oada/lib-config": ^3.5.1
+    "@oada/lib-config": ^3.6.0
     "@types/convict": ^6.1.1
     "@types/debug": ^4.1.7
     "@types/node": ^18.11.3
@@ -855,7 +855,7 @@ __metadata:
   resolution: "@oada/lib-prom@workspace:libs/lib-prom"
   dependencies:
     "@ava/typescript": ^3.0.1
-    "@oada/lib-config": ^3.5.1
+    "@oada/lib-config": ^3.6.0
     "@types/convict": ^6.1.1
     "@types/node": ^18.11.3
     "@types/ws": ^8.5.3
@@ -903,14 +903,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@oada/permissions-handler@^3.5.1, @oada/permissions-handler@workspace:services/permissions-handler":
+"@oada/permissions-handler@^3.6.0, @oada/permissions-handler@workspace:services/permissions-handler":
   version: 0.0.0-use.local
   resolution: "@oada/permissions-handler@workspace:services/permissions-handler"
   dependencies:
-    "@oada/lib-config": ^3.5.1
-    "@oada/lib-kafka": ^3.5.1
+    "@oada/lib-config": ^3.6.0
+    "@oada/lib-kafka": ^3.6.0
     "@oada/lib-prom": "workspace:^"
-    "@oada/pino-debug": ^3.5.1
+    "@oada/pino-debug": ^3.6.0
     "@types/debug": ^4.1.7
     "@types/node": ^18.11.3
     "@types/type-is": ^1.6.3
@@ -921,7 +921,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@oada/pino-debug@^3.5.1, @oada/pino-debug@workspace:libs/pino-debug":
+"@oada/pino-debug@^3.6.0, @oada/pino-debug@workspace:libs/pino-debug":
   version: 0.0.0-use.local
   resolution: "@oada/pino-debug@workspace:libs/pino-debug"
   dependencies:
@@ -945,12 +945,12 @@ __metadata:
   dependencies:
     "@ava/typescript": ^3.0.1
     "@oada/client": ^4.4.1
-    "@oada/lib-arangodb": ^3.5.1
-    "@oada/lib-config": ^3.5.1
-    "@oada/lib-kafka": ^3.5.1
+    "@oada/lib-arangodb": ^3.6.0
+    "@oada/lib-config": ^3.6.0
+    "@oada/lib-kafka": ^3.6.0
     "@oada/lib-prom": "workspace:^"
-    "@oada/pino-debug": ^3.5.1
-    "@oada/write-handler": ^3.5.1
+    "@oada/pino-debug": ^3.6.0
+    "@oada/write-handler": ^3.6.0
     "@types/debug": ^4.1.7
     "@types/node": ^18.11.3
     "@types/randomstring": ^1.1.8
@@ -968,12 +968,12 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@oada/shares@workspace:services/shares"
   dependencies:
-    "@oada/lib-arangodb": ^3.5.1
-    "@oada/lib-config": ^3.5.1
-    "@oada/lib-kafka": ^3.5.1
+    "@oada/lib-arangodb": ^3.6.0
+    "@oada/lib-config": ^3.6.0
+    "@oada/lib-kafka": ^3.6.0
     "@oada/lib-prom": "workspace:^"
-    "@oada/pino-debug": ^3.5.1
-    "@oada/write-handler": ^3.5.1
+    "@oada/pino-debug": ^3.6.0
+    "@oada/write-handler": ^3.6.0
     "@types/debug": ^4.1.7
     debug: ^4.3.4
     tslib: ^2.4.0
@@ -984,9 +984,9 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@oada/startup@workspace:services/startup"
   dependencies:
-    "@oada/lib-arangodb": ^3.5.1
-    "@oada/lib-kafka": ^3.5.1
-    "@oada/pino-debug": ^3.5.1
+    "@oada/lib-arangodb": ^3.6.0
+    "@oada/lib-kafka": ^3.6.0
+    "@oada/pino-debug": ^3.6.0
     "@types/debug": ^4.1.7
     "@types/node": ^18.11.3
     debug: ^4.3.4
@@ -998,12 +998,12 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@oada/sync-handler@workspace:services/sync-handler"
   dependencies:
-    "@oada/lib-arangodb": ^3.5.1
-    "@oada/lib-config": ^3.5.1
-    "@oada/lib-kafka": ^3.5.1
+    "@oada/lib-arangodb": ^3.6.0
+    "@oada/lib-config": ^3.6.0
+    "@oada/lib-kafka": ^3.6.0
     "@oada/lib-prom": "workspace:^"
-    "@oada/pino-debug": ^3.5.1
-    "@oada/write-handler": ^3.5.1
+    "@oada/pino-debug": ^3.6.0
+    "@oada/write-handler": ^3.6.0
     "@types/debug": ^4.1.7
     "@types/node": ^18.11.3
     debug: ^4.3.4
@@ -1028,11 +1028,11 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@oada/users@workspace:services/users"
   dependencies:
-    "@oada/lib-arangodb": ^3.5.1
-    "@oada/lib-config": ^3.5.1
-    "@oada/lib-kafka": ^3.5.1
+    "@oada/lib-arangodb": ^3.6.0
+    "@oada/lib-config": ^3.6.0
+    "@oada/lib-kafka": ^3.6.0
     "@oada/lib-prom": "workspace:^"
-    "@oada/pino-debug": ^3.5.1
+    "@oada/pino-debug": ^3.6.0
     "@types/clone-deep": ^4.0.1
     "@types/debug": ^4.1.7
     "@types/minimist": ^1.2.2
@@ -1053,13 +1053,13 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@oada/webhooks@workspace:services/webhooks"
   dependencies:
-    "@oada/lib-arangodb": ^3.5.1
-    "@oada/lib-config": ^3.5.1
-    "@oada/lib-kafka": ^3.5.1
+    "@oada/lib-arangodb": ^3.6.0
+    "@oada/lib-config": ^3.6.0
+    "@oada/lib-kafka": ^3.6.0
     "@oada/lib-prom": "workspace:^"
-    "@oada/pino-debug": ^3.5.1
+    "@oada/pino-debug": ^3.6.0
     "@oada/types": ^3.3.0
-    "@oada/write-handler": ^3.5.1
+    "@oada/write-handler": ^3.6.0
     "@types/debug": ^4.1.7
     debug: ^4.3.4
     got: ^12.5.2
@@ -1090,9 +1090,9 @@ __metadata:
     "@fastify/cors": ^8.1.0
     "@fastify/helmet": ^10.0.2
     "@oada/formats-server": ^3.3.0
-    "@oada/lib-config": ^3.5.1
+    "@oada/lib-config": ^3.6.0
     "@oada/lib-prom": "workspace:^"
-    "@oada/pino-debug": ^3.5.1
+    "@oada/pino-debug": ^3.6.0
     "@oada/well-known-json": ^4.0.0
     "@types/cors": ^2.8.12
     "@types/debug": ^4.1.7
@@ -1104,17 +1104,17 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@oada/write-handler@^3.5.1, @oada/write-handler@workspace:services/write-handler":
+"@oada/write-handler@^3.6.0, @oada/write-handler@workspace:services/write-handler":
   version: 0.0.0-use.local
   resolution: "@oada/write-handler@workspace:services/write-handler"
   dependencies:
     "@ava/typescript": ^3.0.1
     "@oada/client": ^4.4.1
-    "@oada/lib-arangodb": ^3.5.1
-    "@oada/lib-config": ^3.5.1
-    "@oada/lib-kafka": ^3.5.1
+    "@oada/lib-arangodb": ^3.6.0
+    "@oada/lib-config": ^3.6.0
+    "@oada/lib-kafka": ^3.6.0
     "@oada/lib-prom": "workspace:^"
-    "@oada/pino-debug": ^3.5.1
+    "@oada/pino-debug": ^3.6.0
     "@oada/types": ^3.3.0
     "@types/debug": ^4.1.7
     "@types/json-pointer": ^1.0.31

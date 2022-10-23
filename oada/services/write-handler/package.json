@@ -1,6 +1,6 @@
 {
   "name": "@oada/write-handler",
-  "version": "3.5.1",
+  "version": "3.6.0",
   "type": "module",
   "description": "",
   "repository": {
@@ -39,11 +39,11 @@
     }
   },
   "dependencies": {
-    "@oada/lib-arangodb": "^3.5.1",
-    "@oada/lib-config": "^3.5.1",
-    "@oada/lib-kafka": "^3.5.1",
+    "@oada/lib-arangodb": "^3.6.0",
+    "@oada/lib-config": "^3.6.0",
+    "@oada/lib-kafka": "^3.6.0",
     "@oada/lib-prom": "workspace:^",
-    "@oada/pino-debug": "^3.5.1",
+    "@oada/pino-debug": "^3.6.0",
     "debug": "^4.3.4",
     "json-ptr": "^3.1.1",
     "object-assign-deep": "^0.4.0",
