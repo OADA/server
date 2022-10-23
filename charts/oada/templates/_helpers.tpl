@@ -59,3 +59,14 @@ app.kubernetes.io/part-of: oada
 {{- define "oada.tls" -}}
   tls-{{ .Release.Name }}
 {{- end -}}
+
+{{- define "oada.dashboard.yaml" -}}
+{{- $tags := .tags | default list -}}
+{{- $rest := omit . "tags" -}}
+tags: {{ append $tags "oada" | toJson }}
+{{ $rest | toYaml }}
+{{- end -}}
+
+{{- define "oada.dashboard" -}}
+{{- include "oada.dashboard.yaml" . | fromYaml | toPrettyJson -}}
+{{- end -}}

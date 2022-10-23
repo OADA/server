@@ -55,7 +55,7 @@ arangodb:
   # arangodb.image is the Docker image to use for arangodb
   image: arangodb/arangodb
   # arangodb.tag is the Docker tag for the ArangoDB images
-  tag: 3.9.1
+  tag: 3.9.3
 
 kafka:
   # kafka.brokers is an array of an external Kafka brokers.
@@ -65,7 +65,7 @@ kafka:
   # kafka.image is the Docker image to use for Kafka
   image: vectorized/redpanda
   # kafka.tag is the Docker tag for the Kafka/Redpanda images
-  tag: v22.1.3
+  tag: v22.2.5
 
 k8sWaitFor:
   image: groundnuty/k8s-wait-for
@@ -73,6 +73,12 @@ k8sWaitFor:
 
 # prometheus is whether to add prometheus monitors for oada
 prometheus: ~
+
+grafana:
+  enabled: true
+  dashboards:
+    label: grafana_dashboard
+    value: 1
 
 global:
   # global.development is whether to enable development/debug features not meant for production use
