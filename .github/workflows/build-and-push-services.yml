@@ -394,7 +394,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tag_name: ${{ github.ref }}
-          release_name: Release ${{ needs.setup.outputs.version }}
+          release_name: OADA v${{ needs.setup.outputs.version }}
           # Make draft and wait for person to release it?
           draft: true
           prerelease: ${{ !!needs.setup.outputs.prerelease }}

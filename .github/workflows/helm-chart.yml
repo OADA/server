@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-name: Release Helm chart
+name: Release Helm charts
 
 on:
   push:
@@ -42,3 +42,4 @@ jobs:
         uses: helm/chart-releaser-action@v1.4.1
         env:
           CR_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
+          CR_RELEASE_NAME_TEMPLATE: '{{ .Name }} chart v{{ .Version }}'
