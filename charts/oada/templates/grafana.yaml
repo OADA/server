@@ -1,0 +1,39 @@
+{{/*
+   * Copyright 2022 Open Ag Data Alliance
+   *
+   * Licensed under the Apache License, Version 2.0 (the "License");
+   * you may not use this file except in compliance with the License.
+   * You may obtain a copy of the License at
+   *
+   *     http://www.apache.org/licenses/LICENSE-2.0
+   *
+   * Unless required by applicable law or agreed to in writing, software
+   * distributed under the License is distributed on an "AS IS" BASIS,
+   * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   * See the License for the specific language governing permissions and
+   * limitations under the License.
+   */}}
+{{- if .Values.grafana.enabled }}
+{{/* Load all the grafana dashboards */}}
+{{- range $path, $_ := .Files.Glob "grafana/*-dashboard.json" -}}
+{{- $name := base $path -}}
+{{- $json := $.Files.Get $path | fromJson -}}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  namespace: {{ $.Release.Namespace }}
+  name: {{ $.Chart.Name }}-{{ $name }}-{{ $.Release.Name }}
+  labels:
+    app.kubernetes.io/name: {{ $.Chart.Name }}-{{ $name }}
+    app.kubernetes.io/instance: {{ $.Release.Name }}
+    # This ConfigMap is a grafana dashboard
+    {{ $.Values.grafana.dashboards.label }}: {{ $.Values.grafana.dashboards.value | quote }}
+    {{- include "oada.chart.labels" $ | nindent 4 }}
+  annotations:
+    k8s-sidecar-target-directory: {{ $.Release.Name }}
+data:
+  {{ $name }}: |-
+    {{- include "oada.dashboard" $json | nindent 4 }}
+---
+{{ end -}}
+{{ end -}}
