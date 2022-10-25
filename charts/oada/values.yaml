@@ -69,7 +69,7 @@ kafka:
 
 k8sWaitFor:
   image: groundnuty/k8s-wait-for
-  tag: v1.6
+  tag: no-root-v1.7
 
 # prometheus is whether to add prometheus monitors for oada
 prometheus: ~
