@@ -133,7 +133,8 @@ export async function run(): Promise<void> {
           trace('Creating %s index on %s', indexname, c.name);
           const fields = Array.isArray(indexname) ? indexname : [indexname];
           await database.collection(c.name).ensureIndex({
-            type: 'hash',
+            type: 'persistent',
+            cacheEnabled: true,
             fields,
             unique,
             sparse,

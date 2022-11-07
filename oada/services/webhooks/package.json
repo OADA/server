@@ -29,7 +29,7 @@
     "@oada/pino-debug": "^3.6.0",
     "debug": "^4.3.4",
     "got": "^12.5.2",
-    "tslib": "^2.4.0"
+    "tslib": "^2.4.1"
   },
   "devDependencies": {
     "@oada/types": "^3.3.0",
