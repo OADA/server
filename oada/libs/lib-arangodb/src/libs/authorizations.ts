@@ -107,7 +107,10 @@ export async function save({
   trace({ auth }, 'save: Replacing/Inserting token');
 
   // Overwrite will replace the given token if it already exists
-  await authorizations.save({ ...auth, user, _key }, { overwrite: true });
+  await authorizations.save(
+    { ...auth, user, _key },
+    { overwriteMode: 'replace' }
+  );
 
   return findByToken(auth.token);
 }
