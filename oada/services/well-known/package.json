@@ -29,7 +29,7 @@
   },
   "dependencies": {
     "@fastify/accepts": "^4.0.1",
-    "@fastify/cors": "^8.1.1",
+    "@fastify/cors": "^8.2.0",
     "@fastify/helmet": "^10.0.2",
     "@oada/formats-server": "^3.3.0",
     "@oada/lib-config": "^3.6.0",
