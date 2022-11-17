@@ -46,7 +46,7 @@
     "@types/debug": "^4.1.7",
     "@types/node": "^18.11.9",
     "@types/uuid": "^8.3.4",
-    "ava": "5.0.1"
+    "ava": "5.1.0"
   },
   "volta": {
     "node": "18.5.0"
