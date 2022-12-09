@@ -21,7 +21,7 @@ import { once } from 'node:events';
 import process from 'node:process';
 
 import type { Consumer, EachMessagePayload, Producer } from 'kafkajs';
-import EventEmitter from 'eventemitter3';
+import { EventEmitter } from 'eventemitter3';
 import debug from 'debug';
 
 import Kafka from './Kafka.js';
@@ -97,10 +97,10 @@ export class Base extends EventEmitter {
   readonly consumeTopics;
   readonly produceTopic;
   readonly group;
-  readonly #kafka: Kafka;
   protected consumer;
   protected producer;
   protected ready: Promise<unknown>;
+  readonly #kafka: Kafka;
 
   constructor({
     consumeTopic,

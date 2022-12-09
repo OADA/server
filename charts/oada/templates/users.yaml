@@ -75,6 +75,11 @@ spec:
                   name: {{ include "oada.arango.rootPassword" $ }}
                   key: password
                   optional: {{ $.Values.global.development }}
+          {{ if $.Values.global.development -}}
+          ports:
+            - name: inspect
+              containerPort: 9229
+          {{- end }}
           image: oada/users:{{ $tag }}
           #imagePullPolicy: {{ $.Values.global.development | ternary "Always" "IfNotPresent" }}
           command: ["/usr/bin/dumb-init", "--rewrite", "15:2", "--", "/bin/sh"]
@@ -102,7 +107,12 @@ spec:
                   name: {{ include "oada.arango.rootPassword" $ }}
                   key: password
                   optional: {{ $.Values.global.development }}
-          image: oada/users:{{ $tag }}
+          {{ if $.Values.global.development -}}
+          ports:
+            - name: inspect
+              containerPort: 9229
+          {{- end }}
+          image: oada/auth:{{ $tag }}
           #imagePullPolicy: {{ $.Values.global.development | ternary "Always" "IfNotPresent" }}
           command: ["/usr/bin/dumb-init", "--rewrite", "15:2", "--", "/bin/sh"]
           args: ["-c", "yarn workspace @oada/auth run token create -u {{ .name }} -s {{ .scope | join "," }} ${TOKEN} "]

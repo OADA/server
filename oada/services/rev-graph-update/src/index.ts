@@ -88,11 +88,11 @@ responder.on<WriteRequest>('request', async (request) => {
     );
   }
 
-  if (typeof request.user_id === 'undefined') {
+  if (request.user_id === undefined) {
     warn('Received message does not have user_id');
   }
 
-  if (typeof request.authorizationid === 'undefined') {
+  if (request.authorizationid === undefined) {
     warn('Received message does not have authorizationid');
   }
 

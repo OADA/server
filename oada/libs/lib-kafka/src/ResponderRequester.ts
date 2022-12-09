@@ -16,7 +16,7 @@
  */
 
 import type { EachMessagePayload } from 'kafkajs';
-import type EventEmitter from 'eventemitter3';
+import type { EventEmitter } from 'eventemitter3';
 
 import { Base, DATA, type KafkaBase } from './Base.js';
 import {

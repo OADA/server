@@ -1,6 +1,6 @@
 {
   "name": "@oada/lib-prom",
-  "version": "3.6.0",
+  "version": "3.6.1",
   "description": "OADA Prometheus library",
   "main": "./dist/index.js",
   "type": "module",
@@ -31,17 +31,17 @@
   "author": "Alex Layton <alex@layton.in>",
   "license": "Apache-2.0",
   "dependencies": {
-    "@oada/lib-config": "^3.6.0",
+    "@oada/lib-config": "^3.6.1",
     "prom-client": "^14.1.0",
     "tslib": "^2.4.1"
   },
   "devDependencies": {
     "@ava/typescript": "^3.0.1",
     "@types/convict": "^6.1.1",
-    "@types/node": "^18.11.9",
+    "@types/node": "^18.11.12",
     "@types/ws": "^8.5.3",
     "ava": "5.1.0",
-    "fastify-plugin": "^4.3.0"
+    "fastify-plugin": "^4.4.0"
   },
   "volta": {
     "node": "18.5.0"

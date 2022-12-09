@@ -70,6 +70,12 @@ spec:
           #imagePullPolicy: {{ $.Values.global.development | ternary "Always" "IfNotPresent" }}
           command: ["/usr/bin/dumb-init", "--rewrite", "15:2", "--", "/bin/sh"]
           args: ["-c", "yarn workspace @oada/{{ $k }} run start"]
+          # TODO: Better liveness checks
+          livenessProbe:
+            httpGet:
+              port: prometheus
+            initialDelaySeconds: 10
+            periodSeconds: 10
           securityContext:
             runAsNonRoot: true
             runAsUser: 1000 # run as user node (uid 1000)
@@ -92,13 +98,15 @@ spec:
           volumeMounts:
             {{ if eq $k "http-handler" -}}
             - mountPath: /oada/binary
-              name: binary-data-{{ $.Release.Name }}
+              name: binary-data
             {{ end -}}
             - mountPath: /tmp
               name: tmp
       volumes:
         {{ if eq $k "http-handler" -}}
-        - name: binary-data-{{ $.Release.Name }}
+        - name: binary-data
+          persistentVolumeClaim:
+            claimName: binary-data-{{ $.Release.Name }}
         {{ end -}}
         - name: tmp
           emptyDir:

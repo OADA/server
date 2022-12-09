@@ -62,7 +62,7 @@ export default async function tokenLookup(
     },
   };
 
-  if (typeof request.token === 'undefined') {
+  if (request.token === undefined) {
     trace('No token supplied with the request.');
     return response;
   }

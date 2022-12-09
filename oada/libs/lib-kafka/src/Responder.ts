@@ -53,9 +53,9 @@ export interface ConstructorOptions extends BaseConstructorOptions {
   old?: boolean;
 }
 export class Responder<Request extends KafkaBase = KafkaBase> extends Base {
+  protected requests: Map<string, Generator<KafkaBase, void> | true>;
   readonly #timeout;
   readonly #old;
-  protected requests: Map<string, Generator<KafkaBase, void> | true>;
 
   constructor({
     consumeTopic,
@@ -72,6 +72,36 @@ export class Responder<Request extends KafkaBase = KafkaBase> extends Base {
     this.#timeout = topicTimeout(consumeTopic);
 
     void this.connect();
+  }
+
+  /**
+   * @todo Maybe rearrange type parameters? Maybe make them class params?
+   */
+  override on<R>(
+    event: 'request',
+    listener: (
+      reg: Request,
+      data: EachMessagePayload
+    ) => Response<R> | Promise<Response<R>>
+  ): this;
+  override on(
+    event: string | symbol,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    listener: (...arguments_: any[]) => unknown
+  ): this;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  override on<L extends (...arguments_: any[]) => unknown>(
+    event: string | symbol,
+    listener: L
+  ): this {
+    if (event === 'request') {
+      // FIXME: Probably a better way to handle this event...
+      return super.on(DATA, async (request, data) => {
+        await this.#handleRequest(request as Request, data, listener);
+      });
+    }
+
+    return super.on(event, listener);
   }
 
   /**
@@ -168,35 +198,5 @@ export class Responder<Request extends KafkaBase = KafkaBase> extends Base {
         part,
       });
     }
-  }
-
-  /**
-   * @todo Maybe rearrange type parameters? Maybe make them class params?
-   */
-  override on<R>(
-    event: 'request',
-    listener: (
-      reg: Request,
-      data: EachMessagePayload
-    ) => Response<R> | Promise<Response<R>>
-  ): this;
-  override on(
-    event: string | symbol,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    listener: (...arguments_: any[]) => unknown
-  ): this;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  override on<L extends (...arguments_: any[]) => unknown>(
-    event: string | symbol,
-    listener: L
-  ): this {
-    if (event === 'request') {
-      // FIXME: Probably a better way to handle this event...
-      return super.on(DATA, async (request, data) => {
-        await this.#handleRequest(request as Request, data, listener);
-      });
-    }
-
-    return super.on(event, listener);
   }
 }
