@@ -15,12 +15,12 @@ spec:
   metrics:
     enabled: {{ include "oada.prometheus" . }}
   externalAccess:
-    {{/* Disable external access for Production */}}
+    {{- /* Disable external access for Production */}}
     type: {{ .Values.global.development | ternary "Auto" "None" }}
   tls:
     caSecretName: None
   {{- if not .Values.global.development }}
-  {{/* Create root password for Production */}}
+  {{- /* Create root password for Production */}}
   bootstrap:
     passwordSecretNames:
       root: {{ include "oada.arango.rootPassword" . }}

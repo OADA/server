@@ -31,12 +31,6 @@ export const { config, schema } = await libConfig({
       env: 'PORT',
       arg: 'port',
     },
-    domain: {
-      format: String,
-      default: 'localhost',
-      env: 'DOMAIN',
-      arg: 'domain',
-    },
     publicUri: {
       format: 'url',
       default: 'https://localhost',

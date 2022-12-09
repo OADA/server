@@ -18,7 +18,7 @@
 import { once } from 'node:events';
 import { setTimeout } from 'node:timers/promises';
 
-import EventEmitter from 'eventemitter3';
+import { EventEmitter } from 'eventemitter3';
 import ksuid from 'ksuid';
 
 import {
@@ -90,11 +90,6 @@ export class Requester extends Base {
     return response;
   }
 
-  async #timeout(timeout: number, message?: string): Promise<never> {
-    await setTimeout(timeout);
-    throw new KafkaRequestTimeoutError(message ?? 'timeout');
-  }
-
   /**
    * Like send but return an event emitter to allow multiple responses
    */
@@ -136,6 +131,11 @@ export class Requester extends Base {
 
     // @ts-expect-error adsadds
     return { close, ...emitter };
+  }
+
+  async #timeout(timeout: number, message?: string): Promise<never> {
+    await setTimeout(timeout);
+    throw new KafkaRequestTimeoutError(message ?? 'timeout');
   }
 }
 

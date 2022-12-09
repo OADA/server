@@ -20,7 +20,7 @@ import { config } from './config.js';
 import { strict as assert } from 'node:assert';
 import { promisify } from 'node:util';
 
-import EventEmitter from 'eventemitter3';
+import { EventEmitter } from 'eventemitter3';
 import type { FastifyPluginAsync } from 'fastify';
 import type LightMyRequest from 'light-my-request';
 import type WebSocket from 'ws';

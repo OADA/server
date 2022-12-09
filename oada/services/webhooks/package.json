@@ -1,6 +1,6 @@
 {
   "name": "@oada/webhooks",
-  "version": "3.6.0",
+  "version": "3.6.1",
   "type": "module",
   "description": "",
   "main": "dist/server.js",
@@ -22,18 +22,18 @@
   "author": "",
   "license": "Apache-2.0",
   "dependencies": {
-    "@oada/lib-arangodb": "^3.6.0",
-    "@oada/lib-config": "^3.6.0",
-    "@oada/lib-kafka": "^3.6.0",
+    "@oada/lib-arangodb": "^3.6.1",
+    "@oada/lib-config": "^3.6.1",
+    "@oada/lib-kafka": "^3.6.1",
     "@oada/lib-prom": "workspace:^",
-    "@oada/pino-debug": "^3.6.0",
+    "@oada/pino-debug": "^3.6.1",
     "debug": "^4.3.4",
     "got": "^12.5.3",
     "tslib": "^2.4.1"
   },
   "devDependencies": {
     "@oada/types": "^3.3.0",
-    "@oada/write-handler": "^3.6.0",
+    "@oada/write-handler": "^3.6.1",
     "@types/debug": "^4.1.7"
   },
   "volta": {

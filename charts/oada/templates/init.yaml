@@ -64,5 +64,10 @@ spec:
                   optional: {{ .Values.global.development }}
             - name: EXIT
               value: 'true'
+          {{ if $.Values.global.development -}}
+          ports:
+            - name: inspect
+              containerPort: 9229
+          {{- end }}
           image: oada/startup:{{ $tag }}
           #imagePullPolicy: {{ .Values.global.development | ternary "Always" "IfNotPresent" }}

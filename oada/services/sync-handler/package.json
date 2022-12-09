@@ -1,6 +1,6 @@
 {
   "name": "@oada/sync-handler",
-  "version": "3.6.0",
+  "version": "3.6.1",
   "type": "module",
   "description": "",
   "main": "dist/server.js",
@@ -24,19 +24,19 @@
   },
   "homepage": "https://github.com/OADA/oada-srvc-sync-handler#readme",
   "dependencies": {
-    "@oada/lib-arangodb": "^3.6.0",
-    "@oada/lib-config": "^3.6.0",
-    "@oada/lib-kafka": "^3.6.0",
+    "@oada/lib-arangodb": "^3.6.1",
+    "@oada/lib-config": "^3.6.1",
+    "@oada/lib-kafka": "^3.6.1",
     "@oada/lib-prom": "workspace:^",
-    "@oada/pino-debug": "^3.6.0",
+    "@oada/pino-debug": "^3.6.1",
     "debug": "^4.3.4",
     "got": "^12.5.3",
     "tslib": "^2.4.1"
   },
   "devDependencies": {
-    "@oada/write-handler": "^3.6.0",
+    "@oada/write-handler": "^3.6.1",
     "@types/debug": "^4.1.7",
-    "@types/node": "^18.11.9"
+    "@types/node": "^18.11.12"
   },
   "volta": {
     "node": "18.5.0"

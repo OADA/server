@@ -1,10 +1,12 @@
 replicaCount: 1
 
+ingress:
+  enabled: true
+  className: ~
+
 oada:
-  # oada.domain is the domain for this OADA instance
-  domain: localhost
-  # oada.ingress is whether to create ingresses into the OADA API
-  ingress: true
+  # oada.domains is the domain(s) for this OADA instance
+  domains: []
   # oada.tag is the Docker tag for the OADA images
   tag: ~
   # oada.services is the list of oada services to deploy
@@ -63,7 +65,7 @@ kafka:
   # If this is empty, the redpanda operator will be used to deploy a cluster.
   brokers: []
   # kafka.image is the Docker image to use for Kafka
-  image: vectorized/redpanda
+  image: docker.redpanda.com/vectorized/redpanda
   # kafka.tag is the Docker tag for the Kafka/Redpanda images
   tag: v22.2.5
 

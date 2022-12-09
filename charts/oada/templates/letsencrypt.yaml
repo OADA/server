@@ -13,9 +13,9 @@
    * See the License for the specific language governing permissions and
    * limitations under the License.
    */}}
-{{- if .Values.oada.ingress }}
+{{- if .Values.ingress.enabled }}
 apiVersion: cert-manager.io/v1
-kind: Issuer
+kind: ClusterIssuer
 metadata:
   namespace: {{ .Release.Namespace }}
   name: letsencrypt-{{ .Release.Name }}
@@ -24,18 +24,19 @@ metadata:
     app.kubernetes.io/instance: {{ .Release.Name }}
     {{- include "oada.chart.labels" . | nindent 4 }}
 spec:
+  {{/* Self-sign if running without any domains */}}
+  {{ if empty .Values.oada.domains -}}
+  selfSigned: {}
+  {{- else -}}
   acme:
     server:
       https://acme{{ .Values.global.development | ternary "-staging-" "-" }}v02.api.letsencrypt.org/directory
-    email: info@{{ .Values.oada.domain }}
+    email: info@{{ include "oada.domain" . }}
     privateKeySecretRef:
       name: letsencrypt-{{ .Release.Name }}
     solvers:
       - http01:
           ingress:
-            class: nginx
-            podTemplate:
-              spec:
-                nodeSelector:
-                  'kubernetes.io/os': linux
+            class: {{ .Values.ingress.className }}
+  {{- end }}
 {{- end }}

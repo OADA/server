@@ -30,7 +30,7 @@ data:
   DEBUG: {{ .Values.debug | join "," | quote }}
   PINO_LEVEL: {{ .Values.pino.level }}
   PROM_HOST: '::'
-  DOMAIN: {{ .Values.oada.domain }}
+  DOMAIN: {{ include "oada.domain" . }}
   {{ if eq (include "oada.arango.deploy" .) "true" -}}
   ARANGODB_URL: {{ include "oada.arango.connection" . }}
   {{- end }}

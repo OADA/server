@@ -30,7 +30,7 @@ spec:
   selector:
     app.kubernetes.io/name: auth
     app.kubernetes.io/instance: {{ .Release.Name }}
-{{- if .Values.oada.ingress }}
+{{- if .Values.ingress.enabled }}
 ---
 apiVersion: networking.k8s.io/v1
 kind: Ingress
@@ -43,16 +43,17 @@ metadata:
     {{ include "oada.chart.labels" . | nindent 4 }}
   annotations:
     #nginx.ingress.kubernetes.io/rewrite-target: /
-    cert-manager.io/issuer: letsencrypt-{{ .Release.Name }}
+    cert-manager.io/cluster-issuer: letsencrypt-{{ .Release.Name }}
 spec:
-  ingressClassName: nginx
+  {{ if .Values.ingress.className -}}
+  ingressClassName: {{ .Values.ingress.className }}
+  {{- end }}
   tls:
-    - hosts:
-        - '{{ .Values.oada.domain }}'
+    - hosts: {{ default (list "localhost") .Values.oada.domains | toJson }}
       secretName: {{ include "oada.tls" . }}
   rules:
-    - host: '{{ .Values.oada.domain }}'
-      http:
+    {{ if empty .Values.oada.domains -}}
+    - http:
         paths:
           - path: /oadaauth/
             pathType: Prefix
@@ -61,4 +62,17 @@ spec:
                 name: auth-{{ .Release.Name }}
                 port:
                   name: http
+    {{- end }}
+    {{- range .Values.oada.domains -}}
+    - host: {{ quote . }}
+      http:
+        paths:
+          - path: /oadaauth/
+            pathType: Prefix
+            backend:
+              service:
+                name: auth-{{ $.Release.Name }}
+                port:
+                  name: http
+    {{ end -}}
 {{- end }}

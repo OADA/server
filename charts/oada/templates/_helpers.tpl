@@ -23,6 +23,11 @@ app.kubernetes.io/component: backend
 app.kubernetes.io/part-of: oada
 {{- end -}}
 
+{{/* domain to use */}}
+{{- define "oada.domain" -}}
+  {{ default (list "localhost") .Values.oada.domains | mustFirst }}
+{{- end -}}
+
 {{/* Whether to deploy an ArangoDB cluster with this release */}}
 {{- define "oada.arango.deploy" -}}
   {{ empty .Values.arangodb.connection | and (.Capabilities.APIVersions.Has "database.arangodb.com/v1") }}

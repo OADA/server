@@ -1,6 +1,6 @@
 {
   "name": "@oada/users",
-  "version": "3.6.0",
+  "version": "3.6.1",
   "type": "module",
   "description": "",
   "author": "Alex Layton <alex@layton.in>",
@@ -18,12 +18,12 @@
     "add": "./dist/useradd.js"
   },
   "dependencies": {
-    "@oada/lib-arangodb": "^3.6.0",
-    "@oada/lib-config": "^3.6.0",
-    "@oada/lib-kafka": "^3.6.0",
+    "@oada/lib-arangodb": "^3.6.1",
+    "@oada/lib-config": "^3.6.1",
+    "@oada/lib-kafka": "^3.6.1",
     "@oada/lib-prom": "workspace:^",
-    "@oada/pino-debug": "^3.6.0",
-    "chalk": "^5.1.2",
+    "@oada/pino-debug": "^3.6.1",
+    "chalk": "^5.2.0",
     "clone-deep": "^4.0.1",
     "debug": "^4.3.4",
     "ksuid": "^3.0.0",
