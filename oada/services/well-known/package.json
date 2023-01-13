@@ -37,14 +37,14 @@
     "@oada/pino-debug": "^3.6.1",
     "@oada/well-known-json": "^4.0.0",
     "debug": "^4.3.4",
-    "fastify": "^4.10.2",
+    "fastify": "^4.11.0",
     "got": "^12.5.3",
     "tslib": "^2.4.1"
   },
   "devDependencies": {
     "@types/cors": "^2.8.13",
     "@types/debug": "^4.1.7",
-    "fastify-plugin": "^4.4.0"
+    "fastify-plugin": "^4.5.0"
   },
   "volta": {
     "node": "18.5.0"

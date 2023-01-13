@@ -64,7 +64,7 @@ class Watch {
   readonly requests = new Set<string>();
   readonly resourceId;
 
-  readonly #send: (value: unknown) => Promise<void>;
+  readonly #send;
   readonly #cb;
 
   constructor(resourceId: string, socket: WebSocket) {
@@ -130,9 +130,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     /**
      * Awaitable function to send over socket
      */
-    const send: (value: unknown) => Promise<void> = promisify(
-      socket.send.bind(socket)
-    );
+    const send = promisify(socket.send.bind(socket));
     // Add our state stuff?
     let isAlive = true;
     const watches = new Map<string, Watch>();
