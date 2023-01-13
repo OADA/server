@@ -44,7 +44,7 @@
     "@ava/typescript": "^3.0.1",
     "@types/convict": "^6.1.1",
     "@types/debug": "^4.1.7",
-    "@types/node": "^18.11.12",
+    "@types/node": "^18.11.18",
     "@types/uuid": "^9.0.0",
     "ava": "5.1.0"
   },

@@ -36,7 +36,7 @@
     "@oada/lib-kafka": "^3.6.1",
     "@oada/lib-prom": "workspace:^",
     "@oada/pino-debug": "^3.6.1",
-    "ajv": "^8.11.2",
+    "ajv": "^8.12.0",
     "debug": "^4.3.4",
     "p-queue": "^7.3.0",
     "randomstring": "^1.2.3",
@@ -47,10 +47,10 @@
     "@oada/client": "^4.5.0",
     "@oada/write-handler": "^3.6.1",
     "@types/debug": "^4.1.7",
-    "@types/node": "^18.11.12",
+    "@types/node": "^18.11.18",
     "@types/randomstring": "^1.1.8",
     "ava": "5.1.0",
-    "type-fest": "^3.3.0"
+    "type-fest": "^3.5.1"
   },
   "volta": {
     "node": "18.5.0"
