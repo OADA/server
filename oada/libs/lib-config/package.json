@@ -7,6 +7,10 @@
   "engines": {
     "node": ">=16.0.0"
   },
+  "files": [
+    "src/**/*",
+    "dist/**/*"
+  ],
   "scripts": {
     "build": "yarn g:tsc",
     "clean": "yarn run build --clean",
@@ -34,7 +38,7 @@
     "convict-format-with-validator": "^6.2.0",
     "dotenv": "^16.0.3",
     "json5": "^2.2.3",
-    "tslib": "^2.4.1",
+    "tslib": "^2.5.0",
     "yaml": "^2.2.1"
   },
   "devDependencies": {
@@ -42,6 +46,6 @@
     "@types/convict-format-with-validator": "^6.0.2"
   },
   "volta": {
-    "node": "18.5.0"
+    "node": "18.13.0"
   }
 }

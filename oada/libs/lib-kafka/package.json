@@ -7,6 +7,10 @@
   "engines": {
     "node": ">=16.0.0"
   },
+  "files": [
+    "src/**/*",
+    "dist/**/*"
+  ],
   "scripts": {
     "build": "yarn g:tsc",
     "clean": "yarn run build --clean",
@@ -37,7 +41,7 @@
     "eventemitter3": "^5.0.0",
     "kafkajs": "^2.2.3",
     "ksuid": "^3.0.0",
-    "tslib": "^2.4.1",
+    "tslib": "^2.5.0",
     "uuid": "^9.0.0"
   },
   "devDependencies": {
@@ -46,9 +50,9 @@
     "@types/debug": "^4.1.7",
     "@types/node": "^18.11.18",
     "@types/uuid": "^9.0.0",
-    "ava": "5.1.0"
+    "ava": "5.1.1"
   },
   "volta": {
-    "node": "18.5.0"
+    "node": "18.13.0"
   }
 }

@@ -7,6 +7,10 @@
   "engines": {
     "node": ">=16.0.0"
   },
+  "files": [
+    "src/**/*",
+    "dist/**/*"
+  ],
   "contributors": [
     "Alex Layton <alex@layton.in> (https://github.com/awlayton)",
     "Andrew Balmos <andrew@balmos.org> (https://github.com/abalmos)"
@@ -58,7 +62,7 @@
     "deep-equal": "^2.2.0",
     "flat": "^5.0.2",
     "json-ptr": "^3.1.1",
-    "tslib": "^2.4.1"
+    "tslib": "^2.5.0"
   },
   "devDependencies": {
     "@ava/typescript": "^3.0.1",
@@ -70,10 +74,10 @@
     "@types/flat": "^5.0.2",
     "@types/json-pointer": "^1.0.31",
     "@types/node": "^18.11.18",
-    "ava": "5.1.0",
-    "type-fest": "^3.5.1"
+    "ava": "5.1.1",
+    "type-fest": "^3.5.3"
   },
   "volta": {
-    "node": "18.5.0"
+    "node": "18.13.0"
   }
 }

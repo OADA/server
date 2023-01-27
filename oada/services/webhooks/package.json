@@ -7,6 +7,10 @@
   "engines": {
     "node": ">=16.0.0"
   },
+  "files": [
+    "src/**/*",
+    "dist/**/*"
+  ],
   "scripts": {
     "build": "yarn g:tsc",
     "clean": "yarn run build --clean",
@@ -29,7 +33,7 @@
     "@oada/pino-debug": "^3.6.1",
     "debug": "^4.3.4",
     "got": "^12.5.3",
-    "tslib": "^2.4.1"
+    "tslib": "^2.5.0"
   },
   "devDependencies": {
     "@oada/types": "^3.3.0",
@@ -37,6 +41,6 @@
     "@types/debug": "^4.1.7"
   },
   "volta": {
-    "node": "18.5.0"
+    "node": "18.13.0"
   }
 }

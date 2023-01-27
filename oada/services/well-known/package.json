@@ -21,6 +21,10 @@
   "engines": {
     "node": ">=16.0.0"
   },
+  "files": [
+    "src/**/*",
+    "dist/**/*"
+  ],
   "scripts": {
     "build": "yarn g:tsc",
     "clean": "yarn run build --clean",
@@ -37,9 +41,9 @@
     "@oada/pino-debug": "^3.6.1",
     "@oada/well-known-json": "^4.0.0",
     "debug": "^4.3.4",
-    "fastify": "^4.11.0",
+    "fastify": "^4.12.0",
     "got": "^12.5.3",
-    "tslib": "^2.4.1"
+    "tslib": "^2.5.0"
   },
   "devDependencies": {
     "@types/cors": "^2.8.13",
@@ -47,6 +51,6 @@
     "fastify-plugin": "^4.5.0"
   },
   "volta": {
-    "node": "18.5.0"
+    "node": "18.13.0"
   }
 }

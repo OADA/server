@@ -3,6 +3,13 @@
   "version": "3.6.1",
   "type": "module",
   "description": "",
+  "engines": {
+    "node": ">=16.0.0"
+  },
+  "files": [
+    "src/**/*",
+    "dist/**/*"
+  ],
   "repository": {
     "type": "git",
     "url": "git+ssh://git@github.com/OADA/oada-srvc-write-handler.git"
@@ -14,9 +21,6 @@
   },
   "homepage": "https://github.com/OADA/oada-srvc-write-handler#readme",
   "main": "dist/index.js",
-  "engines": {
-    "node": ">=16.0.0"
-  },
   "scripts": {
     "test": "yarn run build test && ava",
     "build": "yarn g:tsc",
@@ -48,7 +52,7 @@
     "json-ptr": "^3.1.1",
     "object-assign-deep": "^0.4.0",
     "timed-cache": "^2.0.0",
-    "tslib": "^2.4.1"
+    "tslib": "^2.5.0"
   },
   "devDependencies": {
     "@ava/typescript": "^3.0.1",
@@ -58,9 +62,9 @@
     "@types/json-pointer": "^1.0.31",
     "@types/node": "^18.11.18",
     "@types/object-assign-deep": "^0.4.0",
-    "ava": "5.1.0"
+    "ava": "5.1.1"
   },
   "volta": {
-    "node": "18.5.0"
+    "node": "18.13.0"
   }
 }
