@@ -9,6 +9,10 @@
   "engines": {
     "node": ">=16.0.0"
   },
+  "files": [
+    "src/**/*",
+    "dist/**/*"
+  ],
   "scripts": {
     "test": "yarn run build test && ava",
     "build": "yarn g:tsc",
@@ -40,7 +44,7 @@
     "debug": "^4.3.4",
     "p-queue": "^7.3.0",
     "randomstring": "^1.2.3",
-    "tslib": "^2.4.1"
+    "tslib": "^2.5.0"
   },
   "devDependencies": {
     "@ava/typescript": "^3.0.1",
@@ -49,10 +53,10 @@
     "@types/debug": "^4.1.7",
     "@types/node": "^18.11.18",
     "@types/randomstring": "^1.1.8",
-    "ava": "5.1.0",
-    "type-fest": "^3.5.1"
+    "ava": "5.1.1",
+    "type-fest": "^3.5.3"
   },
   "volta": {
-    "node": "18.5.0"
+    "node": "18.13.0"
   }
 }

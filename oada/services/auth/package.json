@@ -10,6 +10,10 @@
   "engines": {
     "node": ">=16.0.0"
   },
+  "files": [
+    "src/**/*",
+    "dist/**/*"
+  ],
   "repository": {
     "type": "git",
     "url": "https://github.com/oada/oada-ref-auth-js"
@@ -66,7 +70,7 @@
     "got": "^12.5.3",
     "helmet": "^6.0.1",
     "jsonwebtoken": "^9.0.0",
-    "jwt-bearer-client-auth": "^2.0.2",
+    "jwt-bearer-client-auth": "^2.0.3",
     "minimist": "^1.2.7",
     "morgan": "^1.10.0",
     "oauth2orize": "^1.11.1",
@@ -76,7 +80,7 @@
     "passport-local": "^1.0.0",
     "passport-oauth2-client-password": "~0.1.2",
     "pem-jwk": "^2.0.0",
-    "tslib": "^2.4.1",
+    "tslib": "^2.5.0",
     "urijs": "^1.19.11",
     "uuid": "^9.0.0"
   },
@@ -87,7 +91,7 @@
     "@types/connect-ensure-login": "^0.1.7",
     "@types/cors": "^2.8.13",
     "@types/debug": "^4.1.7",
-    "@types/express": "^4.17.15",
+    "@types/express": "^4.17.16",
     "@types/express-session": "^1.17.5",
     "@types/jsonwebtoken": "^9.0.1",
     "@types/minimist": "^1.2.2",
@@ -101,9 +105,9 @@
     "@types/urijs": "^1.19.19",
     "@types/uuid": "^9.0.0",
     "c8": "^7.12.0",
-    "type-fest": "^3.5.1"
+    "type-fest": "^3.5.3"
   },
   "volta": {
-    "node": "18.5.0"
+    "node": "18.13.0"
   }
 }

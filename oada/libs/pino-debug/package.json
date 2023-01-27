@@ -6,6 +6,10 @@
   "engines": {
     "node": ">=16.0.0"
   },
+  "files": [
+    "src/**/*",
+    "dist/**/*"
+  ],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/OADA/@oada/pino-debug.git"
@@ -24,7 +28,7 @@
     "pino-caller": "^3.3.0",
     "pino-debug": "^2.0.0",
     "pino-pretty": "^9.1.1",
-    "tslib": "^2.4.1"
+    "tslib": "^2.5.0"
   },
   "devDependencies": {
     "@types/debug": "^4.1.7",
@@ -34,6 +38,6 @@
     "debug": "*"
   },
   "volta": {
-    "node": "18.5.0"
+    "node": "18.13.0"
   }
 }

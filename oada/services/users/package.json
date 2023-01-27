@@ -9,6 +9,10 @@
   "engines": {
     "node": ">=16.0.0"
   },
+  "files": [
+    "src/**/*",
+    "dist/**/*"
+  ],
   "scripts": {
     "build": "yarn g:tsc",
     "clean": "yarn run build --clean",
@@ -29,7 +33,7 @@
     "ksuid": "^3.0.0",
     "minimist": "^1.2.7",
     "promptly": "^3.2.0",
-    "tslib": "^2.4.1"
+    "tslib": "^2.5.0"
   },
   "devDependencies": {
     "@types/clone-deep": "^4.0.1",
@@ -38,6 +42,6 @@
     "@types/promptly": "^3.0.2"
   },
   "volta": {
-    "node": "18.5.0"
+    "node": "18.13.0"
   }
 }

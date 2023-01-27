@@ -4,6 +4,13 @@
   "type": "module",
   "description": "Generate dummy messages to test different oada microservices.",
   "main": "",
+  "engines": {
+    "node": ">=16.0.0"
+  },
+  "files": [
+    "src/**/*",
+    "dist/**/*"
+  ],
   "dependencies": {
     "axios": "^0.21.1",
     "bluebird": "^3.6.1",
@@ -35,6 +42,6 @@
   "author": "Yaguang Zhang",
   "license": "Apache-2.0",
   "volta": {
-    "node": "18.5.0"
+    "node": "18.13.0"
   }
 }

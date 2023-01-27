@@ -7,6 +7,10 @@
   "engines": {
     "node": ">=16.0.0"
   },
+  "files": [
+    "src/**/*",
+    "dist/**/*"
+  ],
   "scripts": {
     "build": "yarn g:tsc",
     "clean": "yarn run build --clean",
@@ -33,18 +37,18 @@
   "dependencies": {
     "@oada/lib-config": "^3.6.1",
     "prom-client": "^14.1.1",
-    "tslib": "^2.4.1"
+    "tslib": "^2.5.0"
   },
   "devDependencies": {
     "@ava/typescript": "^3.0.1",
     "@types/convict": "^6.1.1",
     "@types/node": "^18.11.18",
     "@types/ws": "^8.5.4",
-    "ava": "5.1.0",
+    "ava": "5.1.1",
     "fastify-plugin": "^4.5.0"
   },
   "volta": {
-    "node": "18.5.0"
+    "node": "18.13.0"
   },
   "optionalDependencies": {
     "nstats": "^5.0.0"
