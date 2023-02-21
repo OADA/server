@@ -8,8 +8,8 @@ maintainers:
   - name: awlayton
     email: alex@layton.in
 type: application
-version: 2.0.0
-appVersion: '3.6.1'
+version: 3.0.0
+appVersion: '3.7.0'
 annotations:
   artifacthub.io/recommendations: |
     - url: https://artifacthub.io/packages/helm/cert-manager/cert-manager

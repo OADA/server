@@ -20,8 +20,7 @@ metadata:
   namespace: {{ .Release.Namespace }}
   name: init-{{ .Release.Name }}
   labels:
-    app.kubernetes.io/name: init
-    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/component: init
     {{- include "oada.chart.labels" . | nindent 4 }}
 spec:
   backoffLimit: 10
@@ -36,6 +35,9 @@ spec:
           args:
             - service
             - arangodb-{{ .Release.Name }}
+          resources:
+            limits: {{- toYaml $.Values.k8sWaitFor.resources.limits | nindent 14 }}
+            requests: {{- toYaml $.Values.k8sWaitFor.resources.limits | nindent 14 }}
         {{- end }}
         {{ if eq (include "oada.kafka.deploy" .) "true" -}}
         - name: wait-for-redpanda
@@ -43,6 +45,9 @@ spec:
           args:
             - service
             - redpanda-{{ .Release.Name }}
+          resources:
+            limits: {{- toYaml $.Values.k8sWaitFor.resources.limits | nindent 14 }}
+            requests: {{- toYaml $.Values.k8sWaitFor.resources.limits | nindent 14 }}
         {{- end }}
       containers:
         - name: init
@@ -71,3 +76,6 @@ spec:
           {{- end }}
           image: oada/startup:{{ $tag }}
           #imagePullPolicy: {{ .Values.global.development | ternary "Always" "IfNotPresent" }}
+          resources:
+            limits: {{- toYaml $.Values.oada.resources.limits | nindent 14 }}
+            requests: {{- toYaml $.Values.oada.resources.limits | nindent 14 }}

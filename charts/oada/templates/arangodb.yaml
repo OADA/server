@@ -5,12 +5,17 @@ metadata:
   namespace: {{ .Release.Namespace }}
   name: arangodb-{{ .Release.Name }}
   labels:
-    app.kubernetes.io/name: arangodb
-    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/component: arangodb
     {{- include "oada.chart.labels" . | nindent 4 }}
 spec:
   image: {{ .Values.arangodb.image }}:{{ .Values.arangodb.tag }}
   mode: Single
+  single:
+    resources:
+      limits:
+        cpu: 100m
+        memory: 1Gi
+        ephemeral-storage: 1Gi
   environment: {{ .Values.global.development | ternary "Development" "Production" }}
   metrics:
     enabled: {{ include "oada.prometheus" . }}

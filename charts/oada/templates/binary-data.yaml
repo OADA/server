@@ -19,8 +19,7 @@ metadata:
   namespace: {{ .Release.Namespace }}
   name: binary-data-{{ .Release.Name }}
   labels:
-    app.kubernetes.io/name: binary-data
-    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/component: binary-data
     {{- include "oada.chart.labels" . | nindent 4 }}
 spec:
   accessModes:

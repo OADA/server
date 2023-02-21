@@ -22,8 +22,7 @@ metadata:
   namespace: {{ $.Release.Namespace }}
   name: {{ $secretName }}
   labels:
-    app.kubernetes.io/name: {{ $.Chart.Name }}
-    app.kubernetes.io/instance: {{ $.Release.Name }}
+    app.kubernetes.io/component: users
     {{- include "oada.chart.labels" $ | nindent 4 }}
 stringData:
   {{/* Generate random token */}}
@@ -38,8 +37,7 @@ metadata:
   namespace: {{ $.Release.Namespace }}
   name: user-add-{{ .name }}-{{ $.Release.Name }}
   labels:
-    app.kubernetes.io/name: {{ $.Chart.Name }}
-    app.kubernetes.io/instance: {{ $.Release.Name }}
+    app.kubernetes.io/component: init
     {{- include "oada.chart.labels" $ | nindent 4 }}
 spec:
   backoffLimit: 10
@@ -53,11 +51,17 @@ spec:
           args:
             - job
             - init-{{ $.Release.Name }}
+          resources:
+            limits: {{- toYaml $.Values.k8sWaitFor.resources.limits | nindent 14 }}
+            requests: {{- toYaml $.Values.k8sWaitFor.resources.limits | nindent 14 }}
         - name: wait-for-users
           image: {{ $.Values.k8sWaitFor.image }}:{{ $.Values.k8sWaitFor.tag }}
           args:
             - pod
-            - '-l app.kubernetes.io/name=users,app.kubernetes.io/instance={{ $.Release.Name }}'
+            - '-l app.kubernetes.io/component=users,app.kubernetes.io/instance={{ $.Release.Name }}'
+          resources:
+            limits: {{- toYaml $.Values.k8sWaitFor.resources.limits | nindent 14 }}
+            requests: {{- toYaml $.Values.k8sWaitFor.resources.limits | nindent 14 }}
         - name: user-add
           envFrom:
             - configMapRef:
@@ -84,6 +88,9 @@ spec:
           #imagePullPolicy: {{ $.Values.global.development | ternary "Always" "IfNotPresent" }}
           command: ["/usr/bin/dumb-init", "--rewrite", "15:2", "--", "/bin/sh"]
           args: ["-c", "yarn workspace @oada/users run add -u {{ .name }} -a {{ .admin | default false }} "]
+          resources:
+            limits: {{- toYaml $.Values.oada.resources.limits | nindent 14 }}
+            requests: {{- toYaml $.Values.oada.resources.limits | nindent 14 }}
       containers:
         - name: token-create
           envFrom:
@@ -116,5 +123,8 @@ spec:
           #imagePullPolicy: {{ $.Values.global.development | ternary "Always" "IfNotPresent" }}
           command: ["/usr/bin/dumb-init", "--rewrite", "15:2", "--", "/bin/sh"]
           args: ["-c", "yarn workspace @oada/auth run token create -u {{ .name }} -s {{ .scope | join "," }} ${TOKEN} "]
+          resources:
+            limits: {{- toYaml $.Values.oada.resources.limits | nindent 14 }}
+            requests: {{- toYaml $.Values.oada.resources.limits | nindent 14 }}
 ---
 {{- end -}}

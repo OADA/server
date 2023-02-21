@@ -20,8 +20,7 @@ kind: Pod
 metadata:
   name: test-bookmarks-{{ .Release.Name }}
   labels:
-    app.kubernetes.io/name: test-bookmarks
-    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/component: test-bookmarks
     {{- include "oada.chart.labels" . | nindent 4 }}
   annotations:
     "helm.sh/hook": test

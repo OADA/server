@@ -20,8 +20,7 @@ metadata:
   namespace: {{ .Release.Namespace }}
   name: http-handler-{{ .Release.Name }}
   labels:
-    app.kubernetes.io/name: http-handler
-    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/component: http-handler
     {{- include "oada.chart.labels" . | nindent 4 }}
 spec:
   ports:
@@ -29,8 +28,8 @@ spec:
       port: 80
       targetPort: http
   selector:
-    app.kubernetes.io/name: http-handler
-    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/component: http-handler
+    {{- include "oada.chart.selectorLabels" . | nindent 4 }}
 {{- if .Values.ingress.enabled }}
 ---
 # TODO: Why do I get an error with just `path: /`?
@@ -40,8 +39,7 @@ metadata:
   namespace: {{ .Release.Namespace }}
   name: websocket-ingress-{{ .Release.Name }}
   labels:
-    app.kubernetes.io/name: websocket-ingress
-    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/component: http-handler
     {{ include "oada.chart.labels" . | nindent 4 }}
   annotations:
     nginx.ingress.kubernetes.io/rewrite-target: /
@@ -84,8 +82,7 @@ metadata:
   namespace: {{ .Release.Namespace }}
   name: http-ingress-{{ .Release.Name }}
   labels:
-    app.kubernetes.io/name: websocket-ingress
-    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/component: http-handler
     {{ include "oada.chart.labels" . | nindent 4 }}
   annotations:
     cert-manager.io/cluster-issuer: letsencrypt-{{ .Release.Name }}

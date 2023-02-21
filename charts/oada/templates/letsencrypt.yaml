@@ -20,8 +20,7 @@ metadata:
   namespace: {{ .Release.Namespace }}
   name: letsencrypt-{{ .Release.Name }}
   labels:
-    app.kubernetes.io/name: letsencrypt
-    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/component: letsencrypt
     {{- include "oada.chart.labels" . | nindent 4 }}
 spec:
   {{/* Self-sign if running without any domains */}}

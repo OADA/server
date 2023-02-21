@@ -23,8 +23,7 @@ metadata:
   namespace: {{ $.Release.Namespace }}
   name: {{ $name }}
   labels:
-    app.kubernetes.io/name: {{ $k }}
-    app.kubernetes.io/instance: {{ $.Release.Name }}
+    app.kubernetes.io/component: {{ $k }}
     {{- include "oada.chart.labels" $ | nindent 4 }}
 spec:
   {{- if not $.Values.autoscaling.enabled }}
@@ -32,15 +31,15 @@ spec:
   {{- end }}
   selector:
     matchLabels:
-      app.kubernetes.io/name: {{ $k }}
-      app.kubernetes.io/instance: {{ $.Release.Name }}
+      app.kubernetes.io/component: {{ $k }}
+      {{- include "oada.chart.selectorLabels" $ | nindent 6 }}
   strategy:
     type: Recreate
   template:
     metadata:
       labels:
-        app.kubernetes.io/name: {{ $k }}
-        app.kubernetes.io/instance: {{ $.Release.Name }}
+        app.kubernetes.io/component: {{ $k }}
+        {{- include "oada.chart.selectorLabels" $ | nindent 8 }}
     spec:
       serviceAccountName: service-account-{{ $.Release.Name }}
       initContainers:
@@ -49,6 +48,9 @@ spec:
           args:
             - job
             - init-{{ $.Release.Name }}
+          resources:
+            limits: {{- toYaml $.Values.k8sWaitFor.resources.limits | nindent 14 }}
+            requests: {{- toYaml $.Values.k8sWaitFor.resources.limits | nindent 14 }}
       containers:
         - envFrom:
             - configMapRef:
@@ -120,8 +122,7 @@ metadata:
   namespace: {{ $.Release.Namespace }}
   name: {{ $name }}
   labels:
-    app.kubernetes.io/name: {{ $k }}
-    app.kubernetes.io/instance: {{ $.Release.Name }}
+    app.kubernetes.io/component: {{ $k }}
     {{- include "oada.chart.labels" $ | nindent 4 }}
 spec:
   scaleTargetRef:
@@ -152,14 +153,13 @@ metadata:
   namespace: {{ $.Release.Namespace }}
   name: {{ $name }}
   labels:
-    app.kubernetes.io/name: {{ $k }}
-    app.kubernetes.io/instance: {{ $.Release.Name }}
+    app.kubernetes.io/component: {{ $k }}
     {{- include "oada.chart.labels" $ | nindent 4 }}
 spec:
   selector:
     matchLabels:
-      app.kubernetes.io/name: {{ $k }}
-      app.kubernetes.io/instance: {{ $.Release.Name }}
+      app.kubernetes.io/component: {{ $k }}
+      {{- include "oada.chart.selectorLabels" $ | nindent 6 }}
   podMetricsEndpoints:
   - port: prometheus
   namespaceSelector:
