@@ -20,8 +20,7 @@ kind: Pod
 metadata:
   name: test-{{ . }}-{{ $.Release.Name }}
   labels:
-    app.kubernetes.io/name: test-{{ . }}
-    app.kubernetes.io/instance: {{ $.Release.Name }}
+    app.kubernetes.io/component: test-{{ . }}
     {{- include "oada.chart.labels" $ | nindent 4 }}
   annotations:
     "helm.sh/hook": test

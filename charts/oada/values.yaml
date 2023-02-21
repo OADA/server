@@ -30,7 +30,12 @@ oada:
       scope:
         - all:all
         - oada.admin.user:all
-  resources: {}
+  resources:
+    limits:
+      ephemeral-storage: 500Mi
+    requests:
+      cpu: 20m
+      memory: 128Mi
 
 # debug is the list of debug.js namespaces to enable/disable
 debug:
@@ -39,6 +44,8 @@ debug:
 pino:
   # pino.level is the level of messages to send to the pino transport
   level: info
+  loki:
+    url: '' #http://loki.monitoring:3100
 
 autoscaling:
   enabled: false
@@ -71,7 +78,11 @@ kafka:
 
 k8sWaitFor:
   image: groundnuty/k8s-wait-for
-  tag: no-root-v1.7
+  tag: no-root-v2.0
+  resources:
+    limits:
+      cpu: 10m
+      memory: 128Mi
 
 # prometheus is whether to add prometheus monitors for oada
 prometheus: ~
@@ -81,6 +92,9 @@ grafana:
   dashboards:
     label: grafana_dashboard
     value: 1
+
+nameOverride: ~
+fullnameOverride: ~
 
 global:
   # global.development is whether to enable development/debug features not meant for production use

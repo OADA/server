@@ -19,8 +19,7 @@ metadata:
   namespace: {{ .Release.Namespace }}
   name: {{ .Chart.Name }}-configmap-{{ .Release.Name }}
   labels:
-    app.kubernetes.io/name: {{ .Chart.Name }}-configmap
-    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/component: {{ .Chart.Name }}-configmap
     {{- include "oada.chart.labels" . | nindent 4 }}
 {{- if not .Values.global.development }}
 #immutable: true
@@ -29,6 +28,7 @@ data:
   CONFIG: /oada.config.mjs
   DEBUG: {{ .Values.debug | join "," | quote }}
   PINO_LEVEL: {{ .Values.pino.level }}
+  PINO_LOKI: {{ .Values.pino.loki.url | quote }}
   PROM_HOST: '::'
   DOMAIN: {{ include "oada.domain" . }}
   {{ if eq (include "oada.arango.deploy" .) "true" -}}

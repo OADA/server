@@ -24,8 +24,7 @@ metadata:
   namespace: {{ $.Release.Namespace }}
   name: {{ $.Chart.Name }}-{{ $name }}-{{ $.Release.Name }}
   labels:
-    app.kubernetes.io/name: {{ $.Chart.Name }}-{{ $name }}
-    app.kubernetes.io/instance: {{ $.Release.Name }}
+    app.kubernetes.io/component: {{ $.Chart.Name }}-{{ $name }}
     # This ConfigMap is a grafana dashboard
     {{ $.Values.grafana.dashboards.label }}: {{ $.Values.grafana.dashboards.value | quote }}
     {{- include "oada.chart.labels" $ | nindent 4 }}
