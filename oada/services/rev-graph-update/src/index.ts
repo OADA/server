@@ -26,7 +26,7 @@ import { resources } from '@oada/lib-arangodb';
 // Import message format from write-handler
 import type { WriteRequest, WriteResponse } from '@oada/write-handler';
 
-import { default as Ajv } from 'ajv/dist/jtd.js';
+import Ajv from 'ajv/dist/jtd.js';
 import type { JTDSchemaType } from 'ajv/dist/jtd.js';
 import PQueue from 'p-queue';
 import type { SetRequired } from 'type-fest';
@@ -68,6 +68,7 @@ function checkRequest(request: KafkaBase): request is WriteResponse {
 
 // Create custom parser and serializer for causechain.
 // Should be faster than JSON methods and is slightly nicer in TypeScript.
+// @ts-expect-error sadsadas
 const ajv = new Ajv();
 const causechainSchema: JTDSchemaType<string[]> = {
   elements: { type: 'string' },

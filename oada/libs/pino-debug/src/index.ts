@@ -30,9 +30,13 @@ import _pino from 'pino';
 import debug from 'debug';
 import isInteractive from 'is-interactive';
 import pinoCaller from 'pino-caller';
+import type pinoLoki from 'pino-loki';
 import rTracer from 'cls-rtracer';
 
 const interactive = isInteractive();
+
+// Needed because the options type is not exported from pino-loki
+type PinoLokiOptions = Parameters<typeof pinoLoki>[0];
 
 /**
  * Default mappings of debug namespaces to pino levels
@@ -105,11 +109,25 @@ function createRootLogger(): Logger {
           '*.*.token',
         ]);
   const level = logLevel();
-  const transport = interactive ? { target: 'pino-pretty' } : undefined;
+  const loki: PinoLokiOptions | undefined = process.env.PINO_LOKI
+    ? { host: process.env.PINO_LOKI }
+    : undefined;
   const log = _pino({
     name: require.main?.id ?? process.env.npm_package_name,
-    level,
-    transport,
+    transport: {
+      targets: [
+        {
+          // Use pino-pretty in interactive mode
+          target: interactive ? 'pino-pretty' : 'pino/file',
+          options: {
+            destination: process.env.PINO_FILE ?? process.stdout.fd,
+          },
+          level,
+        },
+        // Use pino-loki if configured
+        ...(loki ? [{ target: 'pino-loki', options: loki, level }] : []),
+      ],
+    },
     redact,
     mixin() {
       const objs = mixins.map((f) => f());
