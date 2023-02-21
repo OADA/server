@@ -1,6 +1,6 @@
 {
   "name": "@oada/write-handler",
-  "version": "3.6.1",
+  "version": "3.7.0",
   "type": "module",
   "description": "",
   "engines": {
@@ -43,11 +43,11 @@
     }
   },
   "dependencies": {
-    "@oada/lib-arangodb": "^3.6.1",
-    "@oada/lib-config": "^3.6.1",
-    "@oada/lib-kafka": "^3.6.1",
+    "@oada/lib-arangodb": "^3.7.0",
+    "@oada/lib-config": "^3.7.0",
+    "@oada/lib-kafka": "^3.7.0",
     "@oada/lib-prom": "workspace:^",
-    "@oada/pino-debug": "^3.6.1",
+    "@oada/pino-debug": "^3.7.0",
     "debug": "^4.3.4",
     "json-ptr": "^3.1.1",
     "object-assign-deep": "^0.4.0",
@@ -57,12 +57,12 @@
   "devDependencies": {
     "@ava/typescript": "^3.0.1",
     "@oada/client": "^4.5.0",
-    "@oada/types": "^3.3.0",
+    "@oada/types": "^3.4.0",
     "@types/debug": "^4.1.7",
     "@types/json-pointer": "^1.0.31",
-    "@types/node": "^18.11.18",
+    "@types/node": "^18.14.0",
     "@types/object-assign-deep": "^0.4.0",
-    "ava": "5.1.1"
+    "ava": "5.2.0"
   },
   "volta": {
     "node": "18.13.0"

@@ -13,7 +13,7 @@
   ],
   "dependencies": {
     "axios": "^0.21.1",
-    "bluebird": "^3.6.1",
+    "bluebird": "^3.7.0",
     "chai": "^4.2.0",
     "debug": "^4.1.1",
     "kafka-node": "^5.0.0",

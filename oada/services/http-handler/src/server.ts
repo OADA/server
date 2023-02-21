@@ -33,17 +33,17 @@ import websockets from './websockets.js';
 
 import type { FastifyReply, FastifyRequest } from 'fastify';
 import {
-  fastifyRequestContextPlugin,
+  fastifyRequestContext,
   requestContext,
 } from '@fastify/request-context';
 import { fastify as Fastify } from 'fastify';
 import bearerAuth from '@fastify/bearer-auth';
-import { default as cors } from '@fastify/cors';
-import { default as fastifyAccepts } from '@fastify/accepts';
-import { default as fastifyGracefulShutdown } from 'fastify-graceful-shutdown';
-import { default as fastifyHealthcheck } from 'fastify-healthcheck';
-import { default as fastifySensible } from '@fastify/sensible';
-import { default as helmet } from '@fastify/helmet';
+import cors from '@fastify/cors';
+import fastifyAccepts from '@fastify/accepts';
+import { fastifyGracefulShutdown } from 'fastify-graceful-shutdown';
+import fastifyHealthcheck from 'fastify-healthcheck';
+import fastifySensible from '@fastify/sensible';
+import helmet from '@fastify/helmet';
 
 import type { HTTPVersion, Handler } from 'find-my-way';
 import esMain from 'es-main';
@@ -152,8 +152,11 @@ export async function start(): Promise<void> {
 }
 
 declare module '@fastify/request-context' {
-  interface RequestContextData {
-    id: string;
+  // eslint-disable-next-line @typescript-eslint/no-namespace, @typescript-eslint/no-shadow
+  namespace fastifyRequestContext {
+    interface RequestContextData {
+      id: string;
+    }
   }
 }
 
@@ -165,7 +168,7 @@ declare module 'fastify' {
   }
 }
 
-await fastify.register(fastifyRequestContextPlugin, {
+await fastify.register(fastifyRequestContext, {
   hook: 'onRequest',
 });
 

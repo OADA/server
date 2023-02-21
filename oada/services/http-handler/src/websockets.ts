@@ -24,7 +24,7 @@ import { EventEmitter } from 'eventemitter3';
 import type { FastifyPluginAsync } from 'fastify';
 import type LightMyRequest from 'light-my-request';
 import type WebSocket from 'ws';
-import { default as fastifyWebsocket } from '@fastify/websocket';
+import fastifyWebsocket from '@fastify/websocket';
 import { is } from 'type-is';
 import log from 'debug';
 
@@ -124,6 +124,7 @@ function parseRequest(data: WebSocket.Data): SocketRequest {
 }
 
 const plugin: FastifyPluginAsync = async (fastify) => {
+  // @ts-expect-error IDEK
   await fastify.register(fastifyWebsocket);
 
   fastify.get('/*', { websocket: true }, ({ socket }) => {
@@ -445,6 +446,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
           }
         }
 
+        // eslint-disable-next-line no-fallthrough
         case 'get-watch':
         case 'get': {
           // Can only send JSON over websockets
@@ -469,6 +471,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
           }
         }
 
+        // eslint-disable-next-line no-fallthrough
         default: {
           const headers: Record<string, string> = {};
           for (const [k, v] of Object.entries(response.headers)) {
