@@ -36,13 +36,13 @@
   "license": "Apache-2.0",
   "dependencies": {
     "@oada/lib-config": "^3.7.0",
-    "prom-client": "^14.1.1",
+    "prom-client": "^14.2.0",
     "tslib": "^2.5.0"
   },
   "devDependencies": {
-    "@ava/typescript": "^3.0.1",
+    "@ava/typescript": "^4.0.0",
     "@types/convict": "^6.1.1",
-    "@types/node": "^18.14.0",
+    "@types/node": "^18.15.3",
     "@types/ws": "^8.5.4",
     "ava": "5.2.0",
     "fastify-plugin": "^4.5.0"

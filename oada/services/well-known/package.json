@@ -33,16 +33,16 @@
   },
   "dependencies": {
     "@fastify/accepts": "^4.1.0",
-    "@fastify/cors": "^8.2.0",
+    "@fastify/cors": "^8.2.1",
     "@fastify/helmet": "^10.1.0",
-    "@oada/formats-server": "^3.4.0",
+    "@oada/formats-server": "^3.4.3",
     "@oada/lib-config": "^3.7.0",
     "@oada/lib-prom": "workspace:^",
     "@oada/pino-debug": "^3.7.0",
     "@oada/well-known-json": "^4.0.0",
     "debug": "^4.3.4",
-    "fastify": "^4.13.0",
-    "got": "^12.5.3",
+    "fastify": "^4.14.1",
+    "got": "^12.6.0",
     "tslib": "^2.5.0"
   },
   "devDependencies": {

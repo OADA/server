@@ -47,14 +47,14 @@
     "tslib": "^2.5.0"
   },
   "devDependencies": {
-    "@ava/typescript": "^3.0.1",
+    "@ava/typescript": "^4.0.0",
     "@oada/client": "^4.5.0",
     "@oada/write-handler": "^3.7.0",
     "@types/debug": "^4.1.7",
-    "@types/node": "^18.14.0",
+    "@types/node": "^18.15.3",
     "@types/randomstring": "^1.1.8",
     "ava": "5.2.0",
-    "type-fest": "^3.6.0"
+    "type-fest": "^3.6.1"
   },
   "volta": {
     "node": "18.13.0"
