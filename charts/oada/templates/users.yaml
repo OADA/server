@@ -16,6 +16,7 @@
 {{- $tag := default .Chart.AppVersion .Values.oada.tag -}}
 {{- range .Values.oada.users -}}
 {{- $secretName := print "user-" .name "-" $.Release.Name -}}
+{{- if empty (lookup "v1" "Secret" $.Release.Namespace $secretName) -}}
 apiVersion: v1
 kind: Secret
 metadata:
@@ -30,12 +31,15 @@ stringData:
   token: {{ $token }}
   header: >
     Authorization: Bearer {{ $token }}
+{{- end }}
 ---
+{{- $jobName := print "user-add-" .name "-" $.Release.Name -}}
+{{- if empty (lookup "batch/v1" "Job" $.Release.Namespace $jobName) -}}
 apiVersion: batch/v1
 kind: Job
 metadata:
   namespace: {{ $.Release.Namespace }}
-  name: user-add-{{ .name }}-{{ $.Release.Name }}
+  name: {{ $jobName }}
   labels:
     app.kubernetes.io/component: init
     {{- include "oada.chart.labels" $ | nindent 4 }}
@@ -128,3 +132,4 @@ spec:
             requests: {{- toYaml $.Values.oada.resources.limits | nindent 14 }}
 ---
 {{- end -}}
+{{- end }}
