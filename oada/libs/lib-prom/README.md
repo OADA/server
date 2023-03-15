@@ -1,5 +1,6 @@
 # OADA Prometheus client
 
+[![Version](https://img.shields.io/npm/v/@oada/lib-prom.svg)](https://npmjs.org/package/@oada/lib-prom)
 [![code style: prettier](https://img.shields.io/badge/code_style-prettier-ff69b4.svg)](https://github.com/prettier/prettier)
 [![License](https://img.shields.io/github/license/OADA/server)](LICENSE)
 
