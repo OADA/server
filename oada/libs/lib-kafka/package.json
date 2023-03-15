@@ -39,17 +39,17 @@
     "cls-rtracer": "^2.6.2",
     "debug": "^4.3.4",
     "eventemitter3": "^5.0.0",
-    "kafkajs": "^2.2.3",
+    "kafkajs": "^2.2.4",
     "ksuid": "^3.0.0",
     "tslib": "^2.5.0",
     "uuid": "^9.0.0"
   },
   "devDependencies": {
-    "@ava/typescript": "^3.0.1",
+    "@ava/typescript": "^4.0.0",
     "@types/convict": "^6.1.1",
     "@types/debug": "^4.1.7",
-    "@types/node": "^18.14.0",
-    "@types/uuid": "^9.0.0",
+    "@types/node": "^18.15.3",
+    "@types/uuid": "^9.0.1",
     "ava": "5.2.0"
   },
   "volta": {

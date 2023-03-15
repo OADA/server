@@ -54,7 +54,7 @@
   "dependencies": {
     "@oada/lib-config": "^3.7.0",
     "@oada/oadaify": "^2.1.0",
-    "@oada/types": "^3.4.0",
+    "@oada/types": "^3.4.3",
     "arangojs": "^8.1.0",
     "bcryptjs": "^2.4.3",
     "clone-deep": "^4.0.1",
@@ -65,7 +65,7 @@
     "tslib": "^2.5.0"
   },
   "devDependencies": {
-    "@ava/typescript": "^3.0.1",
+    "@ava/typescript": "^4.0.0",
     "@types/bcryptjs": "^2.4.2",
     "@types/clone-deep": "^4.0.1",
     "@types/convict": "^6.1.1",
@@ -73,9 +73,9 @@
     "@types/deep-equal": "^1.0.1",
     "@types/flat": "^5.0.2",
     "@types/json-pointer": "^1.0.31",
-    "@types/node": "^18.14.0",
+    "@types/node": "^18.15.3",
     "ava": "5.2.0",
-    "type-fest": "^3.6.0"
+    "type-fest": "^3.6.1"
   },
   "volta": {
     "node": "18.13.0"

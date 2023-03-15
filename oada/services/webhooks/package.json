@@ -32,11 +32,11 @@
     "@oada/lib-prom": "workspace:^",
     "@oada/pino-debug": "^3.7.0",
     "debug": "^4.3.4",
-    "got": "^12.5.3",
+    "got": "^12.6.0",
     "tslib": "^2.5.0"
   },
   "devDependencies": {
-    "@oada/types": "^3.4.0",
+    "@oada/types": "^3.4.3",
     "@oada/write-handler": "^3.7.0",
     "@types/debug": "^4.1.7"
   },

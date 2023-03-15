@@ -16,15 +16,15 @@
     "@commitlint/cli": "^17.4.4",
     "@commitlint/config-conventional": "^17.4.4",
     "@tsconfig/node18": "^1.0.1",
-    "@types/eslint": "^8.21.1",
+    "@types/eslint": "^8.21.2",
     "@types/mocha": "^10.0.1",
-    "@types/node": "^18.14.0",
-    "@typescript-eslint/eslint-plugin": "^5.53.0",
-    "@typescript-eslint/parser": "^5.53.0",
-    "@yarnpkg/sdks": "^3.0.0-rc.39",
+    "@types/node": "^18.15.3",
+    "@typescript-eslint/eslint-plugin": "^5.55.0",
+    "@typescript-eslint/parser": "^5.55.0",
+    "@yarnpkg/sdks": "^3.0.0-rc.40",
     "c8": "^7.13.0",
-    "eslint": "^8.34.0",
-    "eslint-config-prettier": "^8.6.0",
+    "eslint": "^8.36.0",
+    "eslint-config-prettier": "^8.7.0",
     "eslint-config-xo": "^0.43.1",
     "eslint-config-xo-typescript": "^0.56.0",
     "eslint-formatter-pretty": "^4.1.0",
@@ -48,14 +48,14 @@
     "eslint-plugin-regexp": "^1.12.0",
     "eslint-plugin-security": "^1.7.1",
     "eslint-plugin-sonarjs": "^0.18.0",
-    "eslint-plugin-unicorn": "^45.0.2",
+    "eslint-plugin-unicorn": "^46.0.0",
     "get-port": "^6.1.2",
     "prettier": "^2.8.4",
     "typescript": "4.9.5",
-    "zx": "^7.1.1"
+    "zx": "^7.2.0"
   },
   "dependencies": {
-    "pino-pretty": "^9.3.0"
+    "pino-pretty": "^10.0.0"
   },
   "resolutions": {
     "fastify-plugin": "4.0.0"
