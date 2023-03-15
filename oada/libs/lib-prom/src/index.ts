@@ -32,7 +32,12 @@ export const nstats: typeof NStats = (...parameters) => {
   return stats;
 };
 
-const server = createServer(async (_, response) => {
+/**
+ * HTTP server to exposing metrics for Prometheus to scrape
+ *
+ * *Starts automatically, don't try to start manually.*
+ */
+export const server = createServer(async (_, response) => {
   try {
     const metrics = await register.metrics();
     response.writeHead(200, { 'Content-Type': contentType });
@@ -50,6 +55,7 @@ const server = createServer(async (_, response) => {
   }
 });
 
+// Automatically start server to expose metrics
 const { port, host } = config.get('prometheus');
 server.listen({ host, port });
 
