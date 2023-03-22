@@ -41,7 +41,7 @@
     "@oada/pino-debug": "^3.7.0",
     "@oada/well-known-json": "^4.0.0",
     "debug": "^4.3.4",
-    "fastify": "^4.14.1",
+    "fastify": "^4.15.0",
     "got": "^12.6.0",
     "tslib": "^2.5.0"
   },
