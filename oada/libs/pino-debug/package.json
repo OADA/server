@@ -33,7 +33,7 @@
   },
   "devDependencies": {
     "@types/debug": "^4.1.7",
-    "@types/node": "^18.15.3"
+    "@types/node": "^18.15.5"
   },
   "peerDependencies": {
     "debug": "*"

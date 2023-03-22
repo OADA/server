@@ -41,7 +41,7 @@
   },
   "devDependencies": {
     "@types/debug": "^4.1.7",
-    "@types/node": "^18.15.3"
+    "@types/node": "^18.15.5"
   },
   "volta": {
     "node": "18.13.0"
