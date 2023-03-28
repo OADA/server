@@ -29,7 +29,7 @@
     "test-arango": "isTest=true mocha test/arango/index.js",
     "lint": "jshint --reporter node_modules/jshint-stylish .",
     "clean": "rm -rf test/oada-compliance && rm -rf coverage && yarn run build --clean",
-    "start": "node ${INSPECT} -r @oada/pino-debug --unhandled-rejections=strict dist/index.js",
+    "start": "node ${INSPECT} --unhandled-rejections=strict dist/index.js",
     "init": "node dist/init.js"
   },
   "mocha": {
@@ -105,7 +105,7 @@
     "@types/urijs": "^1.19.19",
     "@types/uuid": "^9.0.1",
     "c8": "^7.13.0",
-    "type-fest": "^3.6.1"
+    "type-fest": "^3.7.1"
   },
   "volta": {
     "node": "18.13.0"

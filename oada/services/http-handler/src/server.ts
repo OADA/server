@@ -40,7 +40,7 @@ import { fastify as Fastify } from 'fastify';
 import bearerAuth from '@fastify/bearer-auth';
 import cors from '@fastify/cors';
 import fastifyAccepts from '@fastify/accepts';
-import { fastifyGracefulShutdown } from 'fastify-graceful-shutdown';
+import fastifyGracefulShutdown from 'fastify-graceful-shutdown';
 import fastifyHealthcheck from 'fastify-healthcheck';
 import fastifySensible from '@fastify/sensible';
 import helmet from '@fastify/helmet';
@@ -59,7 +59,6 @@ export enum EnsureLink {
 }
 
 // Set up logging stuff
-const logger = pino();
 const serializers = {
   // Customize logging for requests
   req(request: FastifyRequest) {
@@ -84,6 +83,9 @@ const serializers = {
     };
   },
 };
+const logger = pino({ serializers });
+// HACK: fastify overrides existing serializers. This circumvents that...
+// logger.serializers = serializers;
 
 mixins.push(() => ({
   reqId: requestContext.get('id'),
@@ -93,11 +95,7 @@ const trustProxy = config.get('trustProxy');
 // eslint-disable-next-line new-cap
 export const fastify = Fastify({
   trustProxy,
-  logger: {
-    ...logger,
-    // HACK: fastify overrides existing serializers. This circumvents that...
-    serializers,
-  },
+  logger,
   ignoreTrailingSlash: true,
   constraints: {
     oadaEnsureLink: {
@@ -181,6 +179,7 @@ await fastify.register(fastifySensible);
 
 await fastify.register(fastifyAccepts);
 
+// @ts-expect-error broken types
 await fastify.register(fastifyGracefulShutdown);
 
 /**

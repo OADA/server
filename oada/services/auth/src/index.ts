@@ -15,6 +15,8 @@
  * limitations under the License.
  */
 
+import '@oada/pino-debug';
+
 import { config, domainConfigs } from './config.js';
 
 import '@oada/lib-prom';
