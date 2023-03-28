@@ -14,7 +14,7 @@
   "scripts": {
     "build": "yarn g:tsc",
     "clean": "yarn run build --clean",
-    "start": "node ${INSPECT} --enable-source-maps -r @oada/pino-debug --unhandled-rejections=strict dist/server.js",
+    "start": "node ${INSPECT} --enable-source-maps --unhandled-rejections=strict dist/server.js",
     "test": "mocha"
   },
   "repository": {
@@ -40,7 +40,7 @@
   "devDependencies": {
     "@oada/write-handler": "^3.7.0",
     "@types/debug": "^4.1.7",
-    "@types/node": "^18.15.5"
+    "@types/node": "^18.15.10"
   },
   "volta": {
     "node": "18.13.0"

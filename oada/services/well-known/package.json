@@ -28,7 +28,7 @@
   "scripts": {
     "build": "yarn g:tsc",
     "clean": "yarn run build --clean",
-    "start": "node ${INSPECT} --enable-source-maps -r @oada/pino-debug --unhandled-rejections=strict dist/index.js",
+    "start": "node ${INSPECT} --enable-source-maps --unhandled-rejections=strict dist/index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {

@@ -15,6 +15,8 @@
  * limitations under the License.
  */
 
+import '@oada/pino-debug';
+
 import http from 'node:http';
 
 import { init as initArangoDB } from '@oada/lib-arangodb';

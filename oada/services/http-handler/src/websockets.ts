@@ -124,7 +124,6 @@ function parseRequest(data: WebSocket.Data): SocketRequest {
 }
 
 const plugin: FastifyPluginAsync = async (fastify) => {
-  // @ts-expect-error IDEK
   await fastify.register(fastifyWebsocket);
 
   fastify.get('/*', { websocket: true }, ({ socket }) => {
