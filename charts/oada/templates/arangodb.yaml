@@ -12,10 +12,7 @@ spec:
   mode: Single
   single:
     resources:
-      limits:
-        cpu: 100m
-        memory: 1Gi
-        ephemeral-storage: 1Gi
+      {{- toYaml .Values.oada.resources | nindent 6 }}
   environment: {{ .Values.global.development | ternary "Development" "Production" }}
   metrics:
     enabled: {{ include "oada.prometheus" . }}

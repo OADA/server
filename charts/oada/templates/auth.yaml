@@ -40,7 +40,7 @@ metadata:
     {{ include "oada.chart.labels" . | nindent 4 }}
   annotations:
     #nginx.ingress.kubernetes.io/rewrite-target: /
-    cert-manager.io/cluster-issuer: letsencrypt-{{ .Release.Name }}
+    cert-manager.io/issuer: issuer-oada-{{ .Release.Name }}
 spec:
   {{ if .Values.ingress.className -}}
   ingressClassName: {{ .Values.ingress.className }}

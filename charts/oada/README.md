@@ -23,29 +23,23 @@ Supports multiple release installs and non-default namespace.
 
 ## Prerequisites
 
-- Redpanda operator and CRD
-- ArangoDB operator and CRD
-- Cert manager
-- At least one ingress controller
-
-Attempt to apply all prerequisites:
-
-[`kubectl apply -k https://www.github.com/OADA/server/k8s/support`][support]
-
-The above command might error on the first run.
-After 2-3 times, it _should_ run without error.
-
-**If the above does not work for you,
-google how to set up the listed prerequisites for your specific k8s cluster.**
+- [Cert manager][]
+- [Redpanda operator][]
+- [ArangoDB operator][] and [CRDs][arangodb crd]
+- At least one ingress controller (e.g., [ingress-nginx][])
 
 ## Installation
 
-Add the helm chart repo
+Add our helm chart repo
 `helm repo add oada https://charts.openag.io/`
 
 Install the Helm chart:
 `helm install my-oada oada/oada`
 
-See the [values.yaml](values.yaml) for various configuration options.
+See the [default values](values.yaml) for various configuration options.
 
-[support]: ../../k8s/support/kustomization.yaml
+[cert manager]: https://artifacthub.io/packages/helm/cert-manager/cert-manager
+[redpanda operator]: https://artifacthub.io/packages/helm/redpanda/redpanda-operator
+[arangodb operator]: https://artifacthub.io/packages/helm/source-field/kube-arangodb
+[arangodb crd]: https://artifacthub.io/packages/helm/source-field/kube-arangodb-crd
+[ingress-nginx]: https://artifacthub.io/packages/helm/ingress-nginx/ingress-nginx
