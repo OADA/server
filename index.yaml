@@ -4,6 +4,29 @@ entries:
   - annotations:
       artifacthub.io/recommendations: |
         - url: https://artifacthub.io/packages/helm/cert-manager/cert-manager
+        - url: https://artifacthub.io/packages/helm/redpanda/redpanda-operator
+        - url: https://artifacthub.io/packages/helm/source-field/kube-arangodb
+        - url: https://artifacthub.io/packages/helm/source-field/kube-arangodb-crd
+        - url: https://artifacthub.io/packages/helm/ingress-nginx/ingress-nginx
+    apiVersion: v2
+    appVersion: 3.8.0
+    created: "2023-03-31T18:45:09.267524443Z"
+    description: A Helm chart for the OADA API server
+    digest: 8a0bc783dc3cf472f80af113c383e1c3043ed674f5d6d81f5e2a88b817ecbb85
+    icon: https://avatars.githubusercontent.com/u/6750653
+    maintainers:
+    - email: alex@layton.in
+      name: awlayton
+    name: oada
+    sources:
+    - https://github.com/OADA/server
+    type: application
+    urls:
+    - https://github.com/OADA/server/releases/download/oada-chart-v3.2.0/oada-3.2.0.tgz
+    version: 3.2.0
+  - annotations:
+      artifacthub.io/recommendations: |
+        - url: https://artifacthub.io/packages/helm/cert-manager/cert-manager
         - url: https://docs.redpanda.com/docs/quickstart/kubernetes-qs-cloud/#step-4-use-helm-to-install-the-redpanda-operator
         - url: https://github.com/arangodb/kube-arangodb#installation-of-latest-release-using-helm
         - url: https://artifacthub.io/packages/helm/ingress-nginx/ingress-nginx
@@ -311,4 +334,4 @@ entries:
     urls:
     - https://github.com/OADA/server/releases/download/oada-0.1.0/oada-0.1.0.tgz
     version: 0.1.0
-generated: "2023-03-15T21:10:35.846999752Z"
+generated: "2023-03-31T18:45:09.267703052Z"
