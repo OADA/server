@@ -1,6 +1,6 @@
 {
   "name": "@oada/pino-debug",
-  "version": "3.7.0",
+  "version": "3.8.0",
   "description": "OADA pino-debug wrapper",
   "main": "dist/index.js",
   "engines": {
@@ -33,7 +33,7 @@
   },
   "devDependencies": {
     "@types/debug": "^4.1.7",
-    "@types/node": "^18.15.10"
+    "@types/node": "^18.15.11"
   },
   "peerDependencies": {
     "debug": "*"

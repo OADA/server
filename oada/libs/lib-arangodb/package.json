@@ -1,6 +1,6 @@
 {
   "name": "@oada/lib-arangodb",
-  "version": "3.7.0",
+  "version": "3.8.0",
   "description": "All OADA Arango interface code in one place.",
   "main": "dist/index.js",
   "type": "module",
@@ -55,7 +55,7 @@
     "@oada/lib-config": "^3.7.0",
     "@oada/oadaify": "^2.1.0",
     "@oada/types": "^3.4.3",
-    "arangojs": "^8.1.0",
+    "arangojs": "^8.2.0",
     "bcryptjs": "^2.4.3",
     "clone-deep": "^4.0.1",
     "debug": "^4.3.4",
@@ -73,9 +73,9 @@
     "@types/deep-equal": "^1.0.1",
     "@types/flat": "^5.0.2",
     "@types/json-pointer": "^1.0.31",
-    "@types/node": "^18.15.10",
+    "@types/node": "^18.15.11",
     "ava": "5.2.0",
-    "type-fest": "^3.7.1"
+    "type-fest": "^3.7.2"
   },
   "volta": {
     "node": "18.13.0"

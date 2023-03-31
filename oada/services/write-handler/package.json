@@ -1,6 +1,6 @@
 {
   "name": "@oada/write-handler",
-  "version": "3.7.0",
+  "version": "3.8.0",
   "type": "module",
   "description": "",
   "engines": {
@@ -60,7 +60,7 @@
     "@oada/types": "^3.4.3",
     "@types/debug": "^4.1.7",
     "@types/json-pointer": "^1.0.31",
-    "@types/node": "^18.15.10",
+    "@types/node": "^18.15.11",
     "@types/object-assign-deep": "^0.4.0",
     "ava": "5.2.0"
   },

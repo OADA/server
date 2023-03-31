@@ -131,6 +131,8 @@ rules:
   node/no-missing-import: off
   import/no-unresolved: off
   unicorn/prefer-spread: off
+  unicorn/prevent-abbreviations:
+    [warn, { replacements: { db: false, req: false } }]
   no-constructor-bind/no-constructor-bind: error
   no-constructor-bind/no-constructor-state: error
   sort-imports: [warn, { allowSeparatedGroups: true }]
