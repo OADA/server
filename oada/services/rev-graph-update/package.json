@@ -1,6 +1,6 @@
 {
   "name": "@oada/rev-graph-update",
-  "version": "3.7.0",
+  "version": "3.8.0",
   "type": "module",
   "description": "",
   "author": "",
@@ -51,10 +51,10 @@
     "@oada/client": "^4.5.0",
     "@oada/write-handler": "^3.7.0",
     "@types/debug": "^4.1.7",
-    "@types/node": "^18.15.10",
+    "@types/node": "^18.15.11",
     "@types/randomstring": "^1.1.8",
     "ava": "5.2.0",
-    "type-fest": "^3.7.1"
+    "type-fest": "^3.7.2"
   },
   "volta": {
     "node": "18.13.0"

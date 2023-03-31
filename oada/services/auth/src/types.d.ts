@@ -17,18 +17,16 @@
 
 declare module 'connect-arango' {
   import type { Class } from 'type-fest';
-  import type { Config } from 'arangojs';
+  import type { Database } from 'arangojs';
   import session from 'express-session';
-  class ArangoSore extends session.Store {}
+  class ArangoStore extends session.Store {}
   export interface Options {
-    collectionName: string;
-    db: Config;
-    ttl?: number;
+    collection: string;
+    db: Database;
   }
 
-  function connect(s: typeof session): Class<ArangoSore, [Options]>;
-
-  export = connect;
+  const c: Class<ArangoStore, [Options]>;
+  export = c;
 }
 
 declare module 'es-main' {

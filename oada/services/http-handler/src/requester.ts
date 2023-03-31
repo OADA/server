@@ -20,7 +20,9 @@ import { Requester } from '@oada/lib-kafka';
 import { config } from './config.js';
 
 // TODO: Is it better to have one requester per topic?
-export default new Requester({
+const requester = new Requester({
   consumeTopic: config.get('kafka.topics.httpResponse'),
   group: 'http-handlers',
 });
+
+export default requester;

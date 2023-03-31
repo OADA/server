@@ -1,6 +1,6 @@
 {
   "name": "@oada/lib-kafka",
-  "version": "3.7.0",
+  "version": "3.8.0",
   "description": "OADA Kafka library",
   "main": "./dist/index.js",
   "type": "module",
@@ -48,7 +48,7 @@
     "@ava/typescript": "^4.0.0",
     "@types/convict": "^6.1.1",
     "@types/debug": "^4.1.7",
-    "@types/node": "^18.15.10",
+    "@types/node": "^18.15.11",
     "@types/uuid": "^9.0.1",
     "ava": "5.2.0"
   },

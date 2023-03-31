@@ -159,9 +159,7 @@ export async function run(): Promise<void> {
         };
         // Override global ensureDefaults if this column explicitly specifies a value for it:
         const colSpecificEnsureDefaults =
-          colinfo.ensureDefaults === undefined
-            ? ensureDefaults
-            : colinfo.ensureDefaults;
+          colinfo.ensureDefaults ?? ensureDefaults;
 
         // TODO: clean up this any nonsense
         for await (const document of data) {

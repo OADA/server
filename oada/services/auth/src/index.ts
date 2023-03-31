@@ -20,6 +20,7 @@ import '@oada/pino-debug';
 import { config, domainConfigs } from './config.js';
 
 import '@oada/lib-prom';
+import { arango as database } from '@oada/lib-arangodb';
 
 import https from 'node:https';
 import path from 'node:path';
@@ -31,8 +32,9 @@ import bodyParser from 'body-parser';
 import express from 'express';
 import session from 'express-session';
 
+import ArangoSessionStore from 'connect-arango';
+import type { Database } from 'arangojs';
 import URI from 'urijs';
-import connectArango from 'connect-arango';
 import cors from 'cors';
 import debug from 'debug';
 import got from 'got';
@@ -72,9 +74,6 @@ declare module 'express-session' {
 const info = debug('auth#index:info');
 const trace = debug('auth#index:trace');
 
-// eslint-disable-next-line @typescript-eslint/naming-convention
-const ArangoSessionStore = connectArango(session);
-
 export default run;
 async function run() {
   // Deepcode ignore UseCsurfForExpress: helmet handles this
@@ -105,11 +104,8 @@ async function run() {
       resave: false,
       saveUninitialized: false,
       store: new ArangoSessionStore({
-        collectionName: config.get('arangodb.collections.sessions').name,
-        db: {
-          databaseName: config.get('arangodb.database'),
-          url: config.get('arangodb.connectionString'),
-        },
+        collection: config.get('arangodb.collections.sessions').name,
+        db: database as Database,
       }),
     })
   );
