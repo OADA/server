@@ -1,7 +1,9 @@
 replicaCount: 1
 
 ingress:
+  # ingress.enabled is whether to create ingresses for this OADA instance
   enabled: true
+  # ingress.className is the ingress class to use for created ingresses
   className: ~
 
 oada:
@@ -9,7 +11,7 @@ oada:
   domains: []
   # oada.tag is the Docker tag for the OADA images
   tag: ~
-  # oada.services is the list of oada services to deploy
+  # oada.services is a map of oada services to deploy
   services:
     http-handler:
       http: true
@@ -23,6 +25,11 @@ oada:
     users: {}
     webhooks: {}
     write-handler: {}
+  # oada.externalServices is a map of oada-compatible services to deploy with this OADA instance
+  externalServices:
+    #unfisk:
+    #  image: qlever/unfisk
+    #  tag: build
   # oada.users is a list of users to be created
   users:
     - name: admin
@@ -30,9 +37,10 @@ oada:
       scope:
         - all:all
         - oada.admin.user:all
+  # oada.resources are the resource requests/limits for the OADA services
   resources:
     limits:
-      ephemeral-storage: 500Mi
+      ephemeral-storage: 512Mi
     requests:
       cpu: 20m
       memory: 128Mi
@@ -64,7 +72,13 @@ arangodb:
   # arangodb.image is the Docker image to use for arangodb
   image: arangodb/arangodb
   # arangodb.tag is the Docker tag for the ArangoDB images
-  tag: 3.9.3
+  tag: 3.10.5
+  # arangodb.resources are the resource requests/limits for the ArangoDB service
+  resources:
+    limits:
+      cpu: 100m
+      memory: 1Gi
+      ephemeral-storage: 1Gi
 
 kafka:
   # kafka.brokers is an array of an external Kafka brokers.
@@ -74,7 +88,7 @@ kafka:
   # kafka.image is the Docker image to use for Kafka
   image: docker.redpanda.com/vectorized/redpanda
   # kafka.tag is the Docker tag for the Kafka/Redpanda images
-  tag: v22.2.5
+  tag: v23.1.2
 
 k8sWaitFor:
   image: groundnuty/k8s-wait-for

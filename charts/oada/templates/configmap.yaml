@@ -41,7 +41,7 @@ data:
   WELLKNOWN_SUBSERVICES: http://auth-{{ .Release.Name }}
   {{ if .Values.global.development -}}
   NODE_ENV: development
-  NODE_TLS_REJECT_UNAUTHORIZED: '0'
+  #NODE_TLS_REJECT_UNAUTHORIZED: '0'
   arangodb__ensureDefaults: 'true'
   INSPECT: '--inspect=0.0.0.0:9229'
   {{ else -}}

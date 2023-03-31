@@ -15,7 +15,7 @@
    */}}
 {{- if .Values.ingress.enabled }}
 apiVersion: cert-manager.io/v1
-kind: ClusterIssuer
+kind: Issuer
 metadata:
   namespace: {{ .Release.Namespace }}
   name: letsencrypt-{{ .Release.Name }}
@@ -32,7 +32,7 @@ spec:
       https://acme{{ .Values.global.development | ternary "-staging-" "-" }}v02.api.letsencrypt.org/directory
     email: info@{{ include "oada.domain" . }}
     privateKeySecretRef:
-      name: letsencrypt-{{ .Release.Name }}
+      name: issuer-oada-{{ .Release.Name }}
     solvers:
       - http01:
           ingress:

@@ -14,7 +14,7 @@
    * limitations under the License.
    */}}
 {{- $initName := print "init-" .Release.Name -}}
-{{- if empty (lookup "v1" "Secret" .Release.Namespace $initName) -}}
+{{- if empty (lookup "batch/v1" "Job" .Release.Namespace $initName) -}}
 {{- $tag := default .Chart.AppVersion .Values.oada.tag -}}
 apiVersion: batch/v1
 kind: Job

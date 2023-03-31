@@ -1,5 +1,5 @@
 {{/*
-   * Copyright 2022 Open Ag Data Alliance
+   * Copyright 2023 Open Ag Data Alliance
    *
    * Licensed under the Apache License, Version 2.0 (the "License");
    * you may not use this file except in compliance with the License.
@@ -13,9 +13,8 @@
    * See the License for the specific language governing permissions and
    * limitations under the License.
    */}}
-{{- $tag := default .Chart.AppVersion .Values.oada.tag -}}
-{{- range $k, $v := .Values.oada.services -}}
-{{/* Deploy the OADA uservice `$k` */}}
+{{- range $k, $v := .Values.oada.externalServices -}}
+{{/* Deploy external OADA services `$k` */}}
 {{- $name := print $k "-" $.Release.Name -}}
 apiVersion: apps/v1
 kind: Deployment
@@ -43,11 +42,11 @@ spec:
     spec:
       serviceAccountName: service-account-{{ $.Release.Name }}
       initContainers:
-        - name: wait-for-init
+        - name: wait-for-api
           image: {{ $.Values.k8sWaitFor.image }}:{{ $.Values.k8sWaitFor.tag }}
           args:
-            - job
-            - init-{{ $.Release.Name }}
+            - service
+            - http-handler-{{ $.Release.Name }}
           resources:
             limits: {{- toYaml $.Values.k8sWaitFor.resources.limits | nindent 14 }}
             requests: {{- toYaml $.Values.k8sWaitFor.resources.limits | nindent 14 }}
@@ -55,23 +54,17 @@ spec:
         - envFrom:
             - configMapRef:
                 name: {{ $.Chart.Name }}-configmap-{{ $.Release.Name }}
+            {{- if $v.envFrom }}
+              {{- toYaml $v.envFrom | nindent 12 -}}
+            {{- end }}
           env:
-            - name: ARANGODB_USERNAME
-              valueFrom:
-                secretKeyRef:
-                  name: {{ include "oada.arango.rootPassword" $ }}
-                  key: username
-                  optional: {{ $.Values.global.development }}
-            - name: ARANGODB_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: {{ include "oada.arango.rootPassword" $ }}
-                  key: password
-                  optional: {{ $.Values.global.development }}
-          image: {{ print "oada/" $k ":" $tag }}
+            - name: DOMAIN
+              value: http://http-handler-{{ $.Release.Name }}:80
+            {{- if $v.env }}
+              {{- toYaml $v.env | nindent 12 -}}
+            {{- end }}
+          image: {{ print $v.image ":" $v.tag }}
           imagePullPolicy: IfNotPresent
-          command: ["/usr/bin/dumb-init", "--rewrite", "15:2", "--", "/bin/sh"]
-          args: ["-c", "yarn workspace @oada/{{ $k }} run start"]
           # TODO: Better liveness checks
           livenessProbe:
             httpGet:
@@ -87,10 +80,6 @@ spec:
           resources:
             {{- toYaml $.Values.oada.resources | nindent 12 }}
           ports:
-            {{ if $v.http -}}
-            - name: http
-              containerPort: 8080
-            {{- end }}
             {{ if $.Values.global.development -}}
             - name: inspect
               containerPort: 9229
@@ -98,18 +87,9 @@ spec:
             - name: prometheus
               containerPort: 3000
           volumeMounts:
-            {{ if eq $k "http-handler" -}}
-            - mountPath: /oada/binary
-              name: binary-data
-            {{ end -}}
             - mountPath: /tmp
               name: tmp
       volumes:
-        {{ if eq $k "http-handler" -}}
-        - name: binary-data
-          persistentVolumeClaim:
-            claimName: binary-data-{{ $.Release.Name }}
-        {{ end -}}
         - name: tmp
           emptyDir:
             sizeLimit: 1Gi
