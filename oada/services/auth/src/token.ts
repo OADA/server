@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-/* eslint-disable no-process-exit, unicorn/no-process-exit -- This is a cli command */
+/* eslint-disable no-console, no-process-exit, unicorn/no-process-exit -- This is a cli command */
 
 import '@oada/pino-debug';
 
@@ -28,14 +28,12 @@ import { authorizations, users } from '@oada/lib-arangodb';
 
 const argv = minimist(process.argv.slice(2));
 
-const info = debug('token:info');
-const error = debug('token:error');
 const trace = debug('token:trace');
 
 const [command, token] = argv._;
 
 const usage = () => {
-  error(
+  console.error(
     // eslint-disable-next-line sonarjs/no-nested-template-literals
     `${chalk.yellow`USAGE: node token.js <extend | create | disable> [-e <new expiresIn>] [-c <new createTime> | -n] [-u <userid | username>] [-s <scope_str>] [token]`}
 extend:
@@ -46,6 +44,7 @@ extend:
 create:
 \t-u <userid | username>: create token for user if it has a slash, it is assumed to be a userid (like users/12345). Otherwise, it is assumed to be a username.
 \t-s <scope_string>: comma-separated list of scopes, defaults to all:all
+\t-i <client_id>: id of OAuth client for token, defaults to system/token
 disable:
 \t<token>: disable <token> by making it expired`
   );
@@ -103,7 +102,7 @@ async function extend() {
 async function create() {
   trace('Running create');
   if (!argv.u) {
-    error('You must provide a userid (users/123) or a username (bob)');
+    console.error('You must provide a userid (users/123) or a username (bob)');
     usage();
     return;
   }
@@ -114,17 +113,17 @@ async function create() {
     const u = await users.findByUsername(userid);
     userid = u!._id;
     if (!userid) {
-      error('Unable to find username %s. Aborting.', argv.u);
+      console.error('Unable to find username %s. Aborting.', argv.u);
       return;
     }
 
-    info('Looked up username %s and found userid %s', argv.u, userid);
+    console.log('Looked up username %s and found userid %s', argv.u, userid);
   }
 
   const scope = argv.s ? `${argv.s}`.split(',') : ['all:all'];
   const createTime = argv.c ? Number(argv.c) : getNow();
   const expiresIn = argv.e ? Number(argv.e) : 0; // Default does not expire
-  const clientId = 'system/token';
+  const clientId = argv.i ? String(argv.i) : 'system/token';
   const tok = token ?? v4().replace(/-/g, '');
   return {
     token: tok,
@@ -171,5 +170,5 @@ if (update) {
   trace({ update }, 'Sending updated token');
   // @ts-expect-error stuff
   await authorizations.save(update);
-  info({ ...update }, chalk.green`Successfully wrote token`);
+  console.log({ ...update }, chalk.green`Successfully wrote token`);
 }
