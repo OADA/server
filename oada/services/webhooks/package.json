@@ -36,7 +36,7 @@
     "tslib": "^2.5.0"
   },
   "devDependencies": {
-    "@oada/types": "^3.4.3",
+    "@oada/types": "^3.4.5",
     "@oada/write-handler": "^3.7.0",
     "@types/debug": "^4.1.7"
   },
