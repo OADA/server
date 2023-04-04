@@ -52,7 +52,7 @@
     "@oada/lib-prom": "workspace:^",
     "@oada/lookup": "^2.0.0",
     "@oada/pino-debug": "^3.7.0",
-    "@oada/types": "^3.4.3",
+    "@oada/types": "^3.4.5",
     "@oada/well-known-json": "^4.0.0",
     "arangojs": "^8.2.0",
     "bcryptjs": "^2.4.3",

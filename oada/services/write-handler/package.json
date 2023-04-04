@@ -57,7 +57,7 @@
   "devDependencies": {
     "@ava/typescript": "^4.0.0",
     "@oada/client": "^4.5.0",
-    "@oada/types": "^3.4.3",
+    "@oada/types": "^3.4.5",
     "@types/debug": "^4.1.7",
     "@types/json-pointer": "^1.0.31",
     "@types/node": "^18.15.11",
