@@ -69,7 +69,7 @@ spec:
                   key: password
                   optional: {{ $.Values.global.development }}
           image: {{ print "oada/" $k ":" $tag }}
-          imagePullPolicy: IfNotPresent
+          imagePullPolicy: {{ $.Values.oada.imagePullPolicy }}
           command: ["/usr/bin/dumb-init", "--rewrite", "15:2", "--", "/bin/sh"]
           args: ["-c", "yarn workspace @oada/{{ $k }} run start"]
           # TODO: Better liveness checks

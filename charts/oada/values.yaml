@@ -11,6 +11,7 @@ oada:
   domains: []
   # oada.tag is the Docker tag for the OADA images
   tag: ~
+  imagePullPolicy: IfNotPresent
   # oada.services is a map of oada services to deploy
   services:
     http-handler:
