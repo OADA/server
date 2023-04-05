@@ -1,6 +1,6 @@
 {
   "name": "@oada/lib-prom",
-  "version": "3.9.0",
+  "version": "3.9.1",
   "description": "OADA Prometheus library",
   "main": "./dist/index.js",
   "type": "module",

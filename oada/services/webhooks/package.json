@@ -1,6 +1,6 @@
 {
   "name": "@oada/webhooks",
-  "version": "3.9.0",
+  "version": "3.9.1",
   "type": "module",
   "description": "",
   "main": "dist/server.js",
