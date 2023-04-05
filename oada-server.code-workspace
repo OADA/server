@@ -10,10 +10,6 @@
       "path": "oada"
     },
     {
-      "name": "☸ k8s (kustomize)",
-      "path": "k8s"
-    },
-    {
       "name": "⎈ Helm chart",
       "path": "charts/oada"
     },
