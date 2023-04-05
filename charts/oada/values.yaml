@@ -38,13 +38,17 @@ oada:
       scope:
         - all:all
         - oada.admin.user:all
+  # oada.rateLimit configures rate-limits for OADA API clients
   rateLimit:
-    enabled: true
+    # oada.rateLimit.enabled is whether to enable rate-limiting in the http-handler
+    enabled: true # disable this if the gateway/reverse-proxy handles your rate-limits
     useDraftSpec: false
+    # oada.rateLimit.timeWindow is the time window for rate-limiting
+    timeWindow: 1 second
+    # oada.rateLimit.max is the maximum number of requests per client in a given timeWindow
     max:
       reads: 20
       writes: 5
-    timeWindow: 1 second
   # oada.resources are the resource requests/limits for the OADA services
   resources:
     limits:
