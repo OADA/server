@@ -181,12 +181,13 @@ const { enabled, maxRequests, timeWindow, redis, useDraftSpec } =
 if (enabled) {
   const options: RateLimitPluginOptions = {
     async keyGenerator(request) {
-      const mode =
-        request.method in ['PUT', 'POST', 'DELETE'] ? 'write' : 'read';
+      const mode = ['PUT', 'POST', 'DELETE'].includes(request.method)
+        ? 'write'
+        : 'read';
       return `${request.ip}-${mode}`;
     },
     async max(request) {
-      return request.method in ['PUT', 'POST', 'DELETE']
+      return ['PUT', 'POST', 'DELETE'].includes(request.method)
         ? maxRequests.write
         : maxRequests.read;
     },

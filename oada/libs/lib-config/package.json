@@ -1,6 +1,6 @@
 {
   "name": "@oada/lib-config",
-  "version": "3.9.0",
+  "version": "3.9.1",
   "description": "Confing wrapper",
   "main": "dist/index.js",
   "type": "module",
