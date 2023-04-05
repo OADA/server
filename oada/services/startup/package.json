@@ -1,6 +1,6 @@
 {
   "name": "@oada/startup",
-  "version": "3.8.0",
+  "version": "3.9.0",
   "type": "module",
   "description": "Handles startup of services for docker in OADA docker implementation.",
   "main": "dist/index.js",

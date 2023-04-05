@@ -1,6 +1,6 @@
 {
   "name": "@oada/auth",
-  "version": "3.8.0",
+  "version": "3.9.0",
   "description": "Reference implementation of OADA Authentication and Authorization server.",
   "bin": {
     "token": "./dist/token.js"

@@ -170,10 +170,13 @@ declare module 'fastify' {
 async function makeRedis(uri: string) {
   // eslint-disable-next-line @typescript-eslint/naming-convention
   const { Redis } = await import('ioredis');
-  return new Redis(uri);
+  return new Redis(uri, {
+    connectTimeout: 500,
+    maxRetriesPerRequest: 1,
+  });
 }
 
-const { enabled, maxRequests, timeWindow, redis } =
+const { enabled, maxRequests, timeWindow, redis, useDraftSpec } =
   config.get('server.rateLimit');
 if (enabled) {
   const options: RateLimitPluginOptions = {
@@ -189,6 +192,7 @@ if (enabled) {
     },
     timeWindow,
     redis: redis ? await makeRedis(redis) : null,
+    enableDraftSpec: useDraftSpec,
   };
   const { default: plugin } = await import('@fastify/rate-limit');
   await fastify.register<RateLimitPluginOptions>(
