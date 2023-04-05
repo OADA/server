@@ -59,9 +59,6 @@ oada/tests @YaguangZhang
 # Alex made the release nonsense
 release @awlayton
 
-# k8s stuff
-k8s @awlayton
-
 # Helm stuff
 charts @awlayton
 
