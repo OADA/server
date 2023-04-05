@@ -43,6 +43,13 @@ export const { config, schema } = await libConfig({
         env: 'RATE_LIMIT_ENABLED',
         arg: 'rate-limit-enabled',
       },
+      useDraftSpec: {
+        doc: 'see https://www.ietf.org/archive/id/draft-ietf-httpapi-ratelimit-headers-06.txt',
+        format: Boolean,
+        default: false,
+        env: 'RATE_LIMIT_DRAFT_SPEC',
+        arg: 'rate-limit-draft-spec',
+      },
       maxRequests: {
         read: {
           format: 'int',
