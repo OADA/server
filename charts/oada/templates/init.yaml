@@ -77,7 +77,7 @@ spec:
               containerPort: 9229
           {{- end }}
           image: oada/startup:{{ $tag }}
-          #imagePullPolicy: {{ .Values.global.development | ternary "Always" "IfNotPresent" }}
+          imagePullPolicy: {{ .Values.oada.imagePullPolicy }}
           resources:
             limits: {{- toYaml $.Values.oada.resources.limits | nindent 14 }}
             requests: {{- toYaml $.Values.oada.resources.limits | nindent 14 }}

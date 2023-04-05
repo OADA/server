@@ -37,6 +37,7 @@ import {
   requestContext,
 } from '@fastify/request-context';
 import { fastify as Fastify } from 'fastify';
+import type { RateLimitPluginOptions } from '@fastify/rate-limit';
 import bearerAuth from '@fastify/bearer-auth';
 import cors from '@fastify/cors';
 import fastifyAccepts from '@fastify/accepts';
@@ -164,6 +165,37 @@ declare module 'fastify' {
   interface FastifyRequest {
     user: TokenResponse['doc'];
   }
+}
+
+async function makeRedis(uri: string) {
+  // eslint-disable-next-line @typescript-eslint/naming-convention
+  const { Redis } = await import('ioredis');
+  return new Redis(uri);
+}
+
+const { enabled, maxRequests, timeWindow, redis } =
+  config.get('server.rateLimit');
+if (enabled) {
+  const options: RateLimitPluginOptions = {
+    async keyGenerator(request) {
+      const mode =
+        request.method in ['PUT', 'POST', 'DELETE'] ? 'write' : 'read';
+      return `${request.ip}-${mode}`;
+    },
+    async max(request) {
+      return request.method in ['PUT', 'POST', 'DELETE']
+        ? maxRequests.write
+        : maxRequests.read;
+    },
+    timeWindow,
+    redis: redis ? await makeRedis(redis) : null,
+  };
+  const { default: plugin } = await import('@fastify/rate-limit');
+  await fastify.register<RateLimitPluginOptions>(
+    // @ts-expect-error broken types
+    plugin,
+    options
+  );
 }
 
 await fastify.register(fastifyRequestContext, {

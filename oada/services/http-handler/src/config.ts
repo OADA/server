@@ -35,6 +35,45 @@ export const { config, schema } = await libConfig({
       format: 'url',
       default: 'https://localhost',
     },
+    rateLimit: {
+      enabled: {
+        doc: 'Have the oada server handle rate-limiting (usually should be handled in a reverse-proxy instead)',
+        format: Boolean,
+        default: false,
+        env: 'RATE_LIMIT_ENABLED',
+        arg: 'rate-limit-enabled',
+      },
+      maxRequests: {
+        read: {
+          format: 'int',
+          default: 20,
+          env: 'MAX_READ_REQUESTS',
+          arg: 'max-read-requests',
+        },
+        write: {
+          format: 'int',
+          default: 5,
+          env: 'MAX_WRITE_REQUESTS',
+          arg: 'max-write-requests',
+        },
+      },
+      timeWindow: {
+        doc: 'time window in ms to use for rate-limiting',
+        format: 'duration',
+        default: 1000,
+        env: 'RATE_TIME_WINDOW',
+        arg: 'rate-time-window',
+      },
+      redis: {
+        doc: 'Redis URI to use for rate-limit storage',
+        format: String,
+        nullable: true,
+        // eslint-disable-next-line @typescript-eslint/ban-types
+        default: null as string | null,
+        env: 'REDIS_URI',
+        arg: 'redis-uri',
+      },
+    },
   },
   // Prefix should match nginx proxy's prefix for the auth service
   // endpointsPrefix: '/oadaauth',
