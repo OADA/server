@@ -32,7 +32,11 @@ data:
   PROM_HOST: '::'
   DOMAIN: {{ include "oada.domain" . }}
   # Have OADA http handle rate-limit until we can get k8s to do it
-  RATE_LIMIT_ENABLED: true
+  RATE_LIMIT_ENABLED: {{ .Values.oada.rateLimit.enabled | quote }}
+  RATE_LIMIT_DRAFT_SPEC: {{ .Values.oada.rateLimit.useDraftSpec | quote }}
+  MAX_READ_REQUESTS: {{ .Values.oada.rateLimit.max.reads | quote }}
+  MAX_WRITE_REQUESTS: {{ .Values.oada.rateLimit.max.writes | quote }}
+  RATE_TIME_WINDOW: {{ .Values.oada.rateLimit.timeWindow | quote }}
   {{ if eq (include "oada.arango.deploy" .) "true" -}}
   ARANGODB_URL: {{ include "oada.arango.connection" . }}
   {{- end }}

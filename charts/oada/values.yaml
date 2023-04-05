@@ -38,6 +38,13 @@ oada:
       scope:
         - all:all
         - oada.admin.user:all
+  rateLimit:
+    enabled: true
+    useDraftSpec: false
+    max:
+      reads: 20
+      writes: 5
+    timeWindow: 1 second
   # oada.resources are the resource requests/limits for the OADA services
   resources:
     limits:
