@@ -28,9 +28,9 @@ oada:
     write-handler: {}
   # oada.externalServices is a map of oada-compatible services to deploy with this OADA instance
   externalServices:
-    unfisk:
-      image: qlever/unfisk
-      tag: build
+    #unfisk:
+    #  image: qlever/unfisk
+    #  tag: build
   # oada.users is a list of users to be created
   users:
     - name: admin
