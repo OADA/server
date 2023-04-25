@@ -39,7 +39,7 @@ import rTracer from 'cls-rtracer';
 const interactive = isInteractive();
 
 // Needed because the options type is not exported from pino-loki
-type PinoLokiOptions = Parameters<typeof pinoLoki>[0];
+type PinoLokiOptions = Parameters<typeof pinoLoki.default>[0];
 
 /**
  * Default mappings of debug namespaces to pino levels
@@ -115,8 +115,8 @@ function createRootLogger(): Logger {
   const loki: PinoLokiOptions | undefined = process.env.PINO_LOKI
     ? { host: process.env.PINO_LOKI }
     : undefined;
-  const log = _pino({
-    name: require.main?.id ?? process.env.npm_package_name,
+  const log = _pino.default({
+    name: process.env.npm_package_name ?? process.argv[1],
     transport: {
       targets: [
         {
@@ -137,7 +137,7 @@ function createRootLogger(): Logger {
       return Object.assign({}, ...objs) as Record<string, unknown>;
     },
   });
-  const logger = development ? pinoCaller(log) : log;
+  const logger = development ? pinoCaller.default(log) : log;
 
   // Load mappings from files
   const fMap = (process.env.OADA_PINO_MAP &&

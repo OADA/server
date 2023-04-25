@@ -118,7 +118,6 @@ rules:
   sonarjs/no-duplicate-string: [warn, 5]
   sonarjs/cognitive-complexity: warn
   eslint-comments/no-unused-disable: off
-  import/extensions: off
   node/no-unpublished-import: off
   spaced-comment: [error, always, markers: [/, //]]
   filenames/match-regex: off
@@ -132,7 +131,7 @@ rules:
   import/no-unresolved: off
   unicorn/prefer-spread: off
   unicorn/prevent-abbreviations:
-    [warn, { replacements: { db: false, req: false } }]
+    [warn, { replacements: { db: false, req: false, doc: false } }]
   no-constructor-bind/no-constructor-bind: error
   no-constructor-bind/no-constructor-state: error
   sort-imports: [warn, { allowSeparatedGroups: true }]

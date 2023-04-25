@@ -39,7 +39,7 @@
     "dotenv": "^16.0.3",
     "json5": "^2.2.3",
     "tslib": "^2.5.0",
-    "yaml": "^2.2.1"
+    "yaml": "^2.2.2"
   },
   "devDependencies": {
     "@types/convict": "^6.1.1",
