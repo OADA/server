@@ -27,6 +27,9 @@ import { config } from '../../config.js';
 
 const log = debug('arango/init');
 
+const roundsOrSalt =
+  config.get('bcrypt.saltRounds') || config.get('bcrypt.salt');
+
 // ------------------------------------------------------------
 // First setup some shorter variable names:
 const systemDatabase = new Database(config.get('arangodb.connectionString'));
@@ -39,11 +42,10 @@ const defaultUsers = (usersFile ? await import(usersFile) : {}) as Record<
   string,
   User
 >;
-const salt = config.get('arangodb.init.passwordSalt');
 for await (const user of Object.values(defaultUsers)) {
   const { password } = user;
   if (password) {
-    user.password = await bcrypt.hash(password, salt);
+    user.password = await bcrypt.hash(password, roundsOrSalt);
   }
 }
 

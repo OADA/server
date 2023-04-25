@@ -177,7 +177,7 @@ export async function run(): Promise<void> {
             colname === 'users' && // Oidc users don't have password, so you need to check for existence
             document.password
           ) {
-            document.password = hashPw(document.password);
+            document.password = await hashPw(document.password);
           }
 
           try {

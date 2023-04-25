@@ -50,11 +50,6 @@ export const { config, schema } = await libConfig({
         sensitive: true,
         default: 'Xka*32F@*!15',
       },
-      'passwordSalt': {
-        format: String,
-        sensitive: true,
-        default: '',
-      },
       'port-http': {
         format: 'port',
         default: 80,
