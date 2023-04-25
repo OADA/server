@@ -129,6 +129,7 @@ rules:
   no-warning-comments: off
   node/no-missing-import: off
   import/no-unresolved: off
+  import/extensions: off
   unicorn/prefer-spread: off
   unicorn/prevent-abbreviations:
     [warn, { replacements: { db: false, req: false, doc: false } }]

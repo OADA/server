@@ -231,15 +231,28 @@ export const { config, schema } = await libConfig({
       },
     },
     init: {
-      // NOTE: passwordSalt HAS to match the one in auth
-      passwordSalt: {
-        format: String,
-        default: '',
-      },
       defaultData: {
         // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
         default: {} as Record<string, string>,
       },
+    },
+  },
+  bcrypt: {
+    saltRounds: {
+      doc: 'Number of rounds to use for bcrypt salt generation',
+      format: 'nat',
+      default: 10,
+      env: 'BCRYPT_SALT_ROUNDS',
+      arg: 'bcrypt-salt-rounds',
+    },
+    salt: {
+      doc: 'Predefined salt to use for bcrypt hashing',
+      format: String,
+      nullable: true,
+      // eslint-disable-next-line @typescript-eslint/ban-types
+      default: null as string | null,
+      env: 'BCRYPT_SALT',
+      arg: 'bcrypt-salt',
     },
   },
   isTest: {

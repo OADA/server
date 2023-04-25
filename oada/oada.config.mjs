@@ -107,10 +107,6 @@ export default {
         createOptions: { isVolatile: false },
       },
     },
-    init: {
-      // NOTE: passwordSalt HAS to match the one in auth
-      passwordSalt: '$2a$10$l64QftVz6.7KR5BXNc29IO',
-    },
   },
   kafka: {
     broker: 'kafka:9092',
@@ -144,7 +140,6 @@ export default {
     server: {
       // Replace these in production with things that are actually secret...
       'sessionSecret': '2jp901p3#2#(!)kd9',
-      'passwordSalt': '$2a$06$xbh/gQcEgAX5eapjlCgMYO',
       'port-http': 8080,
       'mode': 'http',
       'proxy': 'uniquelocal',

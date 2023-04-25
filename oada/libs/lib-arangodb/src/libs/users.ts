@@ -33,6 +33,9 @@ const users = database.collection(
   config.get('arangodb.collections.users.name')
 );
 
+const roundsOrSalt =
+  config.get('bcrypt.saltRounds') || config.get('bcrypt.salt');
+
 /**
  * @todo fix this?
  * @example {
@@ -166,7 +169,7 @@ export async function create(u: Omit<User, '_id' | '_rev'>): Promise<DBUser> {
   info(u, 'Create user was called');
 
   if (u.password) {
-    u.password = hashPw(u.password);
+    u.password = await hashPw(u.password);
   }
 
   // Throws if username already exists
@@ -183,7 +186,7 @@ export async function update(
   u: { _id: string } & Partial<DBUser>
 ): Promise<{ _id: string; new: User }> {
   if (u.password) {
-    u.password = hashPw(u.password);
+    u.password = await hashPw(u.password);
   }
 
   return (await users.update(u._id, u, { returnNew: true })) as {
@@ -198,6 +201,6 @@ export async function like(
   return users.byExample(flatten(u));
 }
 
-export function hashPw(pw: string): string {
-  return bcrypt.hashSync(pw, config.get('arangodb.init.passwordSalt'));
+export async function hashPw(pw: string): Promise<string> {
+  return bcrypt.hash(pw, roundsOrSalt);
 }
