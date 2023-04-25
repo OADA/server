@@ -35,7 +35,7 @@
     "@fastify/accepts": "^4.1.0",
     "@fastify/cors": "^8.2.1",
     "@fastify/helmet": "^10.1.0",
-    "@oada/formats-server": "^3.4.5",
+    "@oada/formats-server": "^3.4.6",
     "@oada/lib-config": "^3.7.0",
     "@oada/lib-prom": "workspace:^",
     "@oada/pino-debug": "^3.7.0",

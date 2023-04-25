@@ -16,6 +16,7 @@
     "noImplicitThis": true,
     "noImplicitAny": true,
     "noImplicitOverride": true,
+    "noErrorTruncation": true,
     "sourceMap": true,
     "declaration": true
   }
