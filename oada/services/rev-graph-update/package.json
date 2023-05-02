@@ -48,13 +48,13 @@
   },
   "devDependencies": {
     "@ava/typescript": "^4.0.0",
-    "@oada/client": "^4.5.0",
+    "@oada/client": "^4.5.2",
     "@oada/write-handler": "^3.7.0",
     "@types/debug": "^4.1.7",
-    "@types/node": "^18.16.0",
+    "@types/node": "^18.16.3",
     "@types/randomstring": "^1.1.8",
     "ava": "5.2.0",
-    "type-fest": "^3.8.0"
+    "type-fest": "^3.9.0"
   },
   "volta": {
     "node": "18.13.0"

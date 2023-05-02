@@ -56,11 +56,11 @@
   },
   "devDependencies": {
     "@ava/typescript": "^4.0.0",
-    "@oada/client": "^4.5.0",
+    "@oada/client": "^4.5.2",
     "@oada/types": "^3.4.6",
     "@types/debug": "^4.1.7",
     "@types/json-pointer": "^1.0.31",
-    "@types/node": "^18.16.0",
+    "@types/node": "^18.16.3",
     "@types/object-assign-deep": "^0.4.0",
     "ava": "5.2.0"
   },

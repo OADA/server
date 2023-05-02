@@ -43,6 +43,38 @@ export interface Graph {
 export function collection(_value: unknown): asserts _value is Collection {}
 
 export const { config, schema } = await libConfig({
+  arangodbImport: {
+    connectionString: {
+      doc: 'URI for connecting to arangodb',
+      format: 'url',
+      default: 'http://arangodb:8529',
+      env: 'ARANGODB_IMPORT_URL',
+      arg: 'arangodb-import-url',
+    },
+    database: {
+      doc: 'database in arangodb to use',
+      format: String,
+      default: 'oada',
+      env: 'ARANGODB_IMPORT_DATABASE',
+      arg: 'arangodb-import-database',
+    },
+    auth: {
+      username: {
+        doc: 'Username for arangodb authentication',
+        format: String,
+        default: 'root',
+        env: 'ARANGODB_IMPORT_USERNAME',
+        arg: 'arangodb-import-username',
+      },
+      password: {
+        doc: 'Password for arangodb authentication',
+        format: String,
+        default: '',
+        env: 'ARANGODB_IMPORT_PASSWORD',
+        arg: 'arangodb-import-password',
+      },
+    },
+  },
   arangodb: {
     ensureDefaults: {
       doc: 'Ensure the default (i.e., debug) documents are loaded',

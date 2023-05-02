@@ -3,6 +3,9 @@
   "version": "3.9.1",
   "description": "All OADA Arango interface code in one place.",
   "main": "dist/index.js",
+  "bin": {
+    "import": "./dist/import.js"
+  },
   "type": "module",
   "engines": {
     "node": ">=16.0.0"
@@ -59,7 +62,7 @@
     "bcryptjs": "^2.4.3",
     "clone-deep": "^4.0.1",
     "debug": "^4.3.4",
-    "deep-equal": "^2.2.0",
+    "deep-equal": "^2.2.1",
     "flat": "^5.0.2",
     "json-ptr": "^3.1.1",
     "tslib": "^2.5.0"
@@ -73,9 +76,9 @@
     "@types/deep-equal": "^1.0.1",
     "@types/flat": "^5.0.2",
     "@types/json-pointer": "^1.0.31",
-    "@types/node": "^18.16.0",
+    "@types/node": "^18.16.3",
     "ava": "5.2.0",
-    "type-fest": "^3.8.0"
+    "type-fest": "^3.9.0"
   },
   "volta": {
     "node": "18.13.0"
