@@ -152,3 +152,8 @@ declare module 'oauth2orize-openid' {
     ): MiddlewareFunction;
   }
 }
+
+declare module 'oauth2orize-pkce' {
+  import type { MiddlewareFunction } from 'oauth2orize';
+  export function extensions(): MiddlewareFunction;
+}

@@ -388,6 +388,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@fastify/flash@npm:^5.0.0":
+  version: 5.1.0
+  resolution: "@fastify/flash@npm:5.1.0"
+  dependencies:
+    fastify-plugin: ^4.0.0
+  checksum: 5aeff7a229d5d1b890a8b8f31efc89974227335e26d71c96505ca18ba4278851c7b6d018ddfb1e3caad41e25dd9083d9aa51bdfcb08a7ee0f8ca8b1d13a47eb0
+  languageName: node
+  linkType: hard
+
 "@fastify/helmet@npm:^10.1.0":
   version: 10.1.0
   resolution: "@fastify/helmet@npm:10.1.0"
@@ -395,6 +404,16 @@ __metadata:
     fastify-plugin: ^4.2.1
     helmet: ^6.0.0
   checksum: a2260ea660157a8c55af6a6ad82bcb7999c453fee7b9ff21377c6b2605351dfc8a36788742b7096e1141e83b539aed48ff44a9a5ac08b86257184abb81d22883
+  languageName: node
+  linkType: hard
+
+"@fastify/passport@npm:^2.3.0":
+  version: 2.3.0
+  resolution: "@fastify/passport@npm:2.3.0"
+  dependencies:
+    "@fastify/flash": ^5.0.0
+    fastify-plugin: ^4.0.0
+  checksum: f794ee5333402986ff9794d2a56559272c13d91c94d33ee6007dc6558a04f8a5c0a6e34bc996074f25e0bec2d52ebbf797ce2be620cf9bd5c2af222dbdf5d5f9
   languageName: node
   linkType: hard
 
@@ -601,6 +620,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@oada/auth@workspace:services/auth"
   dependencies:
+    "@fastify/passport": ^2.3.0
     "@oada/certs": ^4.1.1
     "@oada/error": ^2.0.1
     "@oada/id-client": ^2.0.8
@@ -621,7 +641,6 @@ __metadata:
     "@types/express-session": ^1.17.7
     "@types/jsonwebtoken": ^9.0.2
     "@types/minimist": ^1.2.2
-    "@types/morgan": ^1.9.4
     "@types/oauth2orize": ^1.8.11
     "@types/passport": ^1.0.12
     "@types/passport-http-bearer": ^1.0.37
@@ -649,14 +668,15 @@ __metadata:
     jsonwebtoken: ^9.0.0
     jwt-bearer-client-auth: ^2.0.3
     minimist: ^1.2.8
-    morgan: ^1.10.0
     oauth2orize: ^1.11.1
     oauth2orize-openid: ^0.4.1
+    oauth2orize-pkce: ^0.1.2
     passport: ^0.6.0
     passport-http-bearer: ^1.0.1
     passport-local: ^1.0.0
     passport-oauth2-client-password: ~0.1.2
     pem-jwk: ^2.0.0
+    pino-http: ^8.3.3
     tslib: ^2.5.0
     type-fest: ^3.9.0
     urijs: ^1.19.11
@@ -1660,15 +1680,6 @@ __metadata:
   version: 10.0.1
   resolution: "@types/mocha@npm:10.0.1"
   checksum: 224ea9fce7b1734ccdb9aa99a622d902a538ce1847bca7fd22c5fb38adcf3ed536f50f48f587085db988a4bb3c2eb68f4b98e1cd6a38bc5547bd3bbbedc54495
-  languageName: node
-  linkType: hard
-
-"@types/morgan@npm:^1.9.4":
-  version: 1.9.4
-  resolution: "@types/morgan@npm:1.9.4"
-  dependencies:
-    "@types/node": "*"
-  checksum: d1e99c66a43501dcdf6e94e013dfff4e6c152cbb5f782d954bb722d230a9c1c0fe06fab6df3f3dfa3547735a7598f9471633cc6813d794e9562fd022e217c6ae
   languageName: node
   linkType: hard
 
@@ -2709,15 +2720,6 @@ __metadata:
   version: 3.0.1
   resolution: "base64url@npm:3.0.1"
   checksum: a77b2a3a526b3343e25be424de3ae0aa937d78f6af7c813ef9020ef98001c0f4e2323afcd7d8b2d2978996bf8c42445c3e9f60c218c622593e5fdfd54a3d6e18
-  languageName: node
-  linkType: hard
-
-"basic-auth@npm:~2.0.1":
-  version: 2.0.1
-  resolution: "basic-auth@npm:2.0.1"
-  dependencies:
-    safe-buffer: 5.1.2
-  checksum: 3419b805d5dfc518f3a05dcf42aa53aa9ce820e50b6df5097f9e186322e1bc733c36722b624802cd37e791035aa73b828ed814d8362333d42d7f5cd04d7a5e48
   languageName: node
   linkType: hard
 
@@ -7692,19 +7694,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"morgan@npm:^1.10.0":
-  version: 1.10.0
-  resolution: "morgan@npm:1.10.0"
-  dependencies:
-    basic-auth: ~2.0.1
-    debug: 2.6.9
-    depd: ~2.0.0
-    on-finished: ~2.3.0
-    on-headers: ~1.0.2
-  checksum: fb41e226ab5a1abf7e8909e486b387076534716d60207e361acfb5df78b84d703a7b7ea58f3046a9fd0b83d3c94bfabde32323341a1f1b26ce50680abd2ea5dd
-  languageName: node
-  linkType: hard
-
 "ms@npm:2.0.0":
   version: 2.0.0
   resolution: "ms@npm:2.0.0"
@@ -8050,6 +8039,13 @@ __metadata:
   dependencies:
     utils-merge: 1.x.x
   checksum: abbc208d242405de4f3ff91bd832c3bec2f3c526ee85ce92a0a738174378d84d589560754a9acbd662269df9567cb8969c8a1ad298bef80fbc42ff0a5badc2a2
+  languageName: node
+  linkType: hard
+
+"oauth2orize-pkce@npm:^0.1.2":
+  version: 0.1.2
+  resolution: "oauth2orize-pkce@npm:0.1.2"
+  checksum: 4e4f05fc4301725c61492073108af89c1daa7007462f4a2e2ff557f06fc09d59b6a6499ba6e843c1dde79c25ca37055e0c9d95230da6335a785ac3cc961911d3
   languageName: node
   linkType: hard
 
@@ -8625,6 +8621,18 @@ __metadata:
   languageName: node
   linkType: hard
 
+"pino-http@npm:^8.3.3":
+  version: 8.3.3
+  resolution: "pino-http@npm:8.3.3"
+  dependencies:
+    get-caller-file: ^2.0.5
+    pino: ^8.0.0
+    pino-std-serializers: ^6.0.0
+    process-warning: ^2.0.0
+  checksum: 6d9fb4f9230dce04d934b3d6179b2b9a14654e8e0e6cb7344cd1d8baeb53d5c42e1d169dffe350379bfeb9e41b59dc0ec417fe86eb01d49a21e2bac031c2803e
+  languageName: node
+  linkType: hard
+
 "pino-loki@npm:^2.0.4":
   version: 2.0.4
   resolution: "pino-loki@npm:2.0.4"
@@ -8691,6 +8699,27 @@ __metadata:
   bin:
     pino: bin.js
   checksum: eb13e12e3a3d682abe4a4da426455a9f4e041e55e4fa57d72d9677ee8d188a9c952f69347e728a3761c8262cdce76ef24bee29e1a53ab15aa9c5e851099163d0
+  languageName: node
+  linkType: hard
+
+"pino@npm:^8.0.0":
+  version: 8.12.1
+  resolution: "pino@npm:8.12.1"
+  dependencies:
+    atomic-sleep: ^1.0.0
+    fast-redact: ^3.1.1
+    on-exit-leak-free: ^2.1.0
+    pino-abstract-transport: v1.0.0
+    pino-std-serializers: ^6.0.0
+    process-warning: ^2.0.0
+    quick-format-unescaped: ^4.0.3
+    real-require: ^0.2.0
+    safe-stable-stringify: ^2.3.1
+    sonic-boom: ^3.1.0
+    thread-stream: ^2.0.0
+  bin:
+    pino: bin.js
+  checksum: 2e1689ea43dc42340f6316d311c0b41b8dc08ab8b75b3f182a7c0c14598d6501e96d26403bc3912b6b9478d37d272414e345e03c3aed1e2e42908aea317aa5fd
   languageName: node
   linkType: hard
 
@@ -9366,17 +9395,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"safe-buffer@npm:5.1.2, safe-buffer@npm:~5.1.1":
-  version: 5.1.2
-  resolution: "safe-buffer@npm:5.1.2"
-  checksum: f2f1f7943ca44a594893a852894055cf619c1fbcb611237fc39e461ae751187e7baf4dc391a72125e0ac4fb2d8c5c0b3c71529622e6a58f46b960211e704903c
-  languageName: node
-  linkType: hard
-
 "safe-buffer@npm:5.2.1, safe-buffer@npm:^5.0.1, safe-buffer@npm:~5.2.0":
   version: 5.2.1
   resolution: "safe-buffer@npm:5.2.1"
   checksum: b99c4b41fdd67a6aaf280fcd05e9ffb0813654894223afb78a31f14a19ad220bba8aba1cb14eddce1fcfb037155fe6de4e861784eb434f7d11ed58d1e70dd491
+  languageName: node
+  linkType: hard
+
+"safe-buffer@npm:~5.1.1":
+  version: 5.1.2
+  resolution: "safe-buffer@npm:5.1.2"
+  checksum: f2f1f7943ca44a594893a852894055cf619c1fbcb611237fc39e461ae751187e7baf4dc391a72125e0ac4fb2d8c5c0b3c71529622e6a58f46b960211e704903c
   languageName: node
   linkType: hard
 

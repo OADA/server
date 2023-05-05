@@ -40,9 +40,9 @@ import debug from 'debug';
 import got from 'got';
 import helmet from 'helmet';
 import isMain from 'es-main';
-import morgan from 'morgan';
 import oauth2orize from 'oauth2orize';
 import passport from 'passport';
+import { pinoHttp } from 'pino-http';
 
 import { middleware as oadaError } from '@oada/error';
 
@@ -75,6 +75,7 @@ const info = debug('auth#index:info');
 const trace = debug('auth#index:trace');
 
 export default run;
+
 async function run() {
   // Deepcode ignore UseCsurfForExpress: helmet handles this
   const app = express();
@@ -96,7 +97,7 @@ async function run() {
   app.set('views', config.get('auth.views.basedir'));
   app.set('trust proxy', config.get('auth.server.proxy'));
 
-  app.use(morgan('combined'));
+  app.use(pinoHttp());
   app.use(bodyParser.urlencoded({ extended: true }));
   app.use(
     session({
