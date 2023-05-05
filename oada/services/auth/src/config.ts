@@ -34,6 +34,12 @@ const trace = debug('auth#config:trace');
 const error = debug('auth#config:error');
 
 export const { config, schema } = await libConfig({
+  trustProxy: {
+    format: Array,
+    default: ['uniquelocal'],
+    env: 'TRUST_PROXY',
+    arg: 'trust-proxy',
+  },
   ...arangoSchema,
   domainsDir: {
     format: String,

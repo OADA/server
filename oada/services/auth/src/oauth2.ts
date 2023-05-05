@@ -21,6 +21,7 @@ import oauth2orize, { AuthorizationError } from 'oauth2orize';
 import URI from 'urijs';
 import debug from 'debug';
 import type express from 'express';
+import { extensions } from 'oauth2orize-pkce';
 import login from 'connect-ensure-login';
 import passport from 'passport';
 
@@ -62,6 +63,9 @@ export default class OAuth2 {
 
   constructor(server: oauth2orize.OAuth2Server) {
     this.#server = server;
+
+    // PKCE
+    server.grant(extensions());
 
     // Implicit flow (token)
     server.grant(oauth2orize.grant.token(issueToken));

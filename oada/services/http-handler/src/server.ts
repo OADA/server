@@ -24,19 +24,21 @@ import { nstats } from '@oada/lib-prom';
 
 import { plugin as formats } from '@oada/formats-server';
 
-import type { TokenResponse } from './tokenLookup.js';
+import tokenLookup, { type TokenResponse } from './tokenLookup.js';
 import authorizations from './authorizations.js';
 import resources from './resources.js';
-import tokenLookup from './tokenLookup.js';
 import users from './users.js';
 import websockets from './websockets.js';
 
-import type { FastifyReply, FastifyRequest } from 'fastify';
+import {
+  fastify as Fastify,
+  type FastifyReply,
+  type FastifyRequest,
+} from 'fastify';
 import {
   fastifyRequestContext,
   requestContext,
 } from '@fastify/request-context';
-import { fastify as Fastify } from 'fastify';
 import type { RateLimitPluginOptions } from '@fastify/rate-limit';
 import bearerAuth from '@fastify/bearer-auth';
 import cors from '@fastify/cors';
