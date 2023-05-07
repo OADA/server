@@ -117,6 +117,7 @@ function createRootLogger(): Logger {
     : undefined;
   const log = _pino.default({
     name: process.env.npm_package_name ?? process.argv[1],
+    level,
     transport: {
       targets: [
         {
