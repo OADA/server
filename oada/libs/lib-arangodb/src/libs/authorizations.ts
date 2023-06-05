@@ -84,8 +84,8 @@ export async function findByToken(
 // TODO: Add index on user id
 export async function findByUser(
   user: string
-): Promise<AsyncIterableIterator<Authorization>> {
-  return database.query(aql`
+): Promise<AsyncIterable<Authorization>> {
+  return database.query<Authorization>(aql`
     FOR t IN ${authorizations}
       FILTER t.user._id == ${user}
       FILTER t.revoked != true

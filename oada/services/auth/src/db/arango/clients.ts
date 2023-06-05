@@ -34,7 +34,7 @@ export async function findById(id: string) {
   return { ...client, id: _id as string };
 }
 
-export async function save({ id, ...client }: IClient & { clientId: string }) {
-  trace('Saving clientId %s', client.clientId);
+export async function save({ id, ...client }: IClient & { client_id: string }) {
+  trace('Saving clientId %s', client.client_id);
   return clients.save({ ...client, _id: id });
 }

@@ -47,14 +47,65 @@ export const { config, schema } = await libConfig({
   },
   auth: {
     server: {
-      'jsonSpaces': {
-        format: 'int',
-        default: 2,
+      'rateLimit': {
+        enabled: {
+          doc: 'Have the oada server handle rate-limiting (usually should be handled in a reverse-proxy instead)',
+          format: Boolean,
+          default: false,
+          env: 'RATE_LIMIT_ENABLED',
+          arg: 'rate-limit-enabled',
+        },
+        useDraftSpec: {
+          doc: 'see https://www.ietf.org/archive/id/draft-ietf-httpapi-ratelimit-headers-06.txt',
+          format: Boolean,
+          default: false,
+          env: 'RATE_LIMIT_DRAFT_SPEC',
+          arg: 'rate-limit-draft-spec',
+        },
+        maxRequests: {
+          format: 'int',
+          default: 5,
+          env: 'MAX_WRITE_REQUESTS',
+          arg: 'max-write-requests',
+        },
+        timeWindow: {
+          doc: 'time window in ms to use for rate-limiting',
+          format: 'duration',
+          default: 1000,
+          env: 'RATE_TIME_WINDOW',
+          arg: 'rate-time-window',
+        },
+        redis: {
+          doc: 'Redis URI to use for rate-limit storage',
+          format: String,
+          nullable: true,
+          default: null as string | null,
+          env: 'REDIS_URI',
+          arg: 'redis-uri',
+        },
       },
-      'sessionSecret': {
-        format: String,
-        sensitive: true,
-        default: 'Xka*32F@*!15',
+      'session': {
+        key: {
+          format: String,
+          sensitive: true,
+          nullable: true,
+          default: null as string | null,
+          env: 'SESSION_KEY',
+        },
+        secret: {
+          format: String,
+          sensitive: true,
+          default: 'averylogphrasebiggerthanthirtytwochars',
+          env: 'SESSION_SECRET',
+        },
+        salt: {
+          doc: 'Predefined salt to use for key derivation',
+          format: String,
+          sensitive: true,
+          nullable: true,
+          default: null as string | null,
+          env: 'SESSION_SALT',
+        },
       },
       'port-http': {
         format: 'port',
@@ -102,45 +153,45 @@ export const { config, schema } = await libConfig({
     endpoints: {
       register: {
         format: String,
-        default: '/register',
+        default: 'register',
       },
       authorize: {
         format: String,
-        default: '/auth',
+        default: 'auth',
       },
       token: {
         format: String,
-        default: '/token',
+        default: 'token',
       },
       decision: {
         format: String,
-        default: '/decision',
+        default: 'decision',
       },
       login: {
         format: String,
-        default: '/login',
+        default: 'login',
       },
       // POST URL for OpenIDConnect domain web form
-      loginConnect: {
+      oidcLogin: {
         format: String,
-        default: '/id-login',
+        default: 'oidc-login',
       },
       // Redirect URL for OpenIDConnect
-      redirectConnect: {
+      oidcRedirect: {
         format: String,
-        default: '/id-redirect',
+        default: 'oidc-redirect',
       },
       logout: {
         format: String,
-        default: '/logout',
+        default: 'logout',
       },
       certs: {
         format: String,
-        default: '/certs',
+        default: 'certs',
       },
       userinfo: {
         format: String,
-        default: '/userinfo',
+        default: 'userinfo',
       },
     },
     // Views controls what name is used for the EJS template in the views/ folder for
@@ -303,17 +354,6 @@ if (config.get('auth.server.port') === null) {
     default: {
       throw new TypeError(`Unknown mode: ${config.get('auth.server.mode')}`);
     }
-  }
-}
-
-// If there is an endpointsPrefix, update all the endpoints to include the
-// prefix before doing anything else
-const pfx = config.get('auth.endpointsPrefix');
-if (typeof pfx === 'string') {
-  trace('Adding supplied prefix %s to all endpoints', pfx);
-  const endpoints = config.get('auth.endpoints');
-  for (const [k, v] of Object.entries(endpoints)) {
-    config.set(`auth.endpoints.${k}`, path.join(pfx, v));
   }
 }
 

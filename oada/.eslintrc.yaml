@@ -78,6 +78,8 @@ overrides:
           },
 
           { selector: typeLike, format: [PascalCase] },
+
+          { selector: parameter, modifiers: [destructured], format: null },
         ]
       '@typescript-eslint/restrict-template-expressions': off
       '@typescript-eslint/no-shadow': warn

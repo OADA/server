@@ -36,6 +36,7 @@ import type { PathSegments } from 'json-ptr';
 import { aql } from 'arangojs';
 import cloneDeep from 'clone-deep';
 import debug from 'debug';
+import { type JsonObject } from 'type-fest';
 
 type IResource = OADAified<Resource>;
 export type { IResource as Resource };
@@ -270,8 +271,8 @@ export async function lookupFromUrl(
   if (lastV) {
     resource_id = lastV.resource_id;
     trace('graph-lookup traversal found resource %s', resource_id);
-    const fromV = vertices[vertices.length - 2];
-    const edge = edges[edges.length - 1];
+    const fromV = vertices.at(-2);
+    const edge = edges.at(-1);
     // If the desired url has more pieces than the longest path, the
     // pathLeftover is the extra pieces
     if (vertices.length - 1 < pieces.length) {
@@ -293,15 +294,15 @@ export async function lookupFromUrl(
       path_leftover: (fromV?.path ?? '') + (edge ? `/${edge.name}` : ''),
     };
   } else {
-    const lastEdge = edges[edges.length - 1]?._to;
+    const lastEdge = edges.at(-1)?._to;
     path_leftover = '';
     resource_id = `resources/${
       lastEdge?.split('graphNodes/resources:')[1] ?? ''
     }`;
     trace('graph-lookup traversal uncreated resource %s', resource_id);
     rev = 0;
-    const fromV = vertices[vertices.length - 2];
-    const edge = edges[edges.length - 1];
+    const fromV = vertices.at(-2);
+    const edge = edges.at(-1);
     from = {
       resourceExists: Boolean(fromV),
       permissions,
@@ -350,7 +351,7 @@ export async function getResource(
   const returnPath = parts.map((_, index) => `[@v${index}]`).join('');
 
   try {
-    const result = await database.query({
+    const result = await database.query<Resource>({
       // TODO: Fix this thing to use aql...
       query: `
         WITH ${resources.name}
@@ -359,7 +360,8 @@ export async function getResource(
           RETURN r${returnPath}`,
       bindVars: bindVariables,
     });
-    return oadaify(sanitizeResult(await result.next()), false);
+    const sanitized = sanitizeResult(await result.next());
+    return oadaify(sanitized as JsonObject, false) as unknown as IResource;
   } catch (error: unknown) {
     if (
       error instanceof ArangoError &&

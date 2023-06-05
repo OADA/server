@@ -15,6 +15,8 @@
  * limitations under the License.
  */
 
+import { type Except } from 'type-fest';
+
 export type Selector<T> = T extends { _id?: infer I | undefined }
   ? I | { _id: I }
   : never;
@@ -22,10 +24,12 @@ export type Selector<T> = T extends { _id?: infer I | undefined }
 /**
  * @todo clean up this mess
  */
-// eslint-disable-next-line @typescript-eslint/ban-types
-export function sanitizeResult<T extends {}>(
+export function sanitizeResult<T>(
   result: T
-): Omit<T & { _rev?: number }, '_key' | '_oada_rev'> {
+): Except<
+  T & { _rev?: number; _key?: unknown; _oada_rev?: unknown },
+  '_key' | '_oada_rev'
+> {
   if (!(result && typeof result === 'object')) {
     // @ts-expect-error nonsense
     return result;
@@ -38,8 +42,8 @@ export function sanitizeResult<T extends {}>(
   };
 
   const rev = _oada_rev ?? _rev;
-  return (rev ? { _rev: rev, ...rest } : rest) as unknown as Omit<
-    T & { _rev?: number },
+  return (rev ? { _rev: rev, ...rest } : rest) as unknown as Except<
+    T & { _rev?: number; _key?: unknown; _oada_rev?: unknown },
     '_key' | '_oada_rev'
   >;
 }

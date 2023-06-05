@@ -37,18 +37,18 @@
   "dependencies": {
     "@oada/lib-config": "^3.7.0",
     "prom-client": "^14.2.0",
-    "tslib": "^2.5.0"
+    "tslib": "2.5.1"
   },
   "devDependencies": {
     "@ava/typescript": "^4.0.0",
-    "@types/convict": "^6.1.1",
-    "@types/node": "^18.16.3",
+    "@types/convict": "^6.1.2",
+    "@types/node": "^20.2.5",
     "@types/ws": "^8.5.4",
-    "ava": "5.2.0",
+    "ava": "5.3.0",
     "fastify-plugin": "^4.5.0"
   },
   "volta": {
-    "node": "18.13.0"
+    "node": "20.2.0"
   },
   "optionalDependencies": {
     "nstats": "^5.0.0"

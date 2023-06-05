@@ -1,4 +1,4 @@
-<!-- Copyright 2014 Open Ag Data Alliance
+<!-- Copyright 2023 Open Ag Data Alliance
 
   Licensed under the Apache License, Version 2.0 (the 'License');
   you may not use this file except in compliance with the License.
@@ -34,16 +34,16 @@
 
   <head>
     <meta charset="utf-8">
-    <title>Login</title>
+    <title>OAuth 2.0 Authorization</title>
     <link href="//maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/css/bootstrap.min.css" rel="stylesheet">
   </head>
   <body>
     <div class="header pt-2 pb-2 pl-2 mb-2" style="background-color: <%= color %>;">
       <img style="max-width: 50px; max-height: 50px;" src="<%= logo_url %>" alt="<%= name %> Logo" />
       <span style="font-size: 2em;"><%= name %></span>
-      <span style="float: right; padding-right: 5px;"><strong><%= user.name%></strong> <a href='<%= logout %>'>(Logout)</a></span>
+      <span style="float: right; padding-right: 5px;"><strong><%= user.name %></strong> <a href='<%= logout %>'>(Logout)</a></span>
     </div>
-    
+
     <div class="container">
       <div class="jumbotron pt-4 pb-4">
 
@@ -54,14 +54,14 @@
 
         <div class="row pb-2">
           <div class="col">
-            <strong><%= client.client_name %></strong> is requesting access to:
+            <strong><%= client.client_name ?? client.client_id %></strong> is requesting access to:
           </div>
         </div>
 
         <div class="row pb-2">
           <div class="col">
             <ul class="list-group">
-              <% scope.forEach(function(s) { %>
+              <% scope?.forEach(function(s) { %>
               <li class="list-group-item"><%= s %></li>
               <% }) %>
             </ul>
@@ -110,7 +110,7 @@
           </div>
         </div>
 
-        <% if(client.licenses && client.licenses.forEach) { %>
+        <% if(client.licenses?.length > 0) { %>
           <div class="row">
             <div class="col">
               Supported License(s):
@@ -127,13 +127,13 @@
           <div class="col">
             <form action="<%= decision_url %>" id="mainForm" method="post">
               <input name="transaction_id" type="hidden" value="<%= transactionID %>" />
-              <% scope.forEach(function(s) { %>
+              <% scope?.forEach(function(s) { %>
                 <input name="scope[]" type="hidden" value="<%= s %>" />
               <% }) %>
 
               <div class="input-group input-group-lg">
                 <p>
-                  <input type="submit" class="btn btn-lg btn-success" role="button" value="Allow" id="allow" />
+                  <input type="submit" class="btn btn-lg btn-success" role="button" value="Allow" name="allow" id="allow" />
                   <input type="submit" class="btn btn-lg btn-failure" role="button" value="Deny" name="cancel" id="deny" />
                 </p>
               </div>
@@ -144,7 +144,7 @@
         <div class="row">
           <div class="col">
             <small>
-              © 2017 <a href="http://openag.io">Open Ag Data Alliance</a>
+              © 2023 <a href="http://openag.io">Open Ag Data Alliance</a>
             </small>
           </div>
         </div>

@@ -28,6 +28,6 @@ export function findById(id: string) {
 }
 
 export async function save(client: Client) {
-  database.set(client.clientId, client as DBClient);
-  return findById(client.clientId);
+  database.set(client.client_id, client as DBClient);
+  return findById(client.client_id);
 }

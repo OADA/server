@@ -20,11 +20,6 @@ declare module 'es-main' {
   export = esMain;
 }
 
-// Make TS understand assert better
-declare module 'assert' {
-  function internal(value: unknown, message?: string | Error): asserts value;
-}
-
 declare module 'nstats' {
   import type { Server as HTTPServer } from 'node:http';
 

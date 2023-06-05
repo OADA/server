@@ -66,8 +66,8 @@ export function assertChange(value: unknown): asserts value is Change {
 
 export async function getChanges(
   resourceId: string
-): Promise<AsyncIterableIterator<number>> {
-  return database.query(
+): Promise<AsyncIterable<number>> {
+  return database.query<number>(
     aql`
       FOR change in ${changes}
         FILTER change.resource_id == ${resourceId}
@@ -143,7 +143,7 @@ export async function getChange(
     path: '',
     body: firstV.body,
     type: firstV.type,
-    wasDelete: result.vertices[result.vertices.length - 1]?.type === 'delete',
+    wasDelete: result.vertices.at(-1)?.type === 'delete',
   };
   let path = '';
   for (let index = 0; index < result.vertices.length - 1; index++) {
@@ -179,7 +179,7 @@ export async function getChangeArray(
     ];
   }
 
-  const cursor = await database.query(
+  const cursor = await database.query<ChangePath>(
     aql`
       LET change = FIRST(
         FOR change in ${changes}
@@ -195,10 +195,12 @@ export async function getChangeArray(
   return cursor.map((document) => toChangeObject(document)); // Convert to change object
 }
 
-function toChangeObject(arangoPathObject: {
+export interface ChangePath {
   edges: readonly ChangeEdge[];
   vertices: readonly ChangeVertex[];
-}): Change {
+}
+
+function toChangeObject(arangoPathObject: ChangePath): Change {
   // Get path
   let path = '';
   for (const edge of arangoPathObject.edges) {

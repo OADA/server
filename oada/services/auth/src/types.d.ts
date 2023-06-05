@@ -15,28 +15,9 @@
  * limitations under the License.
  */
 
-declare module 'connect-arango' {
-  import type { Class } from 'type-fest';
-  import type { Database } from 'arangojs';
-  import session from 'express-session';
-  class ArangoStore extends session.Store {}
-  export interface Options {
-    collection: string;
-    db: Database;
-  }
-
-  const c: Class<ArangoStore, [Options]>;
-  export = c;
-}
-
 declare module 'es-main' {
   function esMain(meta: unknown): boolean;
   export = esMain;
-}
-
-// Make TS understand assert better
-declare module 'assert' {
-  function internal(value: unknown, message?: string | Error): asserts value;
 }
 
 declare module 'oauth2orize-openid' {
@@ -156,4 +137,23 @@ declare module 'oauth2orize-openid' {
 declare module 'oauth2orize-pkce' {
   import type { MiddlewareFunction } from 'oauth2orize';
   export function extensions(): MiddlewareFunction;
+}
+
+declare module 'passport-oauth2-jwt-bearer' {
+  import { Strategy } from 'passport';
+  export interface Options {
+    /** @default false */
+    passReqToCallback?: boolean;
+  }
+  export type VerifyFunction = (
+    clientId: string,
+    clientSecret: string,
+    done: (error: any, client?: any, info?: any) => void
+  ) => void;
+  class OAuth2JWTBearerStrategy extends Strategy {
+    name: 'oauth2-jwt-bearer';
+    constructor(options: Options, verify: VerifyFunction);
+    constructor(verify: VerifyFunction);
+  }
+  export { OAuth2JWTBearerStrategy as Strategy };
 }

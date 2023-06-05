@@ -20,15 +20,16 @@ import { config } from '../../config.js';
 import path from 'node:path';
 import url from 'node:url';
 
-import type { ReadonlyDeep, RemoveIndexSignature } from 'type-fest';
+import type { OmitIndexSignature, ReadonlyDeep } from 'type-fest';
 import { v4 } from 'uuid';
 
 import { Codes, OADAError } from '@oada/error';
 import type { ClientID } from '@oada/lib-arangodb/dist/libs/clients.js';
 import type Metadata from '@oada/types/oauth-dyn-reg/metadata.js';
+import { makeClass } from '@qlever-llc/interface2class';
 
 export interface IClients {
-  findById(id: Client['clientId']): Promise<Client | undefined>;
+  findById(id: string): Promise<Client | undefined>;
   save(client: Client): Promise<void>;
 }
 
@@ -38,66 +39,35 @@ const database = (await import(
   path.join(dirname, '..', datastoresDriver, 'clients.js')
 )) as IClients;
 
-export interface IClient extends ReadonlyDeep<RemoveIndexSignature<Metadata>> {
+export interface IClient extends ReadonlyDeep<OmitIndexSignature<Metadata>> {
   readonly id?: ClientID;
-  readonly clientId?: string;
+  readonly client_id: string;
+  readonly scope: string;
   readonly reqdomain?: string;
-  readonly client_name?: string;
-  readonly contact?: string;
   readonly puc?: string;
   readonly licenses?: ReadonlyArray<{ id: string; name: string }>;
-  readonly keys?: ReadonlyArray<{ kty: string; use: string; alg: string }>;
-  readonly redirect_uris: readonly [string, ...(readonly string[])];
+  readonly trusted?: boolean;
+  readonly client_secret?: string;
+  readonly client_secret_expires_at?: number;
 }
-export class Client implements IClient {
-  readonly id;
-  readonly clientId;
-  // eslint-disable-next-line @typescript-eslint/naming-convention
-  readonly client_name;
-  readonly contact;
-  readonly puc;
-  // eslint-disable-next-line @typescript-eslint/naming-convention
-  readonly redirect_uris;
-  readonly licenses;
-  readonly keys;
-  // eslint-disable-next-line @typescript-eslint/naming-convention
-  readonly jwks_uri;
-  readonly jwks;
-  readonly reqdomain;
 
+export class Client extends makeClass<IClient>() {
   constructor({
-    id,
-    clientId = v4(),
-    client_name: name,
-    contact,
-    puc,
-    redirect_uris: redirectUris,
+    client_id = v4(),
     licenses = [],
-    keys,
-    jwks_uri: jwksUri,
-    jwks,
-    reqdomain,
+    scope = '',
+    ...rest
   }: IClient) {
-    this.id = id;
-    this.clientId = clientId;
-    this.client_name = name;
-    this.contact = contact;
-    this.puc = puc;
-    this.redirect_uris = redirectUris;
-    this.licenses = licenses;
-    this.keys = keys;
-    this.jwks_uri = jwksUri;
-    this.jwks = jwks;
-    this.reqdomain = reqdomain;
+    super({ ...rest, client_id, scope, licenses });
   }
 }
 
 export interface DBClient extends Client {
   id: ClientID;
-  clientId: string;
+  client_id: string;
 }
 
-export async function findById(id: DBClient['clientId']) {
+export async function findById(id: DBClient['client_id']) {
   const c = await database.findById(id);
   return c ? new Client(c) : undefined;
 }
@@ -105,7 +75,7 @@ export async function findById(id: DBClient['clientId']) {
 export async function save(c: IClient) {
   const client = c instanceof Client ? c : new Client(c);
 
-  if (await database.findById(client.clientId)) {
+  if (await database.findById(client.client_id)) {
     throw new OADAError(
       'Client Id already exists',
       Codes.BadRequest,
@@ -114,7 +84,7 @@ export async function save(c: IClient) {
   }
 
   await database.save(client);
-  const saved = await findById(client.clientId);
+  const saved = await findById(client.client_id);
   if (!saved) {
     throw new Error('Could not save client');
   }

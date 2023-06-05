@@ -101,11 +101,6 @@ export default {
         defaults: './libs/exampledocs/putBodies.js',
         createOptions: { isVolatile: false },
       },
-      sessions: {
-        name: 'sessions',
-        indexes: [],
-        createOptions: { isVolatile: false },
-      },
     },
   },
   kafka: {
@@ -122,18 +117,18 @@ export default {
   },
   auth: {
     // Prefix should match nginx proxy's prefix for the auth service
-    endpointsPrefix: '/oadaauth',
+    endpointsPrefix: '/oadaauth/',
     endpoints: {
-      register: '/register',
-      authorize: '/auth',
-      token: '/token',
-      decision: '/decision',
-      login: '/login',
-      loginConnect: '/id-login', // POST URL for OpenIDConnect domain web form
-      redirectConnect: '/id-redirect', // Redirect URL for OpenIDConnect
-      logout: '/logout',
-      certs: '/certs',
-      userinfo: '/userinfo',
+      register: 'register',
+      authorize: 'auth',
+      token: 'token',
+      decision: 'decision',
+      login: 'login',
+      loginConnect: 'id-login', // POST URL for OpenIDConnect domain web form
+      redirectConnect: 'id-redirect', // Redirect URL for OpenIDConnect
+      logout: 'logout',
+      certs: 'certs',
+      userinfo: 'userinfo',
     },
     serviceName: 'Trellis',
     serviceLongName: 'Trellis - A Framework for Produce Audit Data',

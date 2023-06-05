@@ -202,14 +202,6 @@ export const { config, schema } = await libConfig({
           indexes: [{ name: ['domain', 'resource_id'], unique: true }],
         },
       },
-      sessions: {
-        format: Object, // Collection,,
-        default: {
-          name: 'sessions',
-          indexes: [],
-          createOptions: { isVolatile: false },
-        },
-      },
       // HACK: convict types don't understand assert
     } as Record<string, { default: Collection }>,
     // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
@@ -280,11 +272,11 @@ export const { config, schema } = await libConfig({
     salt: {
       doc: 'Predefined salt to use for bcrypt hashing',
       format: String,
+      sensitive: true,
       nullable: true,
       // eslint-disable-next-line @typescript-eslint/ban-types
       default: null as string | null,
       env: 'BCRYPT_SALT',
-      arg: 'bcrypt-salt',
     },
   },
   isTest: {

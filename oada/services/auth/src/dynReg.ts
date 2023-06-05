@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2017-2022 Open Ag Data Alliance
+ * Copyright 2017-2023 Open Ag Data Alliance
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,11 +17,13 @@
 
 import { config } from './config.js';
 
-import type { RequestHandler } from 'express';
-import debug from 'debug';
+import type { FastifyPluginAsync } from 'fastify';
 
-import type Metadata from '@oada/types/oauth-dyn-reg/metadata.js';
-import { assert as assertMetadata } from '@oada/types/oauth-dyn-reg/metadata.js';
+import {
+  type default as Metadata,
+  assert as assertMetadata,
+  schema,
+} from '@oada/types/oauth-dyn-reg/metadata.js';
 import { validate } from '@oada/certs';
 
 import type { IClient } from './db/models/client.js';
@@ -30,7 +32,7 @@ import { save } from './db/models/client.js';
 /**
  * @see {@link https://datatracker.ietf.org/doc/html/rfc7591#section-3.2.2}
  */
-const enum RegistrationErrorCode {
+export const enum RegistrationErrorCode {
   InvalidRedirectURI = 'invalid_redirect_uri',
   InvalidClientMetadata = 'invalid_client_metadata',
   InvalidSoftwareStatement = 'invalid_software_statement',
@@ -40,7 +42,7 @@ const enum RegistrationErrorCode {
 /**
  * @see {@link https://datatracker.ietf.org/doc/html/rfc7591#section-3.2.2}
  */
-class RegistrationError extends Error {
+export class RegistrationError extends Error {
   readonly code;
 
   constructor(code: RegistrationErrorCode, message?: string) {
@@ -55,10 +57,6 @@ class RegistrationError extends Error {
     };
   }
 }
-
-const error = debug('oada-ref-auth:dynReg:error');
-const info = debug('oada-ref-auth:dynReg:info');
-const trace = debug('oada-ref-auth:dynReg:trace');
 
 const {
   require: requireSS,
@@ -95,82 +93,108 @@ async function getSoftwareStatement({
   };
 }
 
-const dynReg: RequestHandler = async (request, response) => {
-  try {
-    const metadata: unknown = request.body;
-    // TODO: More thorough checking of sent metadata
-    assertMetadata(metadata);
+export interface Options {
+  endpoints?: {
+    register?: string;
+  };
+}
 
-    const softwareStatement = await getSoftwareStatement(metadata);
+/**
+ * Plugin for handling dynamic client registration
+ * @see {@link https://datatracker.ietf.org/doc/html/rfc7591}
+ */
+const plugin: FastifyPluginAsync<Options> = async (
+  fastify,
+  { endpoints: { register = 'register' } = {} }
+) => {
+  fastify.post(
+    register,
+    { schema: { body: schema } },
+    async (request, reply) => {
+      try {
+        // TODO: Make fastify type provider work
+        const metadata = request.body as Metadata;
 
-    if (requireSS && !softwareStatement) {
-      info(
-        metadata,
-        'Request body does not have software_statement key. Did you remember content-type=application/json?'
-      );
-      throw new RegistrationError(
-        // FIXME: What is the correct code here??
-        RegistrationErrorCode.InvalidSoftwareStatement,
-        'Client registration MUST include a software_statement for this server'
-      );
-    }
+        const softwareStatement = await getSoftwareStatement(metadata);
 
-    if (mustTrust && !softwareStatement?.trusted) {
-      info(metadata, 'Request body does not have a trusted software_statement');
-      throw new RegistrationError(
-        RegistrationErrorCode.UnapprovedSoftwareStatement,
-        'Client registration MUST include a software_statement for this server'
-      );
-    }
+        if (requireSS && !softwareStatement) {
+          request.log.error(
+            metadata,
+            'Request body does not have software_statement key. Did you remember content-type=application/json?'
+          );
+          throw new RegistrationError(
+            // FIXME: What is the correct code here??
+            RegistrationErrorCode.InvalidSoftwareStatement,
+            'Client registration MUST include a software_statement for this server'
+          );
+        }
 
-    if (
-      softwareStatement &&
-      !mustInclude.every((statement) => statement in softwareStatement)
-    ) {
-      throw new RegistrationError(
-        RegistrationErrorCode.InvalidSoftwareStatement,
-        `Software statement must include at least ${mustInclude}`
-      );
-    }
+        if (mustTrust && !softwareStatement?.trusted) {
+          request.log.error(
+            metadata,
+            'Request body does not have a trusted software_statement'
+          );
+          throw new RegistrationError(
+            RegistrationErrorCode.UnapprovedSoftwareStatement,
+            'Client registration MUST include a software_statement for this server'
+          );
+        }
 
-    // Fields in software statement MUST take precedence
-    const registrationData = { ...metadata, ...softwareStatement };
+        if (
+          softwareStatement &&
+          !mustInclude.every((statement) => statement in softwareStatement)
+        ) {
+          throw new RegistrationError(
+            RegistrationErrorCode.InvalidSoftwareStatement,
+            `Software statement must include at least ${mustInclude}`
+          );
+        }
 
-    // ------------------------------------------
-    // Save client to database, return client_id for their future OAuth2 requests
-    trace(
-      'Saving client %s registration, trusted = %s',
-      registrationData.client_name,
-      registrationData.trusted
-    );
-    const client = await save(registrationData as IClient);
-    const result = {
-      ...registrationData,
-      client_id: client.clientId,
-    };
-    info(
-      'Saved new client ID %s to DB, client_name = %s',
-      result.client_id,
-      result.client_name
-    );
-    response.status(201).json(result);
-  } catch (cError: unknown) {
-    error({ error: cError }, 'Failed to validate client registration');
-    if (cError instanceof RegistrationError) {
-      response.status(400).json(cError);
-    } else {
-      response
-        .status(400)
-        .json(
-          new RegistrationError(
-            RegistrationErrorCode.InvalidClientMetadata,
-            `Client registration failed: ${
-              (cError as Error)?.message ?? cError
-            }`
-          )
+        // Fields in software statement MUST take precedence
+        const registrationData = { ...metadata, ...softwareStatement };
+
+        // TODO: Allow generating client_secret for "confidential" clients?
+        // ???: How to tell it is a confidential client?
+        if ('client_secret' in registrationData) {
+          throw new Error(
+            'Client secret is not allowed in dynamic registration'
+          );
+        }
+
+        // ------------------------------------------
+        // Save client to database, return client_id for their future OAuth2 requests
+        request.log.trace(
+          'Saving client %s registration, trusted = %s',
+          registrationData.client_name,
+          registrationData.trusted
         );
+        const client = await save(registrationData as IClient);
+        const result = {
+          ...registrationData,
+          client_id: client.client_id,
+        };
+        request.log.info(
+          'Saved new client ID %s to DB, client_name = %s',
+          result.client_id,
+          result.client_name
+        );
+        void reply.code(201);
+        return result;
+      } catch (error: unknown) {
+        request.log.error(error, 'Failed to validate client registration');
+        if (error instanceof RegistrationError) {
+          void reply.code(400);
+          return error;
+        }
+
+        void reply.code(400);
+        return new RegistrationError(
+          RegistrationErrorCode.InvalidClientMetadata,
+          `Client registration failed: ${(error as Error)?.message ?? error}`
+        );
+      }
     }
-  }
+  );
 };
 
-export default dynReg;
+export default plugin;

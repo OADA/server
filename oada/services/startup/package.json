@@ -37,13 +37,13 @@
     "@oada/lib-kafka": "^3.7.0",
     "@oada/pino-debug": "^3.7.0",
     "debug": "^4.3.4",
-    "tslib": "^2.5.0"
+    "tslib": "2.5.1"
   },
   "devDependencies": {
-    "@types/debug": "^4.1.7",
-    "@types/node": "^18.16.3"
+    "@types/debug": "^4.1.8",
+    "@types/node": "^20.2.5"
   },
   "volta": {
-    "node": "18.13.0"
+    "node": "20.2.0"
   }
 }

@@ -32,15 +32,15 @@
     "@oada/lib-prom": "workspace:^",
     "@oada/pino-debug": "^3.7.0",
     "debug": "^4.3.4",
-    "got": "^12.6.0",
-    "tslib": "^2.5.0"
+    "got": "^13.0.0",
+    "tslib": "2.5.1"
   },
   "devDependencies": {
-    "@oada/types": "^3.4.6",
+    "@oada/types": "^3.5.0",
     "@oada/write-handler": "^3.7.0",
-    "@types/debug": "^4.1.7"
+    "@types/debug": "^4.1.8"
   },
   "volta": {
-    "node": "18.13.0"
+    "node": "20.2.0"
   }
 }

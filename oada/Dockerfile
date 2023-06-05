@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1
-ARG NODE_VER=18-alpine
+ARG NODE_VER=20-alpine
 
 # Copy in package files and any needed apt packages?
 FROM node:${NODE_VER} AS packages
