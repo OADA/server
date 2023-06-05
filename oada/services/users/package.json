@@ -33,15 +33,15 @@
     "ksuid": "^3.0.0",
     "minimist": "^1.2.8",
     "promptly": "^3.2.0",
-    "tslib": "^2.5.0"
+    "tslib": "2.5.1"
   },
   "devDependencies": {
     "@types/clone-deep": "^4.0.1",
-    "@types/debug": "^4.1.7",
+    "@types/debug": "^4.1.8",
     "@types/minimist": "^1.2.2",
     "@types/promptly": "^3.0.2"
   },
   "volta": {
-    "node": "18.13.0"
+    "node": "20.2.0"
   }
 }

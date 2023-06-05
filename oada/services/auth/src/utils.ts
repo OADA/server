@@ -41,9 +41,9 @@ function makeHash(length: number) {
     .randomBytes(Math.ceil((length * 3) / 4))
     .toString('base64')
     .slice(0, length)
-    .replace(/\+/g, '-')
-    .replace(/\//g, '_')
-    .replace(/=/g, '');
+    .replaceAll('+', '-')
+    .replaceAll('/', '_')
+    .replaceAll('=', '');
 }
 
 // Iss is the domain of the issuer that is handing out the token
@@ -177,7 +177,7 @@ export const issueToken: IssueTokenCB = async (
   ares,
   done
 ) => {
-  const token = await createToken(ares.scope, user, client.clientId);
+  const token = await createToken(ares.scope, user, client.client_id);
   done(null, token.token, { expires_in: token.expiresIn });
 };
 
@@ -192,7 +192,7 @@ export const issueIdToken: IssueIDTokenCB = async (
 
   const token = createIdToken(
     client.reqdomain!,
-    client.clientId,
+    client.client_id,
     user,
     // @ts-expect-error nonce
     ares.nonce,
@@ -213,9 +213,9 @@ export const issueCode: IssueCodeCB = async (
   const c = {
     code: makeHash(authCode.length),
     expiresIn: authCode.expiresIn,
-    scope: Array.isArray(ares.scope) ? ares.scope : ares.scope.split(' '),
+    scope: ares.scope,
     user,
-    clientId: client.clientId,
+    clientId: client.client_id,
     redirectUri,
   };
 
@@ -235,7 +235,7 @@ export async function issueTokenFromCode(
   redirectUri: string
 ) {
   const code = await findByCode(c);
-  trace(code, 'issueTokenFromCode: findByCode returned');
+  trace({ code }, 'issueTokenFromCode: findByCode returned');
   if (!code) {
     throw new TokenError('Invalid code', 'invalid_code');
   }
@@ -248,7 +248,7 @@ export async function issueTokenFromCode(
     throw new TokenError('Code expired', 'invalid_request');
   }
 
-  if (!code.matchesClientId(client.clientId)) {
+  if (!code.matchesClientId(client.client_id)) {
     await code.redeem();
     throw new TokenError(
       'Client ID does not match original request',

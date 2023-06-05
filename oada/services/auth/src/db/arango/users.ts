@@ -33,7 +33,7 @@ function convert(u: users.User | undefined): IUser | undefined {
 }
 
 export async function findById(id: string) {
-  trace('findById: searching for user %d', id);
+  trace('findById: searching for user %s', id);
   const user = await users.findById(id);
   return convert(user);
 }

@@ -38,12 +38,15 @@ const auth = config.get('arangodb.auth');
 
 class DatabaseWrapper extends Database {
   // @ts-expect-error nonsense
-  override async query(query: AqlQuery, options: QueryOptions = {}) {
+  override async query<T = unknown>(
+    query: AqlQuery,
+    options: QueryOptions = {}
+  ) {
     let tries = 0;
     while (++tries) {
       try {
         // eslint-disable-next-line no-await-in-loop
-        const res = await super.query(query, { profile, ...options });
+        const res = await super.query<T>(query, { profile, ...options });
         if (trace.enabled) {
           const { query: aql, ...rest } = query;
           trace({ ...rest, ...res.extra }, aql);

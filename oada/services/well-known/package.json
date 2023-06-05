@@ -33,24 +33,24 @@
   },
   "dependencies": {
     "@fastify/accepts": "^4.1.0",
-    "@fastify/cors": "^8.2.1",
-    "@fastify/helmet": "^10.1.0",
-    "@oada/formats-server": "^3.4.6",
+    "@fastify/cors": "^8.3.0",
+    "@fastify/helmet": "^10.1.1",
+    "@oada/formats-server": "^3.5.0",
     "@oada/lib-config": "^3.7.0",
     "@oada/lib-prom": "workspace:^",
     "@oada/pino-debug": "^3.7.0",
-    "@oada/well-known-json": "^4.0.0",
+    "@oada/well-known-json": "^4.0.2",
     "debug": "^4.3.4",
     "fastify": "^4.17.0",
-    "got": "^12.6.0",
-    "tslib": "^2.5.0"
+    "got": "^13.0.0",
+    "tslib": "2.5.1"
   },
   "devDependencies": {
     "@types/cors": "^2.8.13",
-    "@types/debug": "^4.1.7",
+    "@types/debug": "^4.1.8",
     "fastify-plugin": "^4.5.0"
   },
   "volta": {
-    "node": "18.13.0"
+    "node": "20.2.0"
   }
 }

@@ -124,7 +124,7 @@ async function create() {
   const createTime = argv.c ? Number(argv.c) : getNow();
   const expiresIn = argv.e ? Number(argv.e) : 0; // Default does not expire
   const clientId = argv.i ? String(argv.i) : 'system/token';
-  const tok = token ?? v4().replace(/-/g, '');
+  const tok = token ?? v4().replaceAll('-', '');
   return {
     token: tok,
     scope,

@@ -85,6 +85,8 @@ arangodb:
   image: arangodb/arangodb
   # arangodb.tag is the Docker tag for the ArangoDB images
   tag: 3.10.5
+  # arangodb.profile is whether to enable ArangoDB query profiling
+  profileAql: ~ # 0/false, 1/true, or 2 (also include stats and plan)
   # arangodb.resources are the resource requests/limits for the ArangoDB service
   resources:
     limits:

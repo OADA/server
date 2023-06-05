@@ -17,14 +17,18 @@
 
 /* eslint-disable no-secrets/no-secrets */
 
+import type { Client, ClientID } from '../clients.js';
+
 export default [
   {
-    _id: 'clients/default:clients-123',
-    clientId: '3klaxu838akahf38acucaix73@identity.oada-dev.com',
-    name: 'OADA Reference Implementation',
+    _id: 'clients/default:clients-123' as ClientID,
+    client_id: '3klaxu838akahf38acucaix73@identity.oada-dev.com',
+    client_name: 'OADA Example Client',
+    client_secret: 'secret',
+    client_secret_expires_at: 0,
     contact: 'info@openag.io',
     puc: 'https://identity.oada-dev.com/puc.html',
-    redirectUrls: ['https://client.oada-dev.com/redirect'],
+    redirect_uris: ['https://client.oada-dev.com/redirect'],
     licenses: [
       {
         id: 'oada-1.0',
@@ -43,9 +47,12 @@ export default [
     ],
   },
   {
-    _id: 'clients/default:clients-124',
-    clientId: '389kxhcnjmashlsxd8@identity.oada-dev.com',
-    redirectUrls: ['https://example.org/redirect'],
+    _id: 'clients/default:clients-124' as ClientID,
+    client_id: '389kxhcnjmashlsxd8@identity.oada-dev.com',
+    client_name: 'OADA Example Client 2',
+    client_secret: 'secret',
+    client_secret_expires_at: 0,
+    redirect_uris: ['https://example.org/redirect'],
     licenses: [],
     keys: [
       {
@@ -58,7 +65,6 @@ export default [
       },
     ],
     contact: 'info@openag.io',
-    name: 'OADA Authorization and Authentication Test',
     puc: 'https://example.org/puc.html',
   },
-];
+] as const satisfies readonly Client[];

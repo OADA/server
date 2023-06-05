@@ -45,7 +45,7 @@ export async function getRemoteId(
   const ids = Array.isArray(id) ? id : [id];
 
   trace('Looking up remote IDs for %s at %s', ids, domain);
-  const rids = await database.query(
+  const rids = await database.query<RemoteID>(
     aql`
         FOR id IN ${ids}
           LET rid = FIRST(

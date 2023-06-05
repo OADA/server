@@ -41,8 +41,9 @@
 **/.test
 **/*.tsbuildinfo
 
-# yarn 2 stuff
+# yarn 3 stuff
 .yarn/*
+!.yarn/patches
 !.yarn/releases
 !.yarn/plugins
 !.yarn/versions

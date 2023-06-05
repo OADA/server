@@ -15,8 +15,10 @@
  * limitations under the License.
  */
 
-import type { Opaque } from 'type-fest';
+import type { Opaque, ReadonlyDeep } from 'type-fest';
 import { aql } from 'arangojs';
+
+import type Metadata from '@oada/types/oauth-dyn-reg/metadata.js';
 
 import { config } from '../config.js';
 import { db as database } from '../db.js';
@@ -28,62 +30,40 @@ export type ClientID = Opaque<string, Client>;
  *
  * @todo not sure this is right
  */
-export interface Client {
+export interface Client extends ReadonlyDeep<Metadata> {
   _id?: ClientID;
-  _rev?: number;
-  clientId: string;
+  client_id: string;
   software_id?: string;
   registration_provider?: string;
-  token_endpoint_auth_method?: string;
   iat?: number;
   licenses?: ReadonlyArray<{ id: string; name: string }>;
-  /**
-   * I think this one is  @deprecated?
-   */
-  name?: string;
-  client_name?: string;
-  /**
-   * I think this one is  @deprecated?
-   */
-  contact?: string;
-  contacts?: readonly string[];
   puc?: string;
-  /**
-   * I think this one is  @deprecated?
-   */
-  redirectUrls?: readonly string[];
-  redirect_uris: readonly [string, ...(readonly string[])];
-  grant_types?: readonly string[];
-  response_types?: readonly string[];
   policy_uri?: string;
   tos_uri?: string;
-  jwks_uri?: string;
   valid?: boolean;
   trusted?: boolean;
 }
 export interface DBClient extends Client {
   _id: ClientID;
-  _rev: number;
+  _rev: string;
 }
 
-const clients = database.collection(
+const clients = database.collection<Client>(
   config.get('arangodb.collections.clients.name')
 );
 
 export async function findById(id: string): Promise<DBClient | undefined> {
-  const cursor = await database.query(
+  const cursor = await database.query<DBClient>(
     aql`
       FOR c IN ${clients}
-      FILTER c.clientId == ${id}
+      FILTER c.client_id == ${id}
       RETURN c`
   );
-  // eslint-disable-next-line @typescript-eslint/ban-types
-  const client = (await cursor.next()) as DBClient | null;
+  const client = await cursor.next();
   return client ? sanitizeResult(client) : undefined;
 }
 
 export async function save(client: Client): Promise<ClientID> {
-  const { _id } = (await clients.save(client)) as unknown as { _id: ClientID };
-
-  return _id;
+  const { _id } = await clients.save(client);
+  return _id as ClientID;
 }

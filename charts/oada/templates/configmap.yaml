@@ -41,6 +41,7 @@ data:
   ARANGODB_URL: {{ include "oada.arango.connection" . }}
   {{- end }}
   ARANGODB_DATABASE: {{ .Values.arangodb.database }}
+  PROFILE_AQL: {{ .Values.arangodb.profileAql | default (ternary 1 0 .Values.global.development) | quote }}
   {{ if eq (include "oada.kafka.deploy" .) "true" -}}
   KAFKA_BROKERS: {{ include "oada.kafka.brokers" . }}
   {{- end }}

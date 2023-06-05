@@ -20,7 +20,6 @@ import { config } from '../../config.js';
 import path from 'node:path';
 import url from 'node:url';
 
-import URI from 'urijs';
 import debug from 'debug';
 
 import { Codes, OADAError } from '@oada/error';
@@ -111,7 +110,7 @@ export class Code implements ICode {
   }
 
   matchesRedirectUri(redirectUri: string) {
-    return new URI(this.redirectUri).equals(redirectUri);
+    return this.redirectUri === redirectUri;
   }
 
   isRedeemed() {

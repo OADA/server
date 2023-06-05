@@ -37,7 +37,7 @@ import { default as cors } from '@fastify/cors';
 import { default as helmet } from '@fastify/helmet';
 
 import { plugin as formats } from '@oada/formats-server';
-import wkj from '@oada/well-known-json';
+import { plugin as wkj } from '@oada/well-known-json';
 
 const trustProxy = config.get('trustProxy');
 // eslint-disable-next-line new-cap
@@ -136,7 +136,7 @@ await fastify.register(
 
     // Include well_known_handler AFTER the subservices check so that
     // express does the check prior to the well-known handler responding.
-    await fastify.register(wkj.plugin, wellKnownOptions);
+    await fastify.register(wkj, wellKnownOptions);
   }
   // { prefix: '/.well-known' }
 );
