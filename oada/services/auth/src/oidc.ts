@@ -21,7 +21,8 @@ import type { FastifyPluginAsync } from 'fastify';
 import fastifyAccepts from '@fastify/accepts';
 
 import { type OAuth2Server, createServer } from 'oauth2orize';
-import oauth2orizeOpenId from 'oauth2orize-openid';
+import oauth2orizeOpenId, { type IssueIDToken } from 'oauth2orize-openid';
+import jsonwebtoken from 'jsonwebtoken';
 
 import got from 'got';
 
@@ -29,16 +30,14 @@ import got from 'got';
 import oadaIDClient from '@oada/id-client';
 
 import {
-  createUserinfo,
-  issueCode,
-  issueIdToken,
-  issueToken,
-} from './utils.js';
-import {
+  type DBUser,
   findByOIDCToken,
   findByOIDCUsername,
   update,
 } from './db/models/user.js';
+import { issueCode, issueToken } from './oauth2.js';
+import type { DBClient } from './db/models/client.js';
+import { createUserinfo } from './utils.js';
 import { fastifyPassport } from './auth.js';
 import keys from './keys.js';
 import { plugin as wkj } from '@oada/well-known-json/plugin';
@@ -50,6 +49,51 @@ export interface Options {
     oidcRedirect?: string;
   };
 }
+
+declare module 'oauth2orize' {
+  interface OAuth2Req {
+    userinfo?: boolean;
+  }
+}
+
+const idToken = config.get('auth.idToken');
+
+export const issueIdToken: IssueIDToken<DBClient, DBUser> = async (
+  client,
+  user,
+  ares,
+  done
+) => {
+  const userinfoScope: string[] = ares.userinfo ? ares.scope : [];
+
+  const key = keys.sign.get(idToken.signKid)!;
+  const options = {
+    keyid: idToken.signKid,
+    algorithm: key.alg,
+    expiresIn: idToken.expiresIn,
+    audience: client.client_id,
+    subject: user.id,
+    // Iss is the domain of the issuer that is handing out the token
+    issuer: client.reqdomain!,
+    nonce: ares.nonce,
+  };
+
+  const payload: Record<string, unknown> = {
+    iat: Date.now(),
+  };
+
+  const userinfo = createUserinfo(
+    user as unknown as Record<string, unknown>,
+    userinfoScope
+  );
+
+  if (userinfo) {
+    Object.assign(payload, userinfo);
+  }
+
+  const token = jsonwebtoken.sign(payload, key.pem, options);
+  done(null, token);
+};
 
 /**
  * Fastify plugin for the server side of OAuth2 using oauth2orize
@@ -68,11 +112,12 @@ const plugin: FastifyPluginAsync<Options> = async (
 
   // Implicit flow (id_token)
   oauth2server.grant(
-    oauth2orizeOpenId.grant.idToken((client, user, ares, done) => {
-      // @ts-expect-error IDEK
-      ares.userinfo = true;
-      issueIdToken(client, user, ares, done);
-    })
+    oauth2orizeOpenId.grant.idToken(
+      (client: DBClient, user: DBUser, ares, done) => {
+        ares.userinfo = true;
+        issueIdToken(client, user, ares, done);
+      }
+    )
   );
 
   // Implicit flow (id_token token)
@@ -144,7 +189,6 @@ const plugin: FastifyPluginAsync<Options> = async (
   // Handle the redirect for openid connect login:
   fastify.all(oidcRedirect, async (request, reply) => {
     request.log.info(
-      '+++++++++++++++++++=====================++++++++++++++++++++++++',
       `${oidcLogin}, req.user.reqdomain = ${request.hostname}: OpenIDConnect request returned`
     );
 
@@ -163,7 +207,6 @@ const plugin: FastifyPluginAsync<Options> = async (
     //  and determining we don't know this ID token.
     //  If we do know it, don't worry about it
     request.log.info(
-      '*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+**+*+*+*+*+*+*+*======',
       `${oidcRedirect}, req.hostname = ${request.hostname}: token is: %O`,
       idToken
     );
