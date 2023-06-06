@@ -21,34 +21,29 @@ declare module 'es-main' {
 }
 
 declare module 'oauth2orize-openid' {
-  import type { MiddlewareFunction, OAuth2, OAuth2Req } from 'oauth2orize';
-  type IssueCodeCB = (
-    client: OAuth2['Client'],
-    redirect: string,
-    user: OAuth2['User'],
-    request: OAuth2Req,
-    // eslint-disable-next-line @typescript-eslint/ban-types
-    done: (error: null | Error, code?: string) => void
-  ) => void;
-  type IssueTokenCB = (
-    client: OAuth2['Client'],
-    user: OAuth2['User'],
-    request: OAuth2Req,
-    done: (
-      // eslint-disable-next-line @typescript-eslint/ban-types
-      error: null | Error,
-      token?: string,
-      parameters?: Record<string, unknown>
-    ) => void
-  ) => void | Promise<void>;
-  type IssueIDTokenCB = (
-    client: OAuth2['Client'],
-    user: OAuth2['User'],
+  import type {
+    IssueGrantCodeFunction,
+    IssueGrantCodeFunctionArity4,
+    IssueGrantCodeFunctionArity6,
+    IssueGrantCodeFunctionArity7,
+    IssueGrantTokenFunction,
+    MiddlewareFunction,
+    OAuth2Req,
+  } from 'oauth2orize';
+  function extensions(): MiddlewareFunction;
+  type IssueCode =
+    | IssueGrantCodeFunction
+    | IssueGrantCodeFunctionArity4
+    | IssueGrantCodeFunctionArity6
+    | IssueGrantCodeFunctionArity7;
+  type IssueToken = IssueGrantTokenFunction;
+  type IssueIDToken<C = unknown, U = unknown> = (
+    client: C,
+    user: U,
     request: OAuth2Req,
     // eslint-disable-next-line @typescript-eslint/ban-types
     done: (error: null | Error, idToken?: {}) => void
   ) => void;
-  function extensions(): MiddlewareFunction;
   namespace grant {
     /**
      * Handles requests to obtain a response with an authorization code and ID
@@ -63,9 +58,9 @@ declare module 'oauth2orize-openid' {
      * @param {Function} issue
      * @return {Object} module
      */
-    export function codeIdToken(
-      issueCode: IssueCodeCB,
-      issueIDToken: IssueIDTokenCB
+    export function codeIdToken<C, U>(
+      issueCode: IssueCode,
+      issueIDToken: IssueIDToken<C, U>
     ): MiddlewareFunction;
     /**
      * Handles requests to obtain a response with an access token, authorization
@@ -80,10 +75,10 @@ declare module 'oauth2orize-openid' {
      * @param {Function} issue
      * @return {Object} module
      */
-    export function codeIdTokenToken(
-      issueToken: IssueTokenCB,
-      issueCode: IssueCodeCB,
-      issueIDToken: IssueIDTokenCB
+    export function codeIdTokenToken<C, U>(
+      issueToken: IssueToken,
+      issueCode: IssueCode,
+      issueIDToken: IssueIDToken<C, U>
     ): MiddlewareFunction;
     /**
      * Handles requests to obtain a response with an access token and authorization
@@ -99,8 +94,8 @@ declare module 'oauth2orize-openid' {
      * @return {Object} module
      */
     export function codeToken(
-      issueToken: IssueTokenCB,
-      issueCode: IssueCodeCB
+      issueToken: IssueToken,
+      issueCode: IssueCode
     ): MiddlewareFunction;
     /**
      * Handles requests to obtain a response with an ID token.
@@ -114,7 +109,9 @@ declare module 'oauth2orize-openid' {
      * @param {Function} issue
      * @return {Object} module
      */
-    export function idToken(issue: IssueIDTokenCB): MiddlewareFunction;
+    export function idToken<C, U>(
+      issue: IssueIDToken<C, U>
+    ): MiddlewareFunction;
     /**
      * Handles requests to obtain a response with an access token and ID token.
      *
@@ -127,9 +124,9 @@ declare module 'oauth2orize-openid' {
      * @param {Function} issue
      * @return {Object} module
      */
-    export function idTokenToken(
-      issueToken: IssueTokenCB,
-      issueIDToken: IssueIDTokenCB
+    export function idTokenToken<C, U>(
+      issueToken: IssueToken,
+      issueIDToken: IssueIDToken<C, U>
     ): MiddlewareFunction;
   }
 }

@@ -19,6 +19,7 @@ import { config, domainConfigs } from './config.js';
 
 import type { ServerResponse } from 'node:http';
 import { promisify } from 'node:util';
+import { randomBytes } from 'node:crypto';
 
 import type {} from '@fastify/formbody';
 import type { FastifyPluginAsync, FastifyReply } from 'fastify';
@@ -26,22 +27,25 @@ import { fastifyPassport } from './auth.js';
 
 import oauth2orize, {
   AuthorizationError,
-  type IssueExchangeCodeFunction,
-  type MiddlewareErrorFunction,
-  type MiddlewareFunction,
+  type IssueGrantCodeFunctionArity6,
+  type IssueGrantTokenFunction,
   type MiddlewareRequest,
   type OAuth2,
+  type OAuth2Req,
   type OAuth2Server,
+  TokenError,
   type ValidateFunctionArity2,
 } from 'oauth2orize';
 import { extensions } from 'oauth2orize-pkce';
 
 import { trustedCDP } from '@oada/lookup';
 
-import type { Client, DBClient } from './db/models/client.js';
-import { issueCode, issueToken, issueTokenFromCode } from './utils.js';
-import type { User } from './db/models/user.js';
+import { findByCode, save as saveCode } from './db/models/code.js';
+import type { Client } from './db/models/client.js';
+import type { DBUser } from './db/models/user.js';
 import { findById } from './db/models/client.js';
+import { promisifyMiddleware } from './utils.js';
+import { save as saveToken } from './db/models/token.js';
 
 // If the array of scopes contains ONLY openid OR openid and profile, auto-accept.
 // Better to handle this by asking only the first time, but this is quicker to get PoC working.
@@ -65,7 +69,17 @@ function scopeIsOnlyOpenid(scopes: string | readonly string[]): boolean {
   );
 }
 
+function makeHash(length: number) {
+  return randomBytes(Math.ceil((length * 3) / 4))
+    .toString('base64')
+    .slice(0, length)
+    .replaceAll('+', '-')
+    .replaceAll('/', '_')
+    .replaceAll('=', '');
+}
+
 declare module 'oauth2orize' {
+  // eslint-disable-next-line @typescript-eslint/no-shadow
   interface OAuth2Req {
     nonce?: string;
   }
@@ -73,7 +87,7 @@ declare module 'oauth2orize' {
 interface DeserializedOauth2<C = Client> extends OAuth2 {
   client: C;
 }
-interface OAuth2Request<C = Client, U = User> extends MiddlewareRequest {
+interface OAuth2Request<C = Client, U = DBUser> extends MiddlewareRequest {
   oauth2: DeserializedOauth2<C>;
   user: U;
 }
@@ -87,27 +101,54 @@ export interface Options {
   };
 }
 
-function isArray(value: unknown): value is unknown[] | readonly unknown[] {
-  return Array.isArray(value);
-}
+const tokenConfig = config.get('auth.token');
 
-type Arguments<M extends MiddlewareFunction | MiddlewareErrorFunction> =
-  // eslint-disable-next-line @typescript-eslint/ban-types
-  Parameters<M> extends [...rest: infer R, next: unknown] ? R : [];
-function promisifyMiddleware<
-  M extends MiddlewareFunction | MiddlewareErrorFunction
->(middleware: M | readonly M[]): (...rest: Arguments<M>) => Promise<void> {
-  if (isArray(middleware)) {
-    const middlewares = middleware.map((m) => promisifyMiddleware(m));
-    return async (...rest: Arguments<M>) => {
-      for await (const m of middlewares) {
-        await m(...rest);
-      }
-    };
+export const issueToken: IssueGrantTokenFunction = async (
+  client: Client,
+  user: DBUser,
+  request: OAuth2Req,
+  done
+) => {
+  try {
+    const { scope } = request;
+    const token = await saveToken({
+      token: makeHash(tokenConfig.length),
+      expiresIn: tokenConfig.expiresIn,
+      scope,
+      user,
+      clientId: client.client_id,
+    });
+    done(null, token.token, { expires_in: token.expiresIn });
+  } catch (error: unknown) {
+    done(error as Error);
   }
+};
 
-  return promisify(middleware) as (...rest: Arguments<M>) => Promise<void>;
-}
+const authCode = config.get('auth.code');
+export const issueCode: IssueGrantCodeFunctionArity6 = async (
+  client: Client,
+  redirectUri,
+  user: DBUser,
+  _res,
+  request: OAuth2Req,
+  done
+  // eslint-disable-next-line max-params
+) => {
+  try {
+    const { code } = await saveCode({
+      code: makeHash(authCode.length),
+      expiresIn: authCode.expiresIn,
+      scope: request.scope,
+      user,
+      clientId: client.client_id,
+      redirectUri,
+      nonce: request.nonce,
+    });
+    done(null, code);
+  } catch (error: unknown) {
+    done(error as Error);
+  }
+};
 
 /**
  * Fastify plugin for the server side of OAuth2 using oauth2orize
@@ -132,21 +173,64 @@ const plugin: FastifyPluginAsync<Options> = async (
   // Code flow (code)
   oauth2server.grant(oauth2orize.grant.code(issueCode));
 
-  // Code flow exchange (code)
+  // Code flow exchange
   oauth2server.exchange(
-    oauth2orize.exchange.code((async (client, code, redirect, done) => {
-      try {
-        const [token, extras] = await issueTokenFromCode(
-          client as DBClient,
-          code,
-          redirect
-        );
-        // @ts-expect-error: oauth2orize types are wrong
-        done(null, token, extras);
-      } catch (error: unknown) {
-        done(error as Error);
+    oauth2orize.exchange.code(
+      // eslint-disable-next-line max-params
+      async (client: Client, c, redirectUri, _body, _authInfo, done) => {
+        try {
+          const code = await findByCode(c);
+          if (!code) {
+            throw new TokenError('Invalid code', 'invalid_code');
+          }
+
+          if (code.isRedeemed()) {
+            throw new TokenError('Code already redeemed', 'invalid_request');
+          }
+
+          if (code.isExpired()) {
+            throw new TokenError('Code expired', 'invalid_request');
+          }
+
+          if (!code.matchesClientId(client.client_id)) {
+            await code.redeem();
+            throw new TokenError(
+              'Client ID does not match original request',
+              'invalid_client'
+            );
+          }
+
+          if (!code.matchesRedirectUri(redirectUri)) {
+            await code.redeem();
+            throw new TokenError(
+              'Redirect URI does not match original request',
+              'invalid_request'
+            );
+          }
+
+          const { scope, user, clientId } = await code.redeem();
+          const { expiresIn, token } = await saveToken({
+            token: makeHash(tokenConfig.length),
+            expiresIn: tokenConfig.expiresIn,
+            scope,
+            user,
+            clientId,
+          });
+          const extras: Record<string, unknown> = {
+            expires_in: expiresIn,
+          };
+
+          /**
+           * @todo Implement refresh tokens
+           */
+          const refresh = undefined;
+
+          done(null, token, refresh, extras);
+        } catch (error: unknown) {
+          done(error as Error);
+        }
       }
-    }) as IssueExchangeCodeFunction)
+    )
   );
 
   // Decorate fastify reply for compatibility with connect response

@@ -104,7 +104,7 @@ export async function save({
 
   const _key = _id?.replace(/^authorizations\//, '');
 
-  trace({ auth }, 'save: Replacing/Inserting token');
+  trace({ auth, user, _key }, 'save: Replacing/Inserting token');
 
   // Overwrite will replace the given token if it already exists
   await authorizations.save(
