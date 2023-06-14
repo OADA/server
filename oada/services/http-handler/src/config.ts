@@ -66,8 +66,8 @@ export const { config, schema } = await libConfig({
       },
       timeWindow: {
         doc: 'time window in ms to use for rate-limiting',
-        format: 'duration',
-        default: 1000,
+        format: String,
+        default: '1 second',
         env: 'RATE_TIME_WINDOW',
         arg: 'rate-time-window',
       },
