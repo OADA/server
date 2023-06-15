@@ -32,12 +32,12 @@
     "@oada/pino-debug": "^3.7.0",
     "debug": "^4.3.4",
     "es-main": "^1.2.0",
-    "tslib": "2.5.1",
+    "tslib": "2.5.3",
     "type-is": "^1.6.18"
   },
   "devDependencies": {
     "@types/debug": "^4.1.8",
-    "@types/node": "^20.2.5",
+    "@types/node": "^20.3.1",
     "@types/type-is": "^1.6.3"
   },
   "volta": {

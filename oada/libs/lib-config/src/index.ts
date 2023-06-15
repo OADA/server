@@ -15,7 +15,10 @@
  * limitations under the License.
  */
 
+import { File } from 'node:buffer';
 import { extname } from 'node:path';
+import { pathToFileURL } from 'node:url';
+import { readFile } from 'node:fs/promises';
 
 import 'dotenv/config';
 import type { Config, Schema } from 'convict';
@@ -59,6 +62,66 @@ const defaults = {
 // Add more formats to convict
 convict.addFormats(validator);
 convict.addFormats(moment);
+
+function fileUrl(pathOrUrl: string) {
+  try {
+    return new URL(pathOrUrl);
+  } catch {
+    return pathToFileURL(pathOrUrl);
+  }
+}
+
+async function readFileUrl(url: URL) {
+  // eslint-disable-next-line security/detect-non-literal-fs-filename
+  const buffer = await readFile(url);
+  return new File([buffer], url.pathname);
+}
+
+function readDataUrl(url: URL) {
+  const { groups } = /^(?<type>[^;,]*)(;(?<charset>[^,]*))?,(?<data>.*)$/.exec(
+    url.pathname
+  )!;
+  const { type = 'text/plain', charset = 'ascii', data } = groups!;
+  const buffer = Buffer.from(data!, charset as BufferEncoding);
+  return new File([buffer], url.pathname, { type });
+}
+
+convict.addFormat({
+  name: 'file-url',
+  validate(value: unknown) {
+    if (typeof value !== 'string') {
+      throw new TypeError('must be a string');
+    }
+
+    const url = fileUrl(value);
+    switch (url.protocol) {
+      case 'file:':
+      case 'data:': {
+        break;
+      }
+
+      default: {
+        throw new TypeError(`Unsupported protocol: ${url.protocol}`);
+      }
+    }
+  },
+  async coerce(value: string) {
+    const url = fileUrl(value);
+    switch (url.protocol) {
+      case 'file:': {
+        return readFileUrl(url);
+      }
+
+      case 'data:': {
+        return readDataUrl(url);
+      }
+
+      default: {
+        throw new TypeError(`Unsupported protocol: ${url.protocol}`);
+      }
+    }
+  },
+});
 
 // Add support for JSON, JSON5, and yaml config files
 convict.addParser([

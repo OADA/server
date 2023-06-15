@@ -25,7 +25,7 @@ import { Strategy as BearerStrategy } from 'passport-http-bearer';
 import ClientPassword from 'passport-oauth2-client-password';
 import { Strategy as LocalStrategy } from 'passport-local';
 import debug from 'debug';
-import jsonwebtoken from 'jsonwebtoken';
+import { decodeJwt } from 'jose';
 
 import { jwksUtils } from '@oada/certs';
 
@@ -110,13 +110,13 @@ fastifyPassport.use(
       },
       async secretOrKeyProvider(_request, jwt, done) {
         try {
-          const payload = jsonwebtoken.decode(`${jwt}`);
+          const payload = decodeJwt(`${jwt}`);
 
           /**
            * Subject of the JWT **MUST** be the client_id
            * @see {@link https://datatracker.ietf.org/doc/html/rfc7523#section-3}
            */
-          const clientId = payload?.sub as string | undefined;
+          const clientId = payload?.sub;
           const client = await findById(clientId!);
           if (!client) {
             warn('Failed to find client by id %s', clientId);

@@ -36,11 +36,11 @@ import oauth2orize, {
   TokenError,
   type ValidateFunctionArity2,
 } from 'oauth2orize';
+import { EncryptJWT, jwtDecrypt } from 'jose';
 import { extensions } from 'oauth2orize-pkce';
 
 import { trustedCDP } from '@oada/lookup';
 
-import { findByCode, save as saveCode } from './db/models/code.js';
 import type { Client } from './db/models/client.js';
 import type { DBUser } from './db/models/user.js';
 import { findById } from './db/models/client.js';
@@ -125,6 +125,7 @@ export const issueToken: IssueGrantTokenFunction = async (
 };
 
 const authCode = config.get('auth.code');
+const key = await authCode.key;
 export const issueCode: IssueGrantCodeFunctionArity6 = async (
   client: Client,
   redirectUri,
@@ -135,15 +136,18 @@ export const issueCode: IssueGrantCodeFunctionArity6 = async (
   // eslint-disable-next-line max-params
 ) => {
   try {
-    const { code } = await saveCode({
-      code: makeHash(authCode.length),
-      expiresIn: authCode.expiresIn,
+    const code = await new EncryptJWT({
       scope: request.scope,
       user,
       clientId: client.client_id,
       redirectUri,
-      nonce: request.nonce,
-    });
+      request,
+    })
+      .setSubject(user.id)
+      .setAudience(client.client_id)
+      .setIssuedAt()
+      .setExpirationTime(authCode.expiresIn)
+      .encrypt(key);
     done(null, code);
   } catch (error: unknown) {
     done(error as Error);
@@ -177,13 +181,18 @@ const plugin: FastifyPluginAsync<Options> = async (
   oauth2server.exchange(
     oauth2orize.exchange.code(
       // eslint-disable-next-line max-params
-      async (client: Client, c, redirectUri, _body, _authInfo, done) => {
+      async (client: Client, c, _redirectUri, _body, _authInfo, done) => {
         try {
-          const code = await findByCode(c);
+          const { payload: code } = await jwtDecrypt(c, key, {
+            audience: client.client_id,
+          });
           if (!code) {
             throw new TokenError('Invalid code', 'invalid_code');
           }
 
+          // TODO: Do PKCE check for the code
+
+          /*
           if (code.isRedeemed()) {
             throw new TokenError('Code already redeemed', 'invalid_request');
           }
@@ -209,6 +218,8 @@ const plugin: FastifyPluginAsync<Options> = async (
           }
 
           const { scope, user, clientId } = await code.redeem();
+          */
+          const { scope, user, clientId } = code as any;
           const { expiresIn, token } = await saveToken({
             token: makeHash(tokenConfig.length),
             expiresIn: tokenConfig.expiresIn,
