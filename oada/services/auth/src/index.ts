@@ -70,11 +70,8 @@ export function _defaultHack<D>(original: { default: D }) {
 const fastifyGracefulShutdown = _defaultHack(_fastifyGracefulShutdown);
 
 declare module '@fastify/request-context' {
-  // eslint-disable-next-line @typescript-eslint/no-namespace, @typescript-eslint/no-shadow
-  namespace fastifyRequestContext {
-    interface RequestContextData {
-      id: string;
-    }
+  interface RequestContextData {
+    id: string;
   }
 }
 
@@ -163,7 +160,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
 
   // Add id to request context
   fastify.addHook('onRequest', async (request) => {
-    requestContext.set('id', request.id);
+    requestContext.set('id', request.id as string);
   });
 
   await fastify.register(fastifySensible);

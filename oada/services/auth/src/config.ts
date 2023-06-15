@@ -17,6 +17,7 @@
 
 /* eslint-disable @typescript-eslint/ban-types */
 
+import type { File } from 'node:buffer';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import url from 'node:url';
@@ -28,10 +29,14 @@ import type { jwksUtils as jwku } from '@oada/certs';
 
 import libConfig from '@oada/lib-config';
 
+import PLazy from 'p-lazy';
 import { schema as arangoSchema } from '@oada/lib-arangodb/dist/config.js';
+import { generateSecret } from 'jose';
 
 const trace = debug('auth#config:trace');
 const error = debug('auth#config:error');
+
+const alg = 'HS256';
 
 export const { config, schema } = await libConfig({
   trustProxy: {
@@ -217,6 +222,14 @@ export const { config, schema } = await libConfig({
         format: Boolean,
         default: true,
       },
+      requirePKCE: {
+        format: Boolean,
+        default: true,
+      },
+      allowImplicitFlows: {
+        format: Boolean,
+        default: false,
+      },
     },
     oidc: {
       enable: {
@@ -250,13 +263,14 @@ export const { config, schema } = await libConfig({
       },
     },
     code: {
-      length: {
-        format: 'nat',
-        default: 25,
-      },
       expiresIn: {
-        format: 'duration',
-        default: 10,
+        format: String,
+        default: '1s',
+      },
+      key: {
+        doc: 'Key to use for encrypting codes',
+        format: 'file-url',
+        default: PLazy.from(async () => generateSecret(alg)),
       },
     },
     token: {
@@ -274,9 +288,11 @@ export const { config, schema } = await libConfig({
         format: 'duration',
         default: 0,
       },
-      signKid: {
-        format: String,
-        default: 'kjcScjc32dwJXXLJDs3r124sa1',
+      key: {
+        doc: 'Private key to use for signing id tokens',
+        format: 'file-url',
+        nullable: true,
+        default: Promise.resolve(null) as Promise<File | null>,
       },
     },
     certs: {
@@ -300,16 +316,6 @@ export const { config, schema } = await libConfig({
       rejectUnauthorized: {
         format: Boolean,
         default: true,
-      },
-    },
-    keys: {
-      signPems: {
-        default: path.join(
-          path.dirname(url.fileURLToPath(import.meta.url)),
-          '..',
-          'certs',
-          'sign'
-        ),
       },
     },
     datastoresDriver: {

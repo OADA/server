@@ -143,7 +143,6 @@ export default {
       'publicUri': `https://${domain}`,
     },
     keys: {
-      signPems: '/oada/services/auth/sign/',
     },
     idToken: {
       expiresIn: 3600,

@@ -17,12 +17,15 @@
 
 import { config, domainConfigs } from './config.js';
 
+import { createPrivateKey, createPublicKey } from 'node:crypto';
+import type { File } from 'node:buffer';
+
 import type { FastifyPluginAsync } from 'fastify';
 import fastifyAccepts from '@fastify/accepts';
 
 import { type OAuth2Server, createServer } from 'oauth2orize';
+import { SignJWT, exportJWK, generateKeyPair } from 'jose';
 import oauth2orizeOpenId, { type IssueIDToken } from 'oauth2orize-openid';
-import jsonwebtoken from 'jsonwebtoken';
 
 import got from 'got';
 
@@ -39,7 +42,6 @@ import { issueCode, issueToken } from './oauth2.js';
 import type { DBClient } from './db/models/client.js';
 import { createUserinfo } from './utils.js';
 import { fastifyPassport } from './auth.js';
-import keys from './keys.js';
 import { plugin as wkj } from '@oada/well-known-json/plugin';
 
 export interface Options {
@@ -58,6 +60,24 @@ declare module 'oauth2orize' {
 
 const idToken = config.get('auth.idToken');
 
+const kid = '1';
+const alg = 'HS256';
+// eslint-disable-next-line @typescript-eslint/ban-types
+async function getKeyPair(file: File | null) {
+  if (!file) {
+    return generateKeyPair(alg);
+  }
+
+  const privateKey = createPrivateKey(file as unknown as string);
+  const publicKey = createPublicKey(privateKey);
+  return { privateKey, publicKey };
+}
+
+// TODO: Support key rotation and stuff
+const { publicKey, privateKey } = await getKeyPair(await idToken.key);
+const jwk = await exportJWK(publicKey);
+const jwks = { keys: [{ kid, ...jwk }] };
+
 export const issueIdToken: IssueIDToken<DBClient, DBUser> = async (
   client,
   user,
@@ -65,33 +85,24 @@ export const issueIdToken: IssueIDToken<DBClient, DBUser> = async (
   done
 ) => {
   const userinfoScope: string[] = ares.userinfo ? ares.scope : [];
-
-  const key = keys.sign.get(idToken.signKid)!;
-  const options = {
-    keyid: idToken.signKid,
-    algorithm: key.alg,
-    expiresIn: idToken.expiresIn,
-    audience: client.client_id,
-    subject: user.id,
-    // Iss is the domain of the issuer that is handing out the token
-    issuer: client.reqdomain!,
-    nonce: ares.nonce,
-  };
-
-  const payload: Record<string, unknown> = {
-    iat: Date.now(),
-  };
-
   const userinfo = createUserinfo(
     user as unknown as Record<string, unknown>,
     userinfoScope
   );
 
-  if (userinfo) {
-    Object.assign(payload, userinfo);
-  }
+  const payload: Record<string, unknown> = {
+    ...userinfo,
+    nonce: ares.nonce,
+  };
 
-  const token = jsonwebtoken.sign(payload, key.pem, options);
+  const token = await new SignJWT(payload)
+    .setProtectedHeader({ kid, alg })
+    .setIssuedAt()
+    .setExpirationTime(idToken.expiresIn)
+    .setAudience(client.client_id)
+    .setIssuer(client.reqdomain!)
+    .setSubject(user.id)
+    .sign(privateKey);
   done(null, token);
 };
 
@@ -262,7 +273,7 @@ const plugin: FastifyPluginAsync<Options> = async (
     // which was likely an oauth request.
   });
 
-  fastify.get(config.get('auth.endpoints.certs'), async () => keys.jwks);
+  fastify.get(config.get('auth.endpoints.certs'), async () => jwks);
 
   fastify.get(
     config.get('auth.endpoints.userinfo'),

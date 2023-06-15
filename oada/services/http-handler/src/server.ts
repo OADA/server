@@ -153,11 +153,8 @@ export async function start(): Promise<void> {
 }
 
 declare module '@fastify/request-context' {
-  // eslint-disable-next-line @typescript-eslint/no-namespace, @typescript-eslint/no-shadow
-  namespace fastifyRequestContext {
-    interface RequestContextData {
-      id: string;
-    }
+  interface RequestContextData {
+    id: string;
   }
 }
 
@@ -385,7 +382,7 @@ if (esMain(import.meta)) {
 async function close(error: Error): Promise<void> {
   try {
     // eslint-disable-next-line unicorn/consistent-destructuring
-    fastify.log.fatal({ error }, 'Attempting to cleanup server after error.');
+    fastify.log.fatal(error, 'Attempting to cleanup server after error.');
     // Try to close server nicely
     await fastify.close();
   } finally {
