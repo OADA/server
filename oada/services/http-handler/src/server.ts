@@ -196,6 +196,10 @@ if (enabled) {
     timeWindow,
     redis: redis ? await makeRedis(redis) : null,
     enableDraftSpec: useDraftSpec,
+    addHeaders: {
+      // Disable bugged retry-after header until it is fixed
+      'retry-after': false,
+    },
   };
   const { default: plugin } = await import('@fastify/rate-limit');
   await fastify.register<RateLimitPluginOptions>(
