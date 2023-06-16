@@ -61,14 +61,16 @@ declare module 'oauth2orize' {
 const idToken = config.get('auth.idToken');
 
 const kid = '1';
-const alg = 'HS256';
+const alg = 'PS256';
 // eslint-disable-next-line @typescript-eslint/ban-types
 async function getKeyPair(file: File | null) {
   if (!file) {
     return generateKeyPair(alg);
   }
 
+  // Assume file is a private key
   const privateKey = createPrivateKey(file as unknown as string);
+  // Derive a public key from the private key
   const publicKey = createPublicKey(privateKey);
   return { privateKey, publicKey };
 }

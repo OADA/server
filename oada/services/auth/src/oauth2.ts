@@ -19,12 +19,18 @@ import { config, domainConfigs } from './config.js';
 
 import type { ServerResponse } from 'node:http';
 import { promisify } from 'node:util';
-import { randomBytes } from 'node:crypto';
+import { createHash, randomBytes } from 'node:crypto';
 
 import type {} from '@fastify/formbody';
 import type { FastifyPluginAsync, FastifyReply } from 'fastify';
 import { fastifyPassport } from './auth.js';
 
+import {
+  EncryptJWT,
+  type JWTDecryptResult,
+  generateSecret,
+  jwtDecrypt,
+} from 'jose';
 import oauth2orize, {
   AuthorizationError,
   type IssueGrantCodeFunctionArity6,
@@ -36,13 +42,12 @@ import oauth2orize, {
   TokenError,
   type ValidateFunctionArity2,
 } from 'oauth2orize';
-import { EncryptJWT, jwtDecrypt } from 'jose';
 import { extensions } from 'oauth2orize-pkce';
 
 import { trustedCDP } from '@oada/lookup';
 
 import type { Client } from './db/models/client.js';
-import type { DBUser } from './db/models/user.js';
+import type { DBUser, User } from './db/models/user.js';
 import { findById } from './db/models/client.js';
 import { promisifyMiddleware } from './utils.js';
 import { save as saveToken } from './db/models/token.js';
@@ -124,8 +129,13 @@ export const issueToken: IssueGrantTokenFunction = async (
   }
 };
 
+interface CodePayload extends OAuth2Req {
+  user: User['id'];
+}
+
+const alg = 'HS256';
 const authCode = config.get('auth.code');
-const key = await authCode.key;
+const key = (await authCode.key) ?? (await generateSecret(alg));
 export const issueCode: IssueGrantCodeFunctionArity6 = async (
   client: Client,
   redirectUri,
@@ -136,14 +146,33 @@ export const issueCode: IssueGrantCodeFunctionArity6 = async (
   // eslint-disable-next-line max-params
 ) => {
   try {
-    const code = await new EncryptJWT({
-      scope: request.scope,
-      user,
-      clientId: client.client_id,
-      redirectUri,
-      request,
-    })
-      .setSubject(user.id)
+    if (!request.codeChallenge && authCode.pkce.required) {
+      /**
+       * @see {@link https://datatracker.ietf.org/doc/html/rfc7636#section-4.4.1}
+       */
+      throw new TokenError('Code challenge required', 'invalid_request');
+    }
+
+    if (
+      !authCode.pkce.allowPlainTransform &&
+      request.codeChallengeMethod === 'plain'
+    ) {
+      /**
+       * @see {@link https://datatracker.ietf.org/doc/html/rfc7636#section-4.4.1}
+       */
+      throw new TokenError(
+        'Plain transform algorithm not supported',
+        'invalid_request'
+      );
+    }
+
+    const payload = {
+      ...request,
+      user: user.id,
+    } satisfies CodePayload;
+    const code = await new EncryptJWT(payload)
+      .setProtectedHeader({ alg: 'dir', enc: 'A128CBC-HS256' })
+      .setSubject(redirectUri)
       .setAudience(client.client_id)
       .setIssuedAt()
       .setExpirationTime(authCode.expiresIn)
@@ -180,20 +209,67 @@ const plugin: FastifyPluginAsync<Options> = async (
   // Code flow exchange
   oauth2server.exchange(
     oauth2orize.exchange.code(
-      // eslint-disable-next-line max-params
-      async (client: Client, c, _redirectUri, _body, _authInfo, done) => {
+      async (
+        client: Client,
+        code,
+        redirectUri,
+        { code_verifier },
+        _authInfo,
+        done
+        // eslint-disable-next-line max-params
+      ) => {
         try {
-          const { payload: code } = await jwtDecrypt(c, key, {
+          const { payload } = (await jwtDecrypt(code, key, {
             audience: client.client_id,
-          });
-          if (!code) {
+            subject: redirectUri,
+          })) as JWTDecryptResult & { payload?: CodePayload };
+          if (!payload) {
             throw new TokenError('Invalid code', 'invalid_code');
           }
 
-          // TODO: Do PKCE check for the code
+          // Do PKCE check for the code
+          if (payload.codeChallenge) {
+            switch (payload.codeChallengeMethod) {
+              case 'plain': {
+                if (code_verifier !== payload.codeChallenge) {
+                  throw new TokenError(
+                    'Invalid code_verifier',
+                    'invalid_grant'
+                  );
+                }
+
+                break;
+              }
+
+              /**
+               * @see {@link https://datatracker.ietf.org/doc/html/rfc7636#section-4.6}
+               */
+              case 'S256': {
+                const sha256 = createHash('sha256');
+                const hash = sha256
+                  .update(code_verifier as string)
+                  .digest('base64url');
+                if (hash !== payload.codeChallenge) {
+                  throw new TokenError(
+                    'Invalid code_verifier',
+                    'invalid_grant'
+                  );
+                }
+
+                break;
+              }
+
+              default: {
+                throw new TokenError(
+                  `Unknown code_challenge_method ${payload.codeChallengeMethod}`,
+                  'invalid_grant'
+                );
+              }
+            }
+          }
 
           /*
-          if (code.isRedeemed()) {
+          If (code.isRedeemed()) {
             throw new TokenError('Code already redeemed', 'invalid_request');
           }
 
@@ -219,7 +295,7 @@ const plugin: FastifyPluginAsync<Options> = async (
 
           const { scope, user, clientId } = await code.redeem();
           */
-          const { scope, user, clientId } = code as any;
+          const { scope, user, clientId } = payload as any;
           const { expiresIn, token } = await saveToken({
             token: makeHash(tokenConfig.length),
             expiresIn: tokenConfig.expiresIn,
@@ -281,7 +357,6 @@ const plugin: FastifyPluginAsync<Options> = async (
           client.redirect_uris
         );
         done(null, false);
-        return;
       } catch (error: unknown) {
         done(error as Error);
         // eslint-disable-next-line no-useless-return
