@@ -29,14 +29,10 @@ import type { jwksUtils as jwku } from '@oada/certs';
 
 import libConfig from '@oada/lib-config';
 
-import PLazy from 'p-lazy';
 import { schema as arangoSchema } from '@oada/lib-arangodb/dist/config.js';
-import { generateSecret } from 'jose';
 
 const trace = debug('auth#config:trace');
 const error = debug('auth#config:error');
-
-const alg = 'HS256';
 
 export const { config, schema } = await libConfig({
   trustProxy: {
@@ -265,12 +261,23 @@ export const { config, schema } = await libConfig({
     code: {
       expiresIn: {
         format: String,
-        default: '1s',
+        default: '10 seconds',
       },
       key: {
         doc: 'Key to use for encrypting codes',
         format: 'file-url',
-        default: PLazy.from(async () => generateSecret(alg)),
+        nullable: true,
+        default: null as unknown as Promise<File | null>,
+      },
+      pkce: {
+        required: {
+          format: Boolean,
+          default: true,
+        },
+        allowPlainTransform: {
+          format: Boolean,
+          default: false,
+        },
       },
     },
     token: {
@@ -292,7 +299,7 @@ export const { config, schema } = await libConfig({
         doc: 'Private key to use for signing id tokens',
         format: 'file-url',
         nullable: true,
-        default: Promise.resolve(null) as Promise<File | null>,
+        default: null as unknown as Promise<File | null>,
       },
     },
     certs: {
@@ -385,6 +392,7 @@ export interface DomainConfig {
     private: jwku.JWK;
   };
 }
+// eslint-disable-next-line security/detect-non-literal-fs-filename
 for await (const dirname of await fs.readdir(domainsDirectory)) {
   if (dirname.startsWith('.')) {
     continue;

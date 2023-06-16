@@ -134,6 +134,12 @@ declare module 'oauth2orize-openid' {
 declare module 'oauth2orize-pkce' {
   import type { MiddlewareFunction } from 'oauth2orize';
   export function extensions(): MiddlewareFunction;
+  declare module 'oauth2orize' {
+    interface OAuth2Req {
+      codeChallenge?: string;
+      codeChallengeMethod: 'plain' | 'S256';
+    }
+  }
 }
 
 declare module 'passport-oauth2-jwt-bearer' {
