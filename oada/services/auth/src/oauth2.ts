@@ -17,9 +17,9 @@
 
 import { config, domainConfigs } from './config.js';
 
+import { createHash, randomBytes } from 'node:crypto';
 import type { ServerResponse } from 'node:http';
 import { promisify } from 'node:util';
-import { createHash, randomBytes } from 'node:crypto';
 
 import type {} from '@fastify/formbody';
 import type { FastifyPluginAsync, FastifyReply } from 'fastify';
@@ -46,8 +46,8 @@ import { extensions } from 'oauth2orize-pkce';
 
 import { trustedCDP } from '@oada/lookup';
 
-import type { Client } from './db/models/client.js';
 import type { DBUser, User } from './db/models/user.js';
+import type { Client } from './db/models/client.js';
 import { findById } from './db/models/client.js';
 import { promisifyMiddleware } from './utils.js';
 import { save as saveToken } from './db/models/token.js';
@@ -140,7 +140,7 @@ export const issueCode: IssueGrantCodeFunctionArity6 = async (
   client: Client,
   redirectUri,
   user: DBUser,
-  _res,
+  _,
   request: OAuth2Req,
   done
   // eslint-disable-next-line max-params
@@ -193,7 +193,7 @@ const plugin: FastifyPluginAsync<Options> = async (
     endpoints: {
       authorize = 'auth',
       decision = 'decision',
-      token = 'token',
+      token: tokenEndpoint = 'token',
     } = {},
   }
 ) => {
@@ -268,40 +268,13 @@ const plugin: FastifyPluginAsync<Options> = async (
             }
           }
 
-          /*
-          If (code.isRedeemed()) {
-            throw new TokenError('Code already redeemed', 'invalid_request');
-          }
-
-          if (code.isExpired()) {
-            throw new TokenError('Code expired', 'invalid_request');
-          }
-
-          if (!code.matchesClientId(client.client_id)) {
-            await code.redeem();
-            throw new TokenError(
-              'Client ID does not match original request',
-              'invalid_client'
-            );
-          }
-
-          if (!code.matchesRedirectUri(redirectUri)) {
-            await code.redeem();
-            throw new TokenError(
-              'Redirect URI does not match original request',
-              'invalid_request'
-            );
-          }
-
-          const { scope, user, clientId } = await code.redeem();
-          */
-          const { scope, user, clientId } = payload as any;
+          const { scope, user, clientId } = payload;
           const { expiresIn, token } = await saveToken({
             token: makeHash(tokenConfig.length),
             expiresIn: tokenConfig.expiresIn,
             scope,
-            user,
-            clientId,
+            user: { id: user! },
+            clientId: clientId as string,
           });
           const extras: Record<string, unknown> = {
             expires_in: expiresIn,
@@ -323,8 +296,8 @@ const plugin: FastifyPluginAsync<Options> = async (
   // Decorate fastify reply for compatibility with connect response
   fastify.decorateReply(
     'setHeader',
-    function (this: FastifyReply, key: string, value: unknown) {
-      return this.header(key, value);
+    function (this: FastifyReply, name: string, value: unknown) {
+      return this.header(name, value);
     }
   );
   fastify.decorateReply('end', function (this: FastifyReply, payload: unknown) {
@@ -467,7 +440,7 @@ const plugin: FastifyPluginAsync<Options> = async (
   );
   const doToken = promisifyMiddleware(oauth2server.token());
   fastify.post(
-    token,
+    tokenEndpoint,
     {
       preValidation: fastifyPassport.authenticate(
         ['oauth2-client-password', 'oauth2-client-assertion'],
