@@ -94,7 +94,7 @@ export class ResponderRequester extends Base {
         ...respondTopics,
         ...options,
       },
-      this.ready
+      this.ready,
     );
     this.#requester = new DummyRequester(
       {
@@ -104,7 +104,7 @@ export class ResponderRequester extends Base {
         ...requestTopics,
         ...options,
       },
-      this.ready
+      this.ready,
     );
 
     // Mux the consumer between requester and responder
@@ -134,7 +134,7 @@ export class ResponderRequester extends Base {
    */
   override on<R, Request = KafkaBase>(
     event: 'request',
-    listener: (reg: Request & KafkaBase) => Response<R> | Promise<Response<R>>
+    listener: (reg: Request & KafkaBase) => Response<R> | Promise<Response<R>>,
   ): this;
   override on(
     event: typeof DATA,
@@ -144,17 +144,17 @@ export class ResponderRequester extends Base {
       payload: EachMessagePayload,
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       ...rest: any[]
-    ) => unknown
+    ) => unknown,
   ): this;
   override on(
     event: string | symbol,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    listener: (...arguments_: any[]) => unknown
+    listener: (...arguments_: any[]) => unknown,
   ): this;
   override on(
     event: string | symbol,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    listener: (...arguments_: any[]) => unknown
+    listener: (...arguments_: any[]) => unknown,
   ): this {
     switch (event) {
       case 'ready': {

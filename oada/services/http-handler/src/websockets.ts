@@ -182,7 +182,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
             400,
             'Invalid socket message format',
             undefined,
-            cError as string
+            cError as string,
           ) as unknown as Record<string, unknown>,
         };
         error({ error: cError });
@@ -212,7 +212,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         'Handling socket req %s: %s %s',
         message.requestId,
         message.method,
-        message.path
+        message.path,
       );
       trace(message);
 
@@ -415,7 +415,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
               trace(
                 'Sending change %s to resumed WATCH %s',
                 sendRev,
-                message.requestId
+                message.requestId,
               );
               // eslint-disable-next-line no-await-in-loop
               const change = await changes.getChangeArray(resourceId, sendRev);
@@ -523,7 +523,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     try {
       const change = await changes.getChangeArray(
         request.resource_id,
-        request._rev
+        request._rev,
       );
       trace({ change }, `Emitted change for ${request.resource_id}`);
       emitter.emit(request.resource_id, {

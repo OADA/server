@@ -100,7 +100,7 @@ async function createNewUser(request: UserRequest): Promise<users.User> {
         resource,
         user._id,
         // eslint-disable-next-line security/detect-object-injection
-        contentTypes[resource]
+        contentTypes[resource],
       );
       const resp = await responder.send({
         msgtype: 'write-request',
@@ -158,7 +158,7 @@ export async function handleReq(request: UserRequest): Promise<UserResponse> {
   trace('REQUEST: req.user = %O, userid = %s', request.user, request.userid);
   trace(
     'REQUEST: req.authorization.scope = %s',
-    request.authorization ? request.authorization.scope : null
+    request.authorization ? request.authorization.scope : null,
   );
   // While this could fit in permissions_handler, since users are not really resources (i.e. no graph),
   // we'll add a check here that the user has oada.admin.user:write or oada.admin.user:all scope
@@ -171,7 +171,7 @@ export async function handleReq(request: UserRequest): Promise<UserResponse> {
     !/oada.admin.user:all/.test(tokenscope)
   ) {
     warn(
-      'Attempted to create a user, but request does not have token with oada.admin.user:write or oada.admin.user:all scope'
+      'Attempted to create a user, but request does not have token with oada.admin.user:write or oada.admin.user:all scope',
     );
     throw new Error('Token does not have required scope to create users.');
   }
@@ -186,7 +186,7 @@ export async function handleReq(request: UserRequest): Promise<UserResponse> {
   trace(
     'Result of search for user with id %s: %O',
     request.userid,
-    currentUser
+    currentUser,
   );
 
   // Make one if it doesn't exist already:
@@ -203,7 +203,7 @@ export async function handleReq(request: UserRequest): Promise<UserResponse> {
         createUser = false;
         trace(
           { user: request.user },
-          'Tried to create user, but it already existed (same username). Returning as if we had created it'
+          'Tried to create user, but it already existed (same username). Returning as if we had created it',
         );
         const like = await users.like({ username: request.user.username });
         for await (const user of like) {
@@ -212,7 +212,7 @@ export async function handleReq(request: UserRequest): Promise<UserResponse> {
       } else {
         error(
           { error: cError },
-          'Unknown error occurred when creating new user'
+          'Unknown error occurred when creating new user',
         );
         throw cError as Error;
       }
@@ -224,7 +224,7 @@ export async function handleReq(request: UserRequest): Promise<UserResponse> {
     const { _id } = currentUser ?? {};
     trace(
       'We did not create a new user, so we are now updating user id %s',
-      _id
+      _id,
     );
     currentUser = await users.update({
       // Assume req.user is a full user now?

@@ -49,7 +49,7 @@ export interface DBClient extends Client {
 }
 
 const clients = database.collection<Client>(
-  config.get('arangodb.collections.clients.name')
+  config.get('arangodb.collections.clients.name'),
 );
 
 export async function findById(id: string): Promise<DBClient | undefined> {
@@ -57,7 +57,7 @@ export async function findById(id: string): Promise<DBClient | undefined> {
     aql`
       FOR c IN ${clients}
       FILTER c.client_id == ${id}
-      RETURN c`
+      RETURN c`,
   );
   const client = await cursor.next();
   return client ? sanitizeResult(client) : undefined;

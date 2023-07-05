@@ -55,17 +55,17 @@ describe('Required Docker containers', () => {
 
   const containersAreRunning = Array.apply(
     null,
-    Array.from({ length: REQUIRED_CONTAINER_NAMES.length })
+    Array.from({ length: REQUIRED_CONTAINER_NAMES.length }),
   ).map(Boolean, false);
 
   before((done) => {
     Promise.each(REQUIRED_CONTAINER_NAMES, (containerName, index) => {
       info(`  ${containerName}`);
       return exec(
-        `docker inspect -f '{{.State.Running}} ' ${containerName}`
+        `docker inspect -f '{{.State.Running}} ' ${containerName}`,
       ).then((execResult) => {
         trace(
-          `  execResult for ${containerName}: ${JSON.stringify(execResult)}`
+          `  execResult for ${containerName}: ${JSON.stringify(execResult)}`,
         );
         const isRunning = execResult.stdout.includes('true');
         trace(`      isRunning: ${isRunning}`);

@@ -33,7 +33,7 @@ describe('rev-graph-updates should be batched', async () => {
         child2: { _id: child2id, _rev: 0 },
       }),
     ]).catch((error_) =>
-      error("before: Failed one of the setup put's.  err = ", error_)
+      error("before: Failed one of the setup put's.  err = ", error_),
     );
     const res = await axios.get(`${baseurl}/${parentid}`);
     console.log('the parent get request result is:', res);

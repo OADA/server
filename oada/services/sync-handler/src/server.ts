@@ -73,7 +73,7 @@ responder.on<WriteResponse>('request', async (request) => {
   // TODO: Add AQL query for just syncs and newest change?
   const syncs = Object.entries(
     ((await resources.getResource(resourceId, `/_meta/${META_KEY}`))?.syncs ??
-      {}) as Record<string, { url: string; domain: string; token: string }>
+      {}) as Record<string, { url: string; domain: string; token: string }>,
   )
     // Ignore sync entries that aren't objects
     .filter((sync) => sync[1] && typeof sync[1] === 'object');
@@ -119,7 +119,7 @@ responder.on<WriteResponse>('request', async (request) => {
 
       // TODO: Cache this?
       const { oada_base_uri: apiroot } = await got(
-        `https://${domain}/.well-known/oada-configuration`
+        `https://${domain}/.well-known/oada-configuration`,
       ).json<{ oada_base_uri: string }>();
 
       // Ensure each local resource has a corresponding remote one
@@ -157,7 +157,7 @@ responder.on<WriteResponse>('request', async (request) => {
               rid: newID,
               id,
             };
-          })
+          }),
       );
 
       // Add all remote IDs at once
@@ -173,7 +173,7 @@ responder.on<WriteResponse>('request', async (request) => {
       rids = rids.filter(({ rid }) => rid).concat(newrids);
       // Create mapping of IDs here to IDs there
       const idMapping = Object.fromEntries(
-        rids.map(({ id, rid }) => [id, rid])
+        rids.map(({ id, rid }) => [id, rid]),
       );
       return Promise.all(
         rids.map(async ({ id, rid }) => {
@@ -221,7 +221,7 @@ responder.on<WriteResponse>('request', async (request) => {
                   return v;
                 }
               }
-            }
+            },
           );
 
           // TODO: Support DELETE
@@ -241,12 +241,12 @@ responder.on<WriteResponse>('request', async (request) => {
             id,
             rid,
             domain,
-            await put
+            await put,
           );
           return put;
-        })
+        }),
       );
-    })
+    }),
   );
 
   await puts;

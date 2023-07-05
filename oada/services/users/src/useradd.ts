@@ -51,7 +51,7 @@ async function findUserByUsername(username: string) {
 try {
   if (argv.h || argv.help) {
     error(
-      chalk.yellow`useradd [-u username] [-p password] [-a (if you want user to have admin privileges to create other users)]`
+      chalk.yellow`useradd [-u username] [-p password] [-a (if you want user to have admin privileges to create other users)]`,
     );
     process.exit();
   }
@@ -112,7 +112,7 @@ try {
   trace({ response }, 'Checking response.code');
   if (response.code !== 'success') {
     error(
-      chalk.red`FAILED TO RECEIVE SUCCESSFUL RESPONSE FROM USER SERVICE WHEN CREATING USER!`
+      chalk.red`FAILED TO RECEIVE SUCCESSFUL RESPONSE FROM USER SERVICE WHEN CREATING USER!`,
     );
     process.exit(1);
   }

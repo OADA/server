@@ -327,7 +327,7 @@ export const { config, schema } = await libConfig({
     },
     datastoresDriver: {
       format: await fs.readdir(
-        path.join(path.dirname(url.fileURLToPath(import.meta.url)), 'db')
+        path.join(path.dirname(url.fileURLToPath(import.meta.url)), 'db'),
       ),
       default: 'flat',
     },
@@ -408,7 +408,7 @@ for await (const dirname of await fs.readdir(domainsDirectory)) {
     } catch (cError: unknown) {
       error(
         { error: cError },
-        `Could not read config for domain ${dirname}, skipping`
+        `Could not read config for domain ${dirname}, skipping`,
       );
     }
   }

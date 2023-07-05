@@ -144,7 +144,7 @@ export async function save(c: ICode) {
     throw new OADAError(
       'Code already exists',
       Codes.BadRequest,
-      'There was a problem durring the login'
+      'There was a problem durring the login',
     );
   }
 

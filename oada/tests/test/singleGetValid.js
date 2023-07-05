@@ -48,7 +48,7 @@ describe('GET (Valid Token with Valid URL)', () => {
 
   // Real tests.
   info(
-    `${debugMark}Starting tests... (for ${path.win32.basename(__filename)})`
+    `${debugMark}Starting tests... (for ${path.win32.basename(__filename)})`,
   );
   const VALID_TOKEN = 'xyz';
 
@@ -137,7 +137,7 @@ describe('GET (Valid Token with Valid URL)', () => {
       });
       it('should contain the correct location', () => {
         trace(
-          `http_get_response.data.location: ${http_get_response.data.location}`
+          `http_get_response.data.location: ${http_get_response.data.location}`,
         );
         expect(http_get_response.data)
           .to.have.property('location')

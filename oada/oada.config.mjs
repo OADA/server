@@ -142,8 +142,7 @@ export default {
       // but to nginx proxy, it's https://localhost in dev
       'publicUri': `https://${domain}`,
     },
-    keys: {
-    },
+    keys: {},
     idToken: {
       expiresIn: 3600,
       // Note: signKid has to match the name of the .pem at the signPem path above

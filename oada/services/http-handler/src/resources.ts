@@ -94,7 +94,7 @@ function unflattenMeta(document: {
 // Don't let users modify their shares?
 function noModifyShares(
   { user, oadaPath: path }: FastifyRequest,
-  reply: FastifyReply
+  reply: FastifyReply,
 ) {
   if (path.startsWith(`/${user.shares_id}`)) {
     reply.forbidden('User cannot modify their shares document');
@@ -147,7 +147,7 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
   fastify.addHook('preParsing', async (request) => {
     const url = request.url.replace(
       options.prefix,
-      options.prefixPath(request)
+      options.prefixPath(request),
     );
     const { string: id } = await ksuid.random();
     const path =
@@ -169,7 +169,7 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
 
     const result = await resources.lookupFromUrl(
       `/${fullpath}`,
-      request.user.user_id
+      request.user.user_id,
     );
     request.log.trace({ result }, 'Graph lookup result');
     if (result.resource_id) {
@@ -213,10 +213,10 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
         } else if (!response.permissions.owner && !response.permissions.write) {
           request.log.warn(
             '%s tried to PUT resource without proper permissions',
-            request.user.user_id
+            request.user.user_id,
           );
           reply.forbidden(
-            'User does not have write permission for this resource'
+            'User does not have write permission for this resource',
           );
           return;
         }
@@ -233,10 +233,10 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
         if (!response.permissions.owner && !response.permissions.read) {
           request.log.warn(
             '%s tried to GET resource without proper permissions',
-            request.user.user_id
+            request.user.user_id,
           );
           reply.forbidden(
-            'User does not have read permission for this resource'
+            'User does not have read permission for this resource',
           );
           return;
         }
@@ -295,11 +295,11 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
         !ifMatch.some(
           ({ id, rev }) =>
             (!id || id === request.oadaGraph.resource_id) &&
-            rev === request.oadaGraph.rev
+            rev === request.oadaGraph.rev,
         )
       ) {
         reply.preconditionFailed(
-          'If-Match header does not match current resource'
+          'If-Match header does not match current resource',
         );
         return;
       }
@@ -310,7 +310,7 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
         !ifNoneMatch.every(
           ({ id, rev }) =>
             id !== request.oadaGraph.resource_id &&
-            rev !== request.oadaGraph.rev
+            rev !== request.oadaGraph.rev,
         )
       ) {
         // Not modified
@@ -338,7 +338,7 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
         const rev = Number(request.oadaGraph.path_leftover.split('/')[3]!);
         const ch = await changes.getChangeArray(
           request.oadaGraph.resource_id,
-          rev
+          rev,
         );
         request.log.trace(ch, 'Change');
         return ch;
@@ -351,7 +351,7 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
       if (isMeta || is(type, ['json', '+json'])) {
         const document = await resources.getResource(
           request.oadaGraph.resource_id,
-          request.oadaGraph.path_leftover
+          request.oadaGraph.path_leftover,
         );
         request.log.trace({ document }, 'Document is');
 
@@ -364,7 +364,7 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
         request.log.info(
           'Resource: %s, Rev: %d',
           request.oadaGraph.resource_id,
-          request.oadaGraph.rev
+          request.oadaGraph.rev,
         );
 
         const response: unknown = unflattenMeta(document);
@@ -395,7 +395,7 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
         // Look up file size before streaming
         const { integrity, size } = await cacache.get.info(
           CACHE_PATH,
-          request.oadaGraph.resource_id
+          request.oadaGraph.resource_id,
         );
 
         // Stream file to client
@@ -420,7 +420,7 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
     },
     (_, body, done) => {
       done(null, body);
-    }
+    },
   );
 
   // Allow unknown contentType but don't parse?
@@ -440,7 +440,7 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
       oadaPath: path,
     }: FastifyRequest,
     reply: FastifyReply,
-    versioned = true
+    versioned = true,
   ) {
     // Create a new resource?
     log.trace('EnsureLink: creating new resource');
@@ -533,13 +533,13 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
       if (!request.is(['json', '+json'])) {
         await pipeline(
           request.raw,
-          cacache.put.stream(CACHE_PATH, request.oadaGraph.resource_id)
+          cacache.put.stream(CACHE_PATH, request.oadaGraph.resource_id),
         );
         request.body = '{}';
       }
 
       const { _id: bodyid } = await putBodies.savePutBody(
-        request.body as string
+        request.body as string,
       );
       request.log.trace({ oadaGraph: request.oadaGraph }, 'PUT body saved');
 
@@ -550,12 +550,12 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
         ).toLowerCase() === 'true';
       const ifMatch = parseETags(request.headers['if-match'])
         ?.filter(({ id }) =>
-          [undefined, request.oadaGraph.resource_id].includes(id)
+          [undefined, request.oadaGraph.resource_id].includes(id),
         )
         .map(({ rev }) => rev);
       const ifNoneMatch = parseETags(request.headers['if-none-match'])
         ?.filter(({ id }) =>
-          [undefined, request.oadaGraph.resource_id].includes(id)
+          [undefined, request.oadaGraph.resource_id].includes(id),
         )
         .map(({ rev }) => rev);
       const writeRequest: WriteRequest = {
@@ -578,7 +578,7 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
       };
       const resp = (await requester.send(
         writeRequest,
-        config.get('kafka.topics.writeRequest')
+        config.get('kafka.topics.writeRequest'),
       )) as WriteResponse;
 
       request.log.trace('Received write response');
@@ -594,14 +594,14 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
 
         case 'if-match failed': {
           reply.preconditionFailed(
-            'If-Match header does not match current resource _rev'
+            'If-Match header does not match current resource _rev',
           );
           return;
         }
 
         case 'if-none-match failed': {
           reply.preconditionFailed(
-            'If-None-Match header contains current resource _rev'
+            'If-None-Match header contains current resource _rev',
           );
           return;
         }
@@ -613,7 +613,7 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
 
         default: {
           const error = new Error(
-            `Write failed with unknown code "${resp.code ?? ''}"`
+            `Write failed with unknown code "${resp.code ?? ''}"`,
           );
           reply.log.error({ error, resp }, 'Kafka request errored');
           throw error;
@@ -690,7 +690,7 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
     };
     const resp = (await requester.send(
       deleteRequest,
-      config.get('kafka.topics.writeRequest')
+      config.get('kafka.topics.writeRequest'),
     )) as WriteResponse;
 
     request.log.trace('Received delete response');
@@ -708,14 +708,14 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
 
       case 'if-match failed': {
         reply.preconditionFailed(
-          'If-Match header does not match current resource _rev'
+          'If-Match header does not match current resource _rev',
         );
         return;
       }
 
       case 'if-none-match failed': {
         reply.preconditionFailed(
-          'If-None-Match header contains current resource _rev'
+          'If-None-Match header contains current resource _rev',
         );
         return;
       }

@@ -51,7 +51,7 @@ describe('Check Rev Update for a Link Res (Parent Graph)', () => {
 
   // Real tests.
   info(
-    `${debugMark}Starting tests... (for ${path.win32.basename(__filename)})`
+    `${debugMark}Starting tests... (for ${path.win32.basename(__filename)})`,
   );
   const VALID_TOKEN = 'xyz';
   const tokenToUse = VALID_TOKEN;
@@ -121,7 +121,7 @@ describe('Check Rev Update for a Link Res (Parent Graph)', () => {
         .then((response) => {
           trace(`HTTP GET Response: ${response}`);
           trace(
-            `        data.rock: ${JSON.stringify(response.data.rock, null, 2)}`
+            `        data.rock: ${JSON.stringify(response.data.rock, null, 2)}`,
           );
 
           http_get_response_final = response;
@@ -132,7 +132,7 @@ describe('Check Rev Update for a Link Res (Parent Graph)', () => {
           info(
             `  _rev comparison result: ${
               flagRevMatched ? 'Matched!' : 'Not matched...'
-            }`
+            }`,
           );
           trace(`  flagRevMatched: ${flagRevMatched}`);
           if (flagRevMatched) {
@@ -175,7 +175,7 @@ describe('Check Rev Update for a Link Res (Parent Graph)', () => {
               info('headers: ', error.response.headers);
               http_get_error_response_before = error.response;
             }
-          })
+          }),
       )
       .then(() =>
         axiosInst
@@ -191,7 +191,7 @@ describe('Check Rev Update for a Link Res (Parent Graph)', () => {
               headers: {
                 'Content-Type': 'application/vnd.oada.rocks.1+json',
               },
-            }
+            },
           )
           .then((response) => {
             trace(`HTTP create Response: ${response}`);
@@ -205,7 +205,7 @@ describe('Check Rev Update for a Link Res (Parent Graph)', () => {
               info('headers: ', error.response.headers);
               http_create_error_response = error.response;
             }
-          })
+          }),
       )
       .then(() =>
         axiosInst
@@ -225,7 +225,7 @@ describe('Check Rev Update for a Link Res (Parent Graph)', () => {
               info('headers: ', error.response.headers);
               http_get_error_response_after = error.response;
             }
-          })
+          }),
       )
       .then(() =>
         // GET the linked rock.
@@ -243,7 +243,7 @@ describe('Check Rev Update for a Link Res (Parent Graph)', () => {
               info('headers: ', error.response.headers);
               http_linked_rock_error = error.response;
             }
-          })
+          }),
       )
       .then(() =>
         // Also GET the rock for comparison.
@@ -262,7 +262,7 @@ describe('Check Rev Update for a Link Res (Parent Graph)', () => {
               trace('headers: ', error.response.headers);
               http_get_reference_rock_error = error.response;
             }
-          })
+          }),
       )
       .then(() =>
         // Update the linked rock.
@@ -276,7 +276,7 @@ describe('Check Rev Update for a Link Res (Parent Graph)', () => {
               headers: {
                 'Content-Type': 'application/vnd.oada.rock.1+json',
               },
-            }
+            },
           )
           .then((response) => {
             info(`HTTP PUT Response: ${response}`);
@@ -290,7 +290,7 @@ describe('Check Rev Update for a Link Res (Parent Graph)', () => {
               trace('headers: ', error.response.headers);
               http_update_rock_error = error.response;
             }
-          })
+          }),
       )
       .then(() =>
         // Get the updated rock.
@@ -308,13 +308,13 @@ describe('Check Rev Update for a Link Res (Parent Graph)', () => {
               trace('headers: ', error.response.headers);
               http_get_updated_rock_error = error.response;
             }
-          })
+          }),
       )
       .then(() =>
         // Get the link resource to check the _rev. We will try at most
         // MAX_NUM_TRAILS times, because it may take some time for the _rev in the
         // link res to be updated.
-        getUpdatedLinkRes(MAX_NUM_TRAILS, TIME_TO_SLEEP_BETWEEN_TRIALS)
+        getUpdatedLinkRes(MAX_NUM_TRAILS, TIME_TO_SLEEP_BETWEEN_TRIALS),
       )
       .asCallback(done)
       .catch((error_) => error(error_));
@@ -333,14 +333,14 @@ describe('Check Rev Update for a Link Res (Parent Graph)', () => {
     describe('http_get_error_response_before', () => {
       it('should be a non-empty object', () => {
         trace(
-          `http_get_error_response_before:${http_get_error_response_before}`
+          `http_get_error_response_before:${http_get_error_response_before}`,
         );
         expect(http_get_error_response_before).to.be.an('Object').that.is.not
           .empty;
       });
       it('should contain the status 403 Forbidden', () => {
         trace(
-          `http_get_error_response_before.status:${http_get_error_response_before.code}`
+          `http_get_error_response_before.status:${http_get_error_response_before.code}`,
         );
         expect(http_get_error_response_before)
           .to.have.property('status')
@@ -408,7 +408,7 @@ describe('Check Rev Update for a Link Res (Parent Graph)', () => {
       });
       it('should contain a non-empty _rev field', () => {
         trace(
-          `http_get_ref_rock_res.data._rev: ${http_get_ref_rock_res.data._rev}`
+          `http_get_ref_rock_res.data._rev: ${http_get_ref_rock_res.data._rev}`,
         );
         expect(http_get_ref_rock_res.data)
           .to.have.property('_rev')
@@ -426,7 +426,7 @@ describe('Check Rev Update for a Link Res (Parent Graph)', () => {
     describe('http_get_error_response_after', () => {
       it('should be null', () => {
         trace(
-          `http_get_error_response_after: ${http_get_error_response_after}`
+          `http_get_error_response_after: ${http_get_error_response_after}`,
         );
         expect(http_get_error_response_after).to.be.null;
       });
@@ -439,7 +439,7 @@ describe('Check Rev Update for a Link Res (Parent Graph)', () => {
       });
       it('should contain the status 200 OK', () => {
         trace(
-          `http_get_response_after.status: ${http_get_response_after.status}`
+          `http_get_response_after.status: ${http_get_response_after.status}`,
         );
         expect(http_get_response_after)
           .to.have.property('status')
@@ -455,7 +455,7 @@ describe('Check Rev Update for a Link Res (Parent Graph)', () => {
       });
       it('should contain a non-empty rock field', () => {
         trace(
-          `http_get_response_after.data.picked_up: ${http_get_response_after.data.picked_up}`
+          `http_get_response_after.data.picked_up: ${http_get_response_after.data.picked_up}`,
         );
         expect(http_get_response_after.data)
           .to.have.property('rock')
@@ -471,7 +471,7 @@ describe('Check Rev Update for a Link Res (Parent Graph)', () => {
       });
       it('should contain the correct _id field', () => {
         trace(
-          `http_get_response_after.data.rock._id: ${http_get_response_after.data.rock._id}`
+          `http_get_response_after.data.rock._id: ${http_get_response_after.data.rock._id}`,
         );
         expect(http_get_response_after.data.rock)
           .to.have.property('_id')
@@ -480,7 +480,7 @@ describe('Check Rev Update for a Link Res (Parent Graph)', () => {
       });
       it('should contain the correct _rev field', () => {
         trace(
-          `http_get_response_after.data.rock._rev: ${http_get_response_after.data.rock._rev}`
+          `http_get_response_after.data.rock._rev: ${http_get_response_after.data.rock._rev}`,
         );
         expect(http_get_response_after.data.rock)
           .to.have.property('_rev')
@@ -492,7 +492,7 @@ describe('Check Rev Update for a Link Res (Parent Graph)', () => {
     describe('The rock resource refered to by the link', () => {
       it('should be deep equal to the original rock resource', () => {
         expect(http_linked_rock_res.data).to.be.deep.equal(
-          http_get_ref_rock_res.data
+          http_get_ref_rock_res.data,
         );
       });
     });
@@ -525,7 +525,7 @@ describe('Check Rev Update for a Link Res (Parent Graph)', () => {
       });
       it('should contain the status 200 OK', () => {
         trace(
-          `http_get_updated_rock_res.status: ${http_get_updated_rock_res.status}`
+          `http_get_updated_rock_res.status: ${http_get_updated_rock_res.status}`,
         );
         expect(http_get_updated_rock_res)
           .to.have.property('status')
@@ -536,14 +536,14 @@ describe('Check Rev Update for a Link Res (Parent Graph)', () => {
     describe('http_get_updated_rock_res.data', () => {
       it('should be a non-empty object', () => {
         trace(
-          `http_get_updated_rock_res.data: ${http_get_updated_rock_res.data}`
+          `http_get_updated_rock_res.data: ${http_get_updated_rock_res.data}`,
         );
         expect(http_get_updated_rock_res.data).to.be.an('Object').that.is.not
           .empty;
       });
       it('should contain a non-empty _rev field', () => {
         trace(
-          `http_get_updated_rock_res.data._rev: ${http_get_updated_rock_res.data._rev}`
+          `http_get_updated_rock_res.data._rev: ${http_get_updated_rock_res.data._rev}`,
         );
         expect(http_get_updated_rock_res.data)
           .to.have.property('_rev')
@@ -572,7 +572,7 @@ describe('Check Rev Update for a Link Res (Parent Graph)', () => {
       });
       it('should contain the status 200 OK', () => {
         trace(
-          `http_get_response_final.status: ${http_get_response_final.status}`
+          `http_get_response_final.status: ${http_get_response_final.status}`,
         );
         expect(http_get_response_final)
           .to.have.property('status')
@@ -588,7 +588,7 @@ describe('Check Rev Update for a Link Res (Parent Graph)', () => {
       });
       it('should contain a non-empty rock field', () => {
         trace(
-          `http_get_response_final.data.picked_up: ${http_get_response_final.data.picked_up}`
+          `http_get_response_final.data.picked_up: ${http_get_response_final.data.picked_up}`,
         );
         expect(http_get_response_final.data)
           .to.have.property('rock')
@@ -604,7 +604,7 @@ describe('Check Rev Update for a Link Res (Parent Graph)', () => {
       });
       it('should contain the correct _id field', () => {
         trace(
-          `http_get_response_final.data.rock._id: ${http_get_response_final.data.rock._id}`
+          `http_get_response_final.data.rock._id: ${http_get_response_final.data.rock._id}`,
         );
         expect(http_get_response_final.data.rock)
           .to.have.property('_id')
@@ -613,7 +613,7 @@ describe('Check Rev Update for a Link Res (Parent Graph)', () => {
       });
       it('should contain the correct _rev field', () => {
         trace(
-          `http_get_response_final.data.rock._rev: ${http_get_response_final.data.rock._rev}`
+          `http_get_response_final.data.rock._rev: ${http_get_response_final.data.rock._rev}`,
         );
         expect(http_get_response_final.data.rock)
           .to.have.property('_rev')

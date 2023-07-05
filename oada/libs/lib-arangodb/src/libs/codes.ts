@@ -44,17 +44,17 @@ export interface DBCode extends Code {
 }
 
 const codes = database.collection(
-  config.get('arangodb.collections.codes.name')
+  config.get('arangodb.collections.codes.name'),
 );
 
 export async function findByCode(
-  code: string
+  code: string,
 ): Promise<(DBCode & { user: DBUser }) | undefined> {
   const cursor = await database.query(
     aql`
       FOR c IN ${codes}
       FILTER c.code == ${code}
-      RETURN c`
+      RETURN c`,
   );
   // eslint-disable-next-line @typescript-eslint/ban-types
   const c = (await cursor.next()) as DBCode | null;
@@ -75,7 +75,7 @@ export async function findByCode(
 }
 
 export async function save(
-  code: Partial<Code> & { code: string }
+  code: Partial<Code> & { code: string },
 ): Promise<(DBCode & { user: DBUser }) | undefined> {
   await database.query(aql`
     UPSERT { code: ${code.code} }

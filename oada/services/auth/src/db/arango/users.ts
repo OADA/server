@@ -46,7 +46,7 @@ export async function findByUsername(username: IUser['username']) {
 
 export async function findByUsernamePassword(
   username: IUser['username'],
-  password: string
+  password: string,
 ) {
   trace('findByUsername: searching for user %s with  password', username);
   const user = await users.findByUsernamePassword(username, password);
@@ -57,7 +57,7 @@ export async function findByOIDCToken(token: { sub: string; iss: string }) {
   trace(
     'findByOIDCToken: searching for oidc token sub=%s, iss=%s',
     token.sub,
-    token.iss
+    token.iss,
   );
   const user = await users.findByOIDCToken(token);
   return convert(user);
@@ -65,12 +65,12 @@ export async function findByOIDCToken(token: { sub: string; iss: string }) {
 
 export async function findByOIDCUsername(
   username: IUser['username'],
-  domain: string
+  domain: string,
 ) {
   trace(
     'findByOIDCUsername: searching for oidc username %s at %d',
     username,
-    domain
+    domain,
   );
   const user = await users.findByOIDCUsername(username, domain);
   return convert(user);

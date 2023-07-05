@@ -112,7 +112,7 @@ export const issueToken: IssueGrantTokenFunction = async (
   client: Client,
   user: DBUser,
   request: OAuth2Req,
-  done
+  done,
 ) => {
   try {
     const { scope } = request;
@@ -142,7 +142,7 @@ export const issueCode: IssueGrantCodeFunctionArity6 = async (
   user: DBUser,
   _,
   request: OAuth2Req,
-  done
+  done,
   // eslint-disable-next-line max-params
 ) => {
   try {
@@ -162,7 +162,7 @@ export const issueCode: IssueGrantCodeFunctionArity6 = async (
        */
       throw new TokenError(
         'Plain transform algorithm not supported',
-        'invalid_request'
+        'invalid_request',
       );
     }
 
@@ -195,7 +195,7 @@ const plugin: FastifyPluginAsync<Options> = async (
       decision = 'decision',
       token: tokenEndpoint = 'token',
     } = {},
-  }
+  },
 ) => {
   // PKCE
   oauth2server.grant(extensions());
@@ -215,7 +215,7 @@ const plugin: FastifyPluginAsync<Options> = async (
         redirectUri,
         { code_verifier },
         _authInfo,
-        done
+        done,
         // eslint-disable-next-line max-params
       ) => {
         try {
@@ -234,7 +234,7 @@ const plugin: FastifyPluginAsync<Options> = async (
                 if (code_verifier !== payload.codeChallenge) {
                   throw new TokenError(
                     'Invalid code_verifier',
-                    'invalid_grant'
+                    'invalid_grant',
                   );
                 }
 
@@ -252,7 +252,7 @@ const plugin: FastifyPluginAsync<Options> = async (
                 if (hash !== payload.codeChallenge) {
                   throw new TokenError(
                     'Invalid code_verifier',
-                    'invalid_grant'
+                    'invalid_grant',
                   );
                 }
 
@@ -262,19 +262,19 @@ const plugin: FastifyPluginAsync<Options> = async (
               default: {
                 throw new TokenError(
                   `Unknown code_challenge_method ${payload.codeChallengeMethod}`,
-                  'invalid_grant'
+                  'invalid_grant',
                 );
               }
             }
           }
 
-          const { scope, user, clientId } = payload;
+          const { scope, user } = payload;
           const { expiresIn, token } = await saveToken({
             token: makeHash(tokenConfig.length),
             expiresIn: tokenConfig.expiresIn,
             scope,
             user: { id: user! },
-            clientId: clientId as string,
+            clientId: client.client_id,
           });
           const extras: Record<string, unknown> = {
             expires_in: expiresIn,
@@ -289,8 +289,8 @@ const plugin: FastifyPluginAsync<Options> = async (
         } catch (error: unknown) {
           done(error as Error);
         }
-      }
-    )
+      },
+    ),
   );
 
   // Decorate fastify reply for compatibility with connect response
@@ -298,14 +298,14 @@ const plugin: FastifyPluginAsync<Options> = async (
     'setHeader',
     function (this: FastifyReply, name: string, value: unknown) {
       return this.header(name, value);
-    }
+    },
   );
   fastify.decorateReply('end', function (this: FastifyReply, payload: unknown) {
     return this.send(payload);
   });
 
   const doErrorHandlerIndirect = promisify(
-    oauth2server.errorHandler({ mode: 'indirect' })
+    oauth2server.errorHandler({ mode: 'indirect' }),
   );
 
   // OAuth2 authorization request (serve the authorization screen)
@@ -327,7 +327,7 @@ const plugin: FastifyPluginAsync<Options> = async (
         fastify.log.trace(
           'oauth2#authorize: redirect_uri from URL (%s) does not match any on client cert: %s',
           redirectURI,
-          client.redirect_uris
+          client.redirect_uris,
         );
         done(null, false);
       } catch (error: unknown) {
@@ -335,7 +335,7 @@ const plugin: FastifyPluginAsync<Options> = async (
         // eslint-disable-next-line no-useless-return
         return;
       }
-    }) as ValidateFunctionArity2)
+    }) as ValidateFunctionArity2),
   );
   fastify.get(authorize, async (request, reply) => {
     try {
@@ -348,7 +348,7 @@ const plugin: FastifyPluginAsync<Options> = async (
       // TODO: Is this needed? void reply.hijack():
       await doAuthorize(
         request as unknown as MiddlewareRequest,
-        reply as unknown as ServerResponse
+        reply as unknown as ServerResponse,
       );
       const { oauth2, user } = request as unknown as OAuth2Request;
 
@@ -379,7 +379,7 @@ const plugin: FastifyPluginAsync<Options> = async (
       await doErrorHandlerIndirect(
         error as Error,
         request as unknown as MiddlewareRequest,
-        reply as unknown as ServerResponse
+        reply as unknown as ServerResponse,
       );
     }
   });
@@ -392,14 +392,14 @@ const plugin: FastifyPluginAsync<Options> = async (
           scope?: string[];
           allow?: unknown;
         };
-        const validScope = scope?.every((element) =>
-          request.oauth2?.req.scope.includes(element)
+        const validScope = scope?.every(
+          (element) => request.oauth2?.req.scope.includes(element),
         );
 
         if (!validScope) {
           throw new AuthorizationError(
             'Scope does not match original request',
-            'invalid_scope'
+            'invalid_scope',
           );
         }
 
@@ -407,7 +407,7 @@ const plugin: FastifyPluginAsync<Options> = async (
           'decision: allow = %s, scope = %s, nonce = %s',
           allow,
           scope,
-          request.oauth2?.req.nonce
+          request.oauth2?.req.nonce,
         );
         done(null, {
           allow,
@@ -417,26 +417,26 @@ const plugin: FastifyPluginAsync<Options> = async (
       } catch (error: unknown) {
         done(error as Error, null);
       }
-    })
+    }),
   );
   fastify.post(decision, async (request, reply) => {
     try {
       await doDecision(
         request as unknown as MiddlewareRequest,
-        reply as unknown as ServerResponse
+        reply as unknown as ServerResponse,
       );
     } catch (error: unknown) {
       request.log.error(error, 'OAuth2 decision error');
       await doErrorHandlerIndirect(
         error as Error,
         request as unknown as MiddlewareRequest,
-        reply as unknown as ServerResponse
+        reply as unknown as ServerResponse,
       );
     }
   });
 
   const doErrorHandlerDirect = promisifyMiddleware(
-    oauth2server.errorHandler({ mode: 'direct' })
+    oauth2server.errorHandler({ mode: 'direct' }),
   );
   const doToken = promisifyMiddleware(oauth2server.token());
   fastify.post(
@@ -446,20 +446,20 @@ const plugin: FastifyPluginAsync<Options> = async (
         ['oauth2-client-password', 'oauth2-client-assertion'],
         {
           session: false,
-        }
+        },
       ),
     },
     async (request, reply) => {
       try {
         request.log.trace(
           `${request.hostname}: token POST ${config.get(
-            'auth.endpoints.token'
-          )}, storing reqdomain in req.user`
+            'auth.endpoints.token',
+          )}, storing reqdomain in req.user`,
         );
         const { user } = request as unknown as OAuth2Request;
         if (!user) {
           request.log.trace(
-            'oauth2#token: there is no req.user after passport.authenticate should have put the client there.'
+            'oauth2#token: there is no req.user after passport.authenticate should have put the client there.',
           );
           return;
         }
@@ -471,17 +471,17 @@ const plugin: FastifyPluginAsync<Options> = async (
 
         await doToken(
           request as unknown as MiddlewareRequest,
-          reply as unknown as ServerResponse
+          reply as unknown as ServerResponse,
         );
       } catch (error: unknown) {
         request.log.error(error, 'OAuth2 token error');
         await doErrorHandlerDirect(
           error as Error,
           request as unknown as MiddlewareRequest,
-          reply as unknown as ServerResponse
+          reply as unknown as ServerResponse,
         );
       }
-    }
+    },
   );
 };
 

@@ -29,6 +29,6 @@ app.listen(port, ip, function onStart(error_) {
     '==> 🌎 Listening on port %s. Open up http://%s:%s/ in your browser.',
     port,
     ip,
-    port
+    port,
   );
 });

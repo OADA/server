@@ -51,7 +51,7 @@ describe('Create a Rocks-Index Res for an Existing Rock Res Using PUT', () => {
 
   // Real tests.
   info(
-    `${debugMark}Starting tests... (for ${path.win32.basename(__filename)})`
+    `${debugMark}Starting tests... (for ${path.win32.basename(__filename)})`,
   );
   const VALID_TOKEN = 'xyz';
   const tokenToUse = VALID_TOKEN;
@@ -107,7 +107,7 @@ describe('Create a Rocks-Index Res for an Existing Rock Res Using PUT', () => {
               info('headers: ', error.response.headers);
               http_get_error_response_before = error.response;
             }
-          })
+          }),
       )
       .then(() =>
         axiosInst
@@ -124,7 +124,7 @@ describe('Create a Rocks-Index Res for an Existing Rock Res Using PUT', () => {
               headers: {
                 'Content-Type': 'application/vnd.oada.rocks.1+json',
               },
-            }
+            },
           )
           .then((response) => {
             trace(`HTTP create Response: ${response}`);
@@ -138,7 +138,7 @@ describe('Create a Rocks-Index Res for an Existing Rock Res Using PUT', () => {
               info('headers: ', error.response.headers);
               http_create_error_response = error.response;
             }
-          })
+          }),
       )
       .then(() =>
         axiosInst
@@ -157,7 +157,7 @@ describe('Create a Rocks-Index Res for an Existing Rock Res Using PUT', () => {
               info('headers: ', error.response.headers);
               http_get_error_response_after = error.response;
             }
-          })
+          }),
       )
       .then(() =>
         // GET the indexed rock.
@@ -175,7 +175,7 @@ describe('Create a Rocks-Index Res for an Existing Rock Res Using PUT', () => {
               info('headers: ', error.response.headers);
               http_get_indexed_rock_error = error.response;
             }
-          })
+          }),
       )
       .then(() =>
         // Also GET the rock for comparison.
@@ -196,7 +196,7 @@ describe('Create a Rocks-Index Res for an Existing Rock Res Using PUT', () => {
             }
 
             done();
-          })
+          }),
       )
       .catch((error_) => error(error_));
   });
@@ -214,14 +214,14 @@ describe('Create a Rocks-Index Res for an Existing Rock Res Using PUT', () => {
     describe('http_get_error_response_before', () => {
       it('should be a non-empty object', () => {
         trace(
-          `http_get_error_response_before:${http_get_error_response_before}`
+          `http_get_error_response_before:${http_get_error_response_before}`,
         );
         expect(http_get_error_response_before).to.be.an('Object').that.is.not
           .empty;
       });
       it('should contain the status 403 Forbidden', () => {
         trace(
-          `http_get_error_response_before.status:${http_get_error_response_before.code}`
+          `http_get_error_response_before.status:${http_get_error_response_before.code}`,
         );
         expect(http_get_error_response_before)
           .to.have.property('status')
@@ -258,7 +258,7 @@ describe('Create a Rocks-Index Res for an Existing Rock Res Using PUT', () => {
       });
       it('should contain the status 200 OK', () => {
         trace(
-          `http_get_indexed_rock_res.status: ${http_get_indexed_rock_res.status}`
+          `http_get_indexed_rock_res.status: ${http_get_indexed_rock_res.status}`,
         );
         expect(http_get_indexed_rock_res)
           .to.have.property('status')
@@ -305,7 +305,7 @@ describe('Create a Rocks-Index Res for an Existing Rock Res Using PUT', () => {
     describe('http_get_error_response_after', () => {
       it('should be null', () => {
         trace(
-          `http_get_error_response_after: ${http_get_error_response_after}`
+          `http_get_error_response_after: ${http_get_error_response_after}`,
         );
         expect(http_get_error_response_after).to.be.null;
       });
@@ -318,7 +318,7 @@ describe('Create a Rocks-Index Res for an Existing Rock Res Using PUT', () => {
       });
       it('should contain the status 200 OK', () => {
         trace(
-          `http_get_response_after.status: ${http_get_response_after.status}`
+          `http_get_response_after.status: ${http_get_response_after.status}`,
         );
         expect(http_get_response_after)
           .to.have.property('status')
@@ -334,7 +334,7 @@ describe('Create a Rocks-Index Res for an Existing Rock Res Using PUT', () => {
       });
       it('should contain a valid rocks-index field', () => {
         trace(
-          `http_get_response_after.data['rocks-index']: ${http_get_response_after.data['rocks-index']}`
+          `http_get_response_after.data['rocks-index']: ${http_get_response_after.data['rocks-index']}`,
         );
         expect(http_get_response_after.data)
           .to.have.property('rocks-index')
@@ -349,7 +349,7 @@ describe('Create a Rocks-Index Res for an Existing Rock Res Using PUT', () => {
     describe('The rock resource indexed by the new resource', () => {
       it('should be deep equal to the original rock resource', () => {
         expect(http_get_indexed_rock_res.data).to.be.deep.equal(
-          http_get_ref_rock_res.data
+          http_get_ref_rock_res.data,
         );
       });
     });

@@ -102,7 +102,7 @@ test('should create all the indexes on the collections', async (t) => {
       // For each index in collection, check if exists
       const indexname = typeof ci === 'string' ? ci : ci.name.toString();
       const hasindex = databaseIndexes.some((dbi) =>
-        dbi.fields.includes(indexname)
+        dbi.fields.includes(indexname),
       );
 
       t.true(hasindex);
@@ -121,8 +121,8 @@ test('should create any requested default data', async (t) => {
           default: unknown[];
         };
         return [k, value] as [string, unknown[]];
-      })
-    )
+      }),
+    ),
   );
 
   for await (const [colname, data] of Object.entries(defaultdata)) {

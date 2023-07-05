@@ -52,7 +52,7 @@ async function requestUserWrite(request: FastifyRequest, id: string) {
       user: body,
       userid: id, // Need for PUT, ignored for POST
     } as UserRequest,
-    config.get('kafka.topics.userRequest')
+    config.get('kafka.topics.userRequest'),
   )) as UserResponse;
 
   // eslint-disable-next-line sonarjs/no-small-switch
@@ -83,7 +83,7 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
       } catch (error: unknown) {
         done(error as Error);
       }
-    }
+    },
   );
 
   fastify.post('/', async (request, reply) => {
@@ -133,14 +133,14 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
     // Check token scope
     request.log.trace(
       'username-index: Checking token scope, req.authorization.scope = %s',
-      authorization
+      authorization,
     );
     const havetokenscope = authorization.scope.find(
-      (s) => s === 'oada.admin.user:read' || s === 'oada.admin.user:all'
+      (s) => s === 'oada.admin.user:read' || s === 'oada.admin.user:all',
     );
     if (!havetokenscope) {
       request.log.warn(
-        'Attempt to lookup user by username (username-index), but token does not have oada.admin.user:read or oada.admin.user:all scope!'
+        'Attempt to lookup user by username (username-index), but token does not have oada.admin.user:read or oada.admin.user:all scope!',
       );
       reply.unauthorized('Token does not have required oada.admin.user scope');
       return;
@@ -151,11 +151,11 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
     const haveuserscope =
       Array.isArray(authorization.user_scope) &&
       (authorization.user_scope as string[]).find(
-        (s) => s === 'oada.admin.user:read' || s === 'oada.admin.user:all'
+        (s) => s === 'oada.admin.user:read' || s === 'oada.admin.user:all',
       );
     if (!haveuserscope) {
       request.log.warn(
-        'Attempt to lookup user by username (username-index), but USER does not have oada.admin.user:read or oada.admin.user:all scope!'
+        'Attempt to lookup user by username (username-index), but USER does not have oada.admin.user:read or oada.admin.user:all scope!',
       );
       reply.forbidden('USER does not have required oada.admin.user scope');
       return;
@@ -165,7 +165,7 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
     if (!u) {
       request.log.info(
         '#username-index: 404: username %s does not exist',
-        uname
+        uname,
       );
       reply.notFound(`Username ${uname} does not exist.`);
       return;
@@ -173,7 +173,7 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
 
     request.log.info(
       '#username-index: found user, returning info for userid %s',
-      u._id
+      u._id,
     );
     return reply
       .header('Content-Location', join(options.prefix, u._id))

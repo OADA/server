@@ -51,7 +51,7 @@ describe('Create a Non-Existing Res Using POST', () => {
 
   // Real tests.
   info(
-    `${debugMark}Starting tests... (for ${path.win32.basename(__filename)})`
+    `${debugMark}Starting tests... (for ${path.win32.basename(__filename)})`,
   );
   const VALID_TOKEN = 'xyz';
 
@@ -103,7 +103,7 @@ describe('Create a Non-Existing Res Using POST', () => {
               info('headers: ', error.response.headers);
               http_get_error_response_before = error.response;
             }
-          })
+          }),
       )
       .then(() =>
         axiosInst
@@ -116,14 +116,14 @@ describe('Create a Non-Existing Res Using POST', () => {
               headers: {
                 'Content-Type': 'application/vnd.oada.rock.1+json',
               },
-            }
+            },
           )
           .then((response) => {
             trace(`HTTP create Response: ${response}`);
             http_create_response = response;
             location_assigned = response.headers.location;
             trace(
-              `HTTP create Response location_assigned: ${location_assigned}`
+              `HTTP create Response location_assigned: ${location_assigned}`,
             );
             rand_id_assigned = /\/([\w-]+)$/.exec(location_assigned);
             rand_id_assigned = rand_id_assigned[1];
@@ -137,7 +137,7 @@ describe('Create a Non-Existing Res Using POST', () => {
               info('headers: ', error.response.headers);
               http_create_error_response = error.response;
             }
-          })
+          }),
       )
       .then(() =>
         axiosInst
@@ -158,7 +158,7 @@ describe('Create a Non-Existing Res Using POST', () => {
             }
 
             done();
-          })
+          }),
       )
       .catch((error_) => error(error_));
   });
@@ -175,14 +175,14 @@ describe('Create a Non-Existing Res Using POST', () => {
     describe('http_get_error_response_before', () => {
       it('should be a non-empty object', () => {
         trace(
-          `http_get_error_response_before:${http_get_error_response_before}`
+          `http_get_error_response_before:${http_get_error_response_before}`,
         );
         expect(http_get_error_response_before).to.be.an('Object').that.is.not
           .empty;
       });
       it('should contain the status 403 Forbidden', () => {
         trace(
-          `http_get_error_response_before.status:${http_get_error_response_before.code}`
+          `http_get_error_response_before.status:${http_get_error_response_before.code}`,
         );
         expect(http_get_error_response_before)
           .to.have.property('status')
@@ -218,7 +218,7 @@ describe('Create a Non-Existing Res Using POST', () => {
       });
       it('should contain a non-empty location field (indicating the assigned random id)', () => {
         trace(
-          `http_create_response.headers.location: ${http_create_response.headers.location}`
+          `http_create_response.headers.location: ${http_create_response.headers.location}`,
         );
         expect(http_create_response.headers).to.have.property('location').that
           .is.not.empty;
@@ -228,7 +228,7 @@ describe('Create a Non-Existing Res Using POST', () => {
     describe('http_get_error_response_after', () => {
       it('should be null', () => {
         trace(
-          `http_get_error_response_after: ${http_get_error_response_after}`
+          `http_get_error_response_after: ${http_get_error_response_after}`,
         );
         expect(http_get_error_response_after).to.be.null;
       });
@@ -241,7 +241,7 @@ describe('Create a Non-Existing Res Using POST', () => {
       });
       it('should contain the status 200 OK', () => {
         trace(
-          `http_get_response_after.status: ${http_get_response_after.status}`
+          `http_get_response_after.status: ${http_get_response_after.status}`,
         );
         expect(http_get_response_after)
           .to.have.property('status')
@@ -257,7 +257,7 @@ describe('Create a Non-Existing Res Using POST', () => {
       });
       it('should contain one field referred to by rand_id_assigned', () => {
         trace(
-          `http_get_response_after.data.[rand_id_assigned]: ${http_get_response_after.data[rand_id_assigned]}`
+          `http_get_response_after.data.[rand_id_assigned]: ${http_get_response_after.data[rand_id_assigned]}`,
         );
         expect(http_get_response_after.data)
           .to.have.property(rand_id_assigned)
@@ -268,7 +268,7 @@ describe('Create a Non-Existing Res Using POST', () => {
     describe('http_get_response_after.data[rand_id_assigned]', () => {
       it('should contain the correct picked_up value', () => {
         trace(
-          `http_get_response_after.data[rand_id_assigned].picked_up: ${http_get_response_after.data[rand_id_assigned].picked_up}`
+          `http_get_response_after.data[rand_id_assigned].picked_up: ${http_get_response_after.data[rand_id_assigned].picked_up}`,
         );
         expect(http_get_response_after.data[rand_id_assigned])
           .to.have.property('picked_up')

@@ -29,12 +29,12 @@ export interface Options {
 async function addClientToAuth(
   request: FastifyRequest,
   // eslint-disable-next-line @typescript-eslint/ban-types
-  auth: authorizations.Authorization | null
+  auth: authorizations.Authorization | null,
 ) {
   if (auth?.clientId) {
     request.log.trace(
       'GET /%s: authorization has a client, retrieving',
-      auth._id
+      auth._id,
     );
     try {
       const client = await clients.findById(auth.clientId);
@@ -47,7 +47,7 @@ async function addClientToAuth(
   } else {
     request.log.trace(
       'GET /%s: authorization DOES NOT have a clientId',
-      auth?._id
+      auth?._id,
     );
     return auth;
   }
@@ -101,7 +101,7 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
       } catch (error: unknown) {
         done(error as Error);
       }
-    }
+    },
   );
 
   fastify.post('/', async (request, reply) => {
@@ -124,7 +124,7 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
     if (auth.user._id !== request.user.user_id) {
       if (
         !request.user.scope.some(
-          (s) => s === 'oada.admin.user:all' || 'oada.admin.user:write'
+          (s) => s === 'oada.admin.user:all' || 'oada.admin.user:write',
         )
       ) {
         reply.forbidden();
@@ -133,7 +133,7 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
 
       // Otherwise, token has admin scope so allow it (check user too?)
       request.log.debug(
-        'Posted authorization for a different user, but token has admin.user scope so we are allowing it'
+        'Posted authorization for a different user, but token has admin.user scope so we are allowing it',
       );
     }
 
@@ -146,7 +146,7 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
 
     void reply.header(
       'Content-Location',
-      join(options.prefix, returnValue._id)
+      join(options.prefix, returnValue._id),
     );
     return reply.send({ ...returnValue, user: u ? { _id: u._id } : undefined });
   });

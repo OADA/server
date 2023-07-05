@@ -45,13 +45,13 @@ const info = debug('arangodb#resources:info');
 const trace = debug('arangodb#resources:trace');
 
 const resources = database.collection(
-  config.get('arangodb.collections.resources.name')
+  config.get('arangodb.collections.resources.name'),
 );
 const graphNodes = database.collection(
-  config.get('arangodb.collections.graphNodes.name')
+  config.get('arangodb.collections.graphNodes.name'),
 );
 const edgesCollection = database.collection(
-  config.get('arangodb.collections.edges.name')
+  config.get('arangodb.collections.edges.name'),
 );
 // HACK: Should use database.graph but there is a bug with aql template tags
 const resourceGraph = config.get('arangodb.graphs.resources.name');
@@ -93,7 +93,7 @@ function normalizeUrl(user: User, url: string): string {
 
 export async function lookupFromUrl(
   path: string,
-  userId: string
+  userId: string,
 ): Promise<GraphLookup> {
   const user = await findById(userId);
   if (!user) {
@@ -281,7 +281,7 @@ export async function lookupFromUrl(
         vertices.length - 1 - revVertices.findIndex((v) => v?.is_resource);
       // Slice a negative value to take the last n pieces of the array
       path_leftover = JsonPointer.create(
-        pieces.slice(lastResource - pieces.length)
+        pieces.slice(lastResource - pieces.length),
       ).toString();
     } else {
       path_leftover = lastV.path ?? '';
@@ -325,15 +325,15 @@ export async function lookupFromUrl(
 
 export async function getResource(
   id: string,
-  path?: ''
+  path?: '',
 ): Promise<IResource | undefined>;
 export async function getResource(
   id: string,
-  path: string
+  path: string,
 ): Promise<Partial<IResource> | undefined>;
 export async function getResource(
   id: string,
-  path = ''
+  path = '',
 ): Promise<Partial<IResource> | undefined> {
   // TODO: Escaping stuff?
   const parts = JsonPointer.decode(path);
@@ -383,7 +383,7 @@ interface OwnerIdRev {
   };
 }
 export async function getResourceOwnerIdRev(
-  id: string
+  id: string,
 ): Promise<OwnerIdRev | undefined> {
   try {
     const result = await database.query(aql`
@@ -426,7 +426,7 @@ export async function getParents(id: string) {
             resource_id: v.resource_id,
             path: CONCAT(v.path || '', '/', e.name),
             contentType: res._type
-          }`
+          }`,
     );
     return cursor as AsyncIterableIterator<{
       resource_id: string;
@@ -466,7 +466,7 @@ export async function getNewDescendants(id: string, rev: string | number) {
         RETURN DISTINCT {
           id: v.resource_id,
           changed: TO_NUMBER(ver) >= ${Number.parseInt(rev as string, 10)}
-        }`
+        }`,
   );
   return cursor as AsyncIterableIterator<{ id: string; changed: boolean }>;
 }
@@ -494,7 +494,7 @@ export async function getChanges(id: string, rev: string | number) {
       )
       FOR obj in objs
         LET doc = DOCUMENT(obj.id)
-        RETURN {id: obj.id, changes: doc._meta._changes[obj.rev]}`
+        RETURN {id: obj.id, changes: doc._meta._changes[obj.rev]}`,
   );
   return cursor as AsyncIterableIterator<{ id: string; changes: string }>;
 }
@@ -502,7 +502,7 @@ export async function getChanges(id: string, rev: string | number) {
 export async function putResource(
   id: string,
   object: Record<string, unknown>,
-  checkLinks = true
+  checkLinks = true,
 ): Promise<number> {
   // Fix rev
   object._oada_rev = object._rev;
@@ -614,7 +614,7 @@ export async function putResource(
 async function forLinks(
   resource: Record<string, unknown>,
   callback: (link: Link, path: readonly string[]) => void | Promise<void>,
-  path: string[] = []
+  path: string[] = [],
 ): Promise<void> {
   await Promise.all(
     Object.entries(resource).map(async ([key, value]) => {
@@ -628,10 +628,10 @@ async function forLinks(
         await forLinks(
           value as Record<string, unknown>,
           callback,
-          path.concat(key)
+          path.concat(key),
         );
       }
-    })
+    }),
   );
 }
 
@@ -658,7 +658,7 @@ async function addLinks(resource: Record<string, unknown>) {
 
 export async function makeRemote<T extends Record<string, unknown>>(
   resource: T,
-  domain: string
+  domain: string,
 ): Promise<T> {
   await forLinks(resource, (link) => {
     // Change all links to remote links
@@ -697,7 +697,7 @@ export async function deleteResource(id: string): Promise<number> {
             FILTER edge['_from'] == node._id
             REMOVE edge IN ${edgesCollection} OPTIONS { ignoreErrors: true }
       )
-      RETURN res._oada_rev`
+      RETURN res._oada_rev`,
   );
   return (await cursor.next()) as number;
 }
@@ -708,7 +708,7 @@ export async function deleteResource(id: string): Promise<number> {
 export async function deletePartialResource(
   id: string,
   inPath: string | PathSegments,
-  { _rev: rev, ...document }: Partial<Resource> = {}
+  { _rev: rev, ...document }: Partial<Resource> = {},
 ): Promise<number> {
   const key = id.replace(/^resources\//, '');
   const pointer = new JsonPointer(inPath);
@@ -728,7 +728,7 @@ export async function deletePartialResource(
       RETURN {
         has: HAS(${subResource}, ${name}),
         rev: ${resource}._oada_rev
-      }`
+      }`,
   );
   const hasObject = (await cursor.next()) as { has: boolean; rev: number };
   if (hasObject.has) {
@@ -781,7 +781,7 @@ export async function deletePartialResource(
           }
         )
         UPDATE ${key} WITH newres IN ${resources} OPTIONS { keepNull: false }
-        RETURN OLD._oada_rev`
+        RETURN OLD._oada_rev`,
     );
     return (await updateCursor.next()) as number;
   }

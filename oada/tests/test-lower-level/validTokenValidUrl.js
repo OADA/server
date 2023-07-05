@@ -64,7 +64,7 @@ describe('Valid Token with Valid URL', () => {
       fromOffset: 'earliest', // Earliest | latest
       sessionTimeout: 15_000,
     },
-    ['token_request']
+    ['token_request'],
   );
   const cs_http_res = new kf.ConsumerGroup(
     {
@@ -74,7 +74,7 @@ describe('Valid Token with Valid URL', () => {
       fromOffset: 'earliest', // Earliest | latest
       sessionTimeout: 15_000,
     },
-    ['http_response']
+    ['http_response'],
   );
   const cs_graph_request = new kf.ConsumerGroup(
     {
@@ -84,7 +84,7 @@ describe('Valid Token with Valid URL', () => {
       fromOffset: 'earliest', // Earliest | latest
       sessionTimeout: 15_000,
     },
-    ['graph_request']
+    ['graph_request'],
   );
   // --------------------------------------------------
   // Task 1 - HTTP-Handler: HTTP response + token_request
@@ -117,8 +117,8 @@ describe('Valid Token with Valid URL', () => {
 
       trace(
         `Kafka cs_token_req message = ${JSON.stringify(
-          message
-        )}, key = ${message.key.toString()}`
+          message,
+        )}, key = ${message.key.toString()}`,
       );
       token_request_string = message.value;
       token_request = JSON.parse(token_request_string);
@@ -130,8 +130,8 @@ describe('Valid Token with Valid URL', () => {
 
       trace(
         `Kafka cs_http_res message = ${JSON.stringify(
-          message
-        )}, key = ${message.key.toString()}`
+          message,
+        )}, key = ${message.key.toString()}`,
       );
       http_response_string = message.value;
       http_response = JSON.parse(http_response_string);
@@ -145,8 +145,8 @@ describe('Valid Token with Valid URL', () => {
 
       trace(
         `Kafka cs_graph_req message = ${JSON.stringify(
-          message
-        )}, key = ${message.key.toString()}`
+          message,
+        )}, key = ${message.key.toString()}`,
       );
       cs_graph_req_str = message.value;
       cs_graph_request = JSON.parse(http_response_string);
@@ -165,7 +165,7 @@ describe('Valid Token with Valid URL', () => {
 
         return config;
       },
-      (errorEmbedToken) => Promise.reject(errorEmbedToken)
+      (errorEmbedToken) => Promise.reject(errorEmbedToken),
     );
 
     // Hit the server when everything is set up correctly.
@@ -252,7 +252,7 @@ describe('Valid Token with Valid URL', () => {
       it('should have the correct UUID connection id', () => {
         expect(http_response_string).to.contain('connection_id');
         expect(http_response.connection_id).to.equal(
-          token_request.connection_id
+          token_request.connection_id,
         );
       });
       it('should have a "doc" field', () => {

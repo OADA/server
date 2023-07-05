@@ -49,7 +49,7 @@ describe('GET (Valid Token with Valid URL but Out of Scope)', () => {
 
   // Real tests.
   info(
-    `${debugMark}Starting tests... (for ${path.win32.basename(__filename)})`
+    `${debugMark}Starting tests... (for ${path.win32.basename(__filename)})`,
   );
   const VALID_TOKEN_OUT_OF_SCOPE = 'def';
 

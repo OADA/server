@@ -48,7 +48,7 @@ describe('GET (Valid Token with Valid URL for a Non-Existing Res)', () => {
 
   // Real tests.
   info(
-    `${debugMark}Starting tests... (for ${path.win32.basename(__filename)})`
+    `${debugMark}Starting tests... (for ${path.win32.basename(__filename)})`,
   );
   const VALID_TOKEN = 'xyz';
 
@@ -84,7 +84,7 @@ describe('GET (Valid Token with Valid URL for a Non-Existing Res)', () => {
           trace(`HTTP GET Response: ${response}`);
           trace(`HTTP GET Response Status: ${response.status}`);
           trace(
-            `HTTP GET Response Data String: ${JSON.stringify(response.data)}`
+            `HTTP GET Response Data String: ${JSON.stringify(response.data)}`,
           );
           trace(`HTTP GET Response Keys: ${Object.keys(response)}`);
           http_get_response = response;

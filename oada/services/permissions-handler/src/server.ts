@@ -60,7 +60,7 @@ trace(scopeTypes, 'Parsed builtin scopes');
 const additionalScopesFiles = fs
   .readdirSync(new URL('../scopes/additional-scopes', import.meta.url))
   .filter(
-    (f) => !f.startsWith('.') // Remove hidden files
+    (f) => !f.startsWith('.'), // Remove hidden files
   );
 for await (const af of additionalScopesFiles) {
   try {
@@ -75,7 +75,7 @@ for await (const af of additionalScopesFiles) {
   } catch (cError: unknown) {
     error(
       { error: cError },
-      `Failed to require(scopes/additional-scopes/${af}})`
+      `Failed to require(scopes/additional-scopes/${af}})`,
     );
   }
 }
@@ -106,7 +106,7 @@ export interface PermissionsResponse {
 }
 
 export function handleRequest(
-  request: PermissionsRequest
+  request: PermissionsRequest,
 ): PermissionsResponse {
   const response: PermissionsResponse = {
     scopes: {
@@ -152,7 +152,7 @@ export function handleRequest(
       trace(
         'Does user have scope? resulting contentType: %s typeis check: %s',
         contentType,
-        is
+        is,
       );
       trace('Does user have read scope? %s', scopePerm(perm, 'read'));
       return is && scopePerm(perm, 'read');

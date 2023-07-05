@@ -161,7 +161,7 @@ await Promise.all(
 
       info(error, `${id} had a non-404 error`);
     }
-  })
+  }),
 );
 
 info('Done!');

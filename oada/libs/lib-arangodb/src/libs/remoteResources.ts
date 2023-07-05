@@ -24,7 +24,7 @@ import debug from 'debug';
 const trace = debug('arangodb#remoteResources:trace');
 
 const remoteResources = database.collection(
-  config.get('arangodb.collections.remoteResources.name')
+  config.get('arangodb.collections.remoteResources.name'),
 );
 
 export interface RemoteID {
@@ -40,7 +40,7 @@ export interface RemoteID {
 
 export async function getRemoteId(
   id: string | readonly string[],
-  domain: string
+  domain: string,
 ): Promise<AsyncIterable<RemoteID>> {
   const ids = Array.isArray(id) ? id : [id];
 
@@ -57,7 +57,7 @@ export async function getRemoteId(
           RETURN {
             rid: rid,
             id: id
-          }`
+          }`,
   );
 
   trace(rids, 'Found');
@@ -66,7 +66,7 @@ export async function getRemoteId(
 
 export async function addRemoteId(
   rid: RemoteID | RemoteID[],
-  domain: string
+  domain: string,
 ): Promise<void> {
   const rids = Array.isArray(rid) ? rid : [rid];
 

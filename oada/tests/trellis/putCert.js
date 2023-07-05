@@ -47,7 +47,7 @@ describe(`A client shouldn't exist before adding one`, () => {
       expect(response.status).is.equal(200);
       expect(response.data).to.have.keys(['_id', '_meta', '_rev', '_type']);
       expect(response.data._type).to.equal(
-        'application/vnd.trellisfw.clients.1+json'
+        'application/vnd.trellisfw.clients.1+json',
       );
     }));
 });
@@ -114,7 +114,7 @@ describe('Trellis demo testing...', () => {
             _rev: 0,
           },
         });
-      })
+      }),
     );
   });
 
@@ -211,7 +211,7 @@ describe('Adding read permission', function () {
           owner: false,
         },
       },
-    })
+    }),
   );
 
   it('The GROWER should have the same certifications resource as the AUDITOR in /shares', () =>
@@ -251,8 +251,8 @@ describe('Adding read permission', function () {
             }).catch((error) => {
               expect(error.response.status).to.equal(403);
               expect(error.response.statusText).to.equal('Forbidden');
-            })
-          )
+            }),
+          ),
       ));
 });
 
@@ -271,7 +271,7 @@ describe('Adding write permission', function () {
           write: true,
         },
       },
-    })
+    }),
   );
 
   it('The GROWER should now have write permission to the certifications resource in their /shares', () =>

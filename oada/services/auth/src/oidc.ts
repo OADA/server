@@ -84,12 +84,12 @@ export const issueIdToken: IssueIDToken<DBClient, DBUser> = async (
   client,
   user,
   ares,
-  done
+  done,
 ) => {
   const userinfoScope: string[] = ares.userinfo ? ares.scope : [];
   const userinfo = createUserinfo(
     user as unknown as Record<string, unknown>,
-    userinfoScope
+    userinfoScope,
   );
 
   const payload: Record<string, unknown> = {
@@ -119,7 +119,7 @@ const plugin: FastifyPluginAsync<Options> = async (
       oidcLogin = 'oidc-login',
       oidcRedirect = 'oidc-redirect',
     } = {},
-  }
+  },
 ) => {
   oauth2server.grant(oauth2orizeOpenId.extensions());
 
@@ -129,18 +129,18 @@ const plugin: FastifyPluginAsync<Options> = async (
       (client: DBClient, user: DBUser, ares, done) => {
         ares.userinfo = true;
         issueIdToken(client, user, ares, done);
-      }
-    )
+      },
+    ),
   );
 
   // Implicit flow (id_token token)
   oauth2server.grant(
-    oauth2orizeOpenId.grant.idTokenToken(issueToken, issueIdToken)
+    oauth2orizeOpenId.grant.idTokenToken(issueToken, issueIdToken),
   );
 
   // Hybrid flow (code id_token)
   oauth2server.grant(
-    oauth2orizeOpenId.grant.codeIdToken(issueCode, issueIdToken)
+    oauth2orizeOpenId.grant.codeIdToken(issueCode, issueIdToken),
   );
 
   // Hybrid flow (code token)
@@ -151,8 +151,8 @@ const plugin: FastifyPluginAsync<Options> = async (
     oauth2orizeOpenId.grant.codeIdTokenToken(
       issueToken,
       issueCode,
-      issueIdToken
-    )
+      issueIdToken,
+    ),
   );
 
   await fastify.register(fastifyAccepts);
@@ -165,13 +165,13 @@ const plugin: FastifyPluginAsync<Options> = async (
     // @ts-expect-error TODO: make types for auth bodies
     const destinationDomain = `${request.body?.dest_domain}`.replace(
       /^https?:\/\//,
-      ''
+      '',
     );
 
     // @ts-expect-error TODO: make types for auth bodies
     request.body.dest_domain = destinationDomain;
     request.log.info(
-      `${oidcLogin}: OpenIDConnect request to redirect from domain ${request.hostname} to domain ${destinationDomain}`
+      `${oidcLogin}: OpenIDConnect request to redirect from domain ${request.hostname} to domain ${destinationDomain}`,
     );
 
     // Next, get the info for the id client middleware based on main domain:
@@ -191,10 +191,10 @@ const plugin: FastifyPluginAsync<Options> = async (
     request.log.trace(
       '%s: calling getIDToken for dest_domain = %s',
       oidcLogin,
-      destinationDomain
+      destinationDomain,
     );
     await oadaIDClient.getIDToken(destinationDomain, options, async (uri) =>
-      reply.redirect(uri)
+      reply.redirect(uri),
     );
   });
 
@@ -202,14 +202,14 @@ const plugin: FastifyPluginAsync<Options> = async (
   // Handle the redirect for openid connect login:
   fastify.all(oidcRedirect, async (request, reply) => {
     request.log.info(
-      `${oidcLogin}, req.user.reqdomain = ${request.hostname}: OpenIDConnect request returned`
+      `${oidcLogin}, req.user.reqdomain = ${request.hostname}: OpenIDConnect request returned`,
     );
 
     // Get the token for the user
     // @ts-expect-error broken types
     const { id_token: idToken, access_token: token } =
       await oadaIDClient.handleRedirect(
-        request.query as Record<string, string>
+        request.query as Record<string, string>,
       );
 
     // Should have req.token after this point
@@ -221,7 +221,7 @@ const plugin: FastifyPluginAsync<Options> = async (
     //  If we do know it, don't worry about it
     request.log.info(
       `${oidcRedirect}, req.hostname = ${request.hostname}: token is: %O`,
-      idToken
+      idToken,
     );
     let user = await findByOIDCToken(idToken);
     if (!user) {
@@ -246,7 +246,7 @@ const plugin: FastifyPluginAsync<Options> = async (
         request.session.errormsg = `There is no user ${userinfo.preferred_username} from ${idToken.iss}`;
         request.log.info(
           'Failed OIDC login: user not found.  Redirecting to %s',
-          request.session.returnTo
+          request.session.returnTo,
         );
         // Deepcode ignore OR: session is not actually from request
         return reply.redirect(request.session.returnTo!);
@@ -285,7 +285,7 @@ const plugin: FastifyPluginAsync<Options> = async (
     (request, reply) => {
       const userinfo = createUserinfo(
         request.user as unknown as Record<string, unknown>,
-        request.authInfo?.scope
+        request.authInfo?.scope,
       );
 
       if (userinfo?.sub === undefined) {
@@ -293,7 +293,7 @@ const plugin: FastifyPluginAsync<Options> = async (
       } else {
         return userinfo;
       }
-    }
+    },
   );
 
   await fastify.register(wkj, {

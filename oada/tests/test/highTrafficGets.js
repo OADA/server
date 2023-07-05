@@ -49,7 +49,7 @@ describe('High-Traffic GETs (Valid Token with Valid URL)', function () {
 
   // Real tests.
   info(
-    `${debugMark}Starting tests... (for ${path.win32.basename(__filename)})`
+    `${debugMark}Starting tests... (for ${path.win32.basename(__filename)})`,
   );
   const VALID_TOKEN = 'xyz'; // 'KwGmHSxxAWsgJlXEHDmN2Rn1yemKA_awmEzUoPZW';
 
@@ -102,7 +102,7 @@ describe('High-Traffic GETs (Valid Token with Valid URL)', function () {
             }),
         {
           concurrency: NUM_OF_CLIENTS,
-        }
+        },
       ).asCallback(done);
     });
   });
@@ -152,7 +152,7 @@ describe('High-Traffic GETs (Valid Token with Valid URL)', function () {
       it('should contain the correct location', () => {
         for (const http_get_response of http_get_responses) {
           trace(
-            `http_get_response.data.location: ${http_get_response.data.location}`
+            `http_get_response.data.location: ${http_get_response.data.location}`,
           );
           expect(http_get_response.data)
             .to.have.property('location')

@@ -152,17 +152,17 @@ export class Base extends EventEmitter {
       payload: EachMessagePayload,
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       ...arguments_: any[]
-    ) => unknown
+    ) => unknown,
   ): this;
   override on(
     event: string | symbol,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    listener: (...arguments_: any[]) => unknown
+    listener: (...arguments_: any[]) => unknown,
   ): this;
   override on(
     event: string | symbol,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    listener: (...arguments_: any[]) => unknown
+    listener: (...arguments_: any[]) => unknown,
   ): this {
     if (event === 'error') {
       // Remove our default error handler?

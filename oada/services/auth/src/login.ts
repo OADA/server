@@ -43,7 +43,7 @@ const plugin: FastifyPluginAsync<Options> = async (
       logout = 'logout',
     } = {},
     views: { loginPage = 'login' } = {},
-  }
+  },
 ) => {
   // --------------------------------------------------------------------------
   // Login page: someone has navigated or been redirected to the login page.
@@ -52,7 +52,7 @@ const plugin: FastifyPluginAsync<Options> = async (
   // Deepcode ignore NoRateLimitingForExpensiveWebOperation: This runs behind a reverse-proxy
   fastify.get(login, (request, reply) => {
     request.log.trace(
-      `GET ${login}: setting X-Frame-Options=SAMEORIGIN before rendering login`
+      `GET ${login}: setting X-Frame-Options=SAMEORIGIN before rendering login`,
     );
     request.log.trace(request.session, 'login endpoint');
     void reply.header('X-Frame-Options', 'SAMEORIGIN');
@@ -100,7 +100,7 @@ const plugin: FastifyPluginAsync<Options> = async (
         failureRedirect: `${login}?error=1`,
       }),
     },
-    async ({ user }) => `Logged in as ${user?.name} (${user?.username})`
+    async ({ user }) => `Logged in as ${user?.name} (${user?.username})`,
   );
 
   // Logout endpoint

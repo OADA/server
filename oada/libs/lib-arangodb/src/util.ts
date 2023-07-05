@@ -25,7 +25,7 @@ export type Selector<T> = T extends { _id?: infer I | undefined }
  * @todo clean up this mess
  */
 export function sanitizeResult<T>(
-  result: T
+  result: T,
 ): Except<
   T & { _rev?: number; _key?: unknown; _oada_rev?: unknown },
   '_key' | '_oada_rev'

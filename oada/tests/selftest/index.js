@@ -48,7 +48,7 @@ if (isSelfTesting) {
 
           return config;
         },
-        (errorEmbedToken) => Promise.reject(errorEmbedToken)
+        (errorEmbedToken) => Promise.reject(errorEmbedToken),
       );
 
       // Self tests.

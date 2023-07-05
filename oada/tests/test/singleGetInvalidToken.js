@@ -48,7 +48,7 @@ describe('GET (Invalid Token with Valid URL)', () => {
 
   // Real tests.
   info(
-    `${debugMark}Starting tests... (for ${path.win32.basename(__filename)})`
+    `${debugMark}Starting tests... (for ${path.win32.basename(__filename)})`,
   );
   const FOO_INVALID_TOKEN = 'fooInvalidToken-tests';
 
@@ -84,7 +84,7 @@ describe('GET (Invalid Token with Valid URL)', () => {
           trace(`HTTP GET Response: ${response}`);
           trace(`HTTP GET Response Status: ${response.status}`);
           trace(
-            `HTTP GET Response Data String: ${JSON.stringify(response.data)}`
+            `HTTP GET Response Data String: ${JSON.stringify(response.data)}`,
           );
           trace(`HTTP GET Response Keys: ${Object.keys(response)}`);
           http_get_response = response;

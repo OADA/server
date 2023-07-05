@@ -45,7 +45,7 @@ const text = 'Grower Gary';
 before('Open up a websocket', () =>
   websocket(baseUrl).then((result) => {
     socket = result;
-  })
+  }),
 );
 
 describe(`A client shouldn't exist before adding one`, () => {
@@ -64,7 +64,7 @@ describe(`A client shouldn't exist before adding one`, () => {
         expect(response.status).is.equal(200);
         expect(response.data).to.have.keys(['_id', '_meta', '_rev', '_type']);
         expect(response.data._type).to.equal(
-          'application/vnd.trellisfw.clients.1+json'
+          'application/vnd.trellisfw.clients.1+json',
         );
       }));
 
@@ -132,7 +132,7 @@ describe('Trellis demo testing...', () => {
                 _rev: 0,
               },
             });
-          })
+          }),
       );
   });
 
@@ -236,7 +236,7 @@ describe('Adding read permission', function () {
           owner: false,
         },
       },
-    })
+    }),
   );
 
   it('The GROWER should have the same certifications resource as the AUDITOR in /shares', () =>
@@ -281,8 +281,8 @@ describe('Adding read permission', function () {
               .catch((error) => {
                 expect(error.response.status).to.equal(403);
                 expect(error.response.statusText).to.equal('Forbidden');
-              })
-          )
+              }),
+          ),
       ));
 });
 
@@ -301,7 +301,7 @@ describe('Adding write permission', function () {
           write: true,
         },
       },
-    })
+    }),
   );
 
   it('The GROWER should now have write permission to the certifications resource in their /shares', () =>
@@ -453,7 +453,7 @@ describe('now add a second client, share with a second user, and check that the 
             owner: false,
           },
         },
-      })
+      }),
   );
 
   describe("If the AUDITOR adds an audit to the shared client's certifications, it should appear in the /shares of the shared user", function () {
@@ -493,7 +493,7 @@ describe('now add a second client, share with a second user, and check that the 
             .then((response) => {
               certIdTwo = response.headers.location.replace(
                 /^\/resources\//,
-                ''
+                '',
               );
               return socket.http({
                 method: 'PUT',

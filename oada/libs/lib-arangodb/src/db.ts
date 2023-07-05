@@ -40,7 +40,7 @@ class DatabaseWrapper extends Database {
   // @ts-expect-error nonsense
   override async query<T = unknown>(
     query: AqlQuery,
-    options: QueryOptions = {}
+    options: QueryOptions = {},
   ) {
     let tries = 0;
     while (++tries) {
