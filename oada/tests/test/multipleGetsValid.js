@@ -53,7 +53,7 @@ describe('GETs (Valid Token with Valid URLs)', () => {
 
   // Real tests.
   info(
-    `${debugMark}Starting tests... (for ${path.win32.basename(__filename)})`
+    `${debugMark}Starting tests... (for ${path.win32.basename(__filename)})`,
   );
   const VALID_TOKEN = 'xyz';
   const tokenToUse = VALID_TOKEN;
@@ -66,7 +66,7 @@ describe('GETs (Valid Token with Valid URLs)', () => {
     return url;
   });
   const urls = VALID_GET_REQ_URLS.map(
-    (requestUrl) => `http://proxy${requestUrl}`
+    (requestUrl) => `http://proxy${requestUrl}`,
   );
   trace(`${debugMark}urls:`);
   for (const url of urls) trace(url);
@@ -124,7 +124,7 @@ describe('GETs (Valid Token with Valid URLs)', () => {
               info('headers: ', error.response.headers);
               http_get_error_responses[index] = error.response;
             }
-          })
+          }),
       ).asCallback(done);
     });
   });
@@ -184,7 +184,7 @@ describe('GETs (Valid Token with Valid URLs)', () => {
                 if (key == '_meta') {
                   it('should contain a non-empty _meta field', () => {
                     trace(
-                      `http_get_response.data.${key}: ${http_get_response.data[key]}`
+                      `http_get_response.data.${key}: ${http_get_response.data[key]}`,
                     );
                     expect(http_get_response.data).to.have.property(key).that.is
                       .not.empty;
@@ -192,7 +192,7 @@ describe('GETs (Valid Token with Valid URLs)', () => {
                   // For the _meta field, only need to check the _meta._id.
                   it(`should contain the correct _id in ${key}`, () => {
                     trace(
-                      `http_get_response.data.${key}._id: ${http_get_response.data[key]._id}`
+                      `http_get_response.data.${key}._id: ${http_get_response.data[key]._id}`,
                     );
                     expect(http_get_response.data)
                       .to.have.property('_id')
@@ -201,7 +201,7 @@ describe('GETs (Valid Token with Valid URLs)', () => {
                 } else {
                   it(`should contain the correct ${key}`, () => {
                     trace(
-                      `http_get_response.data.${key}: ${http_get_response.data[key]}`
+                      `http_get_response.data.${key}: ${http_get_response.data[key]}`,
                     );
                     expect(http_get_response.data)
                       .to.have.property(key)

@@ -42,7 +42,7 @@ export interface TokenResponse {
 }
 
 export default async function tokenLookup(
-  request: TokenRequest
+  request: TokenRequest,
 ): Promise<TokenResponse> {
   const response: TokenResponse = {
     // Type: 'http_response',
@@ -70,7 +70,7 @@ export default async function tokenLookup(
   // Get token from db.
   // FIXME: We should speed this up by getting everything in one query.
   const t = await authorizations.findByToken(
-    request.token.trim().replace(/^Bearer /, '')
+    request.token.trim().replace(/^Bearer /, ''),
   );
 
   if (!t) {
@@ -104,7 +104,7 @@ export default async function tokenLookup(
       'token.createTime = %s, t.expiresIn = %s, now = %s',
       t.createTime,
       t.expiresIn,
-      now
+      now,
     );
   }
 

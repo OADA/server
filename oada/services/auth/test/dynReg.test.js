@@ -80,7 +80,7 @@ const trusted_signed_client_reg = jwt.sign(
       kid: privJwk.kid,
       jku: TEST_ROOT,
     },
-  }
+  },
 );
 // Signed with a jwk that is served at a jku URL, and that jku is NOT on trusted list:
 const untrusted_signed_client_reg = jwt.sign(
@@ -92,7 +92,7 @@ const untrusted_signed_client_reg = jwt.sign(
       kid: privJwk.kid,
       jku: `${TEST_ROOT}untrusted`, // The nock server below will serve this JKU, but it's not listed in the trusted list
     },
-  }
+  },
 );
 
 // Signed with a jwk that is embedded in the signature header, and it is not served on the trusted list:
@@ -102,7 +102,7 @@ const untrusted_jwk_signed_client_reg = jwt.sign(
   {
     algorithm: 'RS256',
     header: { kid: pubJwk.kid, jwk: pubJwk },
-  }
+  },
 );
 // Signed with a jwk that is embedded in the signature header, and it IS served on a trusted list:
 const privJwk2 = _.cloneDeep(privJwk);
@@ -115,7 +115,7 @@ const trusted_jwk_signed_client_reg = jwt.sign(
   {
     algorithm: 'RS256',
     header: { kid: pubJwk2.kid, jwk: pubJwk2 },
-  }
+  },
 );
 
 let dynReg = false;

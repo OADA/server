@@ -30,10 +30,10 @@ import { db as database } from '../db.js';
 const trace = debug('arangodb#resources:trace');
 
 const changes = database.collection(
-  config.get('arangodb.collections.changes.name')
+  config.get('arangodb.collections.changes.name'),
 );
 const changeEdges = database.collection(
-  config.get('arangodb.collections.changeEdges.name')
+  config.get('arangodb.collections.changeEdges.name'),
 );
 // HACK: Should use database.graph but there is a bug with aql template tags
 const changeGraph = config.get('arangodb.graphs.changes.name');
@@ -65,13 +65,13 @@ export function assertChange(value: unknown): asserts value is Change {
 }
 
 export async function getChanges(
-  resourceId: string
+  resourceId: string,
 ): Promise<AsyncIterable<number>> {
   return database.query<number>(
     aql`
       FOR change in ${changes}
         FILTER change.resource_id == ${resourceId}
-        RETURN change.number`
+        RETURN change.number`,
   );
 }
 
@@ -84,7 +84,7 @@ export async function getMaxChangeRev(resourceId: string): Promise<number> {
           SORT change.number DESC
           LIMIT 1
           RETURN change.number
-      )`
+      )`,
   );
 
   return ((await cursor.next()) as number) || 0;
@@ -99,7 +99,7 @@ export async function getMaxChangeRev(resourceId: string): Promise<number> {
  */
 export async function getChange(
   resourceId: string,
-  changeRev: string | number
+  changeRev: string | number,
 ): Promise<Change | undefined> {
   // FIXME: This is meant to handle when resources are deleted directly.
   // Edge cases remain to be tested.
@@ -125,7 +125,7 @@ export async function getChange(
         FOR v, e, p IN 0..${MAX_DEPTH} OUTBOUND change GRAPH ${changeGraph}
         RETURN p
       )
-      RETURN path`
+      RETURN path`,
   );
 
   const result = (await cursor.next()) as {
@@ -163,7 +163,7 @@ export async function getChange(
  */
 export async function getChangeArray(
   resourceId: string,
-  changeRev: string | number
+  changeRev: string | number,
 ): Promise<Change[]> {
   // FIXME: This is meant to handle when resources are deleted directly.
   // Edge cases remain to be tested.
@@ -189,7 +189,7 @@ export async function getChangeArray(
       )
       FOR v, e, p IN 0..${MAX_DEPTH} OUTBOUND change GRAPH ${changeGraph}
         SORT LENGTH(p.edges), v.number
-        RETURN p`
+        RETURN p`,
   );
   // Iterate over the graph
   return cursor.map((document) => toChangeObject(document)); // Convert to change object
@@ -228,7 +228,7 @@ function toChangeObject(arangoPathObject: ChangePath): Change {
 
 export async function getRootChange(
   resourceId: string,
-  changeRev: string | number
+  changeRev: string | number,
 ): Promise<{ edges: ChangeEdge[]; vertices: ChangeVertex[] }> {
   const cursor = await database.query(
     aql`
@@ -242,7 +242,7 @@ export async function getRootChange(
         FOR v, e, p IN 0..${MAX_DEPTH} OUTBOUND change GRAPH ${changeGraph}
         RETURN v
       )
-      RETURN path`
+      RETURN path`,
   );
 
   return (await cursor.next()) as {
@@ -298,7 +298,7 @@ export async function putChange({
             path: ${path ?? null}
           } in ${changeEdges}
       )
-      RETURN doc._id`
+      RETURN doc._id`,
   );
   return (await cursor.next()) as string;
 }

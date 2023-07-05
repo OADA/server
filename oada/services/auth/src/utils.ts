@@ -20,7 +20,7 @@ import { promisify } from 'node:util';
 import type { MiddlewareErrorFunction, MiddlewareFunction } from 'oauth2orize';
 
 export function isArray(
-  value: unknown
+  value: unknown,
 ): value is unknown[] | readonly unknown[] {
   return Array.isArray(value);
 }
@@ -29,7 +29,7 @@ type Arguments<M extends MiddlewareFunction | MiddlewareErrorFunction> =
   // eslint-disable-next-line @typescript-eslint/ban-types
   Parameters<M> extends [...rest: infer R, next: unknown] ? R : [];
 export function promisifyMiddleware<
-  M extends MiddlewareFunction | MiddlewareErrorFunction
+  M extends MiddlewareFunction | MiddlewareErrorFunction,
 >(middleware: M | readonly M[]): (...rest: Arguments<M>) => Promise<void> {
   if (isArray(middleware)) {
     const middlewares = middleware.map((m) => promisifyMiddleware(m));
@@ -45,7 +45,7 @@ export function promisifyMiddleware<
 
 export function createUserinfo(
   user: Record<string, unknown>,
-  scopes: string | readonly string[]
+  scopes: string | readonly string[],
 ) {
   const userinfo: Record<string, unknown> = {};
 

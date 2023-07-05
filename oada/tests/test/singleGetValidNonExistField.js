@@ -49,7 +49,7 @@ describe('GET (Valid Token with Valid URL referring to Non-Existing field)', () 
 
   // Real tests.
   info(
-    `${debugMark}Starting tests... (for ${path.win32.basename(__filename)})`
+    `${debugMark}Starting tests... (for ${path.win32.basename(__filename)})`,
   );
   const VALID_TOKEN = 'xyz';
 

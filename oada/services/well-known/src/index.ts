@@ -86,7 +86,7 @@ const wellKnownOptions = {
 const subservices = new Set(
   config
     .get('wellKnown.mergeSubServices')
-    .map((s) => (typeof s === 'string' ? s : `${s.base}${s.addPrefix ?? ''}`))
+    .map((s) => (typeof s === 'string' ? s : `${s.base}${s.addPrefix ?? ''}`)),
 );
 
 await fastify.register(
@@ -113,7 +113,7 @@ await fastify.register(
           request.log.trace(
             'Resource (%s) matches subservice entry (%o), retrieving',
             resource,
-            s
+            s,
           );
 
           // Request this resource from the subservice:
@@ -128,7 +128,7 @@ await fastify.register(
             request.log.error({ error }, `The subservice URL ${url} failed`);
             return null;
           }
-        })
+        }),
       );
       // eslint-disable-next-line @typescript-eslint/ban-types
       return Object.assign(payload as object, ...rest) as unknown;
@@ -137,7 +137,7 @@ await fastify.register(
     // Include well_known_handler AFTER the subservices check so that
     // express does the check prior to the well-known handler responding.
     await fastify.register(wkj, wellKnownOptions);
-  }
+  },
   // { prefix: '/.well-known' }
 );
 

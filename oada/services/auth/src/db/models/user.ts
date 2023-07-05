@@ -27,7 +27,7 @@ export interface IUsers {
   findByUsername(username: IUser['username']): Promise<User | undefined>;
   findByUsernamePassword(
     username: IUser['username'],
-    password: IUser['password']
+    password: IUser['password'],
   ): Promise<User | undefined>;
   findByOIDCToken(token: {
     sub: string;
@@ -35,7 +35,7 @@ export interface IUsers {
   }): Promise<User | undefined>;
   findByOIDCUsername(
     username: IUser['username'],
-    iss: string
+    iss: string,
   ): Promise<User | undefined>;
   update(user: IUser): Promise<void>;
 }
@@ -107,7 +107,7 @@ export async function findByUsername(username: IUser['username']) {
 
 export async function findByUsernamePassword(
   username: IUser['username'],
-  password: IUser['password']
+  password: IUser['password'],
 ) {
   const u = await database.findByUsernamePassword(username, password);
   return u ? new User(u) : undefined;
@@ -120,7 +120,7 @@ export async function findByOIDCToken(token: { sub: string; iss: string }) {
 
 export async function findByOIDCUsername(
   username: IUser['username'],
-  iss: string
+  iss: string,
 ) {
   const u = await database.findByOIDCUsername(username, iss);
   return u ? new User(u) : undefined;

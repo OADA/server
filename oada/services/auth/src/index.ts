@@ -210,7 +210,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     root: path.join(
       path.dirname(url.fileURLToPath(import.meta.url)),
       '..',
-      'public'
+      'public',
     ),
   });
   // Statically serve all the domains-enabled/*/auth-www folders:
@@ -218,7 +218,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     const onDisk = `${config.get('domainsDir')}/${domain}/auth-www`;
     const webpath = `domains/${domain}`;
     fastify.log.trace(
-      `Serving domain ${domain}/auth-www statically, on disk = ${onDisk}, webpath = ${webpath}`
+      `Serving domain ${domain}/auth-www statically, on disk = ${onDisk}, webpath = ${webpath}`,
     );
     await fastify.register(fastifyStatic, {
       prefix: webpath,
@@ -239,7 +239,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       const authenticated = request.isAuthenticated();
       request.log.debug(
         { req: request, authenticated },
-        'Checking if user is authenticated'
+        'Checking if user is authenticated',
       );
       if (!authenticated) {
         request.session.set('returnTo', request.url);

@@ -197,7 +197,7 @@ async function checkPreconditions(request: WriteRequest) {
   if (request['if-match']) {
     const rev = (await resources.getResource(
       request.resource_id,
-      '/_rev'
+      '/_rev',
     )) as unknown as number;
     if (!request['if-match'].includes(rev)) {
       throw new Error('if-match failed');
@@ -207,7 +207,7 @@ async function checkPreconditions(request: WriteRequest) {
   if (request['if-none-match']) {
     const rev = (await resources.getResource(
       request.resource_id,
-      '/_rev'
+      '/_rev',
     )) as unknown as number;
     if (request['if-none-match'].includes(rev)) {
       throw new Error('if-none-match failed');
@@ -218,7 +218,7 @@ async function checkPreconditions(request: WriteRequest) {
     cache.get(request.resource_id) ??
     ((await resources.getResource(
       request.resource_id,
-      '/_rev'
+      '/_rev',
     )) as unknown as number);
 
   if (request.rev && rev !== request.rev) {
@@ -231,7 +231,7 @@ async function checkPreconditions(request: WriteRequest) {
 function mergeDeep<T extends Record<string, unknown>>(
   target: T,
   path: PathSegments,
-  body: unknown
+  body: unknown,
 ) {
   if (path.length > 0) {
     const toMerge = {};
@@ -247,7 +247,7 @@ function mergeDeep<T extends Record<string, unknown>>(
  */
 async function doWrite(
   request: WriteRequest,
-  body: unknown
+  body: unknown,
 ): Promise<{ id: string; rev?: number; orev?: number; changeId?: string }> {
   const isDelete = body === undefined;
   const changeType = isDelete ? 'delete' : 'merge';
@@ -273,7 +273,7 @@ async function doWrite(
         'Setting method = deletePartialResource(%s, %o, %O)',
         id,
         path,
-        object
+        object,
       );
       body = null;
       trace(`Setting changeType = 'delete'`);
@@ -294,13 +294,13 @@ async function doWrite(
   trace(
     '%s: Checking if resource exists (req.resourceExists = %s)',
     request.resource_id,
-    request.resourceExists
+    request.resourceExists,
   );
   if (request.resourceExists === false) {
     trace(
       'initializing arango: resource_id = %s, path_leftover = %s',
       request.resource_id,
-      request.path_leftover
+      request.path_leftover,
     );
     path = path.slice(2);
 
@@ -338,7 +338,7 @@ async function doWrite(
       trace(
         'Found old changes (max rev %d) for new resource, setting initial _rev to %d include them',
         changerev,
-        rev
+        rev,
       );
     }
   }
@@ -362,7 +362,7 @@ async function doWrite(
    */
   if ('_id' in object && object._id !== id) {
     const tError = new Error(
-      `Tried to write _id ${object._id} to resource with _id ${id}`
+      `Tried to write _id ${object._id} to resource with _id ${id}`,
     );
     throw Object.assign(tError, { code: 'bad request' });
   }
@@ -386,7 +386,7 @@ async function doWrite(
       _id: `${id}/_meta/_changes`,
       _rev: rev,
     },
-    true
+    true,
   );
 
   const orev = await method(id, object, !request.ignoreLinks);
@@ -399,7 +399,7 @@ async function doWrite(
 }
 
 export async function handleRequest(
-  request: WriteRequest
+  request: WriteRequest,
 ): Promise<WriteResponse> {
   request.source = request.source ?? '';
   // Fixes bug if this is undefined

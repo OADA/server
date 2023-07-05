@@ -65,7 +65,7 @@ export class Requester extends Base {
   async send(
     request: Record<string, unknown>,
     // eslint-disable-next-line @typescript-eslint/ban-types
-    topic: string | null | undefined = this.produceTopic
+    topic: string | null | undefined = this.produceTopic,
   ): Promise<KafkaBase> {
     if (!topic) {
       throw new Error('Send called with no topic specified');
@@ -96,7 +96,7 @@ export class Requester extends Base {
   async emitter(
     request: KafkaBase,
     // eslint-disable-next-line @typescript-eslint/ban-types
-    topic: string | null | undefined = this.produceTopic
+    topic: string | null | undefined = this.produceTopic,
   ): Promise<EventEmitter & { close(): Promise<void> }> {
     if (!topic) {
       throw new Error('Emit called with no topic specified');

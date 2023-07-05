@@ -73,7 +73,7 @@ export function logLevel(): string {
   // Guess level based on OADA debug namespaces (e.g., *:info -> info log level)
   const levels = Object.entries(_pino.levels.values).sort(
     // Ensure levels are sorted by value
-    ([_1, v1], [_2, v2]) => v1 - v2
+    ([_1, v1], [_2, v2]) => v1 - v2,
   );
   for (const [label] of levels) {
     if (debug.enabled(`:${label}`)) {

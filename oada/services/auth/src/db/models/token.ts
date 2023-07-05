@@ -107,7 +107,7 @@ export async function save(t: IToken) {
     throw new OADAError(
       'Token already exists',
       Codes.BadRequest,
-      'There was a problem login in'
+      'There was a problem login in',
     );
   }
 

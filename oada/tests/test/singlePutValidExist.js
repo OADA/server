@@ -49,7 +49,7 @@ describe('PUT (Valid Token with Valid URL of an Existing Res)', () => {
 
   // Real tests.
   info(
-    `${debugMark}Starting tests... (for ${path.win32.basename(__filename)})`
+    `${debugMark}Starting tests... (for ${path.win32.basename(__filename)})`,
   );
   const VALID_TOKEN = 'xyz';
 
@@ -97,7 +97,7 @@ describe('PUT (Valid Token with Valid URL of an Existing Res)', () => {
               info('headers: ', error.response.headers);
               http_get_error_response_before = error.response;
             }
-          })
+          }),
       )
       .then(() =>
         axiosInst
@@ -110,7 +110,7 @@ describe('PUT (Valid Token with Valid URL of an Existing Res)', () => {
               headers: {
                 'Content-Type': 'application/vnd.oada.rock.1+json',
               },
-            }
+            },
           )
           .then((response) => {
             trace(`HTTP PUT Response: ${response}`);
@@ -124,7 +124,7 @@ describe('PUT (Valid Token with Valid URL of an Existing Res)', () => {
               info('headers: ', error.response.headers);
               http_put_error_response = error.response;
             }
-          })
+          }),
       )
       .then(() =>
         axiosInst
@@ -145,7 +145,7 @@ describe('PUT (Valid Token with Valid URL of an Existing Res)', () => {
             }
 
             done();
-          })
+          }),
       )
       .catch((error_) => error(error_));
   });
@@ -155,7 +155,7 @@ describe('PUT (Valid Token with Valid URL of an Existing Res)', () => {
     describe('http_get_error_response_before', () => {
       it('should be null', () => {
         trace(
-          `http_get_error_response_before: ${http_get_error_response_before}`
+          `http_get_error_response_before: ${http_get_error_response_before}`,
         );
         expect(http_get_error_response_before).to.be.null;
       });
@@ -168,7 +168,7 @@ describe('PUT (Valid Token with Valid URL of an Existing Res)', () => {
       });
       it('should contain the status 200 OK', () => {
         trace(
-          `http_get_response_before.status: ${http_get_response_before.status}`
+          `http_get_response_before.status: ${http_get_response_before.status}`,
         );
         expect(http_get_response_before)
           .to.have.property('status')
@@ -179,14 +179,14 @@ describe('PUT (Valid Token with Valid URL of an Existing Res)', () => {
     describe('http_get_response_before.data', () => {
       it('should be a non-empty object', () => {
         trace(
-          `http_get_response_before.data: ${http_get_response_before.data}`
+          `http_get_response_before.data: ${http_get_response_before.data}`,
         );
         expect(http_get_response_before.data).to.be.an('Object').that.is.not
           .empty;
       });
       it('should contain the field picked_up', () => {
         trace(
-          `http_get_response_before.data.picked_up: ${http_get_response_before.data.picked_up}`
+          `http_get_response_before.data.picked_up: ${http_get_response_before.data.picked_up}`,
         );
         expect(http_get_response_before.data)
           .to.have.property('picked_up')
@@ -215,7 +215,7 @@ describe('PUT (Valid Token with Valid URL of an Existing Res)', () => {
     describe('http_get_error_response_after', () => {
       it('should be null', () => {
         trace(
-          `http_get_error_response_after: ${http_get_error_response_after}`
+          `http_get_error_response_after: ${http_get_error_response_after}`,
         );
         expect(http_get_error_response_after).to.be.null;
       });
@@ -228,7 +228,7 @@ describe('PUT (Valid Token with Valid URL of an Existing Res)', () => {
       });
       it('should contain the status 200 OK', () => {
         trace(
-          `http_get_response_after.status: ${http_get_response_after.status}`
+          `http_get_response_after.status: ${http_get_response_after.status}`,
         );
         expect(http_get_response_after)
           .to.have.property('status')
@@ -244,7 +244,7 @@ describe('PUT (Valid Token with Valid URL of an Existing Res)', () => {
       });
       it('should contain the updated picked_up', () => {
         trace(
-          `http_get_response_after.data.picked_up: ${http_get_response_after.data.picked_up}`
+          `http_get_response_after.data.picked_up: ${http_get_response_after.data.picked_up}`,
         );
         expect(http_get_response_after.data)
           .to.have.property('picked_up')

@@ -42,7 +42,7 @@ declare module 'oauth2orize-openid' {
     user: U,
     request: OAuth2Req,
     // eslint-disable-next-line @typescript-eslint/ban-types
-    done: (error: null | Error, idToken?: {}) => void
+    done: (error: null | Error, idToken?: {}) => void,
   ) => void;
   namespace grant {
     /**
@@ -60,7 +60,7 @@ declare module 'oauth2orize-openid' {
      */
     export function codeIdToken<C, U>(
       issueCode: IssueCode,
-      issueIDToken: IssueIDToken<C, U>
+      issueIDToken: IssueIDToken<C, U>,
     ): MiddlewareFunction;
     /**
      * Handles requests to obtain a response with an access token, authorization
@@ -78,7 +78,7 @@ declare module 'oauth2orize-openid' {
     export function codeIdTokenToken<C, U>(
       issueToken: IssueToken,
       issueCode: IssueCode,
-      issueIDToken: IssueIDToken<C, U>
+      issueIDToken: IssueIDToken<C, U>,
     ): MiddlewareFunction;
     /**
      * Handles requests to obtain a response with an access token and authorization
@@ -95,7 +95,7 @@ declare module 'oauth2orize-openid' {
      */
     export function codeToken(
       issueToken: IssueToken,
-      issueCode: IssueCode
+      issueCode: IssueCode,
     ): MiddlewareFunction;
     /**
      * Handles requests to obtain a response with an ID token.
@@ -110,7 +110,7 @@ declare module 'oauth2orize-openid' {
      * @return {Object} module
      */
     export function idToken<C, U>(
-      issue: IssueIDToken<C, U>
+      issue: IssueIDToken<C, U>,
     ): MiddlewareFunction;
     /**
      * Handles requests to obtain a response with an access token and ID token.
@@ -126,7 +126,7 @@ declare module 'oauth2orize-openid' {
      */
     export function idTokenToken<C, U>(
       issueToken: IssueToken,
-      issueIDToken: IssueIDToken<C, U>
+      issueIDToken: IssueIDToken<C, U>,
     ): MiddlewareFunction;
   }
 }
@@ -151,7 +151,7 @@ declare module 'passport-oauth2-jwt-bearer' {
   export type VerifyFunction = (
     clientId: string,
     clientSecret: string,
-    done: (error: any, client?: any, info?: any) => void
+    done: (error: any, client?: any, info?: any) => void,
   ) => void;
   class OAuth2JWTBearerStrategy extends Strategy {
     name: 'oauth2-jwt-bearer';

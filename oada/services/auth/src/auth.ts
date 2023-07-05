@@ -66,7 +66,7 @@ fastifyPassport.use(
     } catch (error: unknown) {
       done(error);
     }
-  })
+  }),
 );
 
 fastifyPassport.registerUserSerializer<User, string>(async (user) => {
@@ -142,7 +142,7 @@ fastifyPassport.use(
         // Check audience
         if (request.url !== payload.aud) {
           trace(
-            `Audience ${payload.aud} does not match endpoint url ${request.url}`
+            `Audience ${payload.aud} does not match endpoint url ${request.url}`,
           );
           done(null);
         }
@@ -157,8 +157,8 @@ fastifyPassport.use(
       } catch (error: unknown) {
         done(error);
       }
-    }) as VerifyCallbackWithRequest
-  )
+    }) as VerifyCallbackWithRequest,
+  ),
 );
 
 // ClientPassword used to verify client secret in Authorization flow
@@ -191,7 +191,7 @@ fastifyPassport.use(
     } catch (error: unknown) {
       done(error);
     }
-  })
+  }),
 );
 
 // BearerStrategy used to protect userinfo endpoint
@@ -209,5 +209,5 @@ fastifyPassport.use(
     } catch (error: unknown) {
       done(error);
     }
-  })
+  }),
 );

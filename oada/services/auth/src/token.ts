@@ -46,7 +46,7 @@ create:
 \t-s <scope_string>: comma-separated list of scopes, defaults to all:all
 \t-i <client_id>: id of OAuth client for token, defaults to system/token
 disable:
-\t<token>: disable <token> by making it expired`
+\t<token>: disable <token> by making it expired`,
   );
 };
 

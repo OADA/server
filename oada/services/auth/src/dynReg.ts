@@ -74,12 +74,12 @@ async function getSoftwareStatement({
 
   const { payload, trusted, valid, details } = await validate.validate(
     softwareStatement,
-    { timeout }
+    { timeout },
   );
   if (!valid) {
     throw new RegistrationError(
       RegistrationErrorCode.InvalidSoftwareStatement,
-      `Software statement was not a valid JWT. Details = "${details}"`
+      `Software statement was not a valid JWT. Details = "${details}"`,
     );
   }
 
@@ -105,7 +105,7 @@ export interface Options {
  */
 const plugin: FastifyPluginAsync<Options> = async (
   fastify,
-  { endpoints: { register = 'register' } = {} }
+  { endpoints: { register = 'register' } = {} },
 ) => {
   fastify.post(
     register,
@@ -120,23 +120,23 @@ const plugin: FastifyPluginAsync<Options> = async (
         if (requireSS && !softwareStatement) {
           request.log.error(
             metadata,
-            'Request body does not have software_statement key. Did you remember content-type=application/json?'
+            'Request body does not have software_statement key. Did you remember content-type=application/json?',
           );
           throw new RegistrationError(
             // FIXME: What is the correct code here??
             RegistrationErrorCode.InvalidSoftwareStatement,
-            'Client registration MUST include a software_statement for this server'
+            'Client registration MUST include a software_statement for this server',
           );
         }
 
         if (mustTrust && !softwareStatement?.trusted) {
           request.log.error(
             metadata,
-            'Request body does not have a trusted software_statement'
+            'Request body does not have a trusted software_statement',
           );
           throw new RegistrationError(
             RegistrationErrorCode.UnapprovedSoftwareStatement,
-            'Client registration MUST include a software_statement for this server'
+            'Client registration MUST include a software_statement for this server',
           );
         }
 
@@ -146,7 +146,7 @@ const plugin: FastifyPluginAsync<Options> = async (
         ) {
           throw new RegistrationError(
             RegistrationErrorCode.InvalidSoftwareStatement,
-            `Software statement must include at least ${mustInclude}`
+            `Software statement must include at least ${mustInclude}`,
           );
         }
 
@@ -157,7 +157,7 @@ const plugin: FastifyPluginAsync<Options> = async (
         // ???: How to tell it is a confidential client?
         if ('client_secret' in registrationData) {
           throw new Error(
-            'Client secret is not allowed in dynamic registration'
+            'Client secret is not allowed in dynamic registration',
           );
         }
 
@@ -166,7 +166,7 @@ const plugin: FastifyPluginAsync<Options> = async (
         request.log.trace(
           'Saving client %s registration, trusted = %s',
           registrationData.client_name,
-          registrationData.trusted
+          registrationData.trusted,
         );
         const client = await save(registrationData as IClient);
         const result = {
@@ -176,7 +176,7 @@ const plugin: FastifyPluginAsync<Options> = async (
         request.log.info(
           'Saved new client ID %s to DB, client_name = %s',
           result.client_id,
-          result.client_name
+          result.client_name,
         );
         void reply.code(201);
         return result;
@@ -190,10 +190,10 @@ const plugin: FastifyPluginAsync<Options> = async (
         void reply.code(400);
         return new RegistrationError(
           RegistrationErrorCode.InvalidClientMetadata,
-          `Client registration failed: ${(error as Error)?.message ?? error}`
+          `Client registration failed: ${(error as Error)?.message ?? error}`,
         );
       }
-    }
+    },
   );
 };
 

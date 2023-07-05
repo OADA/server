@@ -51,7 +51,7 @@ export default {
       // Read the private key from the private key file:
       // @eslint-disable-next-line security/detect-non-literal-fs-filename
       pem: await fs.readFile(
-        `${path.dirname(url.fileURLToPath(import.meta.url))}/private_key.pem`
+        `${path.dirname(url.fileURLToPath(import.meta.url))}/private_key.pem`,
       ),
     },
   },

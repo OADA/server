@@ -39,7 +39,7 @@ const error = debug('@oada/lib-kafka:error');
 export type Response<R = KafkaBase> = R | Iterable<R> | AsyncIterable<R> | void;
 
 function isIterable<T>(
-  value: T | Iterable<T> | AsyncIterable<T>
+  value: T | Iterable<T> | AsyncIterable<T>,
 ): value is Iterable<T> | AsyncIterable<T> {
   return (
     value &&
@@ -81,18 +81,18 @@ export class Responder<Request extends KafkaBase = KafkaBase> extends Base {
     event: 'request',
     listener: (
       reg: Request,
-      data: EachMessagePayload
-    ) => Response<R> | Promise<Response<R>>
+      data: EachMessagePayload,
+    ) => Response<R> | Promise<Response<R>>,
   ): this;
   override on(
     event: string | symbol,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    listener: (...arguments_: any[]) => unknown
+    listener: (...arguments_: any[]) => unknown,
   ): this;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   override on<L extends (...arguments_: any[]) => unknown>(
     event: string | symbol,
-    listener: L
+    listener: L,
   ): this {
     if (event === 'request') {
       // FIXME: Probably a better way to handle this event...
@@ -112,8 +112,8 @@ export class Responder<Request extends KafkaBase = KafkaBase> extends Base {
     data: EachMessagePayload,
     listener: (
       request: Request,
-      data: EachMessagePayload
-    ) => Response<R> | Promise<Response<R>>
+      data: EachMessagePayload,
+    ) => Response<R> | Promise<Response<R>>,
   ) {
     const { [REQ_ID_KEY]: id = '', time } = request;
     await rTracer.runWithId(async () => {
@@ -163,7 +163,7 @@ export class Responder<Request extends KafkaBase = KafkaBase> extends Base {
    */
   async #respond(
     { [REQ_ID_KEY]: id = '', domain, group, resp_partition: part = 0 }: Request,
-    resp: Response
+    resp: Response,
   ) {
     if (!resp) {
       return;

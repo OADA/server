@@ -56,7 +56,7 @@ export async function run(): Promise<void> {
       `ensureDefaults = %s` +
         "==> false means it will delete default doc._id's from all collections if they exist, " +
         'and true means it will add them if they do not exist',
-      ensureDefaults
+      ensureDefaults,
     );
 
     trace('Checking if database exists');
@@ -70,7 +70,7 @@ export async function run(): Promise<void> {
       ) {
         trace(
           'isProduction is false and process.env.RESETDATABASE is "yes"' +
-            'dropping database and recreating'
+            'dropping database and recreating',
         );
         await systemDB.dropDatabase(databaseName);
         await systemDB.createDatabase(databaseName);
@@ -79,7 +79,7 @@ export async function run(): Promise<void> {
       info(
         'isProduction is %s and process.env.RESETDATABASE is %s, not dropping database.',
         config.get('isProduction'),
-        process.env.RESETDATABASE
+        process.env.RESETDATABASE,
       );
       // Otherwise, not test so don't drop database
       trace('database %s exists', databaseName);
@@ -147,7 +147,7 @@ export async function run(): Promise<void> {
       }
 
       for await (const [colname, colinfo] of Object.entries(
-        config.get('arangodb.collections')
+        config.get('arangodb.collections'),
       )) {
         trace('Setting up collection %s: %O', colname, colinfo);
         if (typeof colinfo.defaults !== 'string') {
@@ -189,7 +189,7 @@ export async function run(): Promise<void> {
                 'Default data document %s already exists on collection %s, ' +
                   'leaving it alone because ensureDefaults is truthy',
                 document._id,
-                colname
+                colname,
               );
               continue;
             }
@@ -201,7 +201,7 @@ export async function run(): Promise<void> {
                 'Before deleting, its value in the database was: %O',
               document._id,
               colname,
-              databaseDocument
+              databaseDocument,
             );
             try {
               await database.collection(colname).remove(document._key);
@@ -210,7 +210,7 @@ export async function run(): Promise<void> {
                 'Failed to remove default doc %s from collection %s. Error was: %O',
                 document._key,
                 colname,
-                error
+                error,
               );
             }
           } catch {
@@ -218,19 +218,19 @@ export async function run(): Promise<void> {
               info(
                 'Document %s does not exist in collection %s. Creating...',
                 document._key,
-                colname
+                colname,
               );
               await database.collection(colname).save(document);
               trace(
                 'Document %s successfully created in collection %s',
                 document._id,
-                colname
+                colname,
               );
             } else {
               trace(
                 'Default document %s does not exist in collection %s so there is nothing else to do for this one.',
                 document._key,
-                colname
+                colname,
               );
             }
           }
@@ -238,7 +238,7 @@ export async function run(): Promise<void> {
       }
 
       for await (const [name, options] of Object.entries(
-        config.get('arangodb.graphs')
+        config.get('arangodb.graphs'),
       )) {
         const graph = database.graph(options.name);
         if (await graph.exists()) {
@@ -250,7 +250,7 @@ export async function run(): Promise<void> {
         const edges = options.edges.map(({ collection, to, from }) => ({
           // Resolve collection names based on collections config
           collection: config.get(
-            `arangodb.collections.${collection as string}.name`
+            `arangodb.collections.${collection as string}.name`,
           ),
           to: config.get(`arangodb.collections.${to as string}.name`),
           from: config.get(`arangodb.collections.${from as string}.name`),
@@ -276,14 +276,14 @@ export async function cleanup(): Promise<void> {
     if (config.get('isProduction')) {
       throw new Error(
         'Cleanup called, but isProduction is true!' +
-          ' Cleanup only deletes the database when testing.'
+          ' Cleanup only deletes the database when testing.',
       );
     }
 
     // Arango only lets you drop databases from _system
     trace(
       'Cleaning up by dropping test database %s',
-      config.get('arangodb.database')
+      config.get('arangodb.database'),
     );
     await systemDB.dropDatabase(config.get('arangodb.database'));
     trace('Database %s dropped successfully', config.get('arangodb.database'));

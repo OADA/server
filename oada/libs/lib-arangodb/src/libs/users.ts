@@ -30,7 +30,7 @@ import { sanitizeResult } from '../util.js';
 const info = debug('arangodb#resources:info');
 
 const users = database.collection(
-  config.get('arangodb.collections.users.name')
+  config.get('arangodb.collections.users.name'),
 );
 
 const roundsOrSalt =
@@ -82,7 +82,7 @@ export interface DBUser extends User {
 
 export async function findById(
   id: string,
-  options?: CollectionReadOptions
+  options?: CollectionReadOptions,
 ): Promise<DBUser | undefined> {
   try {
     // eslint-disable-next-line @typescript-eslint/ban-types
@@ -103,13 +103,13 @@ export async function exists(id: string): Promise<boolean> {
 }
 
 export async function findByUsername(
-  username: string
+  username: string,
 ): Promise<DBUser | undefined> {
   const cursor = await database.query(
     aql`
       FOR u IN ${users}
         FILTER u.username == ${username}
-        RETURN u`
+        RETURN u`,
   );
   const user = (await cursor.next()) as DBUser;
 
@@ -118,14 +118,14 @@ export async function findByUsername(
 
 export async function findByOIDCUsername(
   oidcUsername: string,
-  oidcDomain: string
+  oidcDomain: string,
 ): Promise<DBUser | undefined> {
   const cursor = await database.query(
     aql`
       FOR u IN ${users}
         FILTER u.oidc.username == ${oidcUsername}
         FILTER u.oidc.iss == ${oidcDomain}
-        RETURN u`
+        RETURN u`,
   );
   const user = (await cursor.next()) as DBUser;
 
@@ -145,7 +145,7 @@ export async function findByOIDCToken(idToken: {
       FOR u IN ${users}
         FILTER u.oidc.sub == ${idToken.sub}
         FILTER u.oidc.iss == ${idToken.iss}
-        RETURN u`
+        RETURN u`,
   );
   const user = (await cursor.next()) as DBUser;
 
@@ -154,7 +154,7 @@ export async function findByOIDCToken(idToken: {
 
 export async function findByUsernamePassword(
   username: string,
-  password: string
+  password: string,
 ): Promise<DBUser | undefined> {
   const user = await findByUsername(username);
   if (!user) {
@@ -183,7 +183,7 @@ export async function remove(u: Selector<User>): Promise<void> {
 }
 
 export async function update(
-  u: { _id: string } & Partial<DBUser>
+  u: { _id: string } & Partial<DBUser>,
 ): Promise<{ _id: string; new: User }> {
   if (u.password) {
     u.password = await hashPw(u.password);
@@ -196,7 +196,7 @@ export async function update(
 }
 
 export async function like(
-  u: Partial<User>
+  u: Partial<User>,
 ): Promise<AsyncIterableIterator<DBUser>> {
   return users.byExample(flatten(u));
 }

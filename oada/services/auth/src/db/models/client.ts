@@ -79,7 +79,7 @@ export async function save(c: IClient) {
     throw new OADAError(
       'Client Id already exists',
       Codes.BadRequest,
-      'There was a problem durring the login'
+      'There was a problem durring the login',
     );
   }
 

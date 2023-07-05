@@ -86,8 +86,8 @@ responder.on<WriteRequest>('request', async (request) => {
   if (!request.resource_id || !Number.isInteger(request._rev)) {
     throw new Error(
       `Invalid http_response: keys resource_id or _rev are missing: ${JSON.stringify(
-        request
-      )}`
+        request,
+      )}`,
     );
   }
 
@@ -112,7 +112,7 @@ responder.on<WriteRequest>('request', async (request) => {
       error(
         'Error parsing req.causechain at %s: %s',
         parse.position,
-        parse.message
+        parse.message,
       );
     }
   }
@@ -138,7 +138,7 @@ responder.on<WriteRequest>('request', async (request) => {
     if (causechain.includes(parent.resource_id)) {
       info(
         'Parent %s exists in causechain, not scheduling for update',
-        parent.resource_id
+        parent.resource_id,
       );
       continue;
     }
@@ -150,7 +150,7 @@ responder.on<WriteRequest>('request', async (request) => {
       // Add change ID to the request.
       info(
         'Resource %s already queued for changes, adding to queue',
-        uniqueKey
+        uniqueKey,
       );
       if (request.change_id) {
         qRequest.from_change_id.push(request.change_id);
@@ -162,7 +162,7 @@ responder.on<WriteRequest>('request', async (request) => {
         'Writing new child link rev (%d) to %s%s/_rev',
         childrev,
         parent.resource_id,
-        parent.path
+        parent.path,
       );
       // Create a new write request.
       const message = {

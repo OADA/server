@@ -202,7 +202,7 @@ if (enabled) {
   await fastify.register<RateLimitPluginOptions>(
     // @ts-expect-error broken types
     plugin,
-    options
+    options,
   );
 }
 

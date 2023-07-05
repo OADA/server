@@ -105,6 +105,6 @@ if (!config.get('wellKnown.oada-configuration.oada_base_uri')) {
     'wellKnown.wellKnown.server.oada-configuration.oada_base_uri',
     `${server.mode}//${server.domain}${server.port ? `:${server.port}` : ''}${
       server.path_prefix ?? ''
-    }`
+    }`,
   );
 }

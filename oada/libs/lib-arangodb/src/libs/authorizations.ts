@@ -27,7 +27,7 @@ import debug from 'debug';
 const trace = debug('@oada/lib-arangodb#authorizations:trace');
 
 const authorizations = database.collection(
-  config.get('arangodb.collections.authorizations.name')
+  config.get('arangodb.collections.authorizations.name'),
 );
 
 export interface Authorization {
@@ -54,13 +54,13 @@ export async function findById(id: string): Promise<Authorization | undefined> {
 }
 
 export async function findByToken(
-  token: string
+  token: string,
 ): Promise<(Authorization & { user: User }) | undefined> {
   const cursor = await database.query(
     aql`
       FOR t IN ${authorizations}
         FILTER t.token == ${token}
-        RETURN t`
+        RETURN t`,
   );
   // eslint-disable-next-line @typescript-eslint/ban-types
   const auth = (await cursor.next()) as Authorization | null;
@@ -83,7 +83,7 @@ export async function findByToken(
 
 // TODO: Add index on user id
 export async function findByUser(
-  user: string
+  user: string,
 ): Promise<AsyncIterable<Authorization>> {
   return database.query<Authorization>(aql`
     FOR t IN ${authorizations}
@@ -109,7 +109,7 @@ export async function save({
   // Overwrite will replace the given token if it already exists
   await authorizations.save(
     { ...auth, user, _key },
-    { overwriteMode: 'replace' }
+    { overwriteMode: 'replace' },
   );
 
   return findByToken(auth.token);

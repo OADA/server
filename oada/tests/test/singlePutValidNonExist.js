@@ -51,7 +51,7 @@ describe('Create a Non-Existing Res Using PUT', () => {
 
   // Real tests.
   info(
-    `${debugMark}Starting tests... (for ${path.win32.basename(__filename)})`
+    `${debugMark}Starting tests... (for ${path.win32.basename(__filename)})`,
   );
   const VALID_TOKEN = 'xyz';
 
@@ -100,7 +100,7 @@ describe('Create a Non-Existing Res Using PUT', () => {
               info('headers: ', error.response.headers);
               http_get_error_response_before = error.response;
             }
-          })
+          }),
       )
       .then(() =>
         axiosInst
@@ -113,7 +113,7 @@ describe('Create a Non-Existing Res Using PUT', () => {
               headers: {
                 'Content-Type': 'application/vnd.oada.rock.1+json',
               },
-            }
+            },
           )
           .then((response) => {
             trace(`HTTP create Response: ${response}`);
@@ -127,7 +127,7 @@ describe('Create a Non-Existing Res Using PUT', () => {
               info('headers: ', error.response.headers);
               http_create_error_response = error.response;
             }
-          })
+          }),
       )
       .then(() =>
         axiosInst
@@ -148,7 +148,7 @@ describe('Create a Non-Existing Res Using PUT', () => {
             }
 
             done();
-          })
+          }),
       )
       .catch((error_) => error(error_));
   });
@@ -165,14 +165,14 @@ describe('Create a Non-Existing Res Using PUT', () => {
     describe('http_get_error_response_before', () => {
       it('should be a non-empty object', () => {
         trace(
-          `http_get_error_response_before:${http_get_error_response_before}`
+          `http_get_error_response_before:${http_get_error_response_before}`,
         );
         expect(http_get_error_response_before).to.be.an('Object').that.is.not
           .empty;
       });
       it('should contain the status 403 Forbidden', () => {
         trace(
-          `http_get_error_response_before.status:${http_get_error_response_before.code}`
+          `http_get_error_response_before.status:${http_get_error_response_before.code}`,
         );
         expect(http_get_error_response_before)
           .to.have.property('status')
@@ -203,7 +203,7 @@ describe('Create a Non-Existing Res Using PUT', () => {
     describe('http_get_error_response_after', () => {
       it('should be null', () => {
         trace(
-          `http_get_error_response_after: ${http_get_error_response_after}`
+          `http_get_error_response_after: ${http_get_error_response_after}`,
         );
         expect(http_get_error_response_after).to.be.null;
       });
@@ -216,7 +216,7 @@ describe('Create a Non-Existing Res Using PUT', () => {
       });
       it('should contain the status 200 OK', () => {
         trace(
-          `http_get_response_after.status: ${http_get_response_after.status}`
+          `http_get_response_after.status: ${http_get_response_after.status}`,
         );
         expect(http_get_response_after)
           .to.have.property('status')
@@ -232,7 +232,7 @@ describe('Create a Non-Existing Res Using PUT', () => {
       });
       it('should contain the correct picked_up value', () => {
         trace(
-          `http_get_response_after.data.picked_up: ${http_get_response_after.data.picked_up}`
+          `http_get_response_after.data.picked_up: ${http_get_response_after.data.picked_up}`,
         );
         expect(http_get_response_after.data)
           .to.have.property('picked_up')

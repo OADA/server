@@ -79,7 +79,7 @@ async function readFileUrl(url: URL) {
 
 function readDataUrl(url: URL) {
   const { groups } = /^(?<type>[^;,]*)(;(?<charset>[^,]*))?,(?<data>.*)$/.exec(
-    url.pathname
+    url.pathname,
   )!;
   const { type = 'text/plain', charset = 'ascii', data } = groups!;
   const buffer = Buffer.from(data!, charset as BufferEncoding);
@@ -139,7 +139,7 @@ convict.addParser([
  */
 export default async function config<S>(
   // Defer type inference
-  inSchema: S extends unknown ? Schema<S> : never
+  inSchema: S extends unknown ? Schema<S> : never,
 ) {
   // Merge input schema with default schema and create config
   const schema = convict({ ...defaults, ...inSchema });

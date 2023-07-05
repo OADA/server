@@ -83,13 +83,13 @@ responder.on<void>('request', async (request) => {
         if (sync['oada-put']) {
           const change = await changes.getChange(
             request.resource_id,
-            request._rev
+            request._rev,
           );
           if (!change) {
             error(
               'Failed to get change %d for %s',
               request._rev,
-              request.resource_id
+              request.resource_id,
             );
             return;
           }
@@ -142,7 +142,7 @@ responder.on<void>('request', async (request) => {
 
         trace('Sending to: %s', sync.url);
         await got(sync);
-      })
+      }),
     );
   }
 });
