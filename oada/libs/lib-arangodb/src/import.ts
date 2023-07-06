@@ -76,7 +76,9 @@ for await (const { name } of Object.values(collections)) {
       imported += docs.length;
     }
   } finally {
-    await cursor.kill();
+    try {
+      await cursor.kill();
+    } catch { }
   }
 
   info(`${imported}/${count} documents imported from collection ${name}`);
