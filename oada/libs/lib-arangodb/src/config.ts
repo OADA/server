@@ -60,7 +60,7 @@ export const { config, schema } = await libConfig({
     },
     batchSize: {
       format: 'nat',
-      default: 1000,
+      default: 10,
       env: 'ARANGODB_IMPORT_BATCH_SIZE',
       arg: 'arangodb-import-batch-size',
     },

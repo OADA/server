@@ -56,7 +56,6 @@ for await (const { name } of Object.values(collections)) {
   `, {
       batchSize,
       ttl: 60 * 60 * 10,
-      count: true,
       allowRetry: true,
       cache: false,
       fillBlockCache: false,
@@ -64,11 +63,10 @@ for await (const { name } of Object.values(collections)) {
     });
 
   const collection = db.collection<T>(name);
-  const { count } = cursor;
   let imported = 0;
   try {
     for await (const docs of cursor.batches) {
-      trace({ imported, count, docs }, 'importing docs');
+      trace({ imported, docs }, 'importing docs');
       await collection.import(docs, {
         waitForSync: true,
         onDuplicate: overwriteMode
@@ -81,5 +79,5 @@ for await (const { name } of Object.values(collections)) {
     } catch { }
   }
 
-  info(`${imported}/${count} documents imported from collection ${name}`);
+  info(`${imported} documents imported from collection ${name}`);
 }
