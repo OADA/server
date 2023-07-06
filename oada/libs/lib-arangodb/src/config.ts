@@ -58,6 +58,12 @@ export const { config, schema } = await libConfig({
       env: 'ARANGODB_IMPORT_DATABASE',
       arg: 'arangodb-import-database',
     },
+    overwriteMode: {
+      format: ['replace', 'update', 'ignore'],
+      default: 'replace' as 'replace' | 'update'| 'ignore',
+      env: 'ARANGODB_IMPORT_OVERWRITE_MODE',
+      arg: 'arangodb-import-overwrite-mode',
+    },
     auth: {
       username: {
         doc: 'Username for arangodb authentication',

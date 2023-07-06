@@ -29,6 +29,7 @@ const {
   auth,
   connectionString: url,
   database: databaseName,
+  overwriteMode,
 } = config.get('arangodbImport');
 
 const collections = config.get('arangodb.collections');
@@ -51,7 +52,7 @@ for await (const { name } of Object.values(collections)) {
   const { count } = collection;
   let imported = 0;
   for await (const doc of cursor) {
-    await collection.replace(doc, doc);
+    await collection.save(doc, { silent: true, overwriteMode });
     imported++;
     trace({ imported, count, doc }, 'imported doc');
   }
