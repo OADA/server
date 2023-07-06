@@ -50,26 +50,33 @@ interface T {
 for await (const { name } of Object.values(collections)) {
   trace(`Starting to import collection ${name}`);
   const importCollection = importDb.collection<T>(name);
-  const cursor = await importDb.query<T>(aql`
+    const cursor = await importDb.query<T>(aql`
     FOR doc IN ${importCollection}
       RETURN doc
   `, {
-    batchSize,
-    count: true,
-    allowRetry: true,
-    stream: true
-  });
+      batchSize,
+      ttl: Infinity,
+      count: true,
+      allowRetry: true,
+      cache: false,
+      fillBlockCache: false,
+      stream: true
+    });
 
   const collection = db.collection<T>(name);
-  const { count }  = cursor;
+  const { count } = cursor;
   let imported = 0;
-  for await (const docs of cursor.batches) {
-    trace({ imported, count, docs }, 'importing docs');
-    await collection.import(docs, {
-      waitForSync: true,
-      onDuplicate: overwriteMode
-    });
-    imported += docs.length;
+  try {
+    for await (const docs of cursor.batches) {
+      trace({ imported, count, docs }, 'importing docs');
+      await collection.import(docs, {
+        waitForSync: true,
+        onDuplicate: overwriteMode
+      });
+      imported += docs.length;
+    }
+  } finally {
+    await cursor.kill();
   }
 
   info(`${imported}/${count} documents imported from collection ${name}`);
