@@ -55,7 +55,7 @@ for await (const { name } of Object.values(collections)) {
       RETURN doc
   `, {
       batchSize,
-      ttl: Infinity,
+      ttl: 60 * 60 * 10,
       count: true,
       allowRetry: true,
       cache: false,
