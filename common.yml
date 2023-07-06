@@ -16,6 +16,7 @@ services:
       CONFIG: ${OADA_CONFIG-/oada.config.mjs}
       # Default to development
       NODE_ENV: ${NODE_ENV-development}
+      NODE_OPTIONS: "$$INSPECT --enable-source-maps --unhandled-rejections=strict"
       INSPECT: ${INSPECT---inspect=0.0.0.0:9229}
       DEBUG: ${DEBUG-*}
       PINO_LEVEL: ${PINO_LEVEL-debug}

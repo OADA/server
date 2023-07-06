@@ -37,6 +37,7 @@ data:
   MAX_READ_REQUESTS: {{ .Values.oada.rateLimit.max.reads | quote }}
   MAX_WRITE_REQUESTS: {{ .Values.oada.rateLimit.max.writes | quote }}
   RATE_TIME_WINDOW: {{ .Values.oada.rateLimit.timeWindow | quote }}
+  NODE_OPTIONS: "$$INSPECT --enable-source-maps --unhandled-rejections=strict"
   {{ if eq (include "oada.arango.deploy" .) "true" -}}
   ARANGODB_URL: {{ include "oada.arango.connection" . }}
   {{- end }}

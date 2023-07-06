@@ -18,6 +18,7 @@ x-release:
     &env
     CONFIG: ${OADA_CONFIG-/oada.config.mjs}
     NODE_ENV: ${NODE_ENV-production}
+    NODE_OPTIONS: "$$INSPECT --enable-source-maps --unhandled-rejections=strict"
     DEBUG: ${DEBUG-*}
     INSPECT: ${INSPECT-}
     PINO_LEVEL: ${PINO_LEVEL-info}
