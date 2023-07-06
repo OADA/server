@@ -34,7 +34,12 @@ const {
 
 const collections = config.get('arangodb.collections');
 
-const importDb = new Database({ auth, url, databaseName });
+const importDb = new Database({
+  auth,
+  url,
+  databaseName,
+  precaptureStackTraces: true
+});
 
 interface T {
   _id: string;
@@ -50,12 +55,16 @@ for await (const { name } of Object.values(collections)) {
   `);
 
   const collection = db.collection<T>(name);
-  const count  = await collection.count();
+  const { count }  = await collection.count();
   let imported = 0;
   for await (const doc of cursor) {
-    await collection.save(doc, { silent: true, overwriteMode });
+    trace({ imported, count, doc }, 'importing doc');
+    await collection.save(doc, {
+      silent: true,
+      waitForSync: true,
+      overwriteMode
+    });
     imported++;
-    trace({ imported, count, doc }, 'imported doc');
   }
 
   info(`${imported}/${count} documents imported from collection ${name}`);
