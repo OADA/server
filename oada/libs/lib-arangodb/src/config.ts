@@ -58,6 +58,12 @@ export const { config, schema } = await libConfig({
       env: 'ARANGODB_IMPORT_DATABASE',
       arg: 'arangodb-import-database',
     },
+    batchSize: {
+      format: 'nat',
+      default: 1000,
+      env: 'ARANGODB_IMPORT_BATCH_SIZE',
+      arg: 'arangodb-import-batch-size',
+    },
     overwriteMode: {
       format: ['replace', 'update', 'ignore'],
       default: 'replace' as 'replace' | 'update'| 'ignore',
