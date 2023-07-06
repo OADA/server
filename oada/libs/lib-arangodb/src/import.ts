@@ -42,6 +42,7 @@ interface T {
 }
 
 for await (const { name } of Object.values(collections)) {
+  trace(`Starting to import collection ${name}`);
   const importCollection = importDb.collection<T>(name);
   const cursor = await importDb.query<T>(aql`
     FOR doc IN ${importCollection}
@@ -49,7 +50,7 @@ for await (const { name } of Object.values(collections)) {
   `);
 
   const collection = db.collection<T>(name);
-  const count  = collection.count();
+  const count  = await collection.count();
   let imported = 0;
   for await (const doc of cursor) {
     await collection.save(doc, { silent: true, overwriteMode });
