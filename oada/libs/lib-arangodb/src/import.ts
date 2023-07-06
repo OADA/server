@@ -21,6 +21,7 @@ import { Database, aql } from 'arangojs';
 import debug from 'debug';
 
 import { db } from './db.js';
+import { BatchedArrayCursor } from 'arangojs/cursor.js';
 
 const info = debug('@oada/lib-arangodb:import:info');
 const trace = debug('@oada/lib-arangodb:import:trace');
@@ -29,6 +30,7 @@ const {
   auth,
   connectionString: url,
   database: databaseName,
+  batchSize,
   overwriteMode,
 } = config.get('arangodbImport');
 
@@ -49,22 +51,26 @@ interface T {
 for await (const { name } of Object.values(collections)) {
   trace(`Starting to import collection ${name}`);
   const importCollection = importDb.collection<T>(name);
-  const cursor = await importDb.query<T>(aql`
+  const cursor = await importDb.query(aql`
     FOR doc IN ${importCollection}
       RETURN doc
-  `);
+  `, {
+    batchSize,
+    count: true,
+    allowRetry: true,
+    stream: true
+  }) as unknown as BatchedArrayCursor<T>;
 
   const collection = db.collection<T>(name);
-  const { count }  = await collection.count();
+  const { count }  = cursor;
   let imported = 0;
-  for await (const doc of cursor) {
-    trace({ imported, count, doc }, 'importing doc');
-    await collection.save(doc, {
-      silent: true,
+  for await (const docs of cursor) {
+    trace({ imported, count, docs }, 'importing docs');
+    await collection.import(docs, {
       waitForSync: true,
-      overwriteMode
+      onDuplicate: overwriteMode
     });
-    imported++;
+    imported += docs.length;
   }
 
   info(`${imported}/${count} documents imported from collection ${name}`);
