@@ -49,7 +49,7 @@ for await (const { name } of Object.values(collections)) {
   `);
 
   const collection = db.collection<T>(name);
-  const { count } = collection;
+  const count  = collection.count();
   let imported = 0;
   for await (const doc of cursor) {
     await collection.save(doc, { silent: true, overwriteMode });
