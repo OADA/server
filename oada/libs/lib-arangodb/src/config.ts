@@ -66,7 +66,7 @@ export const { config, schema } = await libConfig({
     },
     overwriteMode: {
       format: ['replace', 'update', 'ignore'],
-      default: 'replace' as 'replace' | 'update'| 'ignore',
+      default: 'replace' as 'replace' | 'update' | 'ignore',
       env: 'ARANGODB_IMPORT_OVERWRITE_MODE',
       arg: 'arangodb-import-overwrite-mode',
     },

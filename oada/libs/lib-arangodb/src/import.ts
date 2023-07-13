@@ -39,7 +39,7 @@ const importDb = new Database({
   auth,
   url,
   databaseName,
-  precaptureStackTraces: true
+  precaptureStackTraces: true,
 });
 
 interface T {
@@ -50,17 +50,20 @@ interface T {
 for await (const { name } of Object.values(collections)) {
   trace(`Starting to import collection ${name}`);
   const importCollection = importDb.collection<T>(name);
-    const cursor = await importDb.query<T>(aql`
+  const cursor = await importDb.query<T>(
+    aql`
     FOR doc IN ${importCollection}
       RETURN doc
-  `, {
+  `,
+    {
       batchSize,
       ttl: 60 * 60 * 10,
       allowRetry: true,
       cache: false,
       fillBlockCache: false,
-      stream: true
-    });
+      stream: true,
+    },
+  );
 
   const collection = db.collection<T>(name);
   let imported = 0;
@@ -69,14 +72,14 @@ for await (const { name } of Object.values(collections)) {
       trace({ imported, docs }, 'importing docs');
       await collection.import(docs, {
         waitForSync: true,
-        onDuplicate: overwriteMode
+        onDuplicate: overwriteMode,
       });
       imported += docs.length;
     }
   } finally {
     try {
       await cursor.kill();
-    } catch { }
+    } catch {}
   }
 
   info(`${imported} documents imported from collection ${name}`);
