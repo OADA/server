@@ -78,7 +78,7 @@ async function readFileUrl(url: URL) {
 }
 
 function readDataUrl(url: URL) {
-  const { groups } = /^(?<type>[^;,]*)(;(?<charset>[^,]*))?,(?<data>.*)$/.exec(
+  const { groups } = /^(?<type>[^,;]*)(;(?<charset>[^,]*))?,(?<data>.*)$/.exec(
     url.pathname,
   )!;
   const { type = 'text/plain', charset = 'ascii', data } = groups!;
