@@ -33,10 +33,10 @@
     "ksuid": "^3.0.0",
     "minimist": "^1.2.8",
     "promptly": "^3.2.0",
-    "tslib": "2.6.0"
+    "tslib": "2.6.2"
   },
   "devDependencies": {
-    "@types/clone-deep": "^4.0.1",
+    "@types/clone-deep": "^4.0.2",
     "@types/debug": "^4.1.8",
     "@types/minimist": "^1.2.2",
     "@types/promptly": "^3.0.2"

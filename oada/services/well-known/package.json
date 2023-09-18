@@ -34,21 +34,21 @@
   "dependencies": {
     "@fastify/accepts": "^4.2.0",
     "@fastify/cors": "^8.3.0",
-    "@fastify/helmet": "^11.0.0",
-    "@oada/formats-server": "^3.5.2",
+    "@fastify/helmet": "^11.1.1",
+    "@oada/formats-server": "^3.5.3",
     "@oada/lib-config": "^3.7.0",
     "@oada/lib-prom": "workspace:^",
     "@oada/pino-debug": "^3.7.0",
     "@oada/well-known-json": "^4.0.2",
     "debug": "^4.3.4",
-    "fastify": "^4.19.2",
+    "fastify": "^4.23.2",
     "got": "^13.0.0",
-    "tslib": "2.6.0"
+    "tslib": "2.6.2"
   },
   "devDependencies": {
-    "@types/cors": "^2.8.13",
+    "@types/cors": "^2.8.14",
     "@types/debug": "^4.1.8",
-    "fastify-plugin": "^4.5.0"
+    "fastify-plugin": "^4.5.1"
   },
   "volta": {
     "node": "20.2.0"

@@ -20,7 +20,7 @@ import type { Opaque } from 'type-fest';
 import { aql } from 'arangojs';
 import bcrypt from 'bcryptjs';
 import debug from 'debug';
-import flatten from 'flat';
+import { flatten } from 'flat';
 
 import type { Selector } from '../util.js';
 import { config } from '../config.js';

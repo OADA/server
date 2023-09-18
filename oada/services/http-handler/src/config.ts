@@ -75,7 +75,7 @@ export const { config, schema } = await libConfig({
         doc: 'Redis URI to use for rate-limit storage',
         format: String,
         nullable: true,
-        // eslint-disable-next-line @typescript-eslint/ban-types
+        // eslint-disable-next-line @typescript-eslint/ban-types, unicorn/no-null
         default: null as string | null,
         env: 'REDIS_URI',
         arg: 'redis-uri',

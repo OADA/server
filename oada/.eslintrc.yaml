@@ -117,7 +117,7 @@ rules:
          */
       onNonMatchingHeader: append
       nonMatchingTolerance: 0.7
-  sonarjs/no-duplicate-string: [warn, 5]
+  sonarjs/no-duplicate-string: [warn, { threshold: 5 }]
   sonarjs/cognitive-complexity: warn
   eslint-comments/no-unused-disable: off
   node/no-unpublished-import: off

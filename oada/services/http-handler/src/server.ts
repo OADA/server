@@ -107,6 +107,7 @@ export const fastify = Fastify({
         const handlers = new Map<unknown, Handler<HTTPVersion.V1>>();
         return {
           get(key) {
+            // eslint-disable-next-line unicorn/no-null
             return handlers.get(key) ?? handlers.get(true) ?? null;
           },
           set(key, value) {
@@ -158,6 +159,7 @@ declare module '@fastify/request-context' {
   }
 }
 
+// eslint-disable-next-line unicorn/no-null
 fastify.decorateRequest('user', null);
 declare module 'fastify' {
   // eslint-disable-next-line @typescript-eslint/no-shadow
@@ -191,15 +193,12 @@ if (enabled) {
         : maxRequests.read;
     },
     timeWindow,
+    // eslint-disable-next-line unicorn/no-null
     redis: redis ? await makeRedis(redis) : null,
     enableDraftSpec: useDraftSpec,
   };
   const { default: plugin } = await import('@fastify/rate-limit');
-  await fastify.register<RateLimitPluginOptions>(
-    // @ts-expect-error broken types
-    plugin,
-    options,
-  );
+  await fastify.register<RateLimitPluginOptions>(plugin, options);
 }
 
 await fastify.register(fastifyRequestContext, {
@@ -215,7 +214,6 @@ await fastify.register(fastifySensible);
 
 await fastify.register(fastifyAccepts);
 
-// @ts-expect-error broken types
 await fastify.register(fastifyGracefulShutdown);
 
 /**

@@ -81,6 +81,7 @@ export class Requester extends Base {
     await this.produce({
       mesg: { ...request, [REQ_ID_KEY]: id, resp_partition: '0' },
       topic,
+      // eslint-disable-next-line unicorn/no-null
       part: null,
     });
     const [response] = await Promise.race([
@@ -102,6 +103,7 @@ export class Requester extends Base {
       throw new Error('Emit called with no topic specified');
     }
 
+    // eslint-disable-next-line unicorn/prefer-event-target
     const emitter = new EventEmitter();
 
     // eslint-disable-next-line security/detect-object-injection
@@ -120,12 +122,14 @@ export class Requester extends Base {
         [CANCEL_KEY]: true,
       };
 
+      // eslint-disable-next-line unicorn/no-null
       await this.produce({ mesg, topic, part: null });
     };
 
     await this.produce({
       mesg: request as Record<string, unknown>,
       topic,
+      // eslint-disable-next-line unicorn/no-null
       part: null,
     });
 

@@ -70,13 +70,17 @@ function checkRequest(request: KafkaBase): request is WriteResponse {
 
 // Create custom parser and serializer for causechain.
 // Should be faster than JSON methods and is slightly nicer in TypeScript.
-// @ts-expect-error sadsadas
+// @ts-expect-error missing types
 const ajv = new Ajv();
 const causechainSchema: JTDSchemaType<string[]> = {
   elements: { type: 'string' },
 };
-const parse = ajv.compileParser(causechainSchema);
-const serialize = ajv.compileSerializer(causechainSchema);
+const parse = ajv.compileParser(causechainSchema) as ((
+  s: string,
+) => string[]) & { position: number; message: string };
+const serialize = ajv.compileSerializer(causechainSchema) as (
+  s: readonly string[],
+) => string;
 
 responder.on<WriteRequest>('request', async (request) => {
   if (!checkRequest(request)) {
@@ -166,9 +170,11 @@ responder.on<WriteRequest>('request', async (request) => {
       );
       // Create a new write request.
       const message = {
+        // eslint-disable-next-line unicorn/no-null
         connection_id: null as unknown as string,
         type: 'write_request',
         resource_id: parent.resource_id,
+        // eslint-disable-next-line unicorn/no-null
         path: null,
         contentType: parent.contentType,
         body: childrev,
