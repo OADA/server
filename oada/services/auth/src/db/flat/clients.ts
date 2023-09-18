@@ -24,6 +24,7 @@ import clients from './clients.json';
 const database = new Map<string, DBClient>(Object.entries(clients));
 
 export function findById(id: string) {
+  // eslint-disable-next-line unicorn/no-null
   return cloneDeep(database.get(id)) ?? null;
 }
 

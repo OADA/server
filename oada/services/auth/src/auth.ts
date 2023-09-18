@@ -58,10 +58,12 @@ fastifyPassport.use(
     try {
       const user = await findByUsernamePassword(username, password);
       if (!user) {
+        // eslint-disable-next-line unicorn/no-null
         done(null, false);
         return;
       }
 
+      // eslint-disable-next-line unicorn/no-null
       done(null, user);
     } catch (error: unknown) {
       done(error);
@@ -101,7 +103,8 @@ fastifyPassport.use(
           body.client_assertion_type !==
           'urn:ietf:params:oauth:client-assertion-type:jwt-bearer'
         ) {
-          trace(`Unknown client_assertion_type ${body.client_assertion_type}`);
+          trace('Unknown client_assertion_type %s', body.client_assertion_type);
+          // eslint-disable-next-line unicorn/no-null
           return null;
         }
 
@@ -130,9 +133,11 @@ fastifyPassport.use(
 
           // Convert JWK to PEM
           const key = jwk.kty === 'PEM' ? jwk.pem : jwk2pem(jwk as RSA_JWK);
+          // eslint-disable-next-line unicorn/no-null
           done(null, key);
         } catch (error: unknown) {
           warn({ error }, 'Failed to get secretOrKeyProvider');
+          // eslint-disable-next-line unicorn/no-null
           done(null);
         }
       },
@@ -144,6 +149,7 @@ fastifyPassport.use(
           trace(
             `Audience ${payload.aud} does not match endpoint url ${request.url}`,
           );
+          // eslint-disable-next-line unicorn/no-null
           done(null);
         }
 
@@ -153,6 +159,7 @@ fastifyPassport.use(
          */
         const clientId = payload?.sub as string | undefined;
         const client = await findById(clientId!);
+        // eslint-disable-next-line unicorn/no-null
         done(null, client);
       } catch (error: unknown) {
         done(error);
@@ -168,11 +175,13 @@ fastifyPassport.use(
     try {
       const client = await findById(clientId);
       if (!client) {
+        // eslint-disable-next-line unicorn/no-null
         done(null, false);
         return;
       }
 
       if (!client.client_secret) {
+        // eslint-disable-next-line unicorn/no-null
         done(null, false);
       }
 
@@ -187,6 +196,7 @@ fastifyPassport.use(
         throw new Error('Client secret has expired');
       }
 
+      // eslint-disable-next-line unicorn/no-null
       done(null, client);
     } catch (error: unknown) {
       done(error);
@@ -201,10 +211,12 @@ fastifyPassport.use(
     try {
       const t = await findByToken(token);
       if (!t) {
+        // eslint-disable-next-line unicorn/no-null
         done(null, false);
         return;
       }
 
+      // eslint-disable-next-line unicorn/no-null
       done(null, t.user, { scope: t.scope.slice() });
     } catch (error: unknown) {
       done(error);

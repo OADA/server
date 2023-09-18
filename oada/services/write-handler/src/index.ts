@@ -275,6 +275,7 @@ async function doWrite(
         path,
         object,
       );
+      // eslint-disable-next-line unicorn/no-null
       body = null;
       trace(`Setting changeType = 'delete'`);
     } else {
@@ -445,7 +446,8 @@ export async function handleRequest(
   } catch (cError: unknown) {
     const { code, message = 'error' } =
       cError instanceof ArangoError &&
-      cError.errorNum === ArangoErrorCode.ARANGO_DOCUMENT_NOT_FOUND
+      (cError.errorNum as ArangoErrorCode) ===
+        ArangoErrorCode.ARANGO_DOCUMENT_NOT_FOUND
         ? { ...cError, code: 'not_found' }
         : (cError as {
             code?: string;

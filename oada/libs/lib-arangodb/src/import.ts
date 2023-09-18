@@ -68,13 +68,13 @@ for await (const { name } of Object.values(collections)) {
   const collection = db.collection<T>(name);
   let imported = 0;
   try {
-    for await (const docs of cursor.batches) {
-      trace({ imported, docs }, 'importing docs');
-      await collection.import(docs, {
+    for await (const documents of cursor.batches) {
+      trace({ imported, docs: documents }, 'importing docs');
+      await collection.import(documents, {
         waitForSync: true,
         onDuplicate: overwriteMode,
       });
-      imported += docs.length;
+      imported += documents.length;
     }
   } finally {
     try {

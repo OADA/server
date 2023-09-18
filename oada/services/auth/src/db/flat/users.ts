@@ -24,10 +24,12 @@ import users from './users.json';
 const database = new Map<string, DBUser>(Object.entries(users));
 
 export function findByUsername(username: string) {
+  // eslint-disable-next-line unicorn/no-null
   return cloneDeep(database.get(username)) ?? null;
 }
 
 export function findByUsernamePassword(username: string, password: string) {
   const user = database.get(username);
+  // eslint-disable-next-line unicorn/no-null
   return user?.password === password ? cloneDeep(user) : null;
 }

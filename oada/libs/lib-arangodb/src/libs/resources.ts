@@ -31,12 +31,11 @@ import { db as database } from '../db.js';
 import { findById } from './users.js';
 import { sanitizeResult } from '../util.js';
 
-import { JsonPointer } from 'json-ptr';
-import type { PathSegments } from 'json-ptr';
+import { JsonPointer, type PathSegments } from 'json-ptr';
+import { type JsonObject } from 'type-fest';
 import { aql } from 'arangojs';
 import cloneDeep from 'clone-deep';
 import debug from 'debug';
-import { type JsonObject } from 'type-fest';
 
 type IResource = OADAified<Resource>;
 export type { IResource as Resource };

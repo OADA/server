@@ -58,7 +58,7 @@ class DatabaseWrapper extends Database {
         if (
           error instanceof ArangoError &&
           // DeadlockError
-          error.errorNum === ArangoErrorCode.DEADLOCK &&
+          (error.errorNum as ArangoErrorCode) === ArangoErrorCode.DEADLOCK &&
           tries <= deadlockRetries
         ) {
           warn({ error }, `Retrying query due to deadlock (retry #${tries})`);

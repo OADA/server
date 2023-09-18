@@ -126,6 +126,7 @@ await fastify.register(
           } catch (error: unknown) {
             // If failed to return, or json didn't parse:
             request.log.error({ error }, `The subservice URL ${url} failed`);
+            // eslint-disable-next-line unicorn/no-null
             return null;
           }
         }),

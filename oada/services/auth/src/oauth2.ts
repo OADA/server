@@ -123,6 +123,7 @@ export const issueToken: IssueGrantTokenFunction = async (
       user,
       clientId: client.client_id,
     });
+    // eslint-disable-next-line unicorn/no-null
     done(null, token.token, { expires_in: token.expiresIn });
   } catch (error: unknown) {
     done(error as Error);
@@ -177,6 +178,7 @@ export const issueCode: IssueGrantCodeFunctionArity6 = async (
       .setIssuedAt()
       .setExpirationTime(authCode.expiresIn)
       .encrypt(key);
+    // eslint-disable-next-line unicorn/no-null
     done(null, code);
   } catch (error: unknown) {
     done(error as Error);
@@ -285,6 +287,7 @@ const plugin: FastifyPluginAsync<Options> = async (
            */
           const refresh = undefined;
 
+          // eslint-disable-next-line unicorn/no-null
           done(null, token, refresh, extras);
         } catch (error: unknown) {
           done(error as Error);
@@ -314,12 +317,14 @@ const plugin: FastifyPluginAsync<Options> = async (
       try {
         const client = await findById(clientID);
         if (!client) {
+          // eslint-disable-next-line unicorn/no-null
           done(null, false);
           return;
         }
 
         // Compare the given redirectUrl to all the clients redirectUrls
         if (client.redirect_uris?.includes(redirectURI)) {
+          // eslint-disable-next-line unicorn/no-null
           done(null, client, redirectURI);
           return;
         }
@@ -329,6 +334,7 @@ const plugin: FastifyPluginAsync<Options> = async (
           redirectURI,
           client.redirect_uris,
         );
+        // eslint-disable-next-line unicorn/no-null
         done(null, false);
       } catch (error: unknown) {
         done(error as Error);
@@ -409,12 +415,14 @@ const plugin: FastifyPluginAsync<Options> = async (
           scope,
           request.oauth2?.req.nonce,
         );
+        // eslint-disable-next-line unicorn/no-null
         done(null, {
           allow,
           scope,
           nonce: request.oauth2?.req.nonce,
         });
       } catch (error: unknown) {
+        // eslint-disable-next-line unicorn/no-null
         done(error as Error, null);
       }
     }),

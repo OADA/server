@@ -45,7 +45,7 @@ async function requestUserWrite(request: FastifyRequest, id: string) {
   // TODO: Sanitize POST body?
   const resp = (await requester.send(
     {
-      connection_id: request.id as string,
+      connection_id: request.id,
       domain: hostname,
       token: authorization,
       authorization,
@@ -79,6 +79,7 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
     (_, body, done) => {
       try {
         const json: unknown = JSON.parse(body as string);
+        // eslint-disable-next-line unicorn/no-null
         done(null, json);
       } catch (error: unknown) {
         done(error as Error);
@@ -142,7 +143,9 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
       request.log.warn(
         'Attempt to lookup user by username (username-index), but token does not have oada.admin.user:read or oada.admin.user:all scope!',
       );
-      reply.unauthorized('Token does not have required oada.admin.user scope');
+      void reply.unauthorized(
+        'Token does not have required oada.admin.user scope',
+      );
       return;
     }
 
@@ -157,7 +160,7 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
       request.log.warn(
         'Attempt to lookup user by username (username-index), but USER does not have oada.admin.user:read or oada.admin.user:all scope!',
       );
-      reply.forbidden('USER does not have required oada.admin.user scope');
+      void reply.forbidden('USER does not have required oada.admin.user scope');
       return;
     }
 
@@ -167,7 +170,7 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
         '#username-index: 404: username %s does not exist',
         uname,
       );
-      reply.notFound(`Username ${uname} does not exist.`);
+      void reply.notFound(`Username ${uname} does not exist.`);
       return;
     }
 

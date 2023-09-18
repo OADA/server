@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-/* eslint-disable @typescript-eslint/ban-types */
+/* eslint-disable @typescript-eslint/ban-types, unicorn/no-null */
 
 import type { File } from 'node:buffer';
 import fs from 'node:fs/promises';

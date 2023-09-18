@@ -33,10 +33,10 @@
     "@oada/pino-debug": "^3.7.0",
     "debug": "^4.3.4",
     "got": "^13.0.0",
-    "tslib": "2.6.0"
+    "tslib": "2.6.2"
   },
   "devDependencies": {
-    "@oada/types": "^3.5.2",
+    "@oada/types": "^3.5.3",
     "@oada/write-handler": "^3.7.0",
     "@types/debug": "^4.1.8"
   },

@@ -55,6 +55,7 @@ const warn = log('websockets:warn');
 const debug = log('websockets:debug');
 const trace = log('websockets:trace');
 
+// eslint-disable-next-line unicorn/prefer-event-target
 const emitter = new EventEmitter<string, { change: Change }>();
 
 class Watch {

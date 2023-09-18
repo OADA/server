@@ -15,6 +15,8 @@
  * limitations under the License.
  */
 
+/* eslint-disable unicorn/no-null */
+
 import libConfig from '@oada/lib-config';
 
 export const { config, schema } = await libConfig({

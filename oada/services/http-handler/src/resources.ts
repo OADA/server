@@ -97,7 +97,7 @@ function noModifyShares(
   reply: FastifyReply,
 ) {
   if (path.startsWith(`/${user.shares_id}`)) {
-    reply.forbidden('User cannot modify their shares document');
+    void reply.forbidden('User cannot modify their shares document');
   }
 }
 
@@ -129,6 +129,7 @@ function parseETag(etag: string): { id?: string; rev: number } {
  * Fastify plugin for OADA /resources
  */
 const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
+  // eslint-disable-next-line unicorn/no-null
   fastify.decorateRequest('oadaPath', null);
 
   /**
@@ -215,14 +216,14 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
             '%s tried to PUT resource without proper permissions',
             request.user.user_id,
           );
-          reply.forbidden(
+          void reply.forbidden(
             'User does not have write permission for this resource',
           );
           return;
         }
 
         if (!response.scopes.write) {
-          reply.forbidden('Token does not have required scope');
+          void reply.forbidden('Token does not have required scope');
         }
 
         break;
@@ -235,21 +236,21 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
             '%s tried to GET resource without proper permissions',
             request.user.user_id,
           );
-          reply.forbidden(
+          void reply.forbidden(
             'User does not have read permission for this resource',
           );
           return;
         }
 
         if (!response.scopes.read) {
-          reply.forbidden('Token does not have required scope');
+          void reply.forbidden('Token does not have required scope');
         }
 
         break;
       }
 
       default: {
-        reply.badRequest('Unsupported method');
+        void reply.badRequest('Unsupported method');
         break;
       }
     }
@@ -298,7 +299,7 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
             rev === request.oadaGraph.rev,
         )
       ) {
-        reply.preconditionFailed(
+        void reply.preconditionFailed(
           'If-Match header does not match current resource',
         );
         return;
@@ -357,7 +358,7 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
 
         // ???: Allow null values in OADA?
         if (document === undefined || document === null) {
-          reply.notFound();
+          void reply.notFound();
           return;
         }
 
@@ -381,14 +382,14 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
           }
 
           default: {
-            reply.notAcceptable();
+            void reply.notAcceptable();
           }
         }
       } else {
         // Get binary
         if (request.oadaGraph.path_leftover) {
           request.log.trace(request.oadaGraph.path_leftover);
-          reply.notImplemented('Path Leftover on Binary GET');
+          void reply.notImplemented('Path Leftover on Binary GET');
           return;
         }
 
@@ -419,12 +420,14 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
       bodyLimit: 20 * 1_048_576,
     },
     (_, body, done) => {
+      // eslint-disable-next-line unicorn/no-null
       done(null, body);
     },
   );
 
   // Allow unknown contentType but don't parse?
   fastify.addContentTypeParser('*', (_request, _payload, done) => {
+    // eslint-disable-next-line unicorn/no-null
     done(null);
   });
 
@@ -476,7 +479,7 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
     url: '*',
     method: ['HEAD', 'GET', 'DELETE'],
     async handler(_request, reply) {
-      reply.badRequest('X-OADA-Ensure-Link not allowed for this method');
+      void reply.badRequest('X-OADA-Ensure-Link not allowed for this method');
     },
   });
 
@@ -507,7 +510,7 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
     url: '*',
     method: ['PUT', 'POST'],
     async handler(_request, reply) {
-      reply.badRequest('Unsupported value for X-OADA-Ensure-Link');
+      void reply.badRequest('Unsupported value for X-OADA-Ensure-Link');
     },
   });
 
@@ -519,7 +522,7 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
     method: ['PUT', 'POST'],
     async handler(request, reply) {
       if (!request.headers['content-type']) {
-        reply.badRequest('No content type specified');
+        void reply.badRequest('No content type specified');
         return;
       }
 
@@ -588,26 +591,26 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
         }
 
         case 'permission': {
-          reply.forbidden('User does not own this resource');
+          void reply.forbidden('User does not own this resource');
           return;
         }
 
         case 'if-match failed': {
-          reply.preconditionFailed(
+          void reply.preconditionFailed(
             'If-Match header does not match current resource _rev',
           );
           return;
         }
 
         case 'if-none-match failed': {
-          reply.preconditionFailed(
+          void reply.preconditionFailed(
             'If-None-Match header contains current resource _rev',
           );
           return;
         }
 
         case 'bad request': {
-          reply.unprocessableEntity(resp.error_message);
+          void reply.unprocessableEntity(resp.error_message);
           return;
         }
 
@@ -645,7 +648,7 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
     noModifyShares(request, reply);
     // Don't let users DELETE their bookmarks?
     if (path === request.user.bookmarks_id) {
-      reply.forbidden('User cannot delete their bookmarks');
+      void reply.forbidden('User cannot delete their bookmarks');
       return;
     }
 
@@ -702,19 +705,19 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
       case 'not_found':
       case 'permission': {
         // ? Is 403 a good response for DELETE on non-existent?
-        reply.forbidden('User does not own this resource');
+        void reply.forbidden('User does not own this resource');
         return;
       }
 
       case 'if-match failed': {
-        reply.preconditionFailed(
+        void reply.preconditionFailed(
           'If-Match header does not match current resource _rev',
         );
         return;
       }
 
       case 'if-none-match failed': {
-        reply.preconditionFailed(
+        void reply.preconditionFailed(
           'If-None-Match header contains current resource _rev',
         );
         return;

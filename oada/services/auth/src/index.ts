@@ -116,11 +116,13 @@ const plugin: FastifyPluginAsync = async (fastify) => {
 
   const oauth2server = createServer();
   oauth2server.serializeClient((client: Client, done) => {
+    // eslint-disable-next-line unicorn/no-null
     done(null, client.client_id);
   });
   oauth2server.deserializeClient(async (id, done) => {
     try {
       const out = await findById(id);
+      // eslint-disable-next-line unicorn/no-null
       done(null, out);
     } catch (error: unknown) {
       done(error as Error);
@@ -149,6 +151,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     await fastify.register(fastifyRateLimit, {
       max: maxRequests,
       timeWindow,
+      // eslint-disable-next-line unicorn/no-null
       redis: redis ? await makeRedis(redis) : null,
       enableDraftSpec: useDraftSpec,
     });
@@ -160,7 +163,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
 
   // Add id to request context
   fastify.addHook('onRequest', async (request) => {
-    requestContext.set('id', request.id as string);
+    requestContext.set('id', request.id);
   });
 
   await fastify.register(fastifySensible);

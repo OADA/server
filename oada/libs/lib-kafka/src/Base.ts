@@ -91,6 +91,7 @@ function isArray(value: unknown): value is unknown[] | readonly unknown[] {
   return Array.isArray(value);
 }
 
+// eslint-disable-next-line unicorn/prefer-event-target
 export class Base extends EventEmitter {
   protected static done = Symbol('kafka-base-done');
 

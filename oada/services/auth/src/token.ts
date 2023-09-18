@@ -142,7 +142,7 @@ async function disable() {
   return { ...auth, createTime: getNow(), expiresIn: 1 };
 }
 
-let update = null;
+let update;
 trace('argv._[0] = %s', argv._[0]);
 switch (command) {
   case 'extend': {

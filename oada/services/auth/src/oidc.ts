@@ -105,6 +105,7 @@ export const issueIdToken: IssueIDToken<DBClient, DBUser> = async (
     .setIssuer(client.reqdomain!)
     .setSubject(user.id)
     .sign(privateKey);
+  // eslint-disable-next-line unicorn/no-null
   done(null, token);
 };
 
@@ -289,7 +290,7 @@ const plugin: FastifyPluginAsync<Options> = async (
       );
 
       if (userinfo?.sub === undefined) {
-        reply.unauthorized();
+        void reply.unauthorized();
       } else {
         return userinfo;
       }

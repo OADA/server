@@ -76,7 +76,7 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
     const auth = await authorizations.findById(authId);
     // Only let users see their own authorizations
     if (auth?.user._id !== userid) {
-      reply.forbidden();
+      void reply.forbidden();
       return;
     }
 
@@ -97,6 +97,7 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
     (_, body, done) => {
       try {
         const json: unknown = JSON.parse(body as string);
+        // eslint-disable-next-line unicorn/no-null
         done(null, json);
       } catch (error: unknown) {
         done(error as Error);
@@ -127,7 +128,7 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
           (s) => s === 'oada.admin.user:all' || 'oada.admin.user:write',
         )
       ) {
-        reply.forbidden();
+        void reply.forbidden();
         return;
       }
 
@@ -139,6 +140,7 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
 
     const result = await authorizations.save(auth);
     if (!result) {
+      // eslint-disable-next-line unicorn/no-null
       return null;
     }
 
@@ -159,7 +161,7 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
 
     // Only let users see their own authorizations
     if (auth?.user._id !== request.user.user_id) {
-      reply.forbidden();
+      void reply.forbidden();
       return;
     }
 

@@ -158,7 +158,7 @@ export async function handleReq(request: UserRequest): Promise<UserResponse> {
   trace('REQUEST: req.user = %O, userid = %s', request.user, request.userid);
   trace(
     'REQUEST: req.authorization.scope = %s',
-    request.authorization ? request.authorization.scope : null,
+    request.authorization ? request.authorization.scope : undefined,
   );
   // While this could fit in permissions_handler, since users are not really resources (i.e. no graph),
   // we'll add a check here that the user has oada.admin.user:write or oada.admin.user:all scope
@@ -177,7 +177,7 @@ export async function handleReq(request: UserRequest): Promise<UserResponse> {
   }
 
   // First, check if the ID exists already:
-  let currentUser = null;
+  let currentUser;
   if (request.userid) {
     trace('Checking if user id %s exists.', request.userid);
     currentUser = await users.findById(request.userid, { graceful: true });
@@ -198,7 +198,8 @@ export async function handleReq(request: UserRequest): Promise<UserResponse> {
     } catch (cError: unknown) {
       if (
         cError instanceof ArangoError &&
-        cError.errorNum === ArangoErrorCode.ARANGO_UNIQUE_CONSTRAINT_VIOLATED
+        (cError.errorNum as ArangoErrorCode) ===
+          ArangoErrorCode.ARANGO_UNIQUE_CONSTRAINT_VIOLATED
       ) {
         createUser = false;
         trace(

@@ -35,12 +35,12 @@
     "@oada/pino-debug": "^3.7.0",
     "debug": "^4.3.4",
     "got": "^13.0.0",
-    "tslib": "2.6.0"
+    "tslib": "2.6.2"
   },
   "devDependencies": {
     "@oada/write-handler": "^3.7.0",
     "@types/debug": "^4.1.8",
-    "@types/node": "^20.4.2"
+    "@types/node": "^20.6.2"
   },
   "volta": {
     "node": "20.2.0"
