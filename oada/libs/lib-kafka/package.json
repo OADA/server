@@ -47,8 +47,8 @@
   "devDependencies": {
     "@ava/typescript": "^4.1.0",
     "@types/convict": "^6.1.4",
-    "@types/debug": "^4.1.8",
-    "@types/node": "^20.6.2",
+    "@types/debug": "^4.1.9",
+    "@types/node": "^20.7.0",
     "@types/uuid": "^9.0.4",
     "ava": "5.3.1"
   },

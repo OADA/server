@@ -38,7 +38,7 @@
   "dependencies": {
     "@fastify/accepts": "^4.2.0",
     "@fastify/bearer-auth": "^9.0.0",
-    "@fastify/cors": "^8.3.0",
+    "@fastify/cors": "^8.4.0",
     "@fastify/helmet": "^11.1.1",
     "@fastify/rate-limit": "^8.0.3",
     "@fastify/request-context": "^5.0.0",
@@ -72,11 +72,11 @@
     "@oada/users": "workspace:services/users",
     "@oada/write-handler": "^3.7.0",
     "@types/cacache": "^17.0.0",
-    "@types/debug": "^4.1.8",
-    "@types/node": "^20.6.2",
+    "@types/debug": "^4.1.9",
+    "@types/node": "^20.7.0",
     "@types/type-is": "^1.6.4",
     "@types/uuid": "^9.0.4",
-    "@types/ws": "^8.5.5",
+    "@types/ws": "^8.5.6",
     "connect": "^3.7.0",
     "find-my-way": "^7.6.2",
     "light-my-request": "^5.11.0"

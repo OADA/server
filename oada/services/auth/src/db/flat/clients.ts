@@ -21,7 +21,7 @@ import type { Client, DBClient } from '../models/client.js';
 // @ts-expect-error IDEK
 import clients from './clients.json';
 
-const database = new Map<string, DBClient>(Object.entries(clients));
+const database = new Map(Object.entries(clients as Record<string, DBClient>));
 
 export function findById(id: string) {
   // eslint-disable-next-line unicorn/no-null

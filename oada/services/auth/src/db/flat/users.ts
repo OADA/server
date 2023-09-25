@@ -21,7 +21,7 @@ import type { DBUser } from '../models/user.js';
 // @ts-expect-error IDEK
 import users from './users.json';
 
-const database = new Map<string, DBUser>(Object.entries(users));
+const database = new Map(Object.entries(users as Record<string, DBUser>));
 
 export function findByUsername(username: string) {
   // eslint-disable-next-line unicorn/no-null
