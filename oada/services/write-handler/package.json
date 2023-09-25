@@ -58,9 +58,9 @@
     "@ava/typescript": "^4.1.0",
     "@oada/client": "^4.5.5",
     "@oada/types": "^3.5.3",
-    "@types/debug": "^4.1.8",
+    "@types/debug": "^4.1.9",
     "@types/json-pointer": "^1.0.32",
-    "@types/node": "^20.6.2",
+    "@types/node": "^20.7.0",
     "@types/object-assign-deep": "^0.4.1",
     "ava": "5.3.1"
   },

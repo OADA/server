@@ -50,8 +50,8 @@
     "@ava/typescript": "^4.1.0",
     "@oada/client": "^4.5.5",
     "@oada/write-handler": "^3.7.0",
-    "@types/debug": "^4.1.8",
-    "@types/node": "^20.6.2",
+    "@types/debug": "^4.1.9",
+    "@types/node": "^20.7.0",
     "@types/randomstring": "^1.1.8",
     "ava": "5.3.1",
     "type-fest": "^4.3.1"

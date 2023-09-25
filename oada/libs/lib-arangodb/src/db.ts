@@ -39,7 +39,7 @@ const auth = config.get('arangodb.auth');
 class DatabaseWrapper extends Database {
   // @ts-expect-error nonsense
   override async query<T = unknown>(
-    query: AqlQuery,
+    query: AqlQuery<T>,
     options: QueryOptions = {},
   ) {
     let tries = 0;

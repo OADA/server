@@ -63,7 +63,7 @@
     "clone-deep": "^4.0.1",
     "debug": "^4.3.4",
     "deep-equal": "^2.2.2",
-    "flat": "^6.0.0",
+    "flat": "^6.0.1",
     "json-ptr": "^3.1.1",
     "tslib": "2.6.2"
   },
@@ -72,11 +72,11 @@
     "@types/bcryptjs": "^2.4.4",
     "@types/clone-deep": "^4.0.2",
     "@types/convict": "^6.1.4",
-    "@types/debug": "^4.1.8",
-    "@types/deep-equal": "^1.0.1",
+    "@types/debug": "^4.1.9",
+    "@types/deep-equal": "^1.0.2",
     "@types/flat": "^5.0.3",
     "@types/json-pointer": "^1.0.32",
-    "@types/node": "^20.6.2",
+    "@types/node": "^20.7.0",
     "ava": "5.3.1",
     "type-fest": "^4.3.1"
   },

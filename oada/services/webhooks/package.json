@@ -38,7 +38,7 @@
   "devDependencies": {
     "@oada/types": "^3.5.3",
     "@oada/write-handler": "^3.7.0",
-    "@types/debug": "^4.1.8"
+    "@types/debug": "^4.1.9"
   },
   "volta": {
     "node": "20.2.0"

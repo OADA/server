@@ -21,7 +21,7 @@ import type { Token } from '../models/token.js';
 // @ts-expect-error IDEK
 import tokens from './tokens.json';
 
-const database = new Map<string, Token>(Object.entries(tokens));
+const database = new Map(Object.entries(tokens as Record<string, Token>));
 
 export function findByToken(token: string) {
   return cloneDeep(database.get(token));

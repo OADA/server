@@ -151,7 +151,11 @@ declare module 'passport-oauth2-jwt-bearer' {
   export type VerifyFunction = (
     clientId: string,
     clientSecret: string,
-    done: (error: any, client?: any, info?: any) => void,
+    done: (
+      error: Error | undefined,
+      client?: Record<string, unknown>,
+      info?: Record<string, unknown>,
+    ) => void,
   ) => void;
   class OAuth2JWTBearerStrategy extends Strategy {
     name: 'oauth2-jwt-bearer';

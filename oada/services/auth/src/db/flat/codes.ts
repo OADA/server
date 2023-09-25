@@ -21,7 +21,7 @@ import type { Code } from '../models/code.js';
 // @ts-expect-error IDEK
 import codes from './codes.json';
 
-const database = new Map<string, Code>(Object.entries(codes));
+const database = new Map(Object.entries(codes as Record<string, Code>));
 
 export function findByCode(code: string) {
   return cloneDeep(database.get(code));

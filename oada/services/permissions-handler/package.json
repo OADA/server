@@ -36,8 +36,8 @@
     "type-is": "^1.6.18"
   },
   "devDependencies": {
-    "@types/debug": "^4.1.8",
-    "@types/node": "^20.6.2",
+    "@types/debug": "^4.1.9",
+    "@types/node": "^20.7.0",
     "@types/type-is": "^1.6.4"
   },
   "volta": {

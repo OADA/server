@@ -33,7 +33,7 @@
   },
   "dependencies": {
     "@fastify/accepts": "^4.2.0",
-    "@fastify/cors": "^8.3.0",
+    "@fastify/cors": "^8.4.0",
     "@fastify/helmet": "^11.1.1",
     "@oada/formats-server": "^3.5.3",
     "@oada/lib-config": "^3.7.0",
@@ -47,7 +47,7 @@
   },
   "devDependencies": {
     "@types/cors": "^2.8.14",
-    "@types/debug": "^4.1.8",
+    "@types/debug": "^4.1.9",
     "fastify-plugin": "^4.5.1"
   },
   "volta": {

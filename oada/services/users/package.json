@@ -37,9 +37,9 @@
   },
   "devDependencies": {
     "@types/clone-deep": "^4.0.2",
-    "@types/debug": "^4.1.8",
+    "@types/debug": "^4.1.9",
     "@types/minimist": "^1.2.2",
-    "@types/promptly": "^3.0.2"
+    "@types/promptly": "^3.0.3"
   },
   "volta": {
     "node": "20.2.0"
