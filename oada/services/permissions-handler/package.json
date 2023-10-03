@@ -1,7 +1,7 @@
 {
   "name": "@oada/permissions-handler",
   "description": "",
-  "version": "3.9.1",
+  "version": "3.10.0",
   "type": "module",
   "author": "",
   "license": "Apache-2.0",
@@ -37,7 +37,7 @@
   },
   "devDependencies": {
     "@types/debug": "^4.1.9",
-    "@types/node": "^20.7.0",
+    "@types/node": "^20.8.2",
     "@types/type-is": "^1.6.4"
   },
   "volta": {

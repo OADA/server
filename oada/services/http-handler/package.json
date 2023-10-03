@@ -1,6 +1,6 @@
 {
   "name": "@oada/http-handler",
-  "version": "3.9.1",
+  "version": "3.10.0",
   "type": "module",
   "description": "",
   "main": "dist/server.js",
@@ -73,7 +73,7 @@
     "@oada/write-handler": "^3.7.0",
     "@types/cacache": "^17.0.0",
     "@types/debug": "^4.1.9",
-    "@types/node": "^20.7.0",
+    "@types/node": "^20.8.2",
     "@types/type-is": "^1.6.4",
     "@types/uuid": "^9.0.4",
     "@types/ws": "^8.5.6",
