@@ -1,6 +1,6 @@
 {
   "name": "@oada/well-known",
-  "version": "3.9.1",
+  "version": "3.10.0",
   "type": "module",
   "description": "Microservice for serving well-known at an OADA cloud.  Plays nicely with oada-ref-auth-js.",
   "repository": {

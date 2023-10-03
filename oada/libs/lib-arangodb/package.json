@@ -1,6 +1,6 @@
 {
   "name": "@oada/lib-arangodb",
-  "version": "3.9.1",
+  "version": "3.10.0",
   "description": "All OADA Arango interface code in one place.",
   "main": "dist/index.js",
   "bin": {
@@ -76,9 +76,9 @@
     "@types/deep-equal": "^1.0.2",
     "@types/flat": "^5.0.3",
     "@types/json-pointer": "^1.0.32",
-    "@types/node": "^20.7.0",
+    "@types/node": "^20.8.2",
     "ava": "5.3.1",
-    "type-fest": "^4.3.1"
+    "type-fest": "^4.3.3"
   },
   "volta": {
     "node": "20.2.0"

@@ -1,6 +1,6 @@
 {
   "name": "@oada/users",
-  "version": "3.9.1",
+  "version": "3.10.0",
   "type": "module",
   "description": "",
   "author": "Alex Layton <alex@layton.in>",
@@ -38,7 +38,7 @@
   "devDependencies": {
     "@types/clone-deep": "^4.0.2",
     "@types/debug": "^4.1.9",
-    "@types/minimist": "^1.2.2",
+    "@types/minimist": "^1.2.3",
     "@types/promptly": "^3.0.3"
   },
   "volta": {
