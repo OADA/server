@@ -40,6 +40,8 @@
     "@oada/lib-prom": "workspace:^",
     "@oada/pino-debug": "^3.7.0",
     "@oada/well-known-json": "^4.0.2",
+    "allow-methods": "^6.0.0",
+    "cors": "^2.8.5",
     "debug": "^4.3.4",
     "fastify": "^4.23.2",
     "got": "^13.0.0",
