@@ -59,7 +59,7 @@
     "zx": "^7.2.3"
   },
   "dependencies": {
-    "pino-pretty": "^10.2.2"
+    "pino-pretty": "^10.2.3"
   },
   "resolutions": {
     "fastify-plugin": "4.0.0",
