@@ -38,7 +38,7 @@
     "@oada/auth": "workspace:^",
     "@oada/formats-server": "^3.5.3",
     "@oada/lib-config": "^3.7.0",
-    "@oada/lib-prom": "workspace:^",
+    "@oada/lib-prom": "3.5.1",
     "@oada/pino-debug": "^3.7.0",
     "@oada/well-known-json": "^4.0.2",
     "allow-methods": "^6.0.0",
