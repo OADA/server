@@ -47,6 +47,14 @@ export const { config, schema } = await libConfig({
     default: '/oada/services/auth/domains',
   },
   auth: {
+    issuer: {
+      doc: 'OpenID/Oauth2.0 issuer to use for auth',
+      format: 'url',
+      nullable: true,
+      default: null as URL | string | null,
+      env: 'AUTH_ISSUER',
+      arg: 'auth-issuer',
+    },
     server: {
       'rateLimit': {
         enabled: {
@@ -135,7 +143,7 @@ export const { config, schema } = await libConfig({
       },
       'publicUri': {
         format: 'url',
-        default: null as null | string,
+        default: null as null | string | URL,
       },
       'proxy': {
         description: 'Whether to trust reverse-proxy headers',
@@ -149,7 +157,8 @@ export const { config, schema } = await libConfig({
     endpointsPrefix: {
       doc: 'So you can place this under a sub-path in your domain',
       format: String,
-      default: '',
+      default: '/oadaauth/',
+      env: 'AUTH_PREFIX'
     },
     endpoints: {
       register: {
@@ -224,7 +233,7 @@ export const { config, schema } = await libConfig({
       },
       allowImplicitFlows: {
         format: Boolean,
-        default: false,
+        default: process.env.NODE_ENV === 'development',
       },
     },
     oidc: {
@@ -272,11 +281,11 @@ export const { config, schema } = await libConfig({
       pkce: {
         required: {
           format: Boolean,
-          default: true,
+          default: process.env.NODE_ENV === 'development',
         },
         allowPlainTransform: {
           format: Boolean,
-          default: false,
+          default: process.env.NODE_ENV === 'development',
         },
       },
     },
@@ -406,22 +415,19 @@ for await (const dirname of await fs.readdir(domainsDirectory)) {
       domainConfigs.set(dConfig.domain, dConfig);
       break;
     } catch (cError: unknown) {
-      error(
-        { error: cError },
-        `Could not read config for domain ${dirname}, skipping`,
-      );
+      error(cError, `Could not read config for domain ${dirname}, skipping`);
     }
   }
 }
 
 const publicUri = config.get('auth.server.publicUri')
   ? // eslint-disable-next-line @typescript-eslint/no-base-to-string
-    new URI(config.get('auth.server.publicUri')).normalize().toString()
+  new URI(config.get('auth.server.publicUri')).normalize().toString()
   : // eslint-disable-next-line @typescript-eslint/no-base-to-string
-    new URI()
-      .hostname(config.get('auth.server.domain'))
-      .port(`${config.get('auth.server.port')}`)
-      .protocol(config.get('auth.server.mode'))
-      .normalize()
-      .toString();
+  new URI()
+    .hostname(config.get('auth.server.domain'))
+    .port(`${config.get('auth.server.port')}`)
+    .protocol(config.get('auth.server.mode'))
+    .normalize()
+    .toString();
 config.set('auth.server.publicUri', publicUri);

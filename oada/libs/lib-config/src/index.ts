@@ -138,8 +138,9 @@ convict.addParser([
  */
 export default async function config<S>(
   // Defer type inference
-  inSchema: S extends unknown ? Schema<S> : never,
+  inSchema: S,
 ) {
+  type C = S extends Schema<infer T> ? Config<T> : never;
   // Merge input schema with default schema and create config
   const schema = convict({ ...defaults, ...inSchema });
 
@@ -166,7 +167,7 @@ export default async function config<S>(
   });
 
   return {
-    config: schema as (S extends unknown ? Config<S> : never) & typeof schema,
+    config: schema as C & typeof schema,
     schema: inSchema,
   };
 }

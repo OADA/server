@@ -36,10 +36,10 @@
     "tslib": "2.6.2"
   },
   "devDependencies": {
-    "@types/clone-deep": "^4.0.2",
-    "@types/debug": "^4.1.9",
-    "@types/minimist": "^1.2.3",
-    "@types/promptly": "^3.0.3"
+    "@types/clone-deep": "^4.0.4",
+    "@types/debug": "^4.1.12",
+    "@types/minimist": "^1.2.5",
+    "@types/promptly": "^3.0.5"
   },
   "volta": {
     "node": "20.2.0"

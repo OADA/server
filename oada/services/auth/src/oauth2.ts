@@ -398,8 +398,8 @@ const plugin: FastifyPluginAsync<Options> = async (
           scope?: string[];
           allow?: unknown;
         };
-        const validScope = scope?.every(
-          (element) => request.oauth2?.req.scope.includes(element),
+        const validScope = scope?.every((element) =>
+          request.oauth2?.req.scope.includes(element),
         );
 
         if (!validScope) {

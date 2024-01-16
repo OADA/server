@@ -28,8 +28,8 @@ oada:
     write-handler: {}
   # oada.externalServices is a map of oada-compatible services to deploy with this OADA instance
   externalServices:
-    #unfisk:
-    #  image: qlever/unfisk
+    #uservice:
+    #  image: qlever/uservice
     #  tag: build
   # oada.users is a list of users to be created
   users:
@@ -56,6 +56,12 @@ oada:
     requests:
       cpu: 20m
       memory: 128Mi
+
+oauth:
+  # OAuth 2.0 issuer to use for auth.
+  # Issuer must support OpenID Connect Discovery 1.0.
+  # If not set, defaults to the internal OADA auth server.
+  issuer: ~
 
 # debug is the list of debug.js namespaces to enable/disable
 debug:

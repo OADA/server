@@ -110,12 +110,13 @@ export default {
       graphRequest: 'graph_request',
       writeRequest: 'write_request',
       userRequest: 'user_request',
-      permissionsRequest: 'permissions_request', // Show bobs
+      permissionsRequest: 'permissions_request',
       httpResponse: 'http_response',
       websocketsRequest: 'websockets_request',
     },
   },
   auth: {
+    issuer: null,
     // Prefix should match nginx proxy's prefix for the auth service
     endpointsPrefix: '/oadaauth/',
     endpoints: {

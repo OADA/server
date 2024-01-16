@@ -160,3 +160,7 @@ const rootLogger = createRootLogger();
 export function pino(options?: LoggerOptions) {
   return rootLogger.child({}, options as ChildLoggerOptions);
 }
+
+process.on('uncaughtExceptionMonitor', (error) => {
+  rootLogger.fatal(error, 'Uncaught exception');
+});
