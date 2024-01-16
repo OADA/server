@@ -64,7 +64,7 @@
     "@oada/id-client": "^2.0.8",
     "@oada/lib-arangodb": "^3.7.0",
     "@oada/lib-config": "^3.7.0",
-    "@oada/lib-prom": "workspace:^",
+    "@oada/lib-prom": "3.5.1",
     "@oada/lookup": "^2.0.0",
     "@oada/pino-debug": "^3.7.0",
     "@oada/types": "^3.5.3",
