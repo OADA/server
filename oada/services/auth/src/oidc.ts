@@ -19,6 +19,7 @@ import { config, domainConfigs } from './config.js';
 
 import { createPrivateKey, createPublicKey } from 'node:crypto';
 import type { File } from 'node:buffer';
+import { join } from 'node:path/posix';
 
 import type { FastifyPluginAsync } from 'fastify';
 import fastifyAccepts from '@fastify/accepts';
@@ -31,6 +32,7 @@ import got from 'got';
 
 // Use the oada-id-client for the openidconnect code flow:
 import oadaIDClient from '@oada/id-client';
+import { plugin as wkj } from '@oada/well-known-json/plugin';
 
 import {
   type DBUser,
@@ -42,7 +44,6 @@ import { issueCode, issueToken } from './oauth2.js';
 import type { DBClient } from './db/models/client.js';
 import { createUserinfo } from './utils.js';
 import { fastifyPassport } from './auth.js';
-import { plugin as wkj } from '@oada/well-known-json/plugin';
 
 export interface Options {
   oauth2server?: OAuth2Server;
@@ -180,10 +181,9 @@ const plugin: FastifyPluginAsync<Options> = async (
       domainConfigs.get(request.hostname) ?? domainConfigs.get('localhost')!;
     const options = {
       metadata: domainConfig.software_statement,
-      redirect: `https://${
-        request.hostname
+      redirect: `https://${request.hostname
         // The config already has the pfx added
-      }${oidcLogin}`,
+        }${oidcLogin}`,
       scope: 'openid profile',
       prompt: 'consent',
       privateKey: domainConfig.keys.private,
@@ -297,28 +297,40 @@ const plugin: FastifyPluginAsync<Options> = async (
     },
   );
 
+  // TODO: Should this just be in the well-known service?
+  const issuer = config.get('auth.issuer');
+  if (issuer) {
+    return
+  }
+
+  const configuration = {
+    issuer: './', // Config.get('auth.server.publicUri'),
+    registration_endpoint: `.${join('/', fastify.prefix, config.get('auth.endpoints.register'))}`,
+    authorization_endpoint: `.${join('/', fastify.prefix, config.get('auth.endpoints.authorize'))}`,
+    token_endpoint: `.${join('/', fastify.prefix, config.get('auth.endpoints.token'))}`,
+    userinfo_endpoint: `.${join('/', fastify.prefix, config.get('auth.endpoints.userinfo'))}`,
+    jwks_uri: `.${join('/', fastify.prefix, config.get('auth.endpoints.certs'))}`,
+    response_types_supported: [
+      'code',
+      'token',
+      'id_token',
+      'code token',
+      'code id_token',
+      'id_token token',
+      'code id_token token',
+    ],
+    subject_types_supported: ['public'],
+    id_token_signing_alg_values_supported: ['RS256'],
+    token_endpoint_auth_methods_supported: ['client_secret_post'],
+  } as const;
+
+  fastify.log.debug({ configuration }, 'Loaded OIDC configuration');
+
   await fastify.register(wkj, {
     resources: {
-      'openid-configuration': {
-        issuer: './', // Config.get('auth.server.publicUri'),
-        registration_endpoint: `./${config.get('auth.endpoints.register')}`,
-        authorization_endpoint: `./${config.get('auth.endpoints.authorize')}`,
-        token_endpoint: `./${config.get('auth.endpoints.token')}`,
-        userinfo_endpoint: `./${config.get('auth.endpoints.userinfo')}`,
-        jwks_uri: `./${config.get('auth.endpoints.certs')}`,
-        response_types_supported: [
-          'code',
-          'token',
-          'id_token',
-          'code token',
-          'code id_token',
-          'id_token token',
-          'code id_token token',
-        ],
-        subject_types_supported: ['public'],
-        id_token_signing_alg_values_supported: ['RS256'],
-        token_endpoint_auth_methods_supported: ['client_secret_post'],
-      },
+      'oada-configuration': configuration,
+      'openid-configuration': configuration,
+      'oauth-authorization-server': configuration,
     },
   });
 };

@@ -40,8 +40,8 @@
     "tslib": "2.6.2"
   },
   "devDependencies": {
-    "@types/debug": "^4.1.9",
-    "@types/node": "^20.8.2"
+    "@types/debug": "^4.1.12",
+    "@types/node": "^20.11.4"
   },
   "volta": {
     "node": "20.2.0"

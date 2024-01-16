@@ -23,6 +23,8 @@
 // internal requests to every internal service to retrieve the
 // latest well-known documents.
 
+import { join } from 'node:path/posix';
+
 import { pino } from '@oada/pino-debug';
 
 import { config } from './config.js';
@@ -31,6 +33,7 @@ import { nstats } from '@oada/lib-prom';
 
 import got from 'got';
 
+import { Issuer } from 'openid-client';
 import { fastify as Fastify } from 'fastify';
 import { default as accepts } from '@fastify/accepts';
 import { default as cors } from '@fastify/cors';
@@ -38,6 +41,16 @@ import { default as helmet } from '@fastify/helmet';
 
 import { plugin as formats } from '@oada/formats-server';
 import { plugin as wkj } from '@oada/well-known-json';
+
+export async function discoverConfiguration(issuer: string | URL) {
+  try {
+    const { metadata } = await Issuer.discover(`${issuer}`);
+    return metadata;
+  } catch {
+    const { metadata } = await Issuer.discover(`https://${issuer}`);
+    return metadata;
+  }
+}
 
 const trustProxy = config.get('trustProxy');
 // eslint-disable-next-line new-cap
@@ -76,17 +89,30 @@ app.get('/.well-known/oada-configuration', (_, response, next) => {
 */
 await fastify.register(formats);
 
+const issuer = config.get('auth.issuer');
+const configuration = issuer ? await discoverConfiguration(issuer) : {};
+
 const wellKnownOptions = {
   resources: {
-    'oada-configuration': config.get('wellKnown.oada-configuration'),
-    'openid-configuration': config.get('wellKnown.openid-configuration'),
+    'oada-configuration': {
+      ...config.get('wellKnown.oada-configuration'),
+      ...configuration,
+    },
+    'openid-configuration': {
+      ...config.get('wellKnown.openid-configuration'),
+      ...configuration,
+    },
+    'oauth-authorization-server': {
+      ...config.get('wellKnown.oauth-authorization-server'),
+      ...configuration,
+    },
   },
 };
 
 const subservices = new Set(
   config
     .get('wellKnown.mergeSubServices')
-    .map((s) => (typeof s === 'string' ? s : `${s.base}${s.addPrefix ?? ''}`)),
+    .map((s) => (typeof s === 'string' ? s : join(s.base, s.addPrefix ?? ''))),
 );
 
 await fastify.register(
@@ -117,7 +143,7 @@ await fastify.register(
           );
 
           // Request this resource from the subservice:
-          const url = s + whichdoc;
+          const url = join(s, whichdoc);
           request.log.trace('Requesting subservice URL: %s', url);
           try {
             const body = await proxy.get(url).json();
@@ -125,7 +151,7 @@ await fastify.register(
             return body;
           } catch (error: unknown) {
             // If failed to return, or json didn't parse:
-            request.log.error({ error }, `The subservice URL ${url} failed`);
+            request.log.error(error, `The subservice URL ${url} failed`);
             // eslint-disable-next-line unicorn/no-null
             return null;
           }

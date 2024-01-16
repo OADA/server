@@ -32,9 +32,10 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
-    "@fastify/accepts": "^4.2.0",
-    "@fastify/cors": "^8.4.0",
+    "@fastify/accepts": "^4.3.0",
+    "@fastify/cors": "^8.5.0",
     "@fastify/helmet": "^11.1.1",
+    "@oada/auth": "workspace:^",
     "@oada/formats-server": "^3.5.3",
     "@oada/lib-config": "^3.7.0",
     "@oada/lib-prom": "workspace:^",
@@ -43,13 +44,14 @@
     "allow-methods": "^6.0.0",
     "cors": "^2.8.5",
     "debug": "^4.3.4",
-    "fastify": "^4.23.2",
-    "got": "^13.0.0",
+    "fastify": "^4.25.2",
+    "got": "^14.0.0",
+    "openid-client": "^5.6.4",
     "tslib": "2.6.2"
   },
   "devDependencies": {
-    "@types/cors": "^2.8.14",
-    "@types/debug": "^4.1.9",
+    "@types/cors": "^2.8.17",
+    "@types/debug": "^4.1.12",
     "fastify-plugin": "^4.5.1"
   },
   "volta": {

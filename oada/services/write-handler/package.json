@@ -58,11 +58,11 @@
     "@ava/typescript": "^4.1.0",
     "@oada/client": "^4.5.5",
     "@oada/types": "^3.5.3",
-    "@types/debug": "^4.1.9",
-    "@types/json-pointer": "^1.0.32",
-    "@types/node": "^20.8.2",
-    "@types/object-assign-deep": "^0.4.1",
-    "ava": "5.3.1"
+    "@types/debug": "^4.1.12",
+    "@types/json-pointer": "^1.0.34",
+    "@types/node": "^20.11.4",
+    "@types/object-assign-deep": "^0.4.3",
+    "ava": "6.0.1"
   },
   "volta": {
     "node": "20.2.0"

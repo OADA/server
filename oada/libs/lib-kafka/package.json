@@ -46,11 +46,11 @@
   },
   "devDependencies": {
     "@ava/typescript": "^4.1.0",
-    "@types/convict": "^6.1.4",
-    "@types/debug": "^4.1.9",
-    "@types/node": "^20.8.2",
-    "@types/uuid": "^9.0.4",
-    "ava": "5.3.1"
+    "@types/convict": "^6.1.6",
+    "@types/debug": "^4.1.12",
+    "@types/node": "^20.11.4",
+    "@types/uuid": "^9.0.7",
+    "ava": "6.0.1"
   },
   "volta": {
     "node": "20.2.0"

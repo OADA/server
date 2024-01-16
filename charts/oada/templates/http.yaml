@@ -61,7 +61,7 @@ spec:
                 name: http-handler-{{ .Release.Name }}
                 port:
                   name: http
-            path: /$
+            path: /
     {{- end }}
     {{- range .Values.oada.domains -}}
     - host: {{ quote . }}
@@ -73,7 +73,7 @@ spec:
                 name: {{ $name }}
                 port:
                   name: http
-            path: /$
+            path: /
     {{ end }}
 ---
 apiVersion: networking.k8s.io/v1

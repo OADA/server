@@ -99,17 +99,19 @@ fastifyPassport.use(
     {
       passReqToCallback: true,
       jwtFromRequest({ body }) {
+        // @ts-expect-error stuff
+        const { client_assertion_type, client_assertion } = body ?? {};
         if (
-          body.client_assertion_type !==
+          client_assertion_type !==
           'urn:ietf:params:oauth:client-assertion-type:jwt-bearer'
         ) {
-          trace('Unknown client_assertion_type %s', body.client_assertion_type);
+          trace('Unknown client_assertion_type %s', client_assertion_type);
           // eslint-disable-next-line unicorn/no-null
           return null;
         }
 
         // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-        return body.client_assertion;
+        return client_assertion;
       },
       async secretOrKeyProvider(_request, jwt, done) {
         try {

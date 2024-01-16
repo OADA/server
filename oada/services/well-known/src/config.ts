@@ -19,7 +19,10 @@
 
 import libConfig from '@oada/lib-config';
 
+import { schema as authSchema } from '@oada/auth/config';
+
 export const { config, schema } = await libConfig({
+  ...authSchema,
   trustProxy: {
     format: Array,
     default: ['uniquelocal'],
@@ -32,7 +35,6 @@ export const { config, schema } = await libConfig({
         format: 'port',
         default: 443,
         env: 'PORT',
-        arg: 'port',
       },
       mode: {
         format: ['https', 'http'],
@@ -42,7 +44,6 @@ export const { config, schema } = await libConfig({
         format: String,
         default: 'localhost',
         env: 'DOMAIN',
-        arg: 'domain',
       },
       path_prefix: {
         format: String,
@@ -70,9 +71,9 @@ export const { config, schema } = await libConfig({
       format: Array,
       default: [] as Array<
         | {
-            base: string;
-            addPrefix?: string;
-          }
+          base: string;
+          addPrefix?: string;
+        }
         | string
       >,
       env: 'WELLKNOWN_SUBSERVICES',
@@ -83,7 +84,7 @@ export const { config, schema } = await libConfig({
       default: {
         well_known_version: '1.1.0',
         oada_version: '0.1.0', // Override the version in oada.config.js
-        oada_base_uri: null,
+        oada_base_uri: null as string | null,
         scopes_supported: [
           {
             'name': 'oada.all.1', // Can do anything the user can do
@@ -97,6 +98,10 @@ export const { config, schema } = await libConfig({
       format: Object,
       default: {},
     },
+    'oauth-authorization-server': {
+      format: Object,
+      default: {},
+    },
   },
 });
 
@@ -104,9 +109,8 @@ const server = config.get('wellKnown.server');
 
 if (!config.get('wellKnown.oada-configuration.oada_base_uri')) {
   config.set(
-    'wellKnown.wellKnown.server.oada-configuration.oada_base_uri',
-    `${server.mode}//${server.domain}${server.port ? `:${server.port}` : ''}${
-      server.path_prefix ?? ''
+    'wellKnown.server.oada-configuration.oada_base_uri',
+    `${server.mode}//${server.domain}${server.port ? `:${server.port}` : ''}${server.path_prefix ?? ''
     }`,
   );
 }
