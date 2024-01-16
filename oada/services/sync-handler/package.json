@@ -31,7 +31,7 @@
     "@oada/lib-arangodb": "^3.7.0",
     "@oada/lib-config": "^3.7.0",
     "@oada/lib-kafka": "^3.7.0",
-    "@oada/lib-prom": "workspace:^",
+    "@oada/lib-prom": "3.5.1",
     "@oada/pino-debug": "^3.7.0",
     "debug": "^4.3.4",
     "got": "^14.0.0",
