@@ -99,7 +99,6 @@ fastifyPassport.use(
     {
       passReqToCallback: true,
       jwtFromRequest({ body }) {
-        // @ts-expect-error stuff
         const { client_assertion_type, client_assertion } = body ?? {};
         if (
           client_assertion_type !==

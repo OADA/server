@@ -55,7 +55,6 @@ const warn = log('websockets:warn');
 const debug = log('websockets:debug');
 const trace = log('websockets:trace');
 
-// eslint-disable-next-line unicorn/prefer-event-target
 const emitter = new EventEmitter<string, { change: Change }>();
 
 class Watch {
@@ -87,8 +86,7 @@ class Watch {
   async sendChange(change: SocketChange) {
     trace({ change }, 'Sending change');
     // HACK: for backwards compatibility with older clients
-    change.path_leftover =
-      change.path_leftover ?? change.requestId.map(() => '');
+    change.path_leftover ??= change.requestId.map(() => '');
     await this.#send(JSON.stringify(change));
   }
 
@@ -117,7 +115,6 @@ function parseRequest(data: WebSocket.Data): SocketRequest {
   // Normalize header name capitalization
   const headers = message.headers ?? {};
   for (const header of Object.keys(headers)) {
-    // eslint-disable-next-line security/detect-object-injection
     headers[header.toLowerCase()] = headers[header];
   }
 
@@ -313,7 +310,6 @@ const plugin: FastifyPluginAsync = async (fastify) => {
           for (const [k, v] of Object.entries(response.headers)) {
             // @oada/client gets very angry if a header is anything but a string
             if (v) {
-              // eslint-disable-next-line security/detect-object-injection
               headers[k] = v.toString();
             }
           }
@@ -362,9 +358,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         pathLeftover = parts.slice(3).join('/');
       }
 
-      if (pathLeftover) {
-        pathLeftover = `/${pathLeftover}`;
-      }
+      pathLeftover &&= `/${pathLeftover}`;
 
       switch (message.method) {
         case 'head-watch':
@@ -455,7 +449,6 @@ const plugin: FastifyPluginAsync = async (fastify) => {
             const headers: Record<string, string> = {};
             for (const [k, v] of Object.entries(response.headers)) {
               if (v) {
-                // eslint-disable-next-line security/detect-object-injection
                 headers[k] = v.toString();
               }
             }
@@ -477,7 +470,6 @@ const plugin: FastifyPluginAsync = async (fastify) => {
           for (const [k, v] of Object.entries(response.headers)) {
             // @oada/client gets very angry if a header is anything but a string
             if (v) {
-              // eslint-disable-next-line security/detect-object-injection
               headers[k] = v.toString();
             }
           }

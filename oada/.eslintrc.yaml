@@ -1,16 +1,17 @@
 root: true
 
 extends:
+  - 'eslint:recommended'
   - 'plugin:@typescript-eslint/recommended'
   - plugin:node/recommended
   - plugin:github/recommended
   - plugin:promise/recommended
   - plugin:regexp/recommended
-  - plugin:array-func/recommended
+  #- plugin:array-func/recommended
   - plugin:optimize-regex/recommended
   - plugin:import/recommended
   - plugin:unicorn/recommended
-  - plugin:security/recommended
+  #- plugin:security/recommended
   - plugin:sonarjs/recommended
   - plugin:ava/recommended
   - xo
@@ -23,7 +24,7 @@ plugins:
   - github
   - promise
   - regexp
-  - array-func
+  #- array-func
   - optimize-regex
   - no-constructor-bind
   - import
@@ -51,10 +52,13 @@ overrides:
       ecmaVersion: 2020
       project: './**/tsconfig.*'
     rules:
+      # FIXME: Rule broken
+      '@typescript-eslint/prefer-nullish-coalescing': off
       '@typescript-eslint/naming-convention':
         [
           error,
           { selector: default, format: [camelCase] },
+          { selector: import, modifiers: [default], format: null },
           { selector: objectLiteralProperty, format: null },
           { selector: enumMember, format: [PascalCase] },
           { selector: typeProperty, format: null },
@@ -64,6 +68,7 @@ overrides:
             format: [camelCase, UPPER_CASE],
             leadingUnderscore: allow,
           },
+          { selector: variable, modifiers: [destructured], format: null },
           {
             selector: parameter,
             format: [camelCase],
@@ -94,8 +99,11 @@ overrides:
           },
         ]
       '@typescript-eslint/consistent-type-definitions': [warn, interface]
+      '@typescript-eslint/switch-exhaustiveness-check': off
 
 rules:
+  # FIXME: Rule broken
+  '@typescript-eslint/prefer-nullish-coalescing': off
   notice/notice:
     - error
     - template: |
@@ -128,13 +136,19 @@ rules:
   eslint-comments/no-use: off
   no-secrets/no-secrets: [error, { tolerance: 5 }]
   no-empty-label: off
-  no-warning-comments: off
+  no-warning-comments: 0
   node/no-missing-import: off
   import/no-unresolved: off
   import/extensions: off
   unicorn/prefer-spread: off
   unicorn/prevent-abbreviations:
-    [warn, { replacements: { db: false, req: false, doc: false } }]
+    - warn
+    - replacements:
+        db: false
+        req: false
+        res: false
+        err: false
+        doc: false
   no-constructor-bind/no-constructor-bind: error
   no-constructor-bind/no-constructor-state: error
   sort-imports: [warn, { allowSeparatedGroups: true }]
@@ -142,3 +156,4 @@ rules:
   ava/no-import-test-files: off
   ava/no-skip-test: warn
   ava/no-skip-assert: warn
+  '@typescript-eslint/switch-exhaustiveness-check': off

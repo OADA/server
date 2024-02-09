@@ -48,9 +48,9 @@
     "@ava/typescript": "^4.1.0",
     "@types/convict": "^6.1.6",
     "@types/debug": "^4.1.12",
-    "@types/node": "^20.11.4",
-    "@types/uuid": "^9.0.7",
-    "ava": "6.0.1"
+    "@types/node": "^20.11.17",
+    "@types/uuid": "^9.0.8",
+    "ava": "6.1.1"
   },
   "volta": {
     "node": "20.2.0"

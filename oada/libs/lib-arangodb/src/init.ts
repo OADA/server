@@ -106,9 +106,7 @@ export async function run(): Promise<void> {
           await database.createEdgeCollection(c.name);
           trace('Edge collection %s has been created', c.name);
         } else {
-          if (!c.createOptions) {
-            c.createOptions = {};
-          }
+          c.createOptions ||= {};
 
           await database.createCollection(c.name, c.createOptions);
           trace('Document collection %s has been created', c.name);
@@ -168,10 +166,7 @@ export async function run(): Promise<void> {
           }
 
           // Have to use _key if we want the key to be our key:
-          if (!document._key) {
-            // This line is valid, it just confuses the highlighter
-            document._key = document._id.replace(/^[^/]*\//, '');
-          }
+          document._key ||= document._id.replace(/^[^/]*\//, '');
 
           if (
             colname === 'users' && // Oidc users don't have password, so you need to check for existence

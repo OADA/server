@@ -13,24 +13,24 @@
     "g:pino-pretty": "pino-pretty"
   },
   "devDependencies": {
-    "@commitlint/cli": "^18.4.4",
-    "@commitlint/config-conventional": "^18.4.4",
+    "@commitlint/cli": "^18.6.0",
+    "@commitlint/config-conventional": "^18.6.0",
     "@tsconfig/node20": "^20.1.2",
     "@types/eslint": "^8.56.2",
     "@types/mocha": "^10.0.6",
-    "@types/node": "^20.11.4",
-    "@typescript-eslint/eslint-plugin": "^6.19.0",
-    "@typescript-eslint/parser": "^6.19.0",
+    "@types/node": "^20.11.17",
+    "@typescript-eslint/eslint-plugin": "^6.21.0",
+    "@typescript-eslint/parser": "^6.21.0",
     "@yarnpkg/sdks": "^3.1.0",
-    "browserslist": "^4.22.2",
+    "browserslist": "^4.22.3",
     "c8": "^9.1.0",
     "eslint": "^8.56.0",
     "eslint-config-prettier": "^9.1.0",
-    "eslint-config-xo": "^0.43.1",
-    "eslint-config-xo-typescript": "^1.0.1",
+    "eslint-config-xo": "^0.44.0",
+    "eslint-config-xo-typescript": "^2.0.0",
     "eslint-formatter-pretty": "^6.0.1",
     "eslint-import-resolver-node": "^0.3.9",
-    "eslint-plugin-array-func": "^4.0.0",
+    "eslint-plugin-array-func": "^5.0.1",
     "eslint-plugin-ava": "^14.0.0",
     "eslint-plugin-escompat": "^3.4.0",
     "eslint-plugin-eslint-comments": "^3.2.0",
@@ -49,9 +49,9 @@
     "eslint-plugin-regexp": "^2.2.0",
     "eslint-plugin-security": "^2.1.0",
     "eslint-plugin-sonarjs": "^0.23.0",
-    "eslint-plugin-unicorn": "^50.0.1",
+    "eslint-plugin-unicorn": "^51.0.1",
     "get-port": "^7.0.0",
-    "prettier": "^3.2.2",
+    "prettier": "^3.2.5",
     "tslib": "2.6.2",
     "typescript": "5.3.3",
     "update-browserslist-db": "^1.0.13",
@@ -70,5 +70,5 @@
   "volta": {
     "node": "20.2.0"
   },
-  "packageManager": "yarn@4.0.2"
+  "packageManager": "yarn@4.1.0"
 }

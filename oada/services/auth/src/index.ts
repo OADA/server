@@ -27,6 +27,7 @@ import url from 'node:url';
 
 import {
   fastify as Fastify,
+  type FastifyError,
   type FastifyPluginAsync,
   type FastifyReply,
   type FastifyRequest,
@@ -36,6 +37,7 @@ import {
   requestContext,
 } from '@fastify/request-context';
 import type FastifyRateLimit from '@fastify/rate-limit';
+import type { JsonSchemaToTsProvider } from '@fastify/type-provider-json-schema-to-ts';
 import _fastifyGracefulShutdown from 'fastify-graceful-shutdown';
 import cors from '@fastify/cors';
 import { createServer } from 'oauth2orize';
@@ -50,6 +52,7 @@ import helmet from '@fastify/helmet';
 
 import esMain from 'es-main';
 import qs from 'qs';
+import { serializeError } from 'serialize-error';
 
 import { type Client, findById } from './db/models/client.js';
 import dynReg from './dynReg.js';
@@ -72,6 +75,7 @@ const fastifyGracefulShutdown = _defaultHack(_fastifyGracefulShutdown);
 declare module '@fastify/request-context' {
   interface RequestContextData {
     id: string;
+    session: fastifySecureSession.Session;
   }
 }
 
@@ -85,7 +89,6 @@ declare module '@fastify/secure-session' {
 const trustProxy = config.get('trustProxy');
 
 async function makeRedis(uri: string) {
-  // eslint-disable-next-line @typescript-eslint/naming-convention
   const { Redis } = await import('ioredis');
   return new Redis(uri, {
     connectTimeout: 500,
@@ -96,7 +99,8 @@ async function makeRedis(uri: string) {
 /**
  * Fastify plugin implementing the OADA auth server
  */
-const plugin: FastifyPluginAsync = async (fastify) => {
+const plugin: FastifyPluginAsync = async (f) => {
+  const fastify = f.withTypeProvider<JsonSchemaToTsProvider>();
   const {
     /**
      * Auth API endpoints
@@ -128,6 +132,18 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       done(error as Error);
     }
   });
+
+  if (process.env.NODE_ENV !== 'production') {
+    const defaultHandler = fastify.errorHandler;
+    // Send errors on to client for debug purposes
+    fastify.setErrorHandler((error, request, reply) => {
+      // @ts-expect-error stuff
+      const cause: unknown = error.response?.body ?? error.response ?? error;
+      void reply.code(500);
+      const body = serializeError(cause) as FastifyError;
+      defaultHandler.call(fastify, body, request, reply);
+    });
+  }
 
   await fastify.register(fastifySecureSession, {
     key,
@@ -164,6 +180,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   // Add id to request context
   fastify.addHook('onRequest', async (request) => {
     requestContext.set('id', request.id);
+    requestContext.set('session', request.session);
   });
 
   await fastify.register(fastifySensible);
@@ -187,6 +204,12 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   await fastify.register(helmet, {
     crossOriginResourcePolicy: {
       policy: 'cross-origin',
+    },
+    contentSecurityPolicy: {
+      directives: {
+        // eslint-disable-next-line unicorn/no-null
+        'form-action': null,
+      },
     },
   });
 
@@ -264,6 +287,15 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   }
 };
 
+function serializeJwt(jwt: `${string}.${string}.${string}`) {
+  const [h, p, s] = jwt.split('.');
+  return {
+    header: h && `${Buffer.from(h, 'base64')}`,
+    payload: p && `${Buffer.from(p, 'base64')}`,
+    signature: s && `${Buffer.from(s, 'base64')}`,
+  };
+}
+
 export async function start(): Promise<void> {
   // Set up logging stuff
   const serializers = {
@@ -285,14 +317,18 @@ export async function start(): Promise<void> {
     res(reply: FastifyReply) {
       return {
         statusCode: reply.statusCode,
-        location: reply.getHeader('location'),
-        contentLocation: reply.getHeader('content-location'),
+        location: reply.getHeader?.('location'),
+        contentLocation: reply.getHeader?.('content-location'),
+        // @ts-expect-error stuff
+        body: reply.body,
+        session: requestContext.get('session')?.data(),
       };
     },
+    // Customize logging for JWTs
+    jwt: serializeJwt,
+    id_token: serializeJwt,
   };
   const logger = pino({ serializers });
-  // HACK: fastify overrides existing serializers. This circumvents that...
-  // logger.serializers = serializers;
 
   mixins.push(() => ({
     reqId: requestContext.get('id'),

@@ -15,8 +15,6 @@
  * limitations under the License.
  */
 
-/* eslint-disable unicorn/prevent-abbreviations */
-
 import { setTimeout } from 'node:timers/promises';
 
 import { config } from './config.js';

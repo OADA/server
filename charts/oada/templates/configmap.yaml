@@ -47,9 +47,11 @@ data:
   KAFKA_BROKERS: {{ include "oada.kafka.brokers" . }}
   {{- end }}
   {{ if .Values.oauth.issuer -}}
-  AUTH_ISSUER: {{ .Values.oauth.issuer | quote }}
-  WELLKNOWN_SUBSERVICES: ""
+  OIDC_ISSUER: {{ .Values.oauth.issuer | quote }}
+  WELLKNOWN_SUBSERVICES: ''
   {{ else -}}
+  # Use our internal Auth server
+  OIDC_ISSUER: http://auth-{{ .Release.Name }}/oadaauth
   AUTH_PREFIX: /oadaauth/
   WELLKNOWN_SUBSERVICES: http://auth-{{ .Release.Name }}/oadaauth/
   {{- end }}

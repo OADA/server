@@ -24,7 +24,7 @@ import debug from 'debug';
 
 import users from './dist/users.js';
 
-process.env.DEBUG = process.env.DEBUG || 'info:farmhack*';
+process.env.DEBUG ||= 'info:farmhack*';
 const info = debug('info:farmhack#init');
 const trace = debug('trace:farmhack#init');
 

@@ -15,33 +15,39 @@
  * limitations under the License.
  */
 
-import { config, domainConfigs } from './config.js';
+import { join } from 'node:path/posix';
+
+import { config } from './config.js';
 
 import { createPrivateKey, createPublicKey } from 'node:crypto';
 import type { File } from 'node:buffer';
-import { join } from 'node:path/posix';
 
 import type { FastifyPluginAsync } from 'fastify';
 import fastifyAccepts from '@fastify/accepts';
 
+import {
+  Issuer,
+  Strategy as OIDCStrategy,
+  type StrategyVerifyCallbackUserInfo,
+} from 'openid-client';
 import { type OAuth2Server, createServer } from 'oauth2orize';
 import { SignJWT, exportJWK, generateKeyPair } from 'jose';
 import oauth2orizeOpenId, { type IssueIDToken } from 'oauth2orize-openid';
 
-import got from 'got';
+import memoize from 'p-memoize';
 
-// Use the oada-id-client for the openidconnect code flow:
-import oadaIDClient from '@oada/id-client';
 import { plugin as wkj } from '@oada/well-known-json/plugin';
 
 import {
   type DBUser,
   findByOIDCToken,
   findByOIDCUsername,
+  register,
   update,
 } from './db/models/user.js';
 import { issueCode, issueToken } from './oauth2.js';
 import type { DBClient } from './db/models/client.js';
+import type { JsonSchemaToTsProvider } from '@fastify/type-provider-json-schema-to-ts';
 import { createUserinfo } from './utils.js';
 import { fastifyPassport } from './auth.js';
 
@@ -56,6 +62,15 @@ export interface Options {
 declare module 'oauth2orize' {
   interface OAuth2Req {
     userinfo?: boolean;
+  }
+}
+
+declare module 'openid-client' {
+  export interface TypeOfGenericClient {
+    register(
+      metadata: Omit<ClientMetadata, 'client_id'>,
+      other?: RegisterOther & ClientOptions,
+    ): Promise<BaseClient>;
   }
 }
 
@@ -78,8 +93,12 @@ async function getKeyPair(file: File | null) {
 
 // TODO: Support key rotation and stuff
 const { publicKey, privateKey } = await getKeyPair(await idToken.key);
-const jwk = await exportJWK(publicKey);
-const jwks = { keys: [{ kid, ...jwk }] };
+const jwksPublic = {
+  keys: [{ kid, ...(await exportJWK(publicKey)) }],
+};
+const jwksPrivate = {
+  keys: [{ kid, ...(await exportJWK(privateKey)) }],
+};
 
 export const issueIdToken: IssueIDToken<DBClient, DBUser> = async (
   client,
@@ -114,15 +133,14 @@ export const issueIdToken: IssueIDToken<DBClient, DBUser> = async (
  * Fastify plugin for the server side of OAuth2 using oauth2orize
  */
 const plugin: FastifyPluginAsync<Options> = async (
-  fastify,
+  f,
   {
     oauth2server = createServer(),
-    endpoints: {
-      oidcLogin = 'oidc-login',
-      oidcRedirect = 'oidc-redirect',
-    } = {},
+    endpoints: { oidcLogin = 'oidc-login' } = {},
   },
 ) => {
+  const fastify = f.withTypeProvider<JsonSchemaToTsProvider>();
+
   oauth2server.grant(oauth2orizeOpenId.extensions());
 
   // Implicit flow (id_token)
@@ -159,124 +177,165 @@ const plugin: FastifyPluginAsync<Options> = async (
 
   await fastify.register(fastifyAccepts);
 
-  // -----------------------------------------------------------------
-  // Handle the POST from clicking the "login with OADA/trellisfw" button
-  fastify.post(oidcLogin, async (request, reply) => {
-    // First, get domain entered in the posted form
-    // and strip protocol if they used it
-    // @ts-expect-error TODO: make types for auth bodies
-    const destinationDomain = `${request.body?.dest_domain}`.replace(
-      /^https?:\/\//,
-      '',
-    );
+  const getOIDCAuth = memoize(
+    async (from: string, to: string) => {
+      const issuer = await Issuer.discover(`https://${to}`);
 
-    // @ts-expect-error TODO: make types for auth bodies
-    request.body.dest_domain = destinationDomain;
-    request.log.info(
-      `${oidcLogin}: OpenIDConnect request to redirect from domain ${request.hostname} to domain ${destinationDomain}`,
-    );
+      // Next, get the info for the id client middleware based on main domain:
+      /*
+        const domainConfig =
+          domainConfigs.get(from) ??
+          domainConfigs.get('localhost')!;
+        */
 
-    // Next, get the info for the id client middleware based on main domain:
-    const domainConfig =
-      domainConfigs.get(request.hostname) ?? domainConfigs.get('localhost')!;
-    const options = {
-      metadata: domainConfig.software_statement,
-      redirect: `https://${request.hostname
-        // The config already has the pfx added
-        }${oidcLogin}`,
-      scope: 'openid profile',
-      prompt: 'consent',
-      privateKey: domainConfig.keys.private,
-    };
+      const redirect = `https://${join(from, fastify.prefix, oidcLogin, to)}`;
+      const { metadata } = await issuer.Client.register(
+        {
+          client_name: 'OADA Auth Server',
+          // Software_statement: domainConfig.software_statement,
+          redirect_uris: [redirect],
+          id_token_signed_response_alg: 'HS256',
+        },
+        { jwks: jwksPrivate },
+      );
+      const client = new issuer.Client({
+        ...metadata,
+        // FIXME: Why does Auth0 need this?
+        id_token_signed_response_alg: 'HS256',
+      });
+      fastify.log.debug({ client, from, to }, 'Registered client with OIDC');
 
-    request.log.trace(
-      '%s: calling getIDToken for dest_domain = %s',
-      oidcLogin,
-      destinationDomain,
-    );
-    await oadaIDClient.getIDToken(destinationDomain, options, async (uri) =>
-      reply.redirect(uri),
-    );
-  });
+      const name = `oidc-${from}-${to}` as const;
+      fastifyPassport.use(
+        name,
+        new OIDCStrategy<unknown>(
+          {
+            client,
+            params: {
+              prompt: 'consent',
+              scope: 'openid profile email',
+            },
+          },
+          (async (tokenSet, user, done) => {
+            try {
+              fastify.log.debug(
+                { client, tokenSet, user },
+                'OIDC user verify callback',
+              );
+              const claims = tokenSet.claims();
+              let u =
+                (await findByOIDCToken(claims)) ??
+                (user.preferred_username &&
+                  (await findByOIDCUsername(
+                    user.preferred_username,
+                    claims.iss,
+                  )));
 
-  // -----------------------------------------------------
-  // Handle the redirect for openid connect login:
-  fastify.all(oidcRedirect, async (request, reply) => {
-    request.log.info(
-      `${oidcLogin}, req.user.reqdomain = ${request.hostname}: OpenIDConnect request returned`,
-    );
+              if (!u) {
+                if (
+                  !config.get('auth.oidc.enable') &&
+                  config.get('oidc.issuer') !== claims.iss
+                ) {
+                  // We don't have a user with this sub or username,
+                  // so they don't have an account
+                  throw new Error(
+                    `There is no known user ${claims.sub} from ${claims.iss}`,
+                  );
+                }
 
-    // Get the token for the user
-    // @ts-expect-error broken types
-    const { id_token: idToken, access_token: token } =
-      await oadaIDClient.handleRedirect(
-        request.query as Record<string, string>,
+                // Add sub to existing user
+                // TODO: Make a link function or something
+                //       instead of shoving sub where it goes?
+                u = await register({ oidc: claims });
+              }
+
+              await update(u);
+
+              // eslint-disable-next-line unicorn/no-null
+              done(null, u);
+            } catch (error: unknown) {
+              done(error as Error);
+            }
+          }) satisfies StrategyVerifyCallbackUserInfo<unknown>,
+        ),
       );
 
-    // Should have req.token after this point
-    // Actually log the user in here, maybe get user info as well
-    // Get the user info:
-    //  proper method is to ask again for profile permission
-    //  after getting the idToken
-    //  and determining we don't know this ID token.
-    //  If we do know it, don't worry about it
-    request.log.info(
-      `${oidcRedirect}, req.hostname = ${request.hostname}: token is: %O`,
-      idToken,
-    );
-    let user = await findByOIDCToken(idToken);
-    if (!user) {
-      const uri = new URL('/.well-known/openid-configuration', idToken.iss);
-      const cfg = await got(uri.toString()).json<{
-        userinfo_endpoint: string;
-      }>();
+      return name;
+    },
+    {
+      cacheKey(all) {
+        return all.join(',');
+      },
+    },
+  );
 
-      const userinfo = await got(cfg.userinfo_endpoint, {
-        headers: {
-          Authorization: `Bearer ${token}`,
+  // -----------------------------------------------------------------
+  // Handle the POST from clicking the "login with OADA/trellisfw" button
+  fastify.post(
+    oidcLogin,
+    {
+      schema: {
+        body: {
+          type: 'object',
+          properties: {
+            dest_domain: { type: 'string' },
+          },
+          required: ['dest_domain'],
         },
-      }).json<{
-        preferred_username: string;
-      }>();
-
-      user = await findByOIDCUsername(userinfo.preferred_username, idToken.iss);
-
-      if (!user) {
-        // We don't have a user with this sub or username,
-        // so they don't have an account
-        request.session.errormsg = `There is no user ${userinfo.preferred_username} from ${idToken.iss}`;
-        request.log.info(
-          'Failed OIDC login: user not found.  Redirecting to %s',
-          request.session.returnTo,
+      },
+    },
+    (request, reply) =>
+      reply.redirect(join(oidcLogin, request.body.dest_domain)),
+  );
+  fastify.get(
+    join(oidcLogin, '/:dest_domain'),
+    {
+      schema: {
+        params: {
+          type: 'object',
+          properties: { dest_domain: { type: 'string' } },
+          required: ['dest_domain'],
+        },
+      },
+      async preValidation(request, reply) {
+        // First, get domain entered in the posted form
+        // and strip protocol if they used it
+        const destinationDomain = `${request.params?.dest_domain}`.replace(
+          /^https?:\/\//,
+          '',
         );
-        // Deepcode ignore OR: session is not actually from request
-        return reply.redirect(request.session.returnTo!);
-      }
 
-      // Add sub to existing user
-      // TODO: Make a link function or something
-      //       instead of shoving sub where it goes?
-      user.oidc!.sub = idToken.sub;
-      await update(user);
-    }
+        request.log.info(
+          `${oidcLogin}: OpenIDConnect request to redirect from domain ${request.hostname} to domain ${destinationDomain}`,
+        );
 
-    // Put user into session
-    await request.logIn(user);
+        const name = await getOIDCAuth(request.hostname, destinationDomain);
+        return fastifyPassport
+          .authenticate(
+            name,
+            {
+              failWithError: true,
+            },
+            // eslint-disable-next-line max-params
+            async (req, res, error, user, info, status) => {
+              const cause = error ?? (info instanceof Error ? info : undefined);
+              request.log[cause ? 'error' : 'trace'](
+                { req, res, err: cause, error, user, info, status },
+                'OIDC authenticate callback',
+              );
+              if (cause) {
+                throw new Error('OIDC authentication failure', { cause });
+              }
+            },
+          )
+          .call(this, request, reply);
+      },
+    },
+    (request) =>
+      process.env.NODE_ENV === 'production' ? 'Logged in' : request.user,
+  );
 
-    // Send user back where they started
-    return reply.redirect(request.session.returnTo!);
-    // Look them up by oidc.sub and oidc.iss,
-    // get their profile data to get username if not found?
-    // save user in the session somehow
-    // to indicate to passport that we are logged in.
-    // redirect to req.session.returnTo from passport
-    // and/or connect-ensure-login
-    // since this will redirect them
-    // back to where they originally wanted to go
-    // which was likely an oauth request.
-  });
-
-  fastify.get(config.get('auth.endpoints.certs'), async () => jwks);
+  fastify.get(config.get('auth.endpoints.certs'), async () => jwksPublic);
 
   fastify.get(
     config.get('auth.endpoints.userinfo'),
@@ -298,11 +357,6 @@ const plugin: FastifyPluginAsync<Options> = async (
   );
 
   // TODO: Should this just be in the well-known service?
-  const issuer = config.get('auth.issuer');
-  if (issuer) {
-    return
-  }
-
   const configuration = {
     issuer: './', // Config.get('auth.server.publicUri'),
     registration_endpoint: `.${join('/', fastify.prefix, config.get('auth.endpoints.register'))}`,

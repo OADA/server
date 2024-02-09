@@ -79,3 +79,12 @@ export async function findByOIDCUsername(
 export async function update({ id, ...user }: IUser) {
   await users.update({ ...user, _id: id! });
 }
+
+export async function create(user: Omit<IUser, '_id' | '_rev'>) {
+  return convert(
+    await users.create(
+      // @ts-expect-error
+      user,
+    ),
+  )!;
+}

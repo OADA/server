@@ -168,9 +168,7 @@ export async function findByUsernamePassword(
 export async function create(u: Omit<User, '_id' | '_rev'>): Promise<DBUser> {
   info(u, 'Create user was called');
 
-  if (u.password) {
-    u.password = await hashPw(u.password);
-  }
+  u.password &&= await hashPw(u.password);
 
   // Throws if username already exists
   const user = (await users.save(u, { returnNew: true })) as { new: DBUser };
@@ -185,9 +183,7 @@ export async function remove(u: Selector<User>): Promise<void> {
 export async function update(
   u: { _id: string } & Partial<DBUser>,
 ): Promise<{ _id: string; new: User }> {
-  if (u.password) {
-    u.password = await hashPw(u.password);
-  }
+  u.password &&= await hashPw(u.password);
 
   return (await users.update(u._id, u, { returnNew: true })) as {
     _id: string;

@@ -17,7 +17,6 @@
 
 /* eslint-disable unicorn/prefer-module */
 /* eslint-disable @typescript-eslint/no-require-imports */
-/* eslint-disable security/detect-non-literal-require */
 /* eslint-disable import/no-dynamic-require */
 
 import { resolve } from 'node:path';
@@ -110,6 +109,12 @@ function createRootLogger(): Logger {
           'token',
           '*.token',
           '*.*.token',
+          'access_token',
+          '*.access_token',
+          '*.*.access_token',
+          'client_secret',
+          'client.client_secret',
+          '*.client.client_secret',
         ]);
   const level = logLevel();
   const loki: PinoLokiOptions | undefined = process.env.PINO_LOKI

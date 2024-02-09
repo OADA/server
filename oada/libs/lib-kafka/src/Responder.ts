@@ -174,16 +174,15 @@ export class Responder<Request extends KafkaBase = KafkaBase> extends Base {
 
     for await (const r of it) {
       trace(r, 'received response');
-      // eslint-disable-next-line security/detect-object-injection
+
       if (r[REQ_ID_KEY] === null) {
         // FIXME: Remove once everything migrated
         const { string: newId } = await ksuid.random();
-        // eslint-disable-next-line security/detect-object-injection
+
         r[REQ_ID_KEY] = newId;
         // eslint-disable-next-line @typescript-eslint/no-empty-function
         util.deprecate(() => {}, 'Please use ReResponder instead')();
       } else {
-        // eslint-disable-next-line security/detect-object-injection
         r[REQ_ID_KEY] = id;
         // Check for cancelled requests
         if (!this.requests.has(id)) {

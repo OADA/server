@@ -76,9 +76,9 @@
     "@types/deep-equal": "^1.0.4",
     "@types/flat": "^5.0.5",
     "@types/json-pointer": "^1.0.34",
-    "@types/node": "^20.11.4",
-    "ava": "6.0.1",
-    "type-fest": "^4.9.0"
+    "@types/node": "^20.11.17",
+    "ava": "6.1.1",
+    "type-fest": "^4.10.2"
   },
   "volta": {
     "node": "20.2.0"

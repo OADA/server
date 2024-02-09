@@ -28,7 +28,6 @@ export class ReResponder extends Responder {
 
     // Make everything look like a new request
     super.on(DATA, (request: Record<string, unknown>) => {
-      // eslint-disable-next-line security/detect-object-injection
       request[REQ_ID_KEY] = ksuid.randomSync().string;
     });
   }

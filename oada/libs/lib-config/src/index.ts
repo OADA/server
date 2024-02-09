@@ -15,6 +15,8 @@
  * limitations under the License.
  */
 
+/* eslint-disable unicorn/no-null, @typescript-eslint/ban-types */
+
 import { File } from 'node:buffer';
 import { extname } from 'node:path';
 import { pathToFileURL } from 'node:url';
@@ -55,12 +57,22 @@ const defaults = {
     default: process.env.NODE_ENV === 'production',
     env: 'isProduction',
   },
+  oidc: {
+    issuer: {
+      doc: 'OpenID Connect/Oauth2.0 issuer to use for auth',
+      format: 'url',
+      default: null as null | URL | string,
+      env: 'OIDC_ISSUER',
+      arg: 'oidc-issuer',
+    },
+  },
 };
 // FIXME: Why did this start making TS hang?
 // type D = typeof defaults extends Schema<infer D> ? D : never;
 
 // Add more formats to convict
 convict.addFormats(validator);
+// eslint-disable-next-line @typescript-eslint/no-unsafe-argument
 convict.addFormats(moment);
 
 function fileUrl(pathOrUrl: string) {
@@ -72,7 +84,6 @@ function fileUrl(pathOrUrl: string) {
 }
 
 async function readFileUrl(url: URL) {
-  // eslint-disable-next-line security/detect-non-literal-fs-filename
   const buffer = await readFile(url);
   return new File([buffer], url.pathname);
 }

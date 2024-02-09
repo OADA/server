@@ -51,10 +51,10 @@
     "@oada/client": "^4.5.5",
     "@oada/write-handler": "^3.7.0",
     "@types/debug": "^4.1.12",
-    "@types/node": "^20.11.4",
+    "@types/node": "^20.11.17",
     "@types/randomstring": "^1.1.11",
-    "ava": "6.0.1",
-    "type-fest": "^4.9.0"
+    "ava": "6.1.1",
+    "type-fest": "^4.10.2"
   },
   "volta": {
     "node": "20.2.0"
