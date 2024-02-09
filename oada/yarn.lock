@@ -1034,12 +1034,14 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@oada/lib-config@workspace:libs/lib-config"
   dependencies:
+    "@oada/pino-debug": "workspace:^"
     "@types/convict": "npm:^6.1.6"
     "@types/convict-format-with-validator": "npm:^6.0.5"
     "@types/debug": "npm:^4.1.12"
     convict: "npm:^6.2.4"
     convict-format-with-moment: "npm:^6.2.0"
     convict-format-with-validator: "npm:^6.2.0"
+    debug: "npm:^4.3.4"
     dotenv: "npm:^16.4.1"
     json5: "npm:^2.2.3"
     tslib: "npm:2.6.2"
@@ -1161,7 +1163,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@oada/pino-debug@npm:^3.7.0, @oada/pino-debug@workspace:libs/pino-debug":
+"@oada/pino-debug@npm:^3.7.0, @oada/pino-debug@workspace:^, @oada/pino-debug@workspace:libs/pino-debug":
   version: 0.0.0-use.local
   resolution: "@oada/pino-debug@workspace:libs/pino-debug"
   dependencies:

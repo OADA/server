@@ -23,13 +23,17 @@ import { pathToFileURL } from 'node:url';
 import { readFile } from 'node:fs/promises';
 
 import 'dotenv/config';
-import type { Config, Schema } from 'convict';
-import convict from 'convict';
+import convict, { type Config, type Schema } from 'convict';
 import json5 from 'json5';
 // @ts-expect-error no types for this
 import moment from 'convict-format-with-moment';
 import validator from 'convict-format-with-validator';
 import yaml from 'yaml';
+
+import '@oada/pino-debug';
+import log from 'debug';
+
+const debug = log('@oada/lib-config:debug');
 
 // Builtin part of the config schema
 const defaults = {
@@ -147,38 +151,51 @@ convict.addParser([
  * @param inSchema Config schema for your application
  * @see Schema
  */
-export default async function config<S>(
+export default async function loadConfig<S>(
   // Defer type inference
   inSchema: S,
 ) {
-  type C = S extends Schema<infer T> ? Config<T> : never;
-  // Merge input schema with default schema and create config
-  const schema = convict({ ...defaults, ...inSchema });
+  try {
+    type C = S extends Schema<infer T> ? Config<T> : never;
+    // Merge input schema with default schema and create config
+    const config = convict({ ...defaults, ...inSchema });
 
-  // Optionally load any config file(s)
-  const files = schema.get('configfiles');
-  for await (const file of files) {
-    // Allow requiring a js config?
-    // FIXME: Probably remove this
-    if (['.js', '.mjs', '.cjs'].includes(extname(file))) {
-      const configFile = (await import(file)) as { default?: unknown };
-      schema.load(configFile.default ?? configFile); // Nosemgrep: javascript.lang.security.detect-non-literal-require.detect-non-literal-require
-    } else {
-      schema.loadFile(file);
+    // Optionally load any config file(s)
+    const files = config.get('configfiles');
+    for await (const file of files) {
+      // Allow requiring a js config?
+      // FIXME: Probably remove this
+      if (['.js', '.mjs', '.cjs'].includes(extname(file))) {
+        const configFile = (await import(file)) as { default?: unknown };
+        config.load(configFile.default ?? configFile); // Nosemgrep: javascript.lang.security.detect-non-literal-require.detect-non-literal-require
+      } else {
+        config.loadFile(file);
+      }
     }
+
+    // Ensure config is valid
+    config.validate({
+      // Allow extra items
+      allowed: 'warn',
+      // Do not actually output warnings about extra items?
+      // eslint-disable-next-line @typescript-eslint/no-empty-function
+      output() {},
+    });
+
+    if (debug.enabled) {
+      debug(
+        {
+          config: JSON.parse(`${config}`) as unknown,
+        },
+        'Config loaded successfully',
+      );
+    }
+
+    return {
+      config: config as C & typeof config,
+      schema: inSchema,
+    };
+  } catch (error: unknown) {
+    throw new Error('Failed to load config', { cause: error });
   }
-
-  // Ensure config is valid
-  schema.validate({
-    // Allow extra items
-    allowed: 'warn',
-    // Do not actually output warnings about extra items?
-    // eslint-disable-next-line @typescript-eslint/no-empty-function
-    output() {},
-  });
-
-  return {
-    config: schema as C & typeof schema,
-    schema: inSchema,
-  };
 }

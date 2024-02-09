@@ -32,7 +32,7 @@ import libConfig from '@oada/lib-config';
 import { schema as arangoSchema } from '@oada/lib-arangodb/dist/config.js';
 
 const trace = debug('auth#config:trace');
-const error = debug('auth#config:error');
+const warn = debug('auth#config:warn');
 
 export const { config, schema } = await libConfig({
   trustProxy: {
@@ -402,7 +402,7 @@ for await (const dirname of await fs.readdir(domainsDirectory)) {
       domainConfigs.set(dConfig.domain, dConfig);
       break;
     } catch (cError: unknown) {
-      error(cError, `Could not read config for domain ${dirname}, skipping`);
+      warn(cError, `Could not read config for domain ${dirname}, skipping`);
     }
   }
 }
