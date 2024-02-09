@@ -135,8 +135,6 @@ export default {
     serviceName: 'Trellis',
     serviceLongName: 'Trellis - A Framework for Produce Audit Data',
     server: {
-      // Replace these in production with things that are actually secret...
-      'sessionSecret': '2jp901p3#2#(!)kd9',
       'port-http': 8080,
       'mode': 'http',
       'proxy': 'uniquelocal',

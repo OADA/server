@@ -81,6 +81,7 @@ export const { config, schema } = await libConfig({
       password: {
         doc: 'Password for arangodb authentication',
         format: String,
+        sensitive: true,
         default: '',
         env: 'ARANGODB_IMPORT_PASSWORD',
         arg: 'arangodb-import-password',
@@ -118,6 +119,7 @@ export const { config, schema } = await libConfig({
       password: {
         doc: 'Password for arangodb authentication',
         format: String,
+        sensitive: true,
         default: '',
         env: 'ARANGODB_PASSWORD',
       },
