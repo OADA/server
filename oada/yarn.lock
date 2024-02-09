@@ -755,7 +755,6 @@ __metadata:
     "@fastify/view": "npm:^8.2.0"
     "@oada/certs": "npm:^4.1.1"
     "@oada/error": "npm:^2.0.1"
-    "@oada/id-client": "npm:^2.0.8"
     "@oada/lib-arangodb": "npm:^3.7.0"
     "@oada/lib-config": "npm:^3.7.0"
     "@oada/lib-prom": "workspace:^"
@@ -790,7 +789,6 @@ __metadata:
     fastify: "npm:^4.26.0"
     fastify-graceful-shutdown: "npm:^3.5.1"
     fastify-healthcheck: "npm:^4.4.0"
-    got: "npm:^14.2.0"
     ioredis: "npm:^5.3.2"
     jose: "npm:^5.2.1"
     json-schema-to-ts: "npm:^3.0.0"
@@ -799,7 +797,6 @@ __metadata:
     oauth2orize-openid: "npm:^0.4.1"
     oauth2orize-pkce: "npm:^0.1.2"
     openid-client: "npm:^5.6.4"
-    p-lazy: "npm:^4.0.0"
     p-memoize: "npm:^7.1.1"
     passport: "npm:^0.7.0"
     passport-http-bearer: "npm:^1.0.1"
@@ -964,25 +961,6 @@ __metadata:
     uuid: "npm:^9.0.1"
   languageName: unknown
   linkType: soft
-
-"@oada/id-client@npm:^2.0.8":
-  version: 2.0.8
-  resolution: "@oada/id-client@npm:2.0.8"
-  dependencies:
-    "@oada/certs": "npm:^4.1.1"
-    eventemitter2: "npm:^6.4.5"
-    is-wsl: "npm:^2.2.0"
-    jsonwebtoken: "npm:^8.5.1"
-    jwt-bearer-client-auth: "npm:^2.0.1"
-    oauth-dyn-reg: "npm:^2.1.1"
-    open: "npm:^8.4.0"
-    pem-jwk: "npm:^2.0.0"
-    superagent: "npm:^7.1.2"
-    tslib: "npm:^2.3.1"
-    urijs: "npm:^1.19.11"
-  checksum: 10/dcd82732a70dfaca7ae9ee34c3d9200e973302ccfa0b293cc504e3ebf616ce16df35f561186bb56dc897697e486e2d0ebedc812f4c380edc021fc359deba50f1
-  languageName: node
-  linkType: hard
 
 "@oada/jobs@npm:^4.2.5":
   version: 4.4.4
@@ -4083,7 +4061,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"debug@npm:4, debug@npm:^4.0.0, debug@npm:^4.1.1, debug@npm:^4.3.2, debug@npm:^4.3.3, debug@npm:^4.3.4":
+"debug@npm:4, debug@npm:^4.0.0, debug@npm:^4.1.1, debug@npm:^4.3.2, debug@npm:^4.3.4":
   version: 4.3.4
   resolution: "debug@npm:4.3.4"
   dependencies:
@@ -4185,13 +4163,6 @@ __metadata:
     gopd: "npm:^1.0.1"
     has-property-descriptors: "npm:^1.0.0"
   checksum: 10/5573c8df96b5857408cad64d9b91b69152e305ce4b06218e5f49b59c6cafdbb90a8bd8a0bb83c7bc67a8d479c04aa697063c9bc28d849b7282f9327586d6bc7b
-  languageName: node
-  linkType: hard
-
-"define-lazy-prop@npm:^2.0.0":
-  version: 2.0.0
-  resolution: "define-lazy-prop@npm:2.0.0"
-  checksum: 10/0115fdb065e0490918ba271d7339c42453d209d4cb619dfe635870d906731eff3e1ade8028bb461ea27ce8264ec5e22c6980612d332895977e89c1bbc80fcee2
   languageName: node
   linkType: hard
 
@@ -5227,13 +5198,6 @@ __metadata:
   version: 5.0.1
   resolution: "event-target-shim@npm:5.0.1"
   checksum: 10/49ff46c3a7facbad3decb31f597063e761785d7fdb3920d4989d7b08c97a61c2f51183e2f3a03130c9088df88d4b489b1b79ab632219901f184f85158508f4c8
-  languageName: node
-  linkType: hard
-
-"eventemitter2@npm:^6.4.5":
-  version: 6.4.9
-  resolution: "eventemitter2@npm:6.4.9"
-  checksum: 10/b829b1c6b11e15926b635092b5ad62b4463d1c928859831dcae606e988cf41893059e3541f5a8209d21d2f15314422ddd4d84d20830b4bf44978608d15b06b08
   languageName: node
   linkType: hard
 
@@ -6659,15 +6623,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"is-docker@npm:^2.0.0, is-docker@npm:^2.1.1":
-  version: 2.2.1
-  resolution: "is-docker@npm:2.2.1"
-  bin:
-    is-docker: cli.js
-  checksum: 10/3fef7ddbf0be25958e8991ad941901bf5922ab2753c46980b60b05c1bf9c9c2402d35e6dc32e4380b980ef5e1970a5d9d5e5aa2e02d77727c3b6b5e918474c56
-  languageName: node
-  linkType: hard
-
 "is-error@npm:^2.2.2":
   version: 2.2.2
   resolution: "is-error@npm:2.2.2"
@@ -6931,15 +6886,6 @@ __metadata:
     call-bind: "npm:^1.0.2"
     get-intrinsic: "npm:^1.1.1"
   checksum: 10/8f2ddb9639716fd7936784e175ea1183c5c4c05274c34f34f6a53175313cb1c9c35a8b795623306995e2f7cc8f25aa46302f15a2113e51c5052d447be427195c
-  languageName: node
-  linkType: hard
-
-"is-wsl@npm:^2.2.0":
-  version: 2.2.0
-  resolution: "is-wsl@npm:2.2.0"
-  dependencies:
-    is-docker: "npm:^2.0.0"
-  checksum: 10/20849846ae414997d290b75e16868e5261e86ff5047f104027026fd61d8b5a9b0b3ade16239f35e1a067b3c7cc02f70183cb661010ed16f4b6c7c93dad1b19d8
   languageName: node
   linkType: hard
 
@@ -7265,24 +7211,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"jsonwebtoken@npm:^8.5.1":
-  version: 8.5.1
-  resolution: "jsonwebtoken@npm:8.5.1"
-  dependencies:
-    jws: "npm:^3.2.2"
-    lodash.includes: "npm:^4.3.0"
-    lodash.isboolean: "npm:^3.0.3"
-    lodash.isinteger: "npm:^4.0.4"
-    lodash.isnumber: "npm:^3.0.3"
-    lodash.isplainobject: "npm:^4.0.6"
-    lodash.isstring: "npm:^4.0.1"
-    lodash.once: "npm:^4.0.0"
-    ms: "npm:^2.1.1"
-    semver: "npm:^5.6.0"
-  checksum: 10/a7b52ea570f70bea183ceca970c003f223d9d3425d72498002e9775485c7584bfa3751d1c7291dbb59738074cba288effe73591b87bec5d467622ab3a156fdb6
-  languageName: node
-  linkType: hard
-
 "jsonwebtoken@npm:^9.0.0":
   version: 9.0.2
   resolution: "jsonwebtoken@npm:9.0.2"
@@ -7331,18 +7259,6 @@ __metadata:
     jwa: "npm:^1.4.1"
     safe-buffer: "npm:^5.0.1"
   checksum: 10/70b016974af8a76d25030c80a0097b24ed5b17a9cf10f43b163c11cb4eb248d5d04a3fe48c0d724d2884c32879d878ccad7be0663720f46b464f662f7ed778fe
-  languageName: node
-  linkType: hard
-
-"jwt-bearer-client-auth@npm:^2.0.1":
-  version: 2.0.3
-  resolution: "jwt-bearer-client-auth@npm:2.0.3"
-  dependencies:
-    "@oada/certs": "npm:^4.1.1"
-    jsonwebtoken: "npm:^8.5.1"
-    pem-jwk: "npm:^2.0.0"
-    tslib: "npm:^2.4.1"
-  checksum: 10/fd9ae270cb6e4a5fa52bf9085aadedb2e7c7d3c87239e7e0734dcfe34037c8cf16c5cd1bfcbb964d6840a359942b346584935ca69c2af7cc33134fdd7c4021f0
   languageName: node
   linkType: hard
 
@@ -8410,16 +8326,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"oauth-dyn-reg@npm:^2.1.1":
-  version: 2.1.1
-  resolution: "oauth-dyn-reg@npm:2.1.1"
-  dependencies:
-    superagent: "npm:7.1.2"
-    tslib: "npm:^2.3.1"
-  checksum: 10/fac2f0c2731513c9bd60a0de65320a2659b1749c4baee0218f2a04cab3a673a2b37f329ab5ba25ba2a8a36e000d850fa5b526472971b31f9a96208baf989db12
-  languageName: node
-  linkType: hard
-
 "oauth2orize-openid@npm:^0.4.1":
   version: 0.4.1
   resolution: "oauth2orize-openid@npm:0.4.1"
@@ -8606,17 +8512,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"open@npm:^8.4.0":
-  version: 8.4.2
-  resolution: "open@npm:8.4.2"
-  dependencies:
-    define-lazy-prop: "npm:^2.0.0"
-    is-docker: "npm:^2.1.1"
-    is-wsl: "npm:^2.2.0"
-  checksum: 10/acd81a1d19879c818acb3af2d2e8e9d81d17b5367561e623248133deb7dd3aefaed527531df2677d3e6aaf0199f84df57b6b2262babff8bf46ea0029aac536c9
-  languageName: node
-  linkType: hard
-
 "openid-client@npm:^5.6.4":
   version: 5.6.4
   resolution: "openid-client@npm:5.6.4"
@@ -8670,13 +8565,6 @@ __metadata:
   dependencies:
     p-timeout: "npm:^5.0.2"
   checksum: 10/755a737e3d4fe912772daaa7262f7f3a4b45e3dbcfb0212a3a913c2db47b0981ddc2e9b1c5ec5fbbfb0cb622ce5b67bc04751ec8ced7e340398107e536d5aab2
-  languageName: node
-  linkType: hard
-
-"p-lazy@npm:^4.0.0":
-  version: 4.0.0
-  resolution: "p-lazy@npm:4.0.0"
-  checksum: 10/9b66107eaedfb439ee7d42d81f7547a7524d350492454c710f9a861057a9a4f9494c9737c6a5e76b27031c4711b9b3f0bd47f48c44b596d42c5553d70c264e61
   languageName: node
   linkType: hard
 
@@ -9375,7 +9263,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"qs@npm:^6.10.1, qs@npm:^6.10.3, qs@npm:^6.11.0, qs@npm:^6.11.2":
+"qs@npm:^6.10.3, qs@npm:^6.11.0, qs@npm:^6.11.2":
   version: 6.11.2
   resolution: "qs@npm:6.11.2"
   dependencies:
@@ -9908,7 +9796,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"semver@npm:2 || 3 || 4 || 5, semver@npm:^5.6.0":
+"semver@npm:2 || 3 || 4 || 5":
   version: 5.7.2
   resolution: "semver@npm:5.7.2"
   bin:
@@ -10455,25 +10343,6 @@ __metadata:
     "@tokenizer/token": "npm:^0.3.0"
     peek-readable: "npm:^5.0.0"
   checksum: 10/4f2269679fcfce1e9fe0600eff361ea4c687ae0a0e8d9dab6703811071cd92545cbcb32d4ace3d3aa591f777cec1a3e8aeecd5efd71ae216fd2962a7a238b4ab
-  languageName: node
-  linkType: hard
-
-"superagent@npm:7.1.2":
-  version: 7.1.2
-  resolution: "superagent@npm:7.1.2"
-  dependencies:
-    component-emitter: "npm:^1.3.0"
-    cookiejar: "npm:^2.1.3"
-    debug: "npm:^4.3.3"
-    fast-safe-stringify: "npm:^2.1.1"
-    form-data: "npm:^4.0.0"
-    formidable: "npm:^2.0.1"
-    methods: "npm:^1.1.2"
-    mime: "npm:^2.5.0"
-    qs: "npm:^6.10.1"
-    readable-stream: "npm:^3.6.0"
-    semver: "npm:^7.3.5"
-  checksum: 10/f4adb4439c63a2ca0571c3ec414a89411d3baa26ef3243b3e489df97fe8aa0b0e1927d149da29d467e799dc0fcb131c4dd44f35cf98e50ef7d487fc447217ddc
   languageName: node
   linkType: hard
 
