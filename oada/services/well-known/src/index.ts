@@ -33,8 +33,8 @@ import { nstats } from '@oada/lib-prom';
 
 import got from 'got';
 
-import { Issuer } from 'openid-client';
 import { fastify as Fastify } from 'fastify';
+import { Issuer } from 'openid-client';
 import { default as accepts } from '@fastify/accepts';
 import { default as cors } from '@fastify/cors';
 import { default as helmet } from '@fastify/helmet';
@@ -44,11 +44,16 @@ import { plugin as wkj } from '@oada/well-known-json';
 
 export async function discoverConfiguration(issuer: string | URL) {
   try {
-    const { metadata } = await Issuer.discover(`${issuer}`);
-    return metadata;
-  } catch {
-    const { metadata } = await Issuer.discover(`https://${issuer}`);
-    return metadata;
+    try {
+      const { metadata } = await Issuer.discover(`${issuer}`);
+      return metadata;
+    } catch {
+      const { metadata } = await Issuer.discover(`https://${issuer}`);
+      return metadata;
+    }
+  } catch (error: unknown) {
+    fastify.log.error({ issuer }, 'Failed OIDC discovery for issuer');
+    throw error;
   }
 }
 
@@ -89,8 +94,8 @@ app.get('/.well-known/oada-configuration', (_, response, next) => {
 */
 await fastify.register(formats);
 
-const issuer = config.get('auth.issuer');
-const configuration = issuer ? await discoverConfiguration(issuer) : {};
+const issuer = config.get('oidc.issuer');
+const configuration = await discoverConfiguration(issuer);
 
 const wellKnownOptions = {
   resources: {

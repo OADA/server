@@ -115,8 +115,10 @@ export default {
       websocketsRequest: 'websockets_request',
     },
   },
+  oidc: {
+    issuer: domain,
+  },
   auth: {
-    issuer: null,
     // Prefix should match nginx proxy's prefix for the auth service
     endpointsPrefix: '/oadaauth/',
     endpoints: {
@@ -126,7 +128,6 @@ export default {
       decision: 'decision',
       login: 'login',
       loginConnect: 'id-login', // POST URL for OpenIDConnect domain web form
-      redirectConnect: 'id-redirect', // Redirect URL for OpenIDConnect
       logout: 'logout',
       certs: 'certs',
       userinfo: 'userinfo',

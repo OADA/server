@@ -40,7 +40,6 @@ function topicTimeout(topic: string): number {
   const topics = config.get('kafka.topics');
   for (const [topicK, topicV] of Object.entries(topics)) {
     if (topicV === topic) {
-      // eslint-disable-next-line security/detect-object-injection
       timeout = config.get('kafka.timeouts')[topicK] ?? timeout;
     }
   }
@@ -91,7 +90,6 @@ function isArray(value: unknown): value is unknown[] | readonly unknown[] {
   return Array.isArray(value);
 }
 
-// eslint-disable-next-line unicorn/prefer-event-target
 export class Base extends EventEmitter {
   protected static done = Symbol('kafka-base-done');
 

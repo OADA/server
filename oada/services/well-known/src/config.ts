@@ -15,14 +15,11 @@
  * limitations under the License.
  */
 
-/* eslint-disable unicorn/no-null */
+/* eslint-disable @typescript-eslint/ban-types, unicorn/no-null */
 
 import libConfig from '@oada/lib-config';
 
-import { schema as authSchema } from '@oada/auth/config';
-
 export const { config, schema } = await libConfig({
-  ...authSchema,
   trustProxy: {
     format: Array,
     default: ['uniquelocal'],
@@ -71,9 +68,9 @@ export const { config, schema } = await libConfig({
       format: Array,
       default: [] as Array<
         | {
-          base: string;
-          addPrefix?: string;
-        }
+            base: string;
+            addPrefix?: string;
+          }
         | string
       >,
       env: 'WELLKNOWN_SUBSERVICES',
@@ -110,7 +107,8 @@ const server = config.get('wellKnown.server');
 if (!config.get('wellKnown.oada-configuration.oada_base_uri')) {
   config.set(
     'wellKnown.server.oada-configuration.oada_base_uri',
-    `${server.mode}//${server.domain}${server.port ? `:${server.port}` : ''}${server.path_prefix ?? ''
+    `${server.mode}//${server.domain}${server.port ? `:${server.port}` : ''}${
+      server.path_prefix ?? ''
     }`,
   );
 }

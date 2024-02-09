@@ -42,9 +42,9 @@
   "devDependencies": {
     "@ava/typescript": "^4.1.0",
     "@types/convict": "^6.1.6",
-    "@types/node": "^20.11.4",
+    "@types/node": "^20.11.17",
     "@types/ws": "^8.5.10",
-    "ava": "6.0.1",
+    "ava": "6.1.1",
     "fastify-plugin": "^4.5.1"
   },
   "volta": {

@@ -38,6 +38,7 @@ export interface IUsers {
     iss: string,
   ): Promise<User | undefined>;
   update(user: IUser): Promise<void>;
+  create(user: IUser): Promise<User>;
 }
 
 const dirname = path.dirname(url.fileURLToPath(import.meta.url));
@@ -128,4 +129,10 @@ export async function findByOIDCUsername(
 
 export async function update(user: IUser): Promise<void> {
   await database.update(user);
+}
+
+export async function register(user: Partial<IUser>) {
+  // @ts-expect-error
+  const u = await database.create(user);
+  return new User(u);
 }

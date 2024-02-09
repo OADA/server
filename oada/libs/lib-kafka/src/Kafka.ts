@@ -61,7 +61,7 @@ export default class IKafka extends Kafka {
       logCreator() {
         return ({ namespace, label, log }) => {
           const l = label as keyof KafkajsDebug;
-          // eslint-disable-next-line security/detect-object-injection
+
           const logger = getKafkajsDebug(namespace)[l];
           if (log instanceof Error) {
             logger({ err: log }, log.message);

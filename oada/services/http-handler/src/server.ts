@@ -24,12 +24,12 @@ import { nstats } from '@oada/lib-prom';
 
 import { plugin as formats } from '@oada/formats-server';
 
-import tokenLookup, { type TokenResponse } from './tokenLookup.js';
 import authorizations from './authorizations.js';
 import resources from './resources.js';
 import users from './users.js';
 import websockets from './websockets.js';
 
+import { type Authenticate, fastifyJwtJwks } from 'fastify-jwt-jwks';
 import {
   fastify as Fastify,
   type FastifyReply,
@@ -40,7 +40,6 @@ import {
   requestContext,
 } from '@fastify/request-context';
 import type { RateLimitPluginOptions } from '@fastify/rate-limit';
-import bearerAuth from '@fastify/bearer-auth';
 import cors from '@fastify/cors';
 import fastifyAccepts from '@fastify/accepts';
 import fastifyGracefulShutdown from 'fastify-graceful-shutdown';
@@ -49,6 +48,7 @@ import fastifySensible from '@fastify/sensible';
 import helmet from '@fastify/helmet';
 
 import type { HTTPVersion, Handler } from 'find-my-way';
+import { Issuer } from 'openid-client';
 import esMain from 'es-main';
 
 /* eslint no-process-exit: off */
@@ -80,9 +80,12 @@ const serializers = {
   res(reply: FastifyReply) {
     return {
       statusCode: reply.statusCode,
-      contentLocation: reply.getHeader('content-location'),
-      rev: reply.getHeader('X-OADA-Rev'),
-      pathLeftover: reply.getHeader('X-OADA-Path-Leftover'),
+      statusText: reply.status,
+      contentLocation: reply.getHeader?.('content-location'),
+      rev: reply.getHeader?.('X-OADA-Rev'),
+      pathLeftover: reply.getHeader?.('X-OADA-Path-Leftover'),
+      // @ts-expect-error stuff
+      body: reply.body,
     };
   },
 };
@@ -137,6 +140,14 @@ export const fastify = Fastify({
 });
 
 if (process.env.NODE_ENV !== 'production') {
+  // Send errors on to client for debug purposes
+  fastify.setErrorHandler((error, _request, reply) => {
+    // @ts-expect-error stuff
+    const res = error.response;
+    fastify.log.error({ err: error, res });
+    void reply.code(500).send(res?.body ?? res);
+  });
+
   // Add request id header for debugging purposes
   fastify.addHook('onSend', async (request, reply, payload) => {
     void reply.header('X-Request-Id', request.id);
@@ -159,17 +170,26 @@ declare module '@fastify/request-context' {
   }
 }
 
-// eslint-disable-next-line unicorn/no-null
-fastify.decorateRequest('user', null);
 declare module 'fastify' {
+  interface FastifyInstance {
+    authenticate: Authenticate;
+  }
   // eslint-disable-next-line @typescript-eslint/no-shadow
   interface FastifyRequest {
-    user: TokenResponse['doc'];
+    user: {
+      expired: boolean;
+      authorizationid: string;
+      user_id: string;
+      user_scope: readonly string[];
+      scope: readonly string[];
+      bookmarks_id: string;
+      shares_id: string;
+      client_id: string;
+    };
   }
 }
 
 async function makeRedis(uri: string) {
-  // eslint-disable-next-line @typescript-eslint/naming-convention
   const { Redis } = await import('ioredis');
   return new Redis(uri, {
     connectTimeout: 500,
@@ -278,36 +298,35 @@ await fastify.register(websockets);
 /**
  * Create context for authenticated stuff
  */
+
+async function discoverConfiguration(issuer: string | URL) {
+  try {
+    try {
+      const { metadata } = await Issuer.discover(`${issuer}`);
+      return metadata;
+    } catch {
+      const { metadata } = await Issuer.discover(`https://${issuer}`);
+      return metadata;
+    }
+  } catch (error: unknown) {
+    fastify.log.error({ issuer }, 'Failed OIDC discovery for issuer');
+    throw error;
+  }
+}
+
+// Find JWKSet URI for auth issuer with OIDC
+const issuer = config.get('oidc.issuer');
+const { jwks_uri: jwksUrl } = await discoverConfiguration(issuer);
+
+// eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+await fastify.register(fastifyJwtJwks, {
+  jwksUrl,
+  formatUser(payload: unknown) {
+    return payload;
+  },
+});
 await fastify.register(async (instance) => {
-  await instance.register(bearerAuth, {
-    keys: new Set<string>(),
-    async auth(token: string, request: FastifyRequest) {
-      try {
-        const tok = await tokenLookup({
-          // Connection_id: request.id,
-          // domain: request.headers.host,
-          token,
-        });
-
-        if (!tok.token_exists) {
-          request.log.debug('Token does not exist');
-          return false;
-        }
-
-        if (tok.doc.expired) {
-          request.log.debug('Token expired');
-          return false;
-        }
-
-        request.user = tok.doc;
-
-        return true;
-      } catch (error: unknown) {
-        request.log.error({ error }, 'Token error');
-        return false;
-      }
-    },
-  });
+  instance.addHook('preValidation', instance.authenticate);
 
   /**
    * Route /bookmarks to resources?
@@ -363,7 +382,6 @@ if (esMain(import.meta)) {
   try {
     await start();
   } catch (error: unknown) {
-    // eslint-disable-next-line unicorn/consistent-destructuring
     fastify.log.fatal({ error }, 'Failed to start server');
     // eslint-disable-next-line unicorn/no-process-exit
     process.exit(1);
@@ -375,7 +393,6 @@ if (esMain(import.meta)) {
  */
 async function close(error: Error): Promise<void> {
   try {
-    // eslint-disable-next-line unicorn/consistent-destructuring
     fastify.log.fatal(error, 'Attempting to cleanup server after error.');
     // Try to close server nicely
     await fastify.close();

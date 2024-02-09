@@ -78,10 +78,8 @@ function unflattenMeta(document: {
     return document;
   }
 
-  // eslint-disable-next-line security/detect-object-injection
   const meta = document[_meta];
   if (meta) {
-    // eslint-disable-next-line security/detect-object-injection
     document[_meta] = {
       _id: meta._id,
       _rev: meta._rev,

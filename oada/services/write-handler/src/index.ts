@@ -402,9 +402,9 @@ async function doWrite(
 export async function handleRequest(
   request: WriteRequest,
 ): Promise<WriteResponse> {
-  request.source = request.source ?? '';
+  request.source ??= '';
   // Fixes bug if this is undefined
-  request.resourceExists = request.resourceExists ?? false;
+  request.resourceExists ??= false;
   const oid = request.resource_id.replace(/^\//, '');
 
   try {

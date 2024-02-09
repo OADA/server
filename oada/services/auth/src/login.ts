@@ -59,10 +59,7 @@ const plugin: FastifyPluginAsync<Options> = async (
     // @ts-expect-error TODO: make types for auth bodies/queries
     const isError = Boolean(request.query.error ?? request.session.errormsg);
     const errormsg = request.session.errormsg ?? 'Login failed.';
-    if (request.session.errormsg) {
-      // Reset for next time
-      request.session.errormsg = undefined;
-    }
+    request.session.errormsg &&= undefined;
 
     // Load the login info for this domain from the public directory:
     const domainConfig =

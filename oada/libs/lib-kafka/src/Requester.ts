@@ -34,7 +34,7 @@ import {
 export class KafkaRequestTimeoutError extends Error {}
 
 export class Requester extends Base {
-  #timeouts = new Map<string, number>();
+  readonly #timeouts = new Map<string, number>();
 
   constructor({
     consumeTopic,
@@ -45,7 +45,6 @@ export class Requester extends Base {
     super({ consumeTopic, produceTopic, group, ...options });
 
     super.on(DATA, (resp) => {
-      // eslint-disable-next-line security/detect-object-injection
       const id = resp[REQ_ID_KEY];
       this.emit(`response-${id}`, resp);
     });
@@ -71,8 +70,7 @@ export class Requester extends Base {
       throw new Error('Send called with no topic specified');
     }
 
-    // eslint-disable-next-line security/detect-object-injection
-    const id = (request[REQ_ID_KEY] || ksuid.randomSync().string) as string;
+    const id = (request[REQ_ID_KEY] ?? ksuid.randomSync().string) as string;
     const timeout = this.#timeouts.get(topic) ?? topicTimeout(topic);
     this.#timeouts.set(topic, timeout);
 
@@ -103,13 +101,10 @@ export class Requester extends Base {
       throw new Error('Emit called with no topic specified');
     }
 
-    // eslint-disable-next-line unicorn/prefer-event-target
     const emitter = new EventEmitter();
 
-    // eslint-disable-next-line security/detect-object-injection
     const id = request[REQ_ID_KEY] ?? (await ksuid.random()).string;
 
-    // eslint-disable-next-line security/detect-object-injection
     request[REQ_ID_KEY] = id;
     // TODO: Handle partitions?
     request.resp_partition = 0;

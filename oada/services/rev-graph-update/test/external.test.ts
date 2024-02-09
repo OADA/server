@@ -31,9 +31,8 @@ const middleID = 'resources/REVGRAPHTEST_MIDDLE1';
 const bottomID = 'resources/REVGRAPHTEST_BOTTOM1';
 
 const con = await connect({
-  // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
   domain: process.env.DOMAIN || 'localhost',
-  // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
+
   token: process.env.TOKEN || 'god',
 });
 

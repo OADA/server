@@ -47,14 +47,6 @@ export const { config, schema } = await libConfig({
     default: '/oada/services/auth/domains',
   },
   auth: {
-    issuer: {
-      doc: 'OpenID/Oauth2.0 issuer to use for auth',
-      format: 'url',
-      nullable: true,
-      default: null as URL | string | null,
-      env: 'AUTH_ISSUER',
-      arg: 'auth-issuer',
-    },
     server: {
       'rateLimit': {
         enabled: {
@@ -158,7 +150,7 @@ export const { config, schema } = await libConfig({
       doc: 'So you can place this under a sub-path in your domain',
       format: String,
       default: '/oadaauth/',
-      env: 'AUTH_PREFIX'
+      env: 'AUTH_PREFIX',
     },
     endpoints: {
       register: {
@@ -185,11 +177,6 @@ export const { config, schema } = await libConfig({
       oidcLogin: {
         format: String,
         default: 'oidc-login',
-      },
-      // Redirect URL for OpenIDConnect
-      oidcRedirect: {
-        format: String,
-        default: 'oidc-redirect',
       },
       logout: {
         format: String,
@@ -401,7 +388,7 @@ export interface DomainConfig {
     private: jwku.JWK;
   };
 }
-// eslint-disable-next-line security/detect-non-literal-fs-filename
+
 for await (const dirname of await fs.readdir(domainsDirectory)) {
   if (dirname.startsWith('.')) {
     continue;
@@ -422,12 +409,12 @@ for await (const dirname of await fs.readdir(domainsDirectory)) {
 
 const publicUri = config.get('auth.server.publicUri')
   ? // eslint-disable-next-line @typescript-eslint/no-base-to-string
-  new URI(config.get('auth.server.publicUri')).normalize().toString()
+    new URI(config.get('auth.server.publicUri')).normalize().toString()
   : // eslint-disable-next-line @typescript-eslint/no-base-to-string
-  new URI()
-    .hostname(config.get('auth.server.domain'))
-    .port(`${config.get('auth.server.port')}`)
-    .protocol(config.get('auth.server.mode'))
-    .normalize()
-    .toString();
+    new URI()
+      .hostname(config.get('auth.server.domain'))
+      .port(`${config.get('auth.server.port')}`)
+      .protocol(config.get('auth.server.mode'))
+      .normalize()
+      .toString();
 config.set('auth.server.publicUri', publicUri);
