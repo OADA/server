@@ -28,6 +28,7 @@ x-release:
     DEBUG_SHOW_HIDDEN: ~
     PINO_TRANSPORT: ~
     DOMAIN: ~
+    OIDC_ISSUER: ${OIDC_ISSUER-http://auth/oadaauth}
     NODE_TLS_REJECT_UNAUTHORIZED: ~
     # Allow changing arangodb URL (e.g., to use external arango)
     ARANGODB_URL: ${ARANGODB_URL-http://arangodb:8529}

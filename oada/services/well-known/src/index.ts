@@ -51,9 +51,10 @@ export async function discoverConfiguration(issuer: string | URL) {
       const { metadata } = await Issuer.discover(`https://${issuer}`);
       return metadata;
     }
-  } catch {
-    fastify.log.error({ issuer }, 'Failed OIDC discovery for issuer');
-    return {};
+  } catch (error: unknown) {
+    throw new Error(`Failed OIDC discovery for issuer '${issuer}'`, {
+      cause: error,
+    });
   }
 }
 
