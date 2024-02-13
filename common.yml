@@ -27,7 +27,7 @@ services:
       # Should just be an external script someone can run on their instance?
       arangodb__ensureDefaults: 'true'
       DOMAIN: ${DOMAIN:-localhost}
-      AUTH_ISSUER: ${AUTH_ISSUER}
+      OIDC_ISSUER: ~
       NODE_TLS_REJECT_UNAUTHORIZED: ~
       PINO_TRANSPORT: ~
       PROFILE_AQL: ~

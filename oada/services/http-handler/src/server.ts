@@ -309,8 +309,9 @@ async function discoverConfiguration(issuer: string | URL) {
       return metadata;
     }
   } catch (error: unknown) {
-    fastify.log.error({ issuer }, 'Failed OIDC discovery for issuer');
-    throw error;
+    throw new Error(`Failed OIDC discovery for issuer '${issuer}'`, {
+      cause: error,
+    });
   }
 }
 
