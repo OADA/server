@@ -181,6 +181,5 @@ export default {
         },
       ],
     },
-    'openid-configuration': {},
   },
 };
