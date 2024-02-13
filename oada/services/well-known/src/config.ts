@@ -91,14 +91,6 @@ export const { config, schema } = await libConfig({
         ],
       },
     },
-    'openid-configuration': {
-      format: Object,
-      default: {},
-    },
-    'oauth-authorization-server': {
-      format: Object,
-      default: {},
-    },
   },
 });
 
@@ -107,6 +99,7 @@ const server = config.get('wellKnown.server');
 if (!config.get('wellKnown.oada-configuration.oada_base_uri')) {
   config.set(
     'wellKnown.server.oada-configuration.oada_base_uri',
+    // eslint-disable-next-line sonarjs/no-nested-template-literals
     `${server.mode}//${server.domain}${server.port ? `:${server.port}` : ''}${
       server.path_prefix ?? ''
     }`,

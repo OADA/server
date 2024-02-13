@@ -51,9 +51,9 @@ export async function discoverConfiguration(issuer: string | URL) {
       const { metadata } = await Issuer.discover(`https://${issuer}`);
       return metadata;
     }
-  } catch (error: unknown) {
+  } catch {
     fastify.log.error({ issuer }, 'Failed OIDC discovery for issuer');
-    throw error;
+    return {};
   }
 }
 
@@ -103,14 +103,6 @@ const wellKnownOptions = {
       ...config.get('wellKnown.oada-configuration'),
       ...configuration,
     },
-    'openid-configuration': {
-      ...config.get('wellKnown.openid-configuration'),
-      ...configuration,
-    },
-    'oauth-authorization-server': {
-      ...config.get('wellKnown.oauth-authorization-server'),
-      ...configuration,
-    },
   },
 };
 
@@ -118,6 +110,19 @@ const subservices = new Set(
   config
     .get('wellKnown.mergeSubServices')
     .map((s) => (typeof s === 'string' ? s : join(s.base, s.addPrefix ?? ''))),
+);
+
+// Redirect other OIDC config endpoints to oada-configuration endpoint
+await fastify.register(
+  async (app) => {
+    app.all('/openid-configuration', async (_request, reply) =>
+      reply.redirect(301, '/oada-configuration'),
+    );
+    app.all('/oauth-authorization-server', async (_request, reply) =>
+      reply.redirect(301, '/oada-configuration'),
+    );
+  },
+  { prefix: '/.well-known/' },
 );
 
 await fastify.register(

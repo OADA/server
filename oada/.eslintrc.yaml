@@ -42,7 +42,7 @@ parserOptions:
   project: './**/tsconfig.*'
 
 overrides:
-  - files: '*.ts'
+  - files: '*.{c,m,}ts'
     extends:
       - plugin:github/typescript
       - plugin:import/typescript
