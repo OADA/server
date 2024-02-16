@@ -97,6 +97,7 @@ await fastify.register(formats);
 
 const issuer = config.get('oidc.issuer');
 const configuration = await discoverConfiguration(issuer);
+fastify.log.debug({ configuration }, `Loaded OIDC configuration for ${issuer}`);
 
 const wellKnownOptions = {
   resources: {
