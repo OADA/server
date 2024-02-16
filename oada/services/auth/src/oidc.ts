@@ -179,7 +179,7 @@ const plugin: FastifyPluginAsync<Options> = async (
 
   const getOIDCAuth = memoize(
     async (from: string, to: string) => {
-      const issuer = await Issuer.discover(`https://${to}`);
+      const issuer = await Issuer.discover(to);
 
       // Next, get the info for the id client middleware based on main domain:
       /*
@@ -278,7 +278,10 @@ const plugin: FastifyPluginAsync<Options> = async (
         body: {
           type: 'object',
           properties: {
-            dest_domain: { type: 'string' },
+            dest_domain: {
+              type: 'string',
+              format: 'uri',
+            },
           },
           required: ['dest_domain'],
         },
@@ -293,17 +296,19 @@ const plugin: FastifyPluginAsync<Options> = async (
       schema: {
         params: {
           type: 'object',
-          properties: { dest_domain: { type: 'string' } },
+          properties: {
+            dest_domain: {
+              type: 'string',
+              format: 'uri',
+            },
+          },
           required: ['dest_domain'],
         },
       },
       async preValidation(request, reply) {
         // First, get domain entered in the posted form
         // and strip protocol if they used it
-        const destinationDomain = `${request.params?.dest_domain}`.replace(
-          /^https?:\/\//,
-          '',
-        );
+        const destinationDomain = request.params?.dest_domain;
 
         request.log.info(
           `${oidcLogin}: OpenIDConnect request to redirect from domain ${request.hostname} to domain ${destinationDomain}`,
@@ -383,8 +388,6 @@ const plugin: FastifyPluginAsync<Options> = async (
   await fastify.register(wkj, {
     resources: {
       'oada-configuration': configuration,
-      'openid-configuration': configuration,
-      'oauth-authorization-server': configuration,
     },
   });
 };

@@ -58,7 +58,7 @@
     "@oada/lib-config": "^3.7.0",
     "@oada/oadaify": "^2.1.0",
     "@oada/types": "^3.5.3",
-    "arangojs": "^8.6.0",
+    "arangojs": "^8.7.0",
     "bcryptjs": "^2.4.3",
     "clone-deep": "^4.0.1",
     "debug": "^4.3.4",
@@ -76,7 +76,7 @@
     "@types/deep-equal": "^1.0.4",
     "@types/flat": "^5.0.5",
     "@types/json-pointer": "^1.0.34",
-    "@types/node": "^20.11.17",
+    "@types/node": "^20.11.19",
     "ava": "6.1.1",
     "type-fest": "^4.10.2"
   },
