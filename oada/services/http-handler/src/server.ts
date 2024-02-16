@@ -318,6 +318,7 @@ async function discoverConfiguration(issuer: string | URL) {
 // Find JWKSet URI for auth issuer with OIDC
 const issuer = config.get('oidc.issuer');
 const { jwks_uri: jwksUrl } = await discoverConfiguration(issuer);
+fastify.log.debug({ jwksUrl }, `Loaded OIDC configuration for ${issuer}`);
 
 // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
 await fastify.register(fastifyJwtJwks, {
