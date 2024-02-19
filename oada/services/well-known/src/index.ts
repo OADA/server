@@ -118,10 +118,10 @@ const subservices = new Set(
 await fastify.register(
   async (app) => {
     app.all('/openid-configuration', async (_request, reply) =>
-      reply.redirect(301, '/oada-configuration'),
+      reply.redirect(301, './oada-configuration'),
     );
     app.all('/oauth-authorization-server', async (_request, reply) =>
-      reply.redirect(301, '/oada-configuration'),
+      reply.redirect(301, './oada-configuration'),
     );
   },
   { prefix: '/.well-known/' },
