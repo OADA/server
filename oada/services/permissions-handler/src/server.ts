@@ -150,7 +150,7 @@ export function handleRequest(
       // Let contentType = req.requestType === 'put' ? req.contentType : (resource ? resource._type : undefined);
       // trace('contentType = ', 'is put:', req.requestType === 'put', 'req.contentType:', req.contentType, 'resource:', resource);
       trace(
-        'Does user have scope? resulting contentType: %s typeis check: %s',
+        'Does user have scope? resulting contentType: %s typeIs check: %s',
         contentType,
         is,
       );
@@ -177,7 +177,7 @@ export function handleRequest(
       const write = scopePerm(perm, 'write');
       trace('Does user have write scope? %s', write);
       trace('contentType is %s', contentType);
-      trace('write typeis %s %s', type, is);
+      trace('write typeIs %s %s', type, is);
       trace(scopes.get(type), 'scope types');
       return is && write;
     });

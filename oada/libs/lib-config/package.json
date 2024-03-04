@@ -38,7 +38,7 @@
     "convict-format-with-moment": "^6.2.0",
     "convict-format-with-validator": "^6.2.0",
     "debug": "^4.3.4",
-    "dotenv": "^16.4.4",
+    "dotenv": "^16.4.5",
     "json5": "^2.2.3",
     "tslib": "2.6.2",
     "yaml": "^2.3.4"

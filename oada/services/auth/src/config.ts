@@ -265,6 +265,11 @@ export const { config, schema } = await libConfig({
         nullable: true,
         default: null as unknown as Promise<File | null>,
       },
+      alg: {
+        doc: 'Algorithm to use for encrypting codes',
+        format: String,
+        default: 'HS256' as 'HS256' | 'RS256' | 'PS256',
+      },
       pkce: {
         required: {
           format: Boolean,
@@ -277,13 +282,20 @@ export const { config, schema } = await libConfig({
       },
     },
     token: {
-      length: {
-        format: 'nat',
-        default: 40,
-      },
       expiresIn: {
         format: 'duration',
         default: 0,
+      },
+      key: {
+        doc: 'Key to use for signing tokens',
+        format: 'file-url',
+        nullable: true,
+        default: null as unknown as Promise<File | null>,
+      },
+      alg: {
+        doc: 'Algorithm to use for signing tokens',
+        format: String,
+        default: 'RS256' as 'HS256' | 'RS256' | 'PS256',
       },
     },
     idToken: {
@@ -296,6 +308,11 @@ export const { config, schema } = await libConfig({
         format: 'file-url',
         nullable: true,
         default: null as unknown as Promise<File | null>,
+      },
+      alg: {
+        doc: 'Algorithm to use for signing id tokens',
+        format: String,
+        default: 'RS256' as 'HS256' | 'RS256' | 'PS256',
       },
     },
     certs: {

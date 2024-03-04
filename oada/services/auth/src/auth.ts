@@ -16,12 +16,15 @@
  */
 
 import {
+  Strategy as BearerStrategy,
+  type VerifyFunctionWithRequest,
+} from 'passport-http-bearer';
+import {
   Strategy as JWTStrategy,
   type VerifyCallbackWithRequest,
 } from 'passport-jwt';
 import { type RSA_JWK, jwk2pem } from 'pem-jwk';
 import { Authenticator } from '@fastify/passport';
-import { Strategy as BearerStrategy } from 'passport-http-bearer';
 import ClientPassword from 'passport-oauth2-client-password';
 import { Strategy as LocalStrategy } from 'passport-local';
 import debug from 'debug';
@@ -34,9 +37,10 @@ import {
   findByUsernamePassword,
   findById as findUserById,
 } from './db/models/user.js';
+import type { FastifyRequest } from 'fastify';
 import { _defaultHack } from './index.js';
 import { findById } from './db/models/client.js';
-import { findByToken } from './db/models/token.js';
+import { verifyToken } from './oauth2.js';
 
 export const fastifyPassport = new Authenticator({
   clearSessionOnLogin: process.env.NODE_ENV === 'development',
@@ -208,19 +212,25 @@ fastifyPassport.use(
 // BearerStrategy used to protect userinfo endpoint
 fastifyPassport.use(
   'bearer',
-  new BearerStrategy(async (token, done) => {
+  new BearerStrategy({}, (async (request, token, done) => {
     try {
-      const t = await findByToken(token);
-      if (!t) {
+      const issuer = `${request.protocol}://${request.hostname}/` as const;
+      const payload = await verifyToken(issuer, token);
+      (request as unknown as FastifyRequest).log.debug(
+        { issuer, jwt: token, payload },
+        'JWT Bearer token verify',
+      );
+
+      if (!payload) {
         // eslint-disable-next-line unicorn/no-null
         done(null, false);
         return;
       }
 
       // eslint-disable-next-line unicorn/no-null
-      done(null, t.user, { scope: t.scope.slice() });
+      done(null, payload.user, { scope: [...payload.scope] });
     } catch (error: unknown) {
       done(error);
     }
-  }),
+  }) satisfies VerifyFunctionWithRequest),
 );

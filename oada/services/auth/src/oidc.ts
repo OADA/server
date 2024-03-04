@@ -19,9 +19,6 @@ import { join } from 'node:path/posix';
 
 import { config } from './config.js';
 
-import { createPrivateKey, createPublicKey } from 'node:crypto';
-import type { File } from 'node:buffer';
-
 import type { FastifyPluginAsync } from 'fastify';
 import fastifyAccepts from '@fastify/accepts';
 
@@ -31,7 +28,7 @@ import {
   type StrategyVerifyCallbackUserInfo,
 } from 'openid-client';
 import { type OAuth2Server, createServer } from 'oauth2orize';
-import { SignJWT, exportJWK, generateKeyPair } from 'jose';
+import { SignJWT, exportJWK } from 'jose';
 import oauth2orizeOpenId, { type IssueIDToken } from 'oauth2orize-openid';
 
 import memoize from 'p-memoize';
@@ -45,7 +42,12 @@ import {
   register,
   update,
 } from './db/models/user.js';
-import { issueCode, issueToken } from './oauth2.js';
+import {
+  getKeyPair,
+  issueCode,
+  issueToken,
+  jwksPublic as oauthJWKs,
+} from './oauth2.js';
 import type { DBClient } from './db/models/client.js';
 import type { JsonSchemaToTsProvider } from '@fastify/type-provider-json-schema-to-ts';
 import { createUserinfo } from './utils.js';
@@ -66,7 +68,7 @@ declare module 'oauth2orize' {
 }
 
 declare module 'openid-client' {
-  export interface TypeOfGenericClient {
+  interface TypeOfGenericClient {
     register(
       metadata: Omit<ClientMetadata, 'client_id'>,
       other?: RegisterOther & ClientOptions,
@@ -76,25 +78,23 @@ declare module 'openid-client' {
 
 const idToken = config.get('auth.idToken');
 
-const kid = '1';
-const alg = 'PS256';
-// eslint-disable-next-line @typescript-eslint/ban-types
-async function getKeyPair(file: File | null) {
-  if (!file) {
-    return generateKeyPair(alg);
-  }
-
-  // Assume file is a private key
-  const privateKey = createPrivateKey(file as unknown as string);
-  // Derive a public key from the private key
-  const publicKey = createPublicKey(privateKey);
-  return { privateKey, publicKey };
-}
+const kid = 'openid-1';
 
 // TODO: Support key rotation and stuff
-const { publicKey, privateKey } = await getKeyPair(await idToken.key);
+const { publicKey, privateKey } = await getKeyPair(
+  await idToken.key,
+  idToken.alg,
+);
 const jwksPublic = {
-  keys: [{ kid, ...(await exportJWK(publicKey)) }],
+  keys: [
+    {
+      kid,
+      alg: idToken.alg,
+      use: 'sig',
+      ...(await exportJWK(publicKey)),
+    },
+    ...oauthJWKs.keys,
+  ],
 };
 const jwksPrivate = {
   keys: [{ kid, ...(await exportJWK(privateKey)) }],
@@ -118,7 +118,7 @@ export const issueIdToken: IssueIDToken<DBClient, DBUser> = async (
   };
 
   const token = await new SignJWT(payload)
-    .setProtectedHeader({ kid, alg })
+    .setProtectedHeader({ kid, alg: idToken.alg })
     .setIssuedAt()
     .setExpirationTime(idToken.expiresIn)
     .setAudience(client.client_id)
@@ -143,20 +143,22 @@ const plugin: FastifyPluginAsync<Options> = async (
 
   oauth2server.grant(oauth2orizeOpenId.extensions());
 
-  // Implicit flow (id_token)
-  oauth2server.grant(
-    oauth2orizeOpenId.grant.idToken(
-      (client: DBClient, user: DBUser, ares, done) => {
-        ares.userinfo = true;
-        issueIdToken(client, user, ares, done);
-      },
-    ),
-  );
+  if (config.get('auth.oauth2.allowImplicitFlows')) {
+    // Implicit flow (id_token)
+    oauth2server.grant(
+      oauth2orizeOpenId.grant.idToken(
+        (client: DBClient, user: DBUser, ares, done) => {
+          ares.userinfo = true;
+          issueIdToken(client, user, ares, done);
+        },
+      ),
+    );
 
-  // Implicit flow (id_token token)
-  oauth2server.grant(
-    oauth2orizeOpenId.grant.idTokenToken(issueToken, issueIdToken),
-  );
+    // Implicit flow (id_token token)
+    oauth2server.grant(
+      oauth2orizeOpenId.grant.idTokenToken(issueToken, issueIdToken),
+    );
+  }
 
   // Hybrid flow (code id_token)
   oauth2server.grant(
@@ -370,24 +372,37 @@ const plugin: FastifyPluginAsync<Options> = async (
     userinfo_endpoint: `.${join('/', fastify.prefix, config.get('auth.endpoints.userinfo'))}`,
     jwks_uri: `.${join('/', fastify.prefix, config.get('auth.endpoints.certs'))}`,
     response_types_supported: [
+      ...(config.get('auth.oauth2.allowImplicitFlows')
+        ? (['token', 'id_token', 'id_token token'] as const)
+        : []),
       'code',
-      'token',
-      'id_token',
       'code token',
       'code id_token',
-      'id_token token',
       'code id_token token',
     ],
     subject_types_supported: ['public'],
-    id_token_signing_alg_values_supported: ['RS256'],
+    id_token_signing_alg_values_supported: [config.get('auth.idToken.alg')],
     token_endpoint_auth_methods_supported: ['client_secret_post'],
   } as const;
 
   fastify.log.debug({ configuration }, 'Loaded OIDC configuration');
 
+  // Redirect other OIDC config endpoints to openid-configuration endpoint
+  await fastify.register(
+    async (app) => {
+      app.all('/oada-configuration', async (_request, reply) =>
+        reply.redirect(301, 'openid-configuration'),
+      );
+      app.all('/oauth-authorization-server', async (_request, reply) =>
+        reply.redirect(301, 'openid-configuration'),
+      );
+    },
+    { prefix: '/.well-known/' },
+  );
+
   await fastify.register(wkj, {
     resources: {
-      'oada-configuration': configuration,
+      'openid-configuration': configuration,
     },
   });
 };

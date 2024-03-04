@@ -162,10 +162,9 @@ export default {
       domain,
     },
     'mergeSubServices': [
-      { resource: 'oada-configuration', base: 'http://auth:8080' },
       { resource: 'openid-configuration', base: 'http://auth:8080' },
     ],
-    'oada-configuration': {
+    'openid-configuration': {
       // eslint-disable-next-line camelcase
       well_known_version: '1.1.0',
       // eslint-disable-next-line camelcase
