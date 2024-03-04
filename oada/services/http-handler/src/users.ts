@@ -186,7 +186,7 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
   });
 
   fastify.get('/me', async (request, reply) => {
-    await replyUser(request.user.user_id, reply);
+    await replyUser(request.user.id, reply);
   });
 
   // TODO: don't return stuff to anyone anytime

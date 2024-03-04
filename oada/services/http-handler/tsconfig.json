@@ -12,6 +12,7 @@
     { "path": "../../libs/lib-arangodb" },
     { "path": "../../libs/lib-prom" },
     { "path": "../permissions-handler" },
+    { "path": "../auth" },
     { "path": "../write-handler" }
   ]
 }

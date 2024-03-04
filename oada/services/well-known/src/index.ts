@@ -101,8 +101,8 @@ fastify.log.debug({ configuration }, `Loaded OIDC configuration for ${issuer}`);
 
 const wellKnownOptions = {
   resources: {
-    'oada-configuration': {
-      ...config.get('wellKnown.oada-configuration'),
+    'openid-configuration': {
+      ...config.get('wellKnown.openid-configuration'),
       ...configuration,
     },
   },
@@ -114,14 +114,14 @@ const subservices = new Set(
     .map((s) => (typeof s === 'string' ? s : join(s.base, s.addPrefix ?? ''))),
 );
 
-// Redirect other OIDC config endpoints to oada-configuration endpoint
+// Redirect other OIDC config endpoints to openid-configuration endpoint
 await fastify.register(
   async (app) => {
-    app.all('/openid-configuration', async (_request, reply) =>
-      reply.redirect(301, './oada-configuration'),
+    app.all('/oada-configuration', async (_request, reply) =>
+      reply.redirect(301, 'openid-configuration'),
     );
     app.all('/oauth-authorization-server', async (_request, reply) =>
-      reply.redirect(301, './oada-configuration'),
+      reply.redirect(301, 'openid-configuration'),
     );
   },
   { prefix: '/.well-known/' },

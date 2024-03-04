@@ -168,7 +168,7 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
 
     const result = await resources.lookupFromUrl(
       `/${fullpath}`,
-      request.user.user_id,
+      request.user.id,
     );
     request.log.trace({ result }, 'Graph lookup result');
     if (result.resource_id) {
@@ -195,7 +195,7 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
       // Connection_id: request.id,
       // domain: request.headers.host,
       oadaGraph: request.oadaGraph,
-      user_id: request.user.user_id,
+      user_id: request.user.id,
       scope: request.user.scope as Scope[],
       contentType: request.headers['content-type'],
       // RequestType: request.method.toLowerCase(),
@@ -212,7 +212,7 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
         } else if (!response.permissions.owner && !response.permissions.write) {
           request.log.warn(
             '%s tried to PUT resource without proper permissions',
-            request.user.user_id,
+            request.user.id,
           );
           void reply.forbidden(
             'User does not have write permission for this resource',
@@ -232,7 +232,7 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
         if (!response.permissions.owner && !response.permissions.read) {
           request.log.warn(
             '%s tried to GET resource without proper permissions',
-            request.user.user_id,
+            request.user.id,
           );
           void reply.forbidden(
             'User does not have read permission for this resource',
@@ -568,7 +568,7 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
         'resource_id': request.oadaGraph.resource_id,
         'path_leftover': request.oadaGraph.path_leftover,
         // 'meta_id': oadaGraph['meta_id'],
-        'user_id': request.user.user_id,
+        'user_id': request.user.id,
         'authorizationid': request.user.authorizationid,
         'client_id': request.user.client_id,
         'contentType': request.headers['content-type'],
@@ -680,7 +680,7 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
       'resource_id': oadaGraph.resource_id,
       'path_leftover': oadaGraph.path_leftover,
       // 'meta_id': oadaGraph['meta_id'],
-      'user_id': request.user.user_id,
+      'user_id': request.user.id,
       'authorizationid': request.user.authorizationid,
       'client_id': request.user.client_id,
       'if-match': ifMatch,

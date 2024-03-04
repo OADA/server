@@ -76,7 +76,7 @@ export const { config, schema } = await libConfig({
       env: 'WELLKNOWN_SUBSERVICES',
       arg: 'wellknown-subservices',
     },
-    'oada-configuration': {
+    'openid-configuration': {
       format: Object,
       default: {
         well_known_version: '1.1.0',
@@ -96,9 +96,9 @@ export const { config, schema } = await libConfig({
 
 const server = config.get('wellKnown.server');
 
-if (!config.get('wellKnown.oada-configuration.oada_base_uri')) {
+if (!config.get('wellKnown.openid-configuration.oada_base_uri')) {
   config.set(
-    'wellKnown.server.oada-configuration.oada_base_uri',
+    'wellKnown.server.openid-configuration.oada_base_uri',
     // eslint-disable-next-line sonarjs/no-nested-template-literals
     `${server.mode}//${server.domain}${server.port ? `:${server.port}` : ''}${
       server.path_prefix ?? ''

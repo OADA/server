@@ -21,6 +21,7 @@ import { config, domainConfigs } from './config.js';
 
 import '@oada/lib-prom';
 
+import { join } from 'node:path/posix';
 import path from 'node:path';
 import { randomBytes } from 'node:crypto';
 import url from 'node:url';
@@ -303,14 +304,20 @@ export async function start(): Promise<void> {
     req(request: FastifyRequest) {
       const version = request.headers?.['accept-version'];
       return {
-        method: request.method,
-        url: request.url,
-        version: version ? `${version}` : undefined,
-        hostname: request.hostname,
-        userAgent: request.headers?.['user-agent'],
-        remoteAddress: request.ip,
-        remotePort: request.socket?.remotePort,
-        session: request.session?.data(),
+        'method': request.method,
+        'url': request.url,
+        'version': version ? `${version}` : undefined,
+        'hostname': request.hostname,
+        'userAgent': request.headers?.['user-agent'],
+        'remoteAddress': request.ip,
+        'remotePort': request.socket?.remotePort,
+        'forwarded': request.headers?.forwarded,
+        'x-forwarded': {
+          host: request.headers?.['x-forwarded-host'],
+          proto: request.headers?.['x-forwarded-proto'],
+          for: request.headers?.['x-forwarded-for'],
+        },
+        'session': request.session?.data(),
       };
     },
     // Customize logging for responses
@@ -343,9 +350,21 @@ export async function start(): Promise<void> {
 
   try {
     const port = config.get('auth.server.port');
+    const prefix = config.get('auth.endpointsPrefix');
     await fastify.register(plugin, {
-      prefix: config.get('auth.endpointsPrefix'),
+      prefix,
     });
+    if (prefix) {
+      // HACK: make root .well-known redirect to our auth prefix
+      fastify.all<{ Params: { document: string } }>(
+        '/.well-known/:document',
+        (request, reply) =>
+          reply.redirect(
+            301,
+            join(prefix, '.well-known', request.params.document),
+          ),
+      );
+    }
 
     fastify.log.info('OADA server starting on port %d', port);
     await fastify.listen({
@@ -374,3 +393,5 @@ if (esMain(import.meta)) {
 }
 
 export default start;
+
+export type { TokenClaims } from './oauth2.js';

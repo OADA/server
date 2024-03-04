@@ -17,19 +17,30 @@
 
 import { config, domainConfigs } from './config.js';
 
-import { createHash, randomBytes } from 'node:crypto';
+import {
+  createHash,
+  createPrivateKey,
+  createPublicKey,
+  randomBytes,
+} from 'node:crypto';
 import type { ServerResponse } from 'node:http';
 import { promisify } from 'node:util';
 
 import type {} from '@fastify/formbody';
-import type { FastifyPluginAsync, FastifyReply } from 'fastify';
+import type { FastifyPluginAsync, FastifyReply, FastifyRequest } from 'fastify';
 import { fastifyPassport } from './auth.js';
 
 import {
   EncryptJWT,
   type JWTDecryptResult,
+  type JWTPayload,
+  SignJWT,
+  createLocalJWKSet,
+  exportJWK,
+  generateKeyPair,
   generateSecret,
   jwtDecrypt,
+  jwtVerify,
 } from 'jose';
 import oauth2orize, {
   AuthorizationError,
@@ -50,7 +61,6 @@ import type { DBUser, User } from './db/models/user.js';
 import type { Client } from './db/models/client.js';
 import { findById } from './db/models/client.js';
 import { promisifyMiddleware } from './utils.js';
-import { save as saveToken } from './db/models/token.js';
 
 // If the array of scopes contains ONLY openid OR openid and profile, auto-accept.
 // Better to handle this by asking only the first time, but this is quicker to get PoC working.
@@ -74,20 +84,15 @@ function scopeIsOnlyOpenid(scopes: string | readonly string[]): boolean {
   );
 }
 
-function makeHash(length: number) {
-  return randomBytes(Math.ceil((length * 3) / 4))
-    .toString('base64')
-    .slice(0, length)
-    .replaceAll('+', '-')
-    .replaceAll('/', '_')
-    .replaceAll('=', '');
-}
-
 declare module 'oauth2orize' {
   // eslint-disable-next-line @typescript-eslint/no-shadow
   interface OAuth2Req {
     nonce?: string;
+    issuer: string;
   }
+
+  // eslint-disable-next-line @typescript-eslint/no-shadow
+  interface MiddlewareRequest extends FastifyRequest {}
 }
 interface DeserializedOauth2<C = Client> extends OAuth2 {
   client: C;
@@ -106,37 +111,105 @@ export interface Options {
   };
 }
 
+export const kid = 'oauth2-1' as const;
+// eslint-disable-next-line @typescript-eslint/ban-types
+export async function getKeyPair(file: File | null, alg: string) {
+  if (!file) {
+    return generateKeyPair(alg);
+  }
+
+  // Assume file is a private key
+  const privateKey = createPrivateKey(file as unknown as string);
+  // Derive a public key from the private key
+  const publicKey = createPublicKey(privateKey);
+  return { privateKey, publicKey };
+}
+
 const tokenConfig = config.get('auth.token');
 
-export const issueToken: IssueGrantTokenFunction = async (
-  client: Client,
+// TODO: Support key rotation and stuff
+const { publicKey, privateKey } = await getKeyPair(
+  await tokenConfig.key,
+  tokenConfig.alg,
+);
+export const jwksPublic = {
+  keys: [
+    {
+      kid,
+      alg: tokenConfig.alg,
+      use: 'sig',
+      ...(await exportJWK(publicKey)),
+    },
+  ],
+};
+const JWKS = createLocalJWKSet(jwksPublic);
+
+export interface TokenClaims extends JWTPayload {
+  scope: readonly string[];
+  user: { id: string };
+}
+
+export async function getToken(issuer: string, claims: TokenClaims) {
+  try {
+    const jwt = new SignJWT(claims)
+      .setProtectedHeader({
+        alg: tokenConfig.alg,
+        kid,
+        jku: config.get('auth.endpoints.certs'),
+      })
+      .setJti(randomBytes(16).toString('hex'))
+      .setIssuedAt()
+      .setIssuer(issuer)
+      // ???: Should the audience be something different?
+      // .setAudience(issuer)
+      .setNotBefore(new Date())
+      .setSubject(claims.user.id);
+
+    if (tokenConfig.expiresIn) {
+      jwt.setExpirationTime(tokenConfig.expiresIn);
+    }
+
+    return await jwt.sign(privateKey);
+  } catch (error: unknown) {
+    throw new Error('Failed to issue token', { cause: error });
+  }
+}
+
+export async function verifyToken(issuer: string, token: string) {
+  const { payload } = await jwtVerify<TokenClaims>(token, JWKS, {
+    issuer,
+    audience: issuer,
+  });
+  return payload;
+}
+
+export const issueToken = (async (
+  _client: Client,
   user: DBUser,
   request: OAuth2Req,
   done,
 ) => {
   try {
-    const { scope } = request;
-    const token = await saveToken({
-      token: makeHash(tokenConfig.length),
-      expiresIn: tokenConfig.expiresIn,
-      scope,
+    // TODO: Fill out user info
+    const token = await getToken(request.issuer, {
       user,
-      clientId: client.client_id,
+      scope: request.scope,
     });
     // eslint-disable-next-line unicorn/no-null
-    done(null, token.token, { expires_in: token.expiresIn });
+    done(null, token, { expires_in: tokenConfig.expiresIn });
   } catch (error: unknown) {
     done(error as Error);
   }
-};
+}) satisfies IssueGrantTokenFunction;
 
-interface CodePayload extends OAuth2Req {
+interface CodePayload {
+  issuer: string;
   user: User['id'];
+  scope: readonly string[];
 }
 
-const alg = 'HS256';
 const authCode = config.get('auth.code');
-const key = (await authCode.key) ?? (await generateSecret(alg));
+const key = (await authCode.key) ?? (await generateSecret(authCode.alg));
 export const issueCode: IssueGrantCodeFunctionArity6 = async (
   client: Client,
   redirectUri,
@@ -168,9 +241,10 @@ export const issueCode: IssueGrantCodeFunctionArity6 = async (
     }
 
     const payload = {
-      ...request,
       user: user.id,
-    } satisfies CodePayload;
+      issuer: request.issuer,
+      scope: request.scope,
+    } as const satisfies CodePayload;
     const code = await new EncryptJWT(payload)
       .setProtectedHeader({ alg: 'dir', enc: 'A128CBC-HS256' })
       .setSubject(redirectUri)
@@ -202,8 +276,14 @@ const plugin: FastifyPluginAsync<Options> = async (
   // PKCE
   oauth2server.grant(extensions());
 
-  // Implicit flow (token)
-  oauth2server.grant(oauth2orize.grant.token(issueToken));
+  oauth2server.grant('*', (request) => ({
+    issuer: `${request.protocol}://${request.hostname}/` as const,
+  }));
+
+  if (config.get('auth.oauth2.allowImplicitFlows')) {
+    // Implicit flow (token)
+    oauth2server.grant(oauth2orize.grant.token(issueToken));
+  }
 
   // Code flow (code)
   oauth2server.grant(oauth2orize.grant.code(issueCode));
@@ -270,16 +350,13 @@ const plugin: FastifyPluginAsync<Options> = async (
             }
           }
 
-          const { scope, user } = payload;
-          const { expiresIn, token } = await saveToken({
-            token: makeHash(tokenConfig.length),
-            expiresIn: tokenConfig.expiresIn,
-            scope,
+          const { issuer, user, scope } = payload;
+          const token = await getToken(issuer, {
             user: { id: user! },
-            clientId: client.client_id,
+            scope,
           });
           const extras: Record<string, unknown> = {
-            expires_in: expiresIn,
+            expires_in: tokenConfig.expiresIn,
           };
 
           /**
@@ -393,7 +470,6 @@ const plugin: FastifyPluginAsync<Options> = async (
   const doDecision = promisifyMiddleware(
     oauth2server.decision((request, done) => {
       try {
-        // @ts-expect-error body
         const { scope, allow } = request.body as {
           scope?: string[];
           allow?: unknown;

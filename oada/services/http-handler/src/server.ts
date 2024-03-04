@@ -24,11 +24,13 @@ import { nstats } from '@oada/lib-prom';
 
 import { plugin as formats } from '@oada/formats-server';
 
+import type { TokenClaims } from '@oada/auth';
 import authorizations from './authorizations.js';
 import resources from './resources.js';
 import users from './users.js';
 import websockets from './websockets.js';
 
+import type {} from '@fastify/jwt';
 import { type Authenticate, fastifyJwtJwks } from 'fastify-jwt-jwks';
 import {
   fastify as Fastify,
@@ -141,11 +143,12 @@ export const fastify = Fastify({
 
 if (process.env.NODE_ENV !== 'production') {
   // Send errors on to client for debug purposes
-  fastify.setErrorHandler((error, _request, reply) => {
+  fastify.setErrorHandler((error, request, reply) => {
     // @ts-expect-error stuff
     const res = error.response;
-    fastify.log.error({ err: error, res });
-    void reply.code(500).send(res?.body ?? res);
+    const code = error.statusCode ?? 500;
+    request.log.error({ err: error, res });
+    void reply.code(code).send(res?.body ?? res);
   });
 
   // Add request id header for debugging purposes
@@ -167,6 +170,7 @@ export async function start(): Promise<void> {
 declare module '@fastify/request-context' {
   interface RequestContextData {
     id: string;
+    issuer: string;
   }
 }
 
@@ -177,14 +181,14 @@ declare module 'fastify' {
   // eslint-disable-next-line @typescript-eslint/no-shadow
   interface FastifyRequest {
     user: {
-      expired: boolean;
-      authorizationid: string;
-      user_id: string;
-      user_scope: readonly string[];
-      scope: readonly string[];
-      bookmarks_id: string;
-      shares_id: string;
-      client_id: string;
+      readonly expired: boolean;
+      readonly authorizationid: string;
+      readonly id: string;
+      readonly user_scope: readonly string[];
+      readonly scope: readonly string[];
+      readonly bookmarks_id: string;
+      readonly shares_id: string;
+      readonly client_id: string;
     };
   }
 }
@@ -228,6 +232,10 @@ await fastify.register(fastifyRequestContext, {
 // Add id to request context
 fastify.addHook('onRequest', async (request) => {
   requestContext.set('id', request.id);
+  requestContext.set(
+    'issuer',
+    `${request.protocol}://${request.hostname}/` as const,
+  );
 });
 
 await fastify.register(fastifySensible);
@@ -320,11 +328,22 @@ const issuer = config.get('oidc.issuer');
 const { jwks_uri: jwksUrl } = await discoverConfiguration(issuer);
 fastify.log.debug({ jwksUrl }, `Loaded OIDC configuration for ${issuer}`);
 
-// eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+declare module '@fastify/jwt' {
+  interface FastifyJWT {
+    payload: TokenClaims;
+    user: { id: string };
+  }
+}
+
 await fastify.register(fastifyJwtJwks, {
   jwksUrl,
-  formatUser(payload: unknown) {
-    return payload;
+  issuer: {
+    test(value: string) {
+      return requestContext.get('issuer') === value;
+    },
+  },
+  formatUser(claims) {
+    return claims.user;
   },
 });
 await fastify.register(async (instance) => {

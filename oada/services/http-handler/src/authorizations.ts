@@ -57,7 +57,7 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
   // Authorizations routes
   // TODO: How the heck should this work??
   fastify.get('/', async (request, reply) => {
-    const results = await authorizations.findByUser(request.user.user_id);
+    const results = await authorizations.findByUser(request.user.id);
 
     // eslint-disable-next-line @typescript-eslint/ban-types
     const response: Record<string, authorizations.Authorization | null> = {};
@@ -71,7 +71,7 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
 
   fastify.get('/:authId', async (request, reply) => {
     const { authId } = request.params as { authId: string };
-    const { user_id: userid } = request.user;
+    const { id: userid } = request.user;
 
     const auth = await authorizations.findById(authId);
     // Only let users see their own authorizations
@@ -111,7 +111,7 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
     const auth = {
       // TODO: Which fields should be selectable by the client?
       user: {
-        _id: request.user.user_id,
+        _id: request.user.id,
       },
       clientId: request.user.client_id,
       createTime: Date.now(),
@@ -122,7 +122,7 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
     };
 
     // Don't allow making tokens for other users unless admin.user
-    if (auth.user._id !== request.user.user_id) {
+    if (auth.user._id !== request.user.id) {
       if (
         !request.user.scope.some(
           (s) => s === 'oada.admin.user:all' || 'oada.admin.user:write',
@@ -160,7 +160,7 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
     const auth = await authorizations.findById(authId);
 
     // Only let users see their own authorizations
-    if (auth?.user._id !== request.user.user_id) {
+    if (auth?.user._id !== request.user.id) {
       void reply.forbidden();
       return;
     }

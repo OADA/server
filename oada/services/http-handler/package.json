@@ -43,7 +43,7 @@
     "@fastify/rate-limit": "^9.1.0",
     "@fastify/request-context": "^5.1.0",
     "@fastify/sensible": "^5.5.0",
-    "@fastify/websocket": "^8.3.1",
+    "@fastify/websocket": "^9.0.0",
     "@oada/error": "^2.0.1",
     "@oada/formats-server": "^3.5.3",
     "@oada/lib-arangodb": "^3.7.0",
@@ -71,6 +71,8 @@
     "uuid": "^9.0.1"
   },
   "devDependencies": {
+    "@fastify/jwt": "^8.0.0",
+    "@oada/auth": "workspace:^",
     "@oada/users": "workspace:services/users",
     "@oada/write-handler": "^3.7.0",
     "@types/cacache": "^17.0.2",
