@@ -16,8 +16,7 @@
  */
 
 declare module 'es-main' {
-  function esMain(meta: unknown): boolean;
-  export = esMain;
+  export default function esMain(meta: unknown): boolean;
 }
 
 declare module 'nstats' {
