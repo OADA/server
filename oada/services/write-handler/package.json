@@ -56,13 +56,13 @@
   },
   "devDependencies": {
     "@ava/typescript": "^4.1.0",
-    "@oada/client": "^4.5.5",
+    "@oada/client": "^5.0.0",
     "@oada/types": "^3.5.3",
     "@types/debug": "^4.1.12",
     "@types/json-pointer": "^1.0.34",
-    "@types/node": "^20.11.19",
+    "@types/node": "^20.11.24",
     "@types/object-assign-deep": "^0.4.3",
-    "ava": "6.1.1"
+    "ava": "6.1.2"
   },
   "volta": {
     "node": "20.2.0"

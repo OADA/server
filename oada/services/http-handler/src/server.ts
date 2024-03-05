@@ -30,8 +30,8 @@ import resources from './resources.js';
 import users from './users.js';
 import websockets from './websockets.js';
 
-import type {} from '@fastify/jwt';
-import { type Authenticate, fastifyJwtJwks } from 'fastify-jwt-jwks';
+import type {FastifyJWTOptions} from '@fastify/jwt';
+import { type Authenticate, fastifyJwtJwks, type FastifyJwtJwksOptions } from 'fastify-jwt-jwks';
 import {
   fastify as Fastify,
   type FastifyReply,
@@ -334,6 +334,11 @@ declare module '@fastify/jwt' {
     user: { id: string };
   }
 }
+declare module 'fastify-jwt-jwks' {
+  export interface FastifyJwtJwksOptions extends FastifyJWTOptions {
+
+  }
+}
 
 await fastify.register(fastifyJwtJwks, {
   jwksUrl,
@@ -341,11 +346,11 @@ await fastify.register(fastifyJwtJwks, {
     test(value: string) {
       return requestContext.get('issuer') === value;
     },
-  },
+  } as RegExp,
   formatUser(claims) {
     return claims.user;
   },
-});
+} satisfies FastifyJwtJwksOptions);
 await fastify.register(async (instance) => {
   instance.addHook('preValidation', instance.authenticate);
 
