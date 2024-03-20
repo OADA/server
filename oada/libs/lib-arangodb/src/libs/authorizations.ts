@@ -15,24 +15,26 @@
  * limitations under the License.
  */
 
-import type { User } from './users.js';
+import type { User } from '@oada/models/user';
 import { config } from '../config.js';
 import { db as database } from '../db.js';
 import { findById as findUserById } from './users.js';
 import { sanitizeResult } from '../util.js';
 
+import type { Except, Opaque } from 'type-fest';
 import { aql } from 'arangojs';
 import debug from 'debug';
 
 const trace = debug('@oada/lib-arangodb#authorizations:trace');
 
-const authorizations = database.collection(
+const authorizations = database.collection<Authorization>(
   config.get('arangodb.collections.authorizations.name'),
 );
 
+export type AuthorizationID = Opaque<string, Authorization>;
+
 export interface Authorization {
   _id: string;
-  _rev: number;
   token: string;
   scope: readonly string[];
   createTime: number;
@@ -92,27 +94,24 @@ export async function findByUser(
       RETURN UNSET(t, '_key')`);
 }
 
-export async function save({
-  _id,
-  ...auth
-}: Partial<Authorization> & { token: string }): Promise<
-  Authorization | undefined
-> {
+export async function save(
+  auth: Except<Authorization, '_id'>,
+): Promise<Authorization> {
   // Make sure nothing but id is in user info
-  const user = auth.user && { _id: auth.user._id };
+  const user = { _id: auth.user._id };
   // Have to get rid of illegal document handle _id
 
-  const _key = _id?.replace(/^authorizations\//, '');
+  trace({ auth, user }, 'save: Replacing/Inserting token');
 
-  trace({ auth, user, _key }, 'save: Replacing/Inserting token');
+  const _id = undefined as unknown as AuthorizationID;
 
   // Overwrite will replace the given token if it already exists
-  await authorizations.save(
-    { ...auth, user, _key },
+  const t = await authorizations.save(
+    { ...auth, user, _id },
     { overwriteMode: 'replace' },
   );
 
-  return findByToken(auth.token);
+  return t.new!;
 }
 
 export async function revoke(token: Authorization | string): Promise<void> {

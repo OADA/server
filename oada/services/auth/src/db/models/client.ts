@@ -20,17 +20,16 @@ import { config } from '../../config.js';
 import path from 'node:path';
 import url from 'node:url';
 
-import type { OmitIndexSignature, ReadonlyDeep } from 'type-fest';
-import { v4 } from 'uuid';
-
 import { Codes, OADAError } from '@oada/error';
-import type { ClientID } from '@oada/lib-arangodb/dist/libs/clients.js';
-import type Metadata from '@oada/types/oauth-dyn-reg/metadata.js';
-import { makeClass } from '@qlever-llc/interface2class';
+
+import { Client } from '@oada/models/client';
+import type { Except } from 'type-fest';
+
+export { Client } from '@oada/models/client';
 
 export interface IClients {
   findById(id: string): Promise<Client | undefined>;
-  save(client: Client): Promise<void>;
+  save(client: Except<Client, 'client_id'>): Promise<void>;
 }
 
 const dirname = path.dirname(url.fileURLToPath(import.meta.url));
@@ -39,42 +38,13 @@ const database = (await import(
   path.join(dirname, '..', datastoresDriver, 'clients.js')
 )) as IClients;
 
-export interface IClient extends ReadonlyDeep<OmitIndexSignature<Metadata>> {
-  readonly id?: ClientID;
-  readonly client_id: string;
-  readonly scope: string;
-  readonly reqdomain?: string;
-  readonly puc?: string;
-  readonly licenses?: ReadonlyArray<{ id: string; name: string }>;
-  readonly trusted?: boolean;
-  readonly client_secret?: string;
-  readonly client_secret_expires_at?: number;
-}
-
-export class Client extends makeClass<IClient>() {
-  constructor({
-    client_id = v4(),
-    licenses = [],
-    scope = '',
-    ...rest
-  }: IClient) {
-    super({ ...rest, client_id, scope, licenses });
-  }
-}
-
-export interface DBClient extends Client {
-  id: ClientID;
-  client_id: string;
-}
-
-export async function findById(id: DBClient['client_id']) {
+export async function findById(id: string) {
   const c = await database.findById(id);
   return c ? new Client(c) : undefined;
 }
 
-export async function save(c: IClient) {
-  const client = c instanceof Client ? c : new Client(c);
-
+export async function save(c: Partial<Except<Client, 'client_id'>>) {
+  const client = new Client(c);
   if (await database.findById(client.client_id)) {
     throw new OADAError(
       'Client Id already exists',

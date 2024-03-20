@@ -18,7 +18,7 @@
 import type { Opaque } from 'type-fest';
 import { aql } from 'arangojs';
 
-import type { DBUser, UserID } from './users.js';
+import type { User, UserID } from '@oada/models/user';
 import { config } from '../config.js';
 import { db as database } from '../db.js';
 import { findById } from './users.js';
@@ -49,7 +49,7 @@ const codes = database.collection(
 
 export async function findByCode(
   code: string,
-): Promise<(DBCode & { user: DBUser }) | undefined> {
+): Promise<(DBCode & { user: User }) | undefined> {
   const cursor = await database.query(
     aql`
       FOR c IN ${codes}
@@ -76,7 +76,7 @@ export async function findByCode(
 
 export async function save(
   code: Partial<Code> & { code: string },
-): Promise<(DBCode & { user: DBUser }) | undefined> {
+): Promise<(DBCode & { user: User }) | undefined> {
   await database.query(aql`
     UPSERT { code: ${code.code} }
     INSERT ${code}

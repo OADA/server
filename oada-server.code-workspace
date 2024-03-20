@@ -14,6 +14,10 @@
       "path": "charts/oada"
     },
     {
+      "name": "📦 @oada/models",
+      "path": "oada/libs/models"
+    },
+    {
       "name": "📦 @oada/lib-arangodb",
       "path": "oada/libs/lib-arangodb"
     },
@@ -166,6 +170,7 @@
       "JWTs",
       "kafa",
       "Kafkajs",
+      "Klass",
       "ksuid",
       "kube",
       "kubernetes",
@@ -200,10 +205,10 @@
       "unflatten",
       "unversioned",
       "urijs",
+      "xksuid",
       "Yaguang",
       "Zhang"
     ],
-    "eslint.packageManager": "yarn",
     "eslint.useESLintClass": true,
     "licenser.author": "Open Ag Data Alliance",
     "licenser.license": "AL2",

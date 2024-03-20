@@ -124,7 +124,7 @@ function parseRequest(data: WebSocket.Data): SocketRequest {
 const plugin: FastifyPluginAsync = async (fastify) => {
   await fastify.register(fastifyWebsocket);
 
-  fastify.get('/*', { websocket: true }, ({ socket }) => {
+  fastify.get('/*', { websocket: true }, (socket) => {
     /**
      * Awaitable function to send over socket
      */

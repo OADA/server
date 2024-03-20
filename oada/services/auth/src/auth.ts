@@ -76,12 +76,12 @@ fastifyPassport.use(
 );
 
 fastifyPassport.registerUserSerializer<User, string>(async (user) => {
-  trace('Serializing user by _id as %s', user.id);
-  if (!user.id) {
+  trace('Serializing user by _id as %s', user._id);
+  if (!user._id) {
     throw new TypeError('User has no id');
   }
 
-  return user.id;
+  return user._id;
 });
 
 fastifyPassport.registerUserDeserializer<string, User>(async (userid) => {

@@ -166,7 +166,7 @@ export async function run(): Promise<void> {
           }
 
           // Have to use _key if we want the key to be our key:
-          document._key ||= document._id.replace(/^[^/]*\//, '');
+          document._key ||= document._id?.replace(/^[^/]*\//, '');
 
           if (
             colname === 'users' && // Oidc users don't have password, so you need to check for existence

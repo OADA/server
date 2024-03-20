@@ -28,7 +28,7 @@ import debug from 'debug';
 import minimist from 'minimist';
 import promptly from 'promptly';
 
-import type { User, UserRequest, UserResponse } from './server.js';
+import type { UserRequest, UserResponse } from './server.js';
 
 const argv = minimist(process.argv.slice(2));
 
@@ -43,15 +43,13 @@ async function findUserByUsername(username: string) {
     trace({ user }, 'findUserByUsername: Finished users.like');
     return user;
   }
-
-  return false;
 }
 
 // The main event:
 try {
   if (argv.h || argv.help) {
     error(
-      chalk.yellow`useradd [-u username] [-p password] [-a (if you want user to have admin privileges to create other users)]`,
+      chalk.yellow`useradd [-u username] [-d domain] [-p password] [-a (if you want user to have admin privileges to create other users)]`,
     );
     process.exit();
   }
@@ -86,15 +84,17 @@ try {
       : p
     : undefined;
   const isAdmin = Boolean(argv.a || argv.isadmin || argv.isAdmin);
-
+  const domain = `${argv.domain || argv.d || process.env.DOMAIN || 'localhost'}`;
   trace('Sending request to kafka');
-  const user: User = {
+  const user = {
     username,
+    domain,
     password,
     // Add scope if you want the user to have permission to create other users
     scope: isAdmin ? ['oada.admin.user:all'] : [],
   };
   const response = (await kafkareq.send({
+    // @ts-expect-error secret prop
     connection_id: 'useradd',
     token: 'admin',
     authorization: {
@@ -102,7 +102,7 @@ try {
     },
     // The "user" key is what goes into the DB
     user,
-  } as UserRequest)) as unknown as UserResponse;
+  } satisfies UserRequest)) as unknown as UserResponse;
 
   trace({ response }, 'Finished kafka.send');
   // No need to keep hearing messages

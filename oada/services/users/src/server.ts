@@ -28,14 +28,18 @@ import cloneDeep from 'clone-deep';
 import debug from 'debug';
 import ksuid from 'ksuid';
 
+import { User } from '@oada/models/user';
+import type { UserID } from '@oada/models/user';
+import type { SetRequired } from 'type-fest';
+export type * from '@oada/models/user';
+
 const trace = debug('users:trace');
 const warn = debug('users:warn');
-const error = debug('users:error');
 
 const contentTypes = {
   bookmarks: 'application/vnd.oada.bookmarks.1+json',
   shares: 'application/vnd.oada.shares.1+json',
-};
+} as const;
 
 const responder = new ResponderRequester({
   requestTopics: {
@@ -49,49 +53,22 @@ const responder = new ResponderRequester({
   group: 'user-handlers',
 });
 
-export interface User {
-  username: string;
-  password?: string;
-  domain?: string;
-  name?: string;
-  email?: string;
-  oidc?: {
-    sub?: string; // Subject, i.e. unique ID for this user
-    iss?: string; // Issuer: the domain that gave out this ID
-    username?: string; // Can be used to pre-link this account to openidconnect identity
-  };
-  scope?: readonly string[];
-  // TODO: These don't really belong here...
-  reqdomain?: string;
-  bookmarks?: { _id: string };
-  shares?: { _id: string };
-}
-
 export async function stopResp(): Promise<void> {
   return responder.disconnect();
 }
 
-export async function createNewUser(request: UserRequest): Promise<users.User> {
+export async function createNewUser(request: UserRequest): Promise<User> {
+  const userId = request.user._id;
   const _id =
-    request.userid &&
-    (request.userid.startsWith('users')
-      ? request.userid
-      : `users/${request.userid}`);
-  const _key =
-    request.userid &&
-    (request.userid.startsWith('users')
-      ? request.userid.replace(/^users\//, '')
-      : request.userid);
-  const { password, ...user } = await users.create({
-    _id,
-    _key,
-    ...request.user,
-  } as Omit<users.User, '_rev'>);
+    userId &&
+    ((userId?.startsWith('users') ? userId : `users/${userId}`) as UserID);
+  const u = new User({ _id, ...request.user });
+  const { password, ...user } = await users.create(u);
   // Create empty resources for user
   for await (const resource of ['bookmarks', 'shares'] as const) {
     if (!user[resource]?._id) {
-      const { string: id } = await ksuid.random();
-      const resourceID = `resources/${id}`;
+      const { string: resourceId } = await ksuid.random();
+      const resourceID = `resources/${resourceId}`;
 
       trace(
         'Creating %s for %s of %s as _type = %s',
@@ -133,8 +110,7 @@ export async function createNewUser(request: UserRequest): Promise<users.User> {
 }
 
 export interface UserRequest {
-  userid?: string;
-  user: User;
+  user: SetRequired<Partial<User>, 'domain'>;
   authorization?: {
     scope: string | readonly string[];
   };
@@ -143,7 +119,7 @@ export interface UserRequest {
 export interface UserResponse {
   code: string;
   new: boolean;
-  user?: users.User & { _id: users.UserID };
+  user?: User;
 }
 responder.on<UserResponse, UserRequest>('request', handleReq);
 
@@ -153,11 +129,7 @@ function isArray(value: unknown): value is unknown[] | readonly unknown[] {
 
 export async function handleReq(request: UserRequest): Promise<UserResponse> {
   // TODO: Sanitize?
-  trace('REQUEST: req.user = %O, userid = %s', request.user, request.userid);
-  trace(
-    'REQUEST: req.authorization.scope = %s',
-    request.authorization ? request.authorization.scope : undefined,
-  );
+  trace({ request }, 'User request');
   // While this could fit in permissions_handler, since users are not really resources (i.e. no graph),
   // we'll add a check here that the user has oada.admin.user:write or oada.admin.user:all scope
   const authorization = cloneDeep(request.authorization) ?? { scope: '' };
@@ -175,17 +147,14 @@ export async function handleReq(request: UserRequest): Promise<UserResponse> {
   }
 
   // First, check if the ID exists already:
-  let currentUser;
-  if (request.userid) {
-    trace('Checking if user id %s exists.', request.userid);
-    currentUser = await users.findById(request.userid, { graceful: true });
+  let currentUser: User | undefined;
+  const userId = request.user._id;
+  if (userId) {
+    trace('Checking if user id %s exists.', userId);
+    currentUser = await users.findById(userId, { graceful: true });
   }
 
-  trace(
-    'Result of search for user with id %s: %O',
-    request.userid,
-    currentUser,
-  );
+  trace('Result of search for user with id %s: %O', userId, currentUser);
 
   // Make one if it doesn't exist already:
   let createUser = false;
@@ -209,11 +178,12 @@ export async function handleReq(request: UserRequest): Promise<UserResponse> {
           trace(user, 'existing user found');
         }
       } else {
-        error(
-          { error: cError },
-          'Unknown error occurred when creating new user',
+        throw Object.assign(
+          new Error(`Error creating User ${request.user.username}`, {
+            cause: cError,
+          }),
+          cError,
         );
-        throw cError as Error;
       }
     }
   }
@@ -236,8 +206,7 @@ export async function handleReq(request: UserRequest): Promise<UserResponse> {
   // Respond to the request with success:
   if (trace.enabled && currentUser) {
     // Don't log passwords
-    const { password, ...user } =
-      'new' in currentUser ? currentUser.new : currentUser;
+    const { password, ...user } = currentUser;
     trace({ user }, 'Finished with update, responding with success');
   }
 
@@ -245,6 +214,6 @@ export async function handleReq(request: UserRequest): Promise<UserResponse> {
     code: 'success',
     new: createUser,
     // TODO: figure out what cur_user is supposed to be??
-    user: currentUser as users.DBUser,
+    user: currentUser,
   };
 }

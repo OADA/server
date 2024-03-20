@@ -15,12 +15,11 @@
  * limitations under the License.
  */
 
-import { join } from 'node:path';
-
 import type { FastifyPluginAsync, FastifyRequest } from 'fastify';
 import { v4 as uuid } from 'uuid';
 
 import { authorizations, clients } from '@oada/lib-arangodb';
+import Authorization from '@oada/models/authorization';
 
 export interface Options {
   prefix: string;
@@ -53,11 +52,11 @@ async function addClientToAuth(
   }
 }
 
-const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
+const plugin: FastifyPluginAsync<Options> = async (fastify, _options) => {
   // Authorizations routes
   // TODO: How the heck should this work??
   fastify.get('/', async (request, reply) => {
-    const results = await authorizations.findByUser(request.user.id);
+    const results = await authorizations.findByUser(request.user!._id);
 
     // eslint-disable-next-line @typescript-eslint/ban-types
     const response: Record<string, authorizations.Authorization | null> = {};
@@ -71,7 +70,7 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
 
   fastify.get('/:authId', async (request, reply) => {
     const { authId } = request.params as { authId: string };
-    const { id: userid } = request.user;
+    const { _id: userid } = request.user!;
 
     const auth = await authorizations.findById(authId);
     // Only let users see their own authorizations
@@ -82,7 +81,7 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
 
     // Get the full client out of the DB to send out with this auth document
     // That way anybody listing authorizations can print the name, etc. of the client
-    const response = await addClientToAuth(request, auth);
+    const response = await addClientToAuth(request, auth!);
     return reply.send(response);
   });
 
@@ -108,24 +107,23 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
   fastify.post('/', async (request, reply) => {
     // TODO: Most of this could be done inside an Arango query...
     // TODO: Check scope of current token
-    const auth = {
+    const auth = new Authorization({
       // TODO: Which fields should be selectable by the client?
       user: {
-        _id: request.user.id,
+        _id: request.user!._id,
       },
-      clientId: request.user.client_id,
-      createTime: Date.now(),
+      client: { client_id: request.user!.client_id },
       expiresIn: 3600,
       // TODO: How to generate token?
       token: uuid(),
-      ...(request.body as Record<string, unknown>),
-    };
+      ...(request.body as Partial<Authorization>),
+    });
 
     // Don't allow making tokens for other users unless admin.user
-    if (auth.user._id !== request.user.id) {
+    if (auth.user!._id !== request.user!._id) {
       if (
-        !request.user.scope.some(
-          (s) => s === 'oada.admin.user:all' || 'oada.admin.user:write',
+        !request.user!.roles.some(
+          (s: string) => s === 'oada.admin.user:all' || 'oada.admin.user:write',
         )
       ) {
         void reply.forbidden();
@@ -138,19 +136,26 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
       );
     }
 
+    // TODO: Support saving authorizations in arango instead of only JWTs
+    /*
     const result = await authorizations.save(auth);
     if (!result) {
       // eslint-disable-next-line unicorn/no-null
       return null;
     }
 
-    const { _rev, user: u, ...returnValue } = result;
+    const { user: u, ...returnValue } = result;
 
     void reply.header(
       'Content-Location',
       join(options.prefix, returnValue._id),
     );
     return reply.send({ ...returnValue, user: u ? { _id: u._id } : undefined });
+    */
+    return reply.send({
+      ...auth,
+      user: auth.user ? { _id: auth.user._id } : undefined,
+    });
   });
 
   // TODO: Should another microservice revoke authorizations?
@@ -160,7 +165,7 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
     const auth = await authorizations.findById(authId);
 
     // Only let users see their own authorizations
-    if (auth?.user._id !== request.user.id) {
+    if (auth?.user._id !== request.user!._id) {
       void reply.forbidden();
       return;
     }

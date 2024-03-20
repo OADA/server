@@ -21,6 +21,7 @@ import { config } from './config.js';
 
 import { KafkaError } from '@oada/lib-kafka';
 import { nstats } from '@oada/lib-prom';
+import { users as userDb } from '@oada/lib-arangodb';
 
 import { plugin as formats } from '@oada/formats-server';
 
@@ -30,17 +31,17 @@ import resources from './resources.js';
 import users from './users.js';
 import websockets from './websockets.js';
 
-import type {FastifyJWTOptions} from '@fastify/jwt';
-import { type Authenticate, fastifyJwtJwks, type FastifyJwtJwksOptions } from 'fastify-jwt-jwks';
 import {
   fastify as Fastify,
   type FastifyReply,
   type FastifyRequest,
 } from 'fastify';
+import { type FastifyJwtJwksOptions, fastifyJwtJwks } from 'fastify-jwt-jwks';
 import {
   fastifyRequestContext,
   requestContext,
 } from '@fastify/request-context';
+import type { FastifyJWTOptions } from '@fastify/jwt';
 import type { RateLimitPluginOptions } from '@fastify/rate-limit';
 import cors from '@fastify/cors';
 import fastifyAccepts from '@fastify/accepts';
@@ -171,25 +172,6 @@ declare module '@fastify/request-context' {
   interface RequestContextData {
     id: string;
     issuer: string;
-  }
-}
-
-declare module 'fastify' {
-  interface FastifyInstance {
-    authenticate: Authenticate;
-  }
-  // eslint-disable-next-line @typescript-eslint/no-shadow
-  interface FastifyRequest {
-    user: {
-      readonly expired: boolean;
-      readonly authorizationid: string;
-      readonly id: string;
-      readonly user_scope: readonly string[];
-      readonly scope: readonly string[];
-      readonly bookmarks_id: string;
-      readonly shares_id: string;
-      readonly client_id: string;
-    };
   }
 }
 
@@ -331,28 +313,40 @@ fastify.log.debug({ jwksUrl }, `Loaded OIDC configuration for ${issuer}`);
 declare module '@fastify/jwt' {
   interface FastifyJWT {
     payload: TokenClaims;
-    user: { id: string };
+    // User: { _id: string };
   }
 }
 declare module 'fastify-jwt-jwks' {
-  export interface FastifyJwtJwksOptions extends FastifyJWTOptions {
-
-  }
+  export interface FastifyJwtJwksOptions extends FastifyJWTOptions {}
 }
 
 await fastify.register(fastifyJwtJwks, {
   jwksUrl,
+  // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
   issuer: {
     test(value: string) {
       return requestContext.get('issuer') === value;
     },
   } as RegExp,
   formatUser(claims) {
-    return claims.user;
+    fastify.log.debug(claims, 'JWT claims');
+    return claims;
   },
-} satisfies FastifyJwtJwksOptions);
+} as const satisfies FastifyJwtJwksOptions);
+
 await fastify.register(async (instance) => {
-  instance.addHook('preValidation', instance.authenticate);
+  instance.addHook('onRequest', instance.authenticate);
+
+  instance.addHook('onRequest', async (request, reply) => {
+    if (!request.user) {
+      return reply.unauthorized();
+    }
+
+    // TODO: Use an OADA prefix for JWT claims?
+    const { sub: id, ...rest } = request.user as unknown as TokenClaims;
+    const user = await userDb.findById(id!);
+    request.user = { ...user!, ...rest, user: { _id: id } };
+  });
 
   /**
    * Route /bookmarks to resources?
@@ -360,7 +354,7 @@ await fastify.register(async (instance) => {
   await instance.register(resources, {
     prefix: '/bookmarks',
     prefixPath(request) {
-      return request.user?.bookmarks_id ?? '/bookmarks';
+      return request.user?.bookmarks._id ?? '/bookmarks';
     },
   });
 
@@ -370,7 +364,7 @@ await fastify.register(async (instance) => {
   await instance.register(resources, {
     prefix: '/shares',
     prefixPath(request) {
-      return request.user?.shares_id ?? '/shares';
+      return request.user?.shares._id ?? '/shares';
     },
   });
 

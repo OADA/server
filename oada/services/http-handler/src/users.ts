@@ -15,11 +15,11 @@
  * limitations under the License.
  */
 
-import { join } from 'node:path';
+import { join } from 'node:path/posix';
 
 import { users } from '@oada/lib-arangodb';
 
-import type { UserRequest, UserResponse } from '@oada/users';
+import type { User, UserRequest, UserResponse } from '@oada/users';
 
 import { config } from './config.js';
 import requester from './requester.js';
@@ -31,7 +31,7 @@ export interface Options {
   prefix: string;
 }
 
-function sanitizeDatabaseResult(user: users.DBUser | undefined) {
+function sanitizeDatabaseResult(user: User | undefined) {
   if (!user) {
     return;
   }
@@ -129,15 +129,16 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
   // Lookup a username, limited to tokens and users with oada.admin.user scope
   fastify.get('/username-index/:uname', async (request, reply) => {
     const { uname } = request.params as { uname: string };
-    const authorization = request.user;
+    const authorization = request.user!;
 
     // Check token scope
     request.log.trace(
       'username-index: Checking token scope, req.authorization.scope = %s',
       authorization,
     );
-    const havetokenscope = authorization.scope.find(
-      (s) => s === 'oada.admin.user:read' || s === 'oada.admin.user:all',
+    const havetokenscope = authorization.roles.find(
+      (s: string) =>
+        s === 'oada.admin.user:read' || s === 'oada.admin.user:all',
     );
     if (!havetokenscope) {
       request.log.warn(
@@ -186,7 +187,7 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
   });
 
   fastify.get('/me', async (request, reply) => {
-    await replyUser(request.user.id, reply);
+    await replyUser(request.user!._id, reply);
   });
 
   // TODO: don't return stuff to anyone anytime

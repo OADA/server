@@ -26,7 +26,7 @@ import type { OADAified } from '@oada/oadaify';
 import { oadaify } from '@oada/oadaify';
 
 import { ArangoError } from './errors.js';
-import type { User } from './users.js';
+import type { User } from '@oada/models/user';
 import { db as database } from '../db.js';
 import { findById } from './users.js';
 import { sanitizeResult } from '../util.js';

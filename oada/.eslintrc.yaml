@@ -39,7 +39,7 @@ parser: '@typescript-eslint/parser'
 
 parserOptions:
   ecmaVersion: 2020
-  project: './**/tsconfig.*'
+  project: './**/tsconfig.json'
 
 overrides:
   - files: '*.{c,m,}ts'
@@ -50,7 +50,7 @@ overrides:
       - prettier
     parserOptions:
       ecmaVersion: 2020
-      project: './**/tsconfig.*'
+      project: './**/tsconfig.json'
     rules:
       # FIXME: Rule broken
       '@typescript-eslint/prefer-nullish-coalescing': off

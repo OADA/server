@@ -61,6 +61,7 @@ test('Should include the link key in the change document when deleting a link to
   const thechange = changedocs.find((c) => c.type === 'delete');
 
   t.is(thechange?.type, 'delete');
+  // eslint-disable-next-line unicorn/no-null
   t.is(thechange?.body?.nonexistentlink, null);
 });
 

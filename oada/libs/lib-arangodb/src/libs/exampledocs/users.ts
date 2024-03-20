@@ -15,9 +15,11 @@
  * limitations under the License.
  */
 
+import type { User, UserID } from '@oada/models/user';
+
 export default [
   {
-    _id: 'users/default:users_frank_123',
+    _id: 'users/default:users_frank_123' as UserID,
     username: 'frank',
     password: 'test',
     domain: 'localhost',
@@ -29,12 +31,13 @@ export default [
     email: 'frank@openag.io',
     bookmarks: { _id: 'resources/default:resources_bookmarks_123' },
     shares: { _id: 'resources/default:resources_shares_123' },
+    roles: [],
   },
   /*
   {
-    '_id': 'users/default:users_frank2_124',
+    '_id': 'users/default:users_frank2_124' as UserID,
     'domain': 'localhost',
-    'username': 'dummy_username_oidcuser_frank2',
+    'username': 'dummy_username_oidc_user_frank2',
     'oidc': {
       'sub': 'users/default:users_gary_growersync', // can login as Frank at growersync.trellisfw.io
       'iss': 'api.growersync.trellisfw.io', // iss = issuer
@@ -50,7 +53,7 @@ export default [
   },
 */
   {
-    _id: 'users/default:users_sam_321',
+    _id: 'users/default:users_sam_321' as UserID,
     username: 'sam',
     password: 'test',
     domain: 'localhost',
@@ -62,10 +65,11 @@ export default [
     email: 'sam@openag.io',
     bookmarks: { _id: 'resources/default:resources_bookmarks_321' },
     shares: { _id: 'resources/default:resources_shares_321' },
-    scope: ['oada.admin.user:all'],
+    roles: ['oada.admin.user:all'],
+    oidc: undefined,
   },
   {
-    _id: 'users/default:users_sam_321-proxy',
+    _id: 'users/default:users_sam_321-proxy' as UserID,
     username: 'sam-proxy',
     password: 'test',
     domain: 'proxy',
@@ -77,25 +81,11 @@ export default [
     email: 'sam@openag.io',
     bookmarks: { _id: 'resources/default:resources_bookmarks_321-proxy' },
     shares: { _id: 'resources/default:resources_shares_321-proxy' },
-    scope: ['oada.admin.user:all'],
-  },
-
-  {
-    _id: 'users/default:users_wakefern_012',
-    username: 'mgaspers',
-    password: '01010011',
-    domain: 'localhost',
-    name: 'Michael Gaspers',
-    family_name: 'Gaspers',
-    given_name: 'Michael',
-    middle_name: '',
-    nickname: 'Mike',
-    email: 'mgaspers@wakefern.com',
-    bookmarks: { _id: 'resources/default:resources_bookmarks_012' },
-    shares: { _id: 'resources/default:resources_shares_012' },
+    roles: ['oada.admin.user:all'],
+    oidc: undefined,
   },
   {
-    _id: 'users/default:users_audrey_999',
+    _id: 'users/default:users_audrey_999' as UserID,
     username: 'audrey',
     password: 'test',
     domain: 'abcaudits.trellisfw.io',
@@ -107,9 +97,11 @@ export default [
     email: 'audrey@openag.io',
     bookmarks: { _id: 'resources/default:resources_bookmarks_999' },
     shares: { _id: 'resources/default:resources_shares_999' },
+    oidc: undefined,
+    roles: [],
   },
   {
-    _id: 'users/default:users_gary_growersync',
+    _id: 'users/default:users_gary_growersync' as UserID,
     username: 'gary@gmail.com',
     password: 'test',
     domain: 'growersync.trellisfw.io',
@@ -121,9 +113,11 @@ export default [
     email: 'gary@gmail.com',
     bookmarks: { _id: 'resources/default:resources_bookmarks_777' },
     shares: { _id: 'resources/default:resources_shares_777' },
+    oidc: undefined,
+    roles: [],
   },
   {
-    _id: 'users/default:users_pete_pspperfection',
+    _id: 'users/default:users_pete_pspperfection' as UserID,
     username: 'pete@gmail.com',
     password: 'test',
     domain: 'pspperfection.trellisfw.io',
@@ -135,9 +129,11 @@ export default [
     email: 'pete@gmail.com',
     bookmarks: { _id: 'resources/default:resources_bookmarks_444' },
     shares: { _id: 'resources/default:resources_shares_444' },
+    oidc: undefined,
+    roles: [],
   },
   {
-    _id: 'users/default:users_rick_retailfresh',
+    _id: 'users/default:users_rick_retailfresh' as UserID,
     username: 'rick@gmail.com',
     password: 'test',
     domain: 'retailfresh.trellisfw.io',
@@ -149,12 +145,14 @@ export default [
     email: 'rick@gmail.com',
     bookmarks: { _id: 'resources/default:resources_bookmarks_555' },
     shares: { _id: 'resources/default:resources_shares_555' },
+    oidc: undefined,
+    roles: [],
   },
   {
-    _id: 'users/default:users_diane_distributingexcellence',
+    _id: 'users/default:users_diane_distributingexcellence' as UserID,
     username: 'diane@gmail.com',
     password: 'test',
-    domain: 'dstributingexcellence.trellisfw.io',
+    domain: 'distributingexcellence.trellisfw.io',
     name: 'Distributor Diane',
     family_name: 'Distributor',
     given_name: 'Diane',
@@ -163,5 +161,7 @@ export default [
     email: 'diane@gmail.com',
     bookmarks: { _id: 'resources/default:resources_bookmarks_666' },
     shares: { _id: 'resources/default:resources_shares_666' },
+    oidc: undefined,
+    roles: [],
   },
-];
+] as const satisfies User[];

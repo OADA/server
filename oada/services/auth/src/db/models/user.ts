@@ -20,25 +20,27 @@ import { config } from '../../config.js';
 import path from 'node:path';
 import url from 'node:url';
 
-import type { UserID } from '@oada/lib-arangodb/dist/libs/users.js';
+import { User } from '@oada/models/user';
+
+import type { Except } from 'type-fest';
 
 export interface IUsers {
   findById(id: string): Promise<User | undefined>;
-  findByUsername(username: IUser['username']): Promise<User | undefined>;
+  findByUsername(username: User['username']): Promise<User | undefined>;
   findByUsernamePassword(
-    username: IUser['username'],
-    password: IUser['password'],
+    username: User['username'],
+    password: User['password'],
   ): Promise<User | undefined>;
   findByOIDCToken(token: {
     sub: string;
     iss: string;
   }): Promise<User | undefined>;
   findByOIDCUsername(
-    username: IUser['username'],
+    username: User['username'],
     iss: string,
   ): Promise<User | undefined>;
-  update(user: IUser): Promise<void>;
-  create(user: IUser): Promise<User>;
+  update(user: User): Promise<void>;
+  create(user: Omit<User, '_id'>): Promise<User>;
 }
 
 const dirname = path.dirname(url.fileURLToPath(import.meta.url));
@@ -47,68 +49,21 @@ const database = (await import(
   path.join(dirname, '..', datastoresDriver, 'users.js')
 )) as IUsers;
 
-export interface IUser {
-  readonly id?: UserID;
-  readonly username: string;
-  readonly password?: string;
-  readonly domain?: string;
-  reqdomain?: string;
-  readonly name?: string;
-  readonly email?: string;
-  readonly oidc?: {
-    sub?: string; // Subject, i.e. unique ID for this user
-    iss?: string; // Issuer: the domain that gave out this ID
-    username?: string; // Can be used to pre-link this account to openidconnect identity
-  };
-}
-export class User implements IUser {
-  readonly id;
-  readonly username;
-  readonly password;
-  readonly domain;
-  reqdomain;
-  readonly name;
-  readonly email;
-  readonly oidc;
-
-  constructor({
-    id,
-    username,
-    password,
-    domain,
-    reqdomain,
-    name,
-    email,
-    oidc,
-  }: IUser) {
-    this.id = id;
-    this.username = username;
-    this.password = password;
-    this.domain = domain;
-    this.reqdomain = reqdomain;
-    this.name = name;
-    this.email = email;
-    this.oidc = oidc;
-  }
-}
-
-export interface DBUser extends User {
-  id: UserID;
-}
+export { User } from '@oada/models/user';
 
 export async function findById(id: string) {
   const u = await database.findById(id);
   return u ? new User(u) : undefined;
 }
 
-export async function findByUsername(username: IUser['username']) {
+export async function findByUsername(username: User['username']) {
   const u = await database.findByUsername(username);
   return u ? new User(u) : undefined;
 }
 
 export async function findByUsernamePassword(
-  username: IUser['username'],
-  password: IUser['password'],
+  username: User['username'],
+  password: User['password'],
 ) {
   const u = await database.findByUsernamePassword(username, password);
   return u ? new User(u) : undefined;
@@ -120,19 +75,47 @@ export async function findByOIDCToken(token: { sub: string; iss: string }) {
 }
 
 export async function findByOIDCUsername(
-  username: IUser['username'],
+  username: User['username'],
   iss: string,
 ) {
   const u = await database.findByOIDCUsername(username, iss);
   return u ? new User(u) : undefined;
 }
 
-export async function update(user: IUser): Promise<void> {
+export async function update(user: User): Promise<void> {
   await database.update(user);
 }
 
-export async function register(user: Partial<IUser>) {
-  // @ts-expect-error
-  const u = await database.create(user);
+/**
+ * Register a user who is new to us and initialize associated metadata.
+ * They may already have an existing account with another OIDC provider.
+ */
+export async function register({
+  oidc = {},
+  email,
+  username = usernameFromOIDC(oidc) ?? email ?? '',
+  bookmarks = { _id: '' },
+  shares = { _id: '' },
+  ...user
+}: Except<Partial<User>, '_id'>) {
+  const u = await database.create({
+    oidc,
+    username,
+    bookmarks,
+    shares,
+    ...user,
+  });
   return new User(u);
+}
+
+function usernameFromOIDC(oidc: User['oidc'] = {}) {
+  for (const [
+    domain,
+    { sub, preferred_username, email, nickname },
+  ] of Object.entries(oidc)) {
+    const value = preferred_username ?? email ?? nickname ?? `${domain}|${sub}`;
+    if (value) {
+      return value;
+    }
+  }
 }

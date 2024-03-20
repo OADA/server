@@ -17,11 +17,12 @@
 
 import cloneDeep from 'clone-deep';
 
-import type { Client, DBClient } from '../models/client.js';
+import type { Client } from '../models/client.js';
+
 // @ts-expect-error IDEK
 import clients from './clients.json';
 
-const database = new Map(Object.entries(clients as Record<string, DBClient>));
+const database = new Map(Object.entries(clients as Record<string, Client>));
 
 export function findById(id: string) {
   // eslint-disable-next-line unicorn/no-null
@@ -29,6 +30,6 @@ export function findById(id: string) {
 }
 
 export async function save(client: Client) {
-  database.set(client.client_id, client as DBClient);
+  database.set(client.client_id, client);
   return findById(client.client_id);
 }

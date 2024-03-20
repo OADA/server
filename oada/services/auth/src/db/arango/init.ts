@@ -22,7 +22,7 @@ import { Database } from 'arangojs';
 import bcrypt from 'bcryptjs';
 import debug from 'debug';
 
-import type { User } from '@oada/lib-arangodb/dist/libs/users.js';
+import type { User } from '@oada/models/user';
 import { config } from '../../config.js';
 
 const log = debug('arango/init');

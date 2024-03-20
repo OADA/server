@@ -11,6 +11,7 @@ COPY --link ./yarn.lock ./.yarnrc.yml /oada/
 COPY --link ./.yarn /oada/.yarn
 # TODO: How to COPY all package.json files with glob?
 COPY ./package.json /oada/package.json
+COPY ./libs/models/package.json /oada/libs/models/package.json
 COPY ./libs/lib-arangodb/package.json /oada/libs/lib-arangodb/package.json
 COPY ./libs/lib-config/package.json /oada/libs/lib-config/package.json
 COPY ./libs/lib-kafka/package.json /oada/libs/lib-kafka/package.json
