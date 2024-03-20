@@ -16,7 +16,6 @@
  */
 
 import type { CollectionReadOptions } from 'arangojs/collection.js';
-import type { Opaque } from 'type-fest';
 import { aql } from 'arangojs';
 import bcrypt from 'bcryptjs';
 import debug from 'debug';
@@ -27,66 +26,24 @@ import { config } from '../config.js';
 import { db as database } from '../db.js';
 import { sanitizeResult } from '../util.js';
 
+import type { SetOptional, SetRequired } from 'type-fest';
+import type { User } from '@oada/models/user';
+
 const info = debug('arangodb#resources:info');
 
-const users = database.collection(
+const users = database.collection<SetOptional<User, '_id'>>(
   config.get('arangodb.collections.users.name'),
 );
 
 const roundsOrSalt =
   config.get('bcrypt.saltRounds') || config.get('bcrypt.salt');
 
-/**
- * @todo fix this?
- * @example {
-    "_id": "users/123frank",
-    "username": "frank",
-    "password": "test",
-    "name": "Farmer Frank",
-    "family_name": "Frank",
-    "given_name": "Farmer",
-    "middle_name": "",
-    "nickname": "Frankie",
-    "email": "frank@openag.io"
-    "oidc": {
-      "sub": "02kfj023ifkldf", // subject, i.e. unique ID for this user
-      "iss": "https://localhost", // issuer: the domain that gave out this ID
-      "username": "bob", // can be used to pre-link this account to openidconnect identity
-    }
-*/
-export type UserID = Opaque<string, User>;
-export interface User {
-  _id?: UserID;
-  _rev?: number;
-  username: string;
-  password?: string;
-  name?: string;
-  family_name?: string;
-  given_name?: string;
-  middle_name?: string;
-  nickname?: string;
-  email?: string;
-  oidc?: {
-    sub?: string; // Subject, i.e. unique ID for this user
-    iss?: string; // Issuer: the domain that gave out this ID
-    username?: string; // Can be used to pre-link this account to openidconnect identity
-  };
-  bookmarks: { _id: string };
-  shares: { _id: string };
-  scope: readonly string[];
-}
-export interface DBUser extends User {
-  _id: UserID;
-  _rev: number;
-}
-
 export async function findById(
   id: string,
   options?: CollectionReadOptions,
-): Promise<DBUser | undefined> {
+): Promise<User | undefined> {
   try {
-    // eslint-disable-next-line @typescript-eslint/ban-types
-    const result = (await users.document(id, options)) as DBUser | null;
+    const result = await users.document(id, options);
     return result ? sanitizeResult(result) : undefined;
   } catch (error: unknown) {
     // @ts-expect-error errors in TS are annoying
@@ -104,14 +61,14 @@ export async function exists(id: string): Promise<boolean> {
 
 export async function findByUsername(
   username: string,
-): Promise<DBUser | undefined> {
-  const cursor = await database.query(
+): Promise<User | undefined> {
+  const cursor = await database.query<User>(
     aql`
       FOR u IN ${users}
         FILTER u.username == ${username}
         RETURN u`,
   );
-  const user = (await cursor.next()) as DBUser;
+  const user = await cursor.next();
 
   return user ? sanitizeResult(user) : undefined;
 }
@@ -119,15 +76,15 @@ export async function findByUsername(
 export async function findByOIDCUsername(
   oidcUsername: string,
   oidcDomain: string,
-): Promise<DBUser | undefined> {
-  const cursor = await database.query(
+): Promise<User | undefined> {
+  const cursor = await database.query<User>(
     aql`
       FOR u IN ${users}
         FILTER u.oidc.username == ${oidcUsername}
         FILTER u.oidc.iss == ${oidcDomain}
         RETURN u`,
   );
-  const user = (await cursor.next()) as DBUser;
+  const user = await cursor.next();
 
   return user ? sanitizeResult(user) : undefined;
 }
@@ -139,15 +96,15 @@ export async function findByOIDCUsername(
 export async function findByOIDCToken(idToken: {
   sub: string;
   iss: string;
-}): Promise<DBUser | undefined> {
-  const cursor = await database.query(
+}): Promise<User | undefined> {
+  const cursor = await database.query<User>(
     aql`
       FOR u IN ${users}
-        FILTER u.oidc.sub == ${idToken.sub}
         FILTER u.oidc.iss == ${idToken.iss}
+        FILTER u.oidc.sub == ${idToken.sub}
         RETURN u`,
   );
-  const user = (await cursor.next()) as DBUser;
+  const user = await cursor.next();
 
   return user ? sanitizeResult(user) : undefined;
 }
@@ -155,24 +112,27 @@ export async function findByOIDCToken(idToken: {
 export async function findByUsernamePassword(
   username: string,
   password: string,
-): Promise<DBUser | undefined> {
+): Promise<User | undefined> {
   const user = await findByUsername(username);
   if (!user) {
     return undefined;
   }
 
   const { password: pass } = user;
-  return pass && (await bcrypt.compare(password, pass)) ? user : undefined;
+  const passed = pass && (await bcrypt.compare(password, pass));
+  return passed ? user : undefined;
 }
 
-export async function create(u: Omit<User, '_id' | '_rev'>): Promise<DBUser> {
-  info(u, 'Create user was called');
+/**
+ * @throws if user already exists
+ */
+export async function create(user: SetOptional<User, '_id'>): Promise<User> {
+  info({ user }, 'Create user was called');
 
-  u.password &&= await hashPw(u.password);
+  user.password &&= await hashPw(user.password);
 
-  // Throws if username already exists
-  const user = (await users.save(u, { returnNew: true })) as { new: DBUser };
-  return user.new || user;
+  const u = await users.save(user, { returnNew: true });
+  return sanitizeResult(u.new);
 }
 
 // Use this with care because it will completely remove that user document.
@@ -181,19 +141,19 @@ export async function remove(u: Selector<User>): Promise<void> {
 }
 
 export async function update(
-  u: { _id: string } & Partial<DBUser>,
-): Promise<{ _id: string; new: User }> {
-  u.password &&= await hashPw(u.password);
+  user: SetRequired<Partial<User>, '_id'>,
+): Promise<User> {
+  info({ user }, 'Update user was called');
 
-  return (await users.update(u._id, u, { returnNew: true })) as {
-    _id: string;
-    new: User;
-  };
+  user.password &&= await hashPw(user.password);
+
+  const u = await users.update(user._id, user, {
+    returnNew: true,
+  });
+  return sanitizeResult(u.new);
 }
 
-export async function like(
-  u: Partial<User>,
-): Promise<AsyncIterableIterator<DBUser>> {
+export async function like(u: Partial<User>): Promise<AsyncIterable<User>> {
   return users.byExample(flatten(u));
 }
 

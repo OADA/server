@@ -6,6 +6,7 @@
   "author": "Alex Layton <alex@layton.in>",
   "license": "Apache-2.0",
   "main": "dist/server.js",
+  "module": "lib/server.ts",
   "engines": {
     "node": ">=16.0.0"
   },
@@ -26,6 +27,7 @@
     "@oada/lib-config": "^3.7.0",
     "@oada/lib-kafka": "^3.7.0",
     "@oada/lib-prom": "workspace:^",
+    "@oada/models": "workspace:^",
     "@oada/pino-debug": "^3.7.0",
     "chalk": "^5.3.0",
     "clone-deep": "^4.0.1",
@@ -39,7 +41,8 @@
     "@types/clone-deep": "^4.0.4",
     "@types/debug": "^4.1.12",
     "@types/minimist": "^1.2.5",
-    "@types/promptly": "^3.0.5"
+    "@types/promptly": "^3.0.5",
+    "type-fest": "^4.13.1"
   },
   "volta": {
     "node": "20.2.0"

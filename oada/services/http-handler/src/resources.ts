@@ -94,7 +94,7 @@ function noModifyShares(
   { user, oadaPath: path }: FastifyRequest,
   reply: FastifyReply,
 ) {
-  if (path.startsWith(`/${user.shares_id}`)) {
+  if (path.startsWith(`/${user?.shares_id}`)) {
     void reply.forbidden('User cannot modify their shares document');
   }
 }
@@ -168,7 +168,7 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
 
     const result = await resources.lookupFromUrl(
       `/${fullpath}`,
-      request.user.id,
+      request.user!._id,
     );
     request.log.trace({ result }, 'Graph lookup result');
     if (result.resource_id) {
@@ -195,8 +195,8 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
       // Connection_id: request.id,
       // domain: request.headers.host,
       oadaGraph: request.oadaGraph,
-      user_id: request.user.id,
-      scope: request.user.scope as Scope[],
+      user_id: request.user!._id,
+      scope: request.user!.scope as Scope[],
       contentType: request.headers['content-type'],
       // RequestType: request.method.toLowerCase(),
     });
@@ -212,7 +212,7 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
         } else if (!response.permissions.owner && !response.permissions.write) {
           request.log.warn(
             '%s tried to PUT resource without proper permissions',
-            request.user.id,
+            request.user!._id,
           );
           void reply.forbidden(
             'User does not have write permission for this resource',
@@ -232,7 +232,7 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
         if (!response.permissions.owner && !response.permissions.read) {
           request.log.warn(
             '%s tried to GET resource without proper permissions',
-            request.user.id,
+            request.user!._id,
           );
           void reply.forbidden(
             'User does not have read permission for this resource',
@@ -568,9 +568,9 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
         'resource_id': request.oadaGraph.resource_id,
         'path_leftover': request.oadaGraph.path_leftover,
         // 'meta_id': oadaGraph['meta_id'],
-        'user_id': request.user.id,
-        'authorizationid': request.user.authorizationid,
-        'client_id': request.user.client_id,
+        'user_id': request.user!._id,
+        'authorizationid': request.user!.authorizationid,
+        'client_id': request.user!.client_id,
         'contentType': request.headers['content-type'],
         bodyid,
         'if-match': ifMatch,
@@ -645,7 +645,7 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
     // Don't let users delete their shares?
     noModifyShares(request, reply);
     // Don't let users DELETE their bookmarks?
-    if (path === request.user.bookmarks_id) {
+    if (path === request.user!.bookmarks_id) {
       void reply.forbidden('User cannot delete their bookmarks');
       return;
     }
@@ -680,9 +680,9 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
       'resource_id': oadaGraph.resource_id,
       'path_leftover': oadaGraph.path_leftover,
       // 'meta_id': oadaGraph['meta_id'],
-      'user_id': request.user.id,
-      'authorizationid': request.user.authorizationid,
-      'client_id': request.user.client_id,
+      'user_id': request.user!._id,
+      'authorizationid': request.user!.authorizationid,
+      'client_id': request.user!.client_id,
       'if-match': ifMatch,
       'if-none-match': ifNoneMatch,
       // 'bodyid': bodyid, // No body means delete?

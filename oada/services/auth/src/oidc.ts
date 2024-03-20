@@ -36,7 +36,7 @@ import memoize from 'p-memoize';
 import { plugin as wkj } from '@oada/well-known-json/plugin';
 
 import {
-  type DBUser,
+  type User,
   findByOIDCToken,
   findByOIDCUsername,
   register,
@@ -48,7 +48,7 @@ import {
   issueToken,
   jwksPublic as oauthJWKs,
 } from './oauth2.js';
-import type { DBClient } from './db/models/client.js';
+import type { Client } from './db/models/client.js';
 import type { JsonSchemaToTsProvider } from '@fastify/type-provider-json-schema-to-ts';
 import { createUserinfo } from './utils.js';
 import { fastifyPassport } from './auth.js';
@@ -100,13 +100,13 @@ const jwksPrivate = {
   keys: [{ kid, ...(await exportJWK(privateKey)) }],
 };
 
-export const issueIdToken: IssueIDToken<DBClient, DBUser> = async (
+export const issueIdToken: IssueIDToken<Client, User> = async (
   client,
   user,
-  ares,
+  req,
   done,
 ) => {
-  const userinfoScope: string[] = ares.userinfo ? ares.scope : [];
+  const userinfoScope: string[] = req.userinfo ? req.scope : [];
   const userinfo = createUserinfo(
     user as unknown as Record<string, unknown>,
     userinfoScope,
@@ -114,7 +114,7 @@ export const issueIdToken: IssueIDToken<DBClient, DBUser> = async (
 
   const payload: Record<string, unknown> = {
     ...userinfo,
-    nonce: ares.nonce,
+    nonce: req.nonce,
   };
 
   const token = await new SignJWT(payload)
@@ -122,8 +122,8 @@ export const issueIdToken: IssueIDToken<DBClient, DBUser> = async (
     .setIssuedAt()
     .setExpirationTime(idToken.expiresIn)
     .setAudience(client.client_id)
-    .setIssuer(client.reqdomain!)
-    .setSubject(user.id)
+    .setIssuer(req.issuer)
+    .setSubject(user._id)
     .sign(privateKey);
   // eslint-disable-next-line unicorn/no-null
   done(null, token);
@@ -147,7 +147,7 @@ const plugin: FastifyPluginAsync<Options> = async (
     // Implicit flow (id_token)
     oauth2server.grant(
       oauth2orizeOpenId.grant.idToken(
-        (client: DBClient, user: DBUser, ares, done) => {
+        (client: Client, user: User, ares, done) => {
           ares.userinfo = true;
           issueIdToken(client, user, ares, done);
         },
@@ -248,7 +248,7 @@ const plugin: FastifyPluginAsync<Options> = async (
                 // Add sub to existing user
                 // TODO: Make a link function or something
                 //       instead of shoving sub where it goes?
-                u = await register({ oidc: claims });
+                u = await register({ oidc: { [to]: claims } });
               }
 
               await update(u);

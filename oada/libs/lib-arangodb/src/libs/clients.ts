@@ -15,37 +15,18 @@
  * limitations under the License.
  */
 
-import type { Opaque, ReadonlyDeep } from 'type-fest';
 import { aql } from 'arangojs';
-
-import type Metadata from '@oada/types/oauth-dyn-reg/metadata.js';
 
 import { config } from '../config.js';
 import { db as database } from '../db.js';
 import { sanitizeResult } from '../util.js';
 
-export type ClientID = Opaque<string, Client>;
-/**
- * Representation of a client in the db
- *
- * @todo not sure this is right
- */
-export interface Client extends ReadonlyDeep<Metadata> {
-  _id?: ClientID;
-  client_id: string;
-  software_id?: string;
-  registration_provider?: string;
-  iat?: number;
-  licenses?: ReadonlyArray<{ id: string; name: string }>;
-  puc?: string;
-  policy_uri?: string;
-  tos_uri?: string;
-  valid?: boolean;
-  trusted?: boolean;
-}
+import type { Client } from '@oada/models/client';
+import type { Opaque } from 'type-fest';
+
+export type DBClientID = Opaque<string, DBClient>;
 export interface DBClient extends Client {
-  _id: ClientID;
-  _rev: string;
+  _id: DBClientID;
 }
 
 const clients = database.collection<Client>(
@@ -63,7 +44,7 @@ export async function findById(id: string): Promise<DBClient | undefined> {
   return client ? sanitizeResult(client) : undefined;
 }
 
-export async function save(client: Client): Promise<ClientID> {
+export async function save(client: Client): Promise<DBClientID> {
   const { _id } = await clients.save(client);
-  return _id as ClientID;
+  return _id as DBClientID;
 }

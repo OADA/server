@@ -15,6 +15,8 @@
  * limitations under the License.
  */
 
+import type { Authorization } from '../authorizations.js';
+
 /* eslint-disable sonarjs/no-duplicate-string */
 
 export default [
@@ -127,4 +129,4 @@ export default [
     user: { _id: 'users/default:users_diane_distributingexcellence' },
     clientId: 'jf93caauf3uzud7f308faesf3@provider.oada-dev.com',
   },
-];
+] as const satisfies Authorization[];

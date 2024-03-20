@@ -19,12 +19,12 @@ import debug from 'debug';
 
 import { clients } from '@oada/lib-arangodb';
 
-import type { IClient } from '../models/client.js';
+import type { Client } from '../models/client.js';
 
 const trace = debug('arango:client:trace');
 
 export async function findById(id: string) {
-  trace('Retrieving client { clientId: "%s" }', id);
+  trace('Retrieving client { client_id: "%s" }', id);
   const found = await clients.findById(id);
   if (!found) {
     return found;
@@ -34,7 +34,7 @@ export async function findById(id: string) {
   return { ...client, id: _id as string };
 }
 
-export async function save({ id, ...client }: IClient & { client_id: string }) {
+export async function save(client: Client) {
   trace('Saving clientId %s', client.client_id);
-  return clients.save({ ...client, _id: id });
+  return clients.save(client);
 }

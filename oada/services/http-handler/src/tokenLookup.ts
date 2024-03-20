@@ -115,7 +115,7 @@ export default async function tokenLookup(
   response.doc.authorizationid = t._id;
   response.doc.client_id = t.clientId;
   response.doc.user_id = t.user._id || response.doc.user_id;
-  response.doc.user_scope = t.user.scope;
+  response.doc.user_scope = t.user.roles;
   response.doc.bookmarks_id = t.user.bookmarks._id || response.doc.bookmarks_id;
   response.doc.shares_id = t.user.shares._id || response.doc.shares_id;
   response.doc.scope = t.scope || response.doc.scope;

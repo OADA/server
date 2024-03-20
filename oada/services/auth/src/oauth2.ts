@@ -57,8 +57,9 @@ import { extensions } from 'oauth2orize-pkce';
 
 import { trustedCDP } from '@oada/lookup';
 
-import type { DBUser, User } from './db/models/user.js';
+import { Authorization } from '@oada/models/authorization';
 import type { Client } from './db/models/client.js';
+import type { User } from './db/models/user.js';
 import { findById } from './db/models/client.js';
 import { promisifyMiddleware } from './utils.js';
 
@@ -97,7 +98,7 @@ declare module 'oauth2orize' {
 interface DeserializedOauth2<C = Client> extends OAuth2 {
   client: C;
 }
-interface OAuth2Request<C = Client, U = DBUser> extends MiddlewareRequest {
+interface OAuth2Request<C = Client, U = User> extends MiddlewareRequest {
   oauth2: DeserializedOauth2<C>;
   user: U;
 }
@@ -111,7 +112,7 @@ export interface Options {
   };
 }
 
-export const kid = 'oauth2-1' as const;
+export const kid = 'oauth2-1';
 // eslint-disable-next-line @typescript-eslint/ban-types
 export async function getKeyPair(file: File | null, alg: string) {
   if (!file) {
@@ -144,10 +145,10 @@ export const jwksPublic = {
 };
 const JWKS = createLocalJWKSet(jwksPublic);
 
-export interface TokenClaims extends JWTPayload {
-  scope: readonly string[];
-  user: { id: string };
-}
+/**
+ * Set of claims we include in our signed JWT bearer tokens
+ */
+export interface TokenClaims extends Authorization, JWTPayload {}
 
 export async function getToken(issuer: string, claims: TokenClaims) {
   try {
@@ -162,8 +163,11 @@ export async function getToken(issuer: string, claims: TokenClaims) {
       .setIssuer(issuer)
       // ???: Should the audience be something different?
       // .setAudience(issuer)
-      .setNotBefore(new Date())
-      .setSubject(claims.user.id);
+      .setNotBefore(new Date());
+
+    if (claims.user) {
+      jwt.setSubject(claims.user._id);
+    }
 
     if (tokenConfig.expiresIn) {
       jwt.setExpirationTime(tokenConfig.expiresIn);
@@ -185,16 +189,17 @@ export async function verifyToken(issuer: string, token: string) {
 
 export const issueToken = (async (
   _client: Client,
-  user: DBUser,
+  user: User,
   request: OAuth2Req,
   done,
 ) => {
   try {
-    // TODO: Fill out user info
-    const token = await getToken(request.issuer, {
+    const auth = new Authorization({
       user,
       scope: request.scope,
     });
+    // TODO: Fill out user info
+    const token = await getToken(request.issuer, { ...auth });
     // eslint-disable-next-line unicorn/no-null
     done(null, token, { expires_in: tokenConfig.expiresIn });
   } catch (error: unknown) {
@@ -204,7 +209,7 @@ export const issueToken = (async (
 
 interface CodePayload {
   issuer: string;
-  user: User['id'];
+  user: User['_id'];
   scope: readonly string[];
 }
 
@@ -213,7 +218,7 @@ const key = (await authCode.key) ?? (await generateSecret(authCode.alg));
 export const issueCode: IssueGrantCodeFunctionArity6 = async (
   client: Client,
   redirectUri,
-  user: DBUser,
+  user: User,
   _,
   request: OAuth2Req,
   done,
@@ -241,7 +246,7 @@ export const issueCode: IssueGrantCodeFunctionArity6 = async (
     }
 
     const payload = {
-      user: user.id,
+      user: user._id,
       issuer: request.issuer,
       scope: request.scope,
     } as const satisfies CodePayload;
@@ -351,9 +356,12 @@ const plugin: FastifyPluginAsync<Options> = async (
           }
 
           const { issuer, user, scope } = payload;
-          const token = await getToken(issuer, {
-            user: { id: user! },
+          const auth = new Authorization({
+            user: { _id: user },
             scope,
+          });
+          const token = await getToken(issuer, {
+            ...auth,
           });
           const extras: Record<string, unknown> = {
             expires_in: tokenConfig.expiresIn,

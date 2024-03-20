@@ -19,38 +19,27 @@ import debug from 'debug';
 
 import { users } from '@oada/lib-arangodb';
 
-import type { IUser } from '../models/user.js';
+import type { User } from '../models/user.js';
+import type { SetOptional } from 'type-fest';
 
 const trace = debug('arango:user:trace');
 
-function convert(u: users.User | undefined): IUser | undefined {
-  if (!u) {
-    return u;
-  }
-
-  const { _id, ...user } = u;
-  return { ...user, id: _id };
-}
-
 export async function findById(id: string) {
   trace('findById: searching for user %s', id);
-  const user = await users.findById(id);
-  return convert(user);
+  return users.findById(id);
 }
 
-export async function findByUsername(username: IUser['username']) {
+export async function findByUsername(username: User['username']) {
   trace('findByUsername: searching for user %s', username);
-  const user = await users.findByUsername(username);
-  return convert(user);
+  return users.findByUsername(username);
 }
 
 export async function findByUsernamePassword(
-  username: IUser['username'],
+  username: User['username'],
   password: string,
 ) {
   trace('findByUsername: searching for user %s with  password', username);
-  const user = await users.findByUsernamePassword(username, password);
-  return convert(user);
+  return users.findByUsernamePassword(username, password);
 }
 
 export async function findByOIDCToken(token: { sub: string; iss: string }) {
@@ -59,12 +48,11 @@ export async function findByOIDCToken(token: { sub: string; iss: string }) {
     token.sub,
     token.iss,
   );
-  const user = await users.findByOIDCToken(token);
-  return convert(user);
+  return users.findByOIDCToken(token);
 }
 
 export async function findByOIDCUsername(
-  username: IUser['username'],
+  username: User['username'],
   domain: string,
 ) {
   trace(
@@ -72,19 +60,13 @@ export async function findByOIDCUsername(
     username,
     domain,
   );
-  const user = await users.findByOIDCUsername(username, domain);
-  return convert(user);
+  return users.findByOIDCUsername(username, domain);
 }
 
-export async function update({ id, ...user }: IUser) {
-  await users.update({ ...user, _id: id! });
+export async function update(user: User) {
+  await users.update(user);
 }
 
-export async function create(user: Omit<IUser, '_id' | '_rev'>) {
-  return convert(
-    await users.create(
-      // @ts-expect-error
-      user,
-    ),
-  )!;
+export async function create(user: SetOptional<User, '_id'>) {
+  return users.create(user);
 }

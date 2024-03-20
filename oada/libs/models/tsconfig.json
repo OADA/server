@@ -1,12 +1,9 @@
 {
   "extends": "../../tsconfig",
   "compilerOptions": {
+    "composite": true,
     "rootDir": "src",
     "outDir": "dist"
   },
-  "include": ["src"],
-  "references": [
-    { "path": "../models" },
-    { "path": "../lib-config" }
-  ]
+  "include": ["src"]
 }

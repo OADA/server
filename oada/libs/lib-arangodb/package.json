@@ -56,9 +56,10 @@
   },
   "dependencies": {
     "@oada/lib-config": "^3.7.0",
+    "@oada/models": "workspace:^",
     "@oada/oadaify": "^2.1.0",
     "@oada/types": "^3.5.3",
-    "arangojs": "^8.7.0",
+    "arangojs": "^8.8.1",
     "bcryptjs": "^2.4.3",
     "clone-deep": "^4.0.1",
     "debug": "^4.3.4",
@@ -76,9 +77,9 @@
     "@types/deep-equal": "^1.0.4",
     "@types/flat": "^5.0.5",
     "@types/json-pointer": "^1.0.34",
-    "@types/node": "^20.11.24",
+    "@types/node": "^20.11.30",
     "ava": "6.1.2",
-    "type-fest": "^4.11.0"
+    "type-fest": "^4.13.1"
   },
   "volta": {
     "node": "20.2.0"

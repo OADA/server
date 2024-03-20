@@ -26,7 +26,6 @@ import {
 } from '@oada/types/oauth-dyn-reg/metadata.js';
 import { validate } from '@oada/certs';
 
-import type { IClient } from './db/models/client.js';
 import { save } from './db/models/client.js';
 
 /**
@@ -168,11 +167,7 @@ const plugin: FastifyPluginAsync<Options> = async (
           registrationData.client_name,
           registrationData.trusted,
         );
-        const client = await save(registrationData as IClient);
-        const result = {
-          ...registrationData,
-          client_id: client.client_id,
-        };
+        const result = await save(registrationData);
         request.log.info(
           'Saved new client ID %s to DB, client_name = %s',
           result.client_id,
