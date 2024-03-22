@@ -21,6 +21,7 @@ import {
   createHash,
   createPrivateKey,
   createPublicKey,
+  createSecretKey,
   randomBytes,
 } from 'node:crypto';
 import type { ServerResponse } from 'node:http';
@@ -114,13 +115,15 @@ export interface Options {
 
 export const kid = 'oauth2-1';
 // eslint-disable-next-line @typescript-eslint/ban-types
-export async function getKeyPair(file: File | null, alg: string) {
+export async function getKeyPair(file: File | string | null, alg: string) {
   if (!file) {
     return generateKeyPair(alg);
   }
 
   // Assume file is a private key
-  const privateKey = createPrivateKey(file as unknown as string);
+  const privateKey = createPrivateKey(
+    typeof file === 'string' ? file : Buffer.from(await file.arrayBuffer()),
+  );
   // Derive a public key from the private key
   const publicKey = createPublicKey(privateKey);
   return { privateKey, publicKey };
@@ -214,7 +217,11 @@ interface CodePayload {
 }
 
 const authCode = config.get('auth.code');
-const key = (await authCode.key) ?? (await generateSecret(authCode.alg));
+const key = (await authCode.key)
+  ? createSecretKey(
+      (await (await authCode.key)!.arrayBuffer()) as NodeJS.ArrayBufferView,
+    )
+  : await generateSecret(authCode.alg);
 export const issueCode: IssueGrantCodeFunctionArity6 = async (
   client: Client,
   redirectUri,

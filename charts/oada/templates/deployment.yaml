@@ -58,6 +58,14 @@ spec:
           env:
             - name: CONFIG
               value: /oada.config.mjs
+            {{ if eq $k "auth" -}}
+            - name: AUTH_KEY_CODE
+              value: /etc/auth/code_key
+            - name: AUTH_KEY_TOKEN
+              value: /etc/auth/token_key.pem
+            - name: AUTH_KEY_ID_TOKEN
+              value: /etc/auth/id_token_key.pem
+            {{ end -}}
             - name: ARANGODB_USERNAME
               valueFrom:
                 secretKeyRef:
@@ -104,6 +112,11 @@ spec:
             - mountPath: /oada/binary
               name: binary-data
             {{ end -}}
+            {{ if eq $k "auth" -}}
+            - mountPath: /etc/auth
+              name: keys
+              readOnly: true
+            {{ end -}}
             - mountPath: /tmp
               name: tmp
       volumes:
@@ -111,6 +124,12 @@ spec:
         - name: binary-data
           persistentVolumeClaim:
             claimName: binary-data-{{ $.Release.Name }}
+        {{ end -}}
+        {{ if eq $k "auth" -}}
+        - name: keys
+          secret:
+            secretName: auth-keys-{{ $.Release.Name }}
+            optional: true
         {{ end -}}
         - name: tmp
           emptyDir:

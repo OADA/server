@@ -264,6 +264,7 @@ export const { config, schema } = await libConfig({
         format: 'file-url',
         nullable: true,
         default: null as unknown as Promise<File | null>,
+        env: 'AUTH_KEY_CODE',
       },
       alg: {
         doc: 'Algorithm to use for encrypting codes',
@@ -291,6 +292,7 @@ export const { config, schema } = await libConfig({
         format: 'file-url',
         nullable: true,
         default: null as unknown as Promise<File | null>,
+        env: 'AUTH_KEY_TOKEN',
       },
       alg: {
         doc: 'Algorithm to use for signing tokens',
@@ -308,6 +310,7 @@ export const { config, schema } = await libConfig({
         format: 'file-url',
         nullable: true,
         default: null as unknown as Promise<File | null>,
+        env: 'AUTH_KEY_ID_TOKEN',
       },
       alg: {
         doc: 'Algorithm to use for signing id tokens',
