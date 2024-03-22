@@ -28,6 +28,28 @@ spec:
       targetPort: http
   selector:
     app.kubernetes.io/component: auth
+{{- $secretName := print "auth-keys-" $.Release.Name -}}
+{{- if empty (lookup "v1" "Secret" $.Release.Namespace $secretName) }}
+---
+apiVersion: v1
+kind: Secret
+immutable: true
+metadata:
+  annotations:
+    helm.sh/resource-policy: keep
+  namespace: {{ .Release.Namespace }}
+  name: auth-keys-{{ .Release.Name }}
+  labels:
+    app.kubernetes.io/component: auth
+    {{- include "oada.chart.labels" . | nindent 4 }}
+data:
+  # Symmetric 256 bit key for encrypting OAuth2.0 codes
+  code_key: {{ randBytes 32 }}
+  # Private key for signing JWT bearer tokens
+  token_key.pem: {{ genPrivateKey "rsa" | b64enc }}
+  # Private key for signing JWT id tokens
+  id_token_key.pem: {{ genPrivateKey "rsa" | b64enc }}
+{{- end -}}
 {{- if .Values.ingress.enabled }}
 ---
 apiVersion: networking.k8s.io/v1

@@ -20,7 +20,7 @@
 import { File } from 'node:buffer';
 import { extname } from 'node:path';
 import { pathToFileURL } from 'node:url';
-import { readFile } from 'node:fs/promises';
+import { readFileSync } from 'node:fs';
 
 import 'dotenv/config';
 import convict, { type Config, type Schema } from 'convict';
@@ -87,8 +87,8 @@ function fileUrl(pathOrUrl: string) {
   }
 }
 
-async function readFileUrl(url: URL) {
-  const buffer = await readFile(url);
+function readFileUrl(url: URL) {
+  const buffer = readFileSync(url);
   return new File([buffer], url.pathname);
 }
 
@@ -103,8 +103,12 @@ function readDataUrl(url: URL) {
 convict.addFormat({
   name: 'file-url',
   validate(value: unknown) {
+    if (value instanceof File) {
+      return;
+    }
+
     if (typeof value !== 'string') {
-      throw new TypeError('must be a string');
+      throw new TypeError('must be a string or File');
     }
 
     const url = fileUrl(value);
@@ -119,7 +123,8 @@ convict.addFormat({
       }
     }
   },
-  async coerce(value: string) {
+
+  coerce(value: string) {
     const url = fileUrl(value);
     switch (url.protocol) {
       case 'file:': {
