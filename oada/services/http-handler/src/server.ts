@@ -27,16 +27,21 @@ import { plugin as formats } from '@oada/formats-server';
 
 import type { TokenClaims } from '@oada/auth';
 import authorizations from './authorizations.js';
+import requester from './requester.js';
 import resources from './resources.js';
 import users from './users.js';
 import websockets from './websockets.js';
 
 import {
+  type Authenticate,
+  type FastifyJwtJwksOptions,
+  fastifyJwtJwks,
+} from 'fastify-jwt-jwks';
+import {
   fastify as Fastify,
   type FastifyReply,
   type FastifyRequest,
 } from 'fastify';
-import { type FastifyJwtJwksOptions, fastifyJwtJwks } from 'fastify-jwt-jwks';
 import {
   fastifyRequestContext,
   requestContext,
@@ -51,8 +56,21 @@ import fastifySensible from '@fastify/sensible';
 import helmet from '@fastify/helmet';
 
 import type { HTTPVersion, Handler } from 'find-my-way';
+import type { UserRequest, UserResponse } from '@oada/users';
 import { Issuer } from 'openid-client';
+import User from '@oada/models/user';
 import esMain from 'es-main';
+
+declare module 'fastify' {
+  interface FastifyInstance {
+    authenticate: Authenticate;
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-shadow
+  interface FastifyRequest {
+    user?: User & TokenClaims;
+  }
+}
 
 /* eslint no-process-exit: off */
 
@@ -171,6 +189,7 @@ export async function start(): Promise<void> {
 declare module '@fastify/request-context' {
   interface RequestContextData {
     id: string;
+    domain: string;
     issuer: string;
   }
 }
@@ -214,6 +233,7 @@ await fastify.register(fastifyRequestContext, {
 // Add id to request context
 fastify.addHook('onRequest', async (request) => {
   requestContext.set('id', request.id);
+  requestContext.set('domain', request.hostname);
   requestContext.set(
     'issuer',
     `${request.protocol}://${request.hostname}/` as const,
@@ -289,25 +309,27 @@ await fastify.register(websockets);
  * Create context for authenticated stuff
  */
 
-async function discoverConfiguration(issuer: string | URL) {
+async function discoverConfiguration(uri: string | URL) {
   try {
     try {
-      const { metadata } = await Issuer.discover(`${issuer}`);
-      return metadata;
+      const { metadata, issuer } = await Issuer.discover(`${uri}`);
+      return { metadata, issuer };
     } catch {
-      const { metadata } = await Issuer.discover(`https://${issuer}`);
-      return metadata;
+      const { metadata, issuer } = await Issuer.discover(`https://${uri}`);
+      return { metadata, issuer };
     }
   } catch (error: unknown) {
-    throw new Error(`Failed OIDC discovery for issuer '${issuer}'`, {
+    throw new Error(`Failed OIDC discovery for issuer '${uri}'`, {
       cause: error,
     });
   }
 }
 
 // Find JWKSet URI for auth issuer with OIDC
-const issuer = config.get('oidc.issuer');
-const { jwks_uri: jwksUrl } = await discoverConfiguration(issuer);
+const {
+  metadata: { jwks_uri: jwksUrl },
+  issuer,
+} = await discoverConfiguration(config.get('oidc.issuer'));
 fastify.log.debug({ jwksUrl }, `Loaded OIDC configuration for ${issuer}`);
 
 declare module '@fastify/jwt' {
@@ -322,30 +344,71 @@ declare module 'fastify-jwt-jwks' {
 
 await fastify.register(fastifyJwtJwks, {
   jwksUrl,
-  // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-  issuer: {
-    test(value: string) {
-      return requestContext.get('issuer') === value;
-    },
-  } as RegExp,
+
+  issuer: [
+    `${issuer}`,
+    // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+    {
+      test(value: string) {
+        return requestContext.get('issuer') === value;
+      },
+    } as RegExp,
+  ],
   formatUser(claims) {
-    fastify.log.debug(claims, 'JWT claims');
+    fastify.log.debug({ claims }, 'JWT claims');
     return claims;
   },
 } as const satisfies FastifyJwtJwksOptions);
 
+async function enureOIDCUser({ sub, iss, ...rest }: TokenClaims) {
+  if (!sub) {
+    throw new Error('OIDC: No sub in claims');
+  }
+
+  const u = await userDb.findByOIDCToken({
+    sub,
+    iss: iss ?? requestContext.get('issuer')!,
+  });
+
+  if (u) {
+    return u;
+  }
+
+  // TODO: Config/logic to decide if iss is trusted
+  if (iss !== issuer) {
+    return;
+  }
+
+  const user = new User({ ...rest, oidc: [{ sub, iss }] });
+  const resp = (await requester.send(
+    {
+      connection_id: requestContext.get('id'),
+      domain: requestContext.get('domain'),
+      authorization: {
+        scope: ['oada.admin.user:all'],
+      },
+      user,
+    } as UserRequest,
+    config.get('kafka.topics.userRequest'),
+  )) as UserResponse;
+  return resp.user;
+}
+
 await fastify.register(async (instance) => {
   instance.addHook('onRequest', instance.authenticate);
 
+  // Fetch user info etc. for subject of current token
   instance.addHook('onRequest', async (request, reply) => {
-    if (!request.user) {
+    if (!request.user?.sub) {
       return reply.unauthorized();
     }
 
     // TODO: Use an OADA prefix for JWT claims?
-    const { sub: id, ...rest } = request.user as unknown as TokenClaims;
-    const user = await userDb.findById(id!);
-    request.user = { ...user!, ...rest, user: { _id: id } };
+    const claims = request.user as unknown as TokenClaims;
+    const user = await enureOIDCUser(claims);
+
+    request.log.debug({ user }, 'User/Auth info loaded');
+    request.user = { ...claims, ...user! };
   });
 
   /**
@@ -354,7 +417,7 @@ await fastify.register(async (instance) => {
   await instance.register(resources, {
     prefix: '/bookmarks',
     prefixPath(request) {
-      return request.user?.bookmarks._id ?? '/bookmarks';
+      return request.user!.bookmarks._id;
     },
   });
 
@@ -364,7 +427,7 @@ await fastify.register(async (instance) => {
   await instance.register(resources, {
     prefix: '/shares',
     prefixPath(request) {
-      return request.user?.shares._id ?? '/shares';
+      return request.user!.shares._id;
     },
   });
 

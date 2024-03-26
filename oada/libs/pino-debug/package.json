@@ -29,7 +29,7 @@
     "pino-caller": "^3.4.0",
     "pino-debug": "^2.0.0",
     "pino-loki": "^2.2.1",
-    "pino-pretty": "^10.3.1",
+    "pino-pretty": "^11.0.0",
     "tslib": "2.6.2"
   },
   "devDependencies": {

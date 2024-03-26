@@ -46,7 +46,7 @@ import {
 import oauth2orize, {
   AuthorizationError,
   type IssueGrantCodeFunctionArity6,
-  type IssueGrantTokenFunction,
+  type IssueGrantTokenFunctionArity4,
   type MiddlewareRequest,
   type OAuth2,
   type OAuth2Req,
@@ -199,7 +199,7 @@ export const issueToken = (async (
   try {
     const auth = new Authorization({
       user,
-      scope: request.scope,
+      scope: request.scope.join(' '),
     });
     // TODO: Fill out user info
     const token = await getToken(request.issuer, { ...auth });
@@ -208,12 +208,12 @@ export const issueToken = (async (
   } catch (error: unknown) {
     done(error as Error);
   }
-}) satisfies IssueGrantTokenFunction;
+}) satisfies IssueGrantTokenFunctionArity4;
 
 interface CodePayload {
   issuer: string;
   user: User['_id'];
-  scope: readonly string[];
+  scope: string;
 }
 
 const authCode = config.get('auth.code');
@@ -255,7 +255,7 @@ export const issueCode: IssueGrantCodeFunctionArity6 = async (
     const payload = {
       user: user._id,
       issuer: request.issuer,
-      scope: request.scope,
+      scope: request.scope.join(' '),
     } as const satisfies CodePayload;
     const code = await new EncryptJWT(payload)
       .setProtectedHeader({ alg: 'dir', enc: 'A128CBC-HS256' })

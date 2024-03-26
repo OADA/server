@@ -190,7 +190,7 @@ const plugin: FastifyPluginAsync<Options> = async (
           domainConfigs.get('localhost')!;
         */
 
-      const redirect = `https://${join(from, fastify.prefix, oidcLogin, to)}`;
+      const redirect = `https://${join(encodeURIComponent(from), fastify.prefix, oidcLogin, encodeURIComponent(to))}`;
       const { metadata } = await issuer.Client.register(
         {
           client_name: 'OADA Auth Server',
@@ -248,7 +248,7 @@ const plugin: FastifyPluginAsync<Options> = async (
                 // Add sub to existing user
                 // TODO: Make a link function or something
                 //       instead of shoving sub where it goes?
-                u = await register({ oidc: { [to]: claims } });
+                u = await register({ oidc: [claims] });
               }
 
               await update(u);
@@ -290,7 +290,9 @@ const plugin: FastifyPluginAsync<Options> = async (
       },
     },
     (request, reply) =>
-      reply.redirect(join(oidcLogin, request.body.dest_domain)),
+      reply.redirect(
+        join(oidcLogin, encodeURIComponent(request.body.dest_domain)),
+      ),
   );
   fastify.get(
     join(oidcLogin, '/:dest_domain'),

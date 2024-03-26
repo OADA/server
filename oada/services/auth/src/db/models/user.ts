@@ -90,32 +90,6 @@ export async function update(user: User): Promise<void> {
  * Register a user who is new to us and initialize associated metadata.
  * They may already have an existing account with another OIDC provider.
  */
-export async function register({
-  oidc = {},
-  email,
-  username = usernameFromOIDC(oidc) ?? email ?? '',
-  bookmarks = { _id: '' },
-  shares = { _id: '' },
-  ...user
-}: Except<Partial<User>, '_id'>) {
-  const u = await database.create({
-    oidc,
-    username,
-    bookmarks,
-    shares,
-    ...user,
-  });
-  return new User(u);
-}
-
-function usernameFromOIDC(oidc: User['oidc'] = {}) {
-  for (const [
-    domain,
-    { sub, preferred_username, email, nickname },
-  ] of Object.entries(oidc)) {
-    const value = preferred_username ?? email ?? nickname ?? `${domain}|${sub}`;
-    if (value) {
-      return value;
-    }
-  }
+export async function register(user: Except<Partial<User>, '_id'>) {
+  return database.create(new User(user));
 }

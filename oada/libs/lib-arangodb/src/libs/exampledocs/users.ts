@@ -32,16 +32,17 @@ export default [
     bookmarks: { _id: 'resources/default:resources_bookmarks_123' },
     shares: { _id: 'resources/default:resources_shares_123' },
     roles: [],
+    oidc: [],
   },
   /*
   {
     '_id': 'users/default:users_frank2_124' as UserID,
     'domain': 'localhost',
     'username': 'dummy_username_oidc_user_frank2',
-    'oidc': {
+    'oidc': [{
       'sub': 'users/default:users_gary_growersync', // can login as Frank at growersync.trellisfw.io
       'iss': 'api.growersync.trellisfw.io', // iss = issuer
-    },
+    }],
     'name': 'Gary Grower 2',
     'family_name': 'Gary2',
     'given_name': 'Grower2',
@@ -66,7 +67,7 @@ export default [
     bookmarks: { _id: 'resources/default:resources_bookmarks_321' },
     shares: { _id: 'resources/default:resources_shares_321' },
     roles: ['oada.admin.user:all'],
-    oidc: undefined,
+    oidc: [],
   },
   {
     _id: 'users/default:users_sam_321-proxy' as UserID,
@@ -82,7 +83,7 @@ export default [
     bookmarks: { _id: 'resources/default:resources_bookmarks_321-proxy' },
     shares: { _id: 'resources/default:resources_shares_321-proxy' },
     roles: ['oada.admin.user:all'],
-    oidc: undefined,
+    oidc: [],
   },
   {
     _id: 'users/default:users_audrey_999' as UserID,
@@ -97,7 +98,7 @@ export default [
     email: 'audrey@openag.io',
     bookmarks: { _id: 'resources/default:resources_bookmarks_999' },
     shares: { _id: 'resources/default:resources_shares_999' },
-    oidc: undefined,
+    oidc: [],
     roles: [],
   },
   {
@@ -113,7 +114,7 @@ export default [
     email: 'gary@gmail.com',
     bookmarks: { _id: 'resources/default:resources_bookmarks_777' },
     shares: { _id: 'resources/default:resources_shares_777' },
-    oidc: undefined,
+    oidc: [],
     roles: [],
   },
   {
@@ -129,7 +130,7 @@ export default [
     email: 'pete@gmail.com',
     bookmarks: { _id: 'resources/default:resources_bookmarks_444' },
     shares: { _id: 'resources/default:resources_shares_444' },
-    oidc: undefined,
+    oidc: [],
     roles: [],
   },
   {
@@ -145,7 +146,7 @@ export default [
     email: 'rick@gmail.com',
     bookmarks: { _id: 'resources/default:resources_bookmarks_555' },
     shares: { _id: 'resources/default:resources_shares_555' },
-    oidc: undefined,
+    oidc: [],
     roles: [],
   },
   {
@@ -161,7 +162,7 @@ export default [
     email: 'diane@gmail.com',
     bookmarks: { _id: 'resources/default:resources_bookmarks_666' },
     shares: { _id: 'resources/default:resources_shares_666' },
-    oidc: undefined,
+    oidc: [],
     roles: [],
   },
 ] as const satisfies User[];

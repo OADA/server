@@ -34,20 +34,3 @@ declare module 'nstats' {
 
   export = nstats;
 }
-
-declare global {
-  declare module 'fastify' {
-    import type { Authenticate } from 'fastify-jwt-jwks';
-    // eslint-disable-next-line node/no-extraneous-import
-    import type { TokenClaims } from '@oada/http-handler';
-    import type { User } from '@oada/models/user';
-
-    interface FastifyInstance {
-      authenticate: Authenticate;
-    }
-
-    interface FastifyRequest {
-      user?: User & TokenClaims;
-    }
-  }
-}

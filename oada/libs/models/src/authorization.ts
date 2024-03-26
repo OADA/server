@@ -41,7 +41,7 @@ class Authorization {
     readonly client?: { client_id: string },
     // Readonly _id = `authorizations/${generate()}` as AuthorizationID,
     readonly token = '',
-    readonly scope: readonly string[] = [],
+    readonly scope = '',
     readonly createTime = Date.now() / 1000,
     readonly expiresIn = 0,
     readonly revoked?: boolean,
