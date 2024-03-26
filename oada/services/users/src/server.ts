@@ -28,8 +28,7 @@ import cloneDeep from 'clone-deep';
 import debug from 'debug';
 import ksuid from 'ksuid';
 
-import { User } from '@oada/models/user';
-import type { UserID } from '@oada/models/user';
+import { User, type UserID } from '@oada/models/user';
 import type { SetRequired } from 'type-fest';
 export type * from '@oada/models/user';
 

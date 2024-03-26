@@ -100,9 +100,10 @@ export async function findByOIDCToken(idToken: {
   const cursor = await database.query<User>(
     aql`
       FOR u IN ${users}
-        FILTER u.oidc.iss == ${idToken.iss}
-        FILTER u.oidc.sub == ${idToken.sub}
-        RETURN u`,
+        FOR oidc IN u.oidc
+          FILTER oidc.iss == ${idToken.iss}
+          FILTER oidc.sub == ${idToken.sub}
+          RETURN u`,
   );
   const user = await cursor.next();
 

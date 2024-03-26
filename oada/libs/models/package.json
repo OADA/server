@@ -30,7 +30,7 @@
     "@oada/types": "^3.5.3",
     "@qlever-llc/interface2class": "^1.1.0",
     "tslib": "2.6.2",
-    "type-fest": "^4.13.1",
+    "type-fest": "^4.14.0",
     "xksuid": "https://github.com/aultac/xksuid.git#commit=22a21eb01331191feb62ea0a4e67d96d2e80f396"
   },
   "volta": {

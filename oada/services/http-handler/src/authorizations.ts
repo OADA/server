@@ -81,7 +81,7 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, _options) => {
 
     // Get the full client out of the DB to send out with this auth document
     // That way anybody listing authorizations can print the name, etc. of the client
-    const response = await addClientToAuth(request, auth!);
+    const response = await addClientToAuth(request, auth);
     return reply.send(response);
   });
 
@@ -112,7 +112,7 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, _options) => {
       user: {
         _id: request.user!._id,
       },
-      client: { client_id: request.user!.client_id },
+      // Client: { client_id: request.user!.client_id },
       expiresIn: 3600,
       // TODO: How to generate token?
       token: uuid(),

@@ -20,9 +20,11 @@ import { pipeline } from 'node:stream/promises';
 
 import { changes, putBodies, resources } from '@oada/lib-arangodb';
 
+import {
+  type Scope,
+  handleRequest as permissionsRequest,
+} from '@oada/permissions-handler';
 import type { WriteRequest, WriteResponse } from '@oada/write-handler';
-import type { Scope } from '@oada/permissions-handler';
-import { handleRequest as permissionsRequest } from '@oada/permissions-handler';
 
 import { _meta } from '@oada/oadaify';
 import { handleResponse } from '@oada/formats-server';
@@ -94,7 +96,7 @@ function noModifyShares(
   { user, oadaPath: path }: FastifyRequest,
   reply: FastifyReply,
 ) {
-  if (path.startsWith(`/${user?.shares_id}`)) {
+  if (path.startsWith(`/${user?.shares._id}`)) {
     void reply.forbidden('User cannot modify their shares document');
   }
 }
@@ -196,7 +198,7 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
       // domain: request.headers.host,
       oadaGraph: request.oadaGraph,
       user_id: request.user!._id,
-      scope: request.user!.scope as Scope[],
+      scope: request.user!.scope.split(' ') as Scope[],
       contentType: request.headers['content-type'],
       // RequestType: request.method.toLowerCase(),
     });
@@ -559,7 +561,7 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
           [undefined, request.oadaGraph.resource_id].includes(id),
         )
         .map(({ rev }) => rev);
-      const writeRequest: WriteRequest = {
+      const writeRequest = {
         // @ts-expect-error stuff
         'connection_id': request.id as unknown,
         'resourceExists': request.resourceExists,
@@ -569,14 +571,12 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
         'path_leftover': request.oadaGraph.path_leftover,
         // 'meta_id': oadaGraph['meta_id'],
         'user_id': request.user!._id,
-        'authorizationid': request.user!.authorizationid,
-        'client_id': request.user!.client_id,
         'contentType': request.headers['content-type'],
         bodyid,
         'if-match': ifMatch,
         'if-none-match': ifNoneMatch,
         ignoreLinks,
-      };
+      } as const satisfies WriteRequest;
       const resp = (await requester.send(
         writeRequest,
         config.get('kafka.topics.writeRequest'),
@@ -645,7 +645,7 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
     // Don't let users delete their shares?
     noModifyShares(request, reply);
     // Don't let users DELETE their bookmarks?
-    if (path === request.user!.bookmarks_id) {
+    if (path === request.user!.bookmarks._id) {
       void reply.forbidden('User cannot delete their bookmarks');
       return;
     }
@@ -671,7 +671,7 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
     const ifNoneMatch = parseETags(request.headers['if-none-match'])
       ?.filter(({ id }) => [undefined, oadaGraph.resource_id].includes(id))
       .map(({ rev }) => rev);
-    const deleteRequest: WriteRequest = {
+    const deleteRequest = {
       // @ts-expect-error stuff
       'connection_id': request.id as unknown,
       resourceExists,
@@ -681,14 +681,13 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
       'path_leftover': oadaGraph.path_leftover,
       // 'meta_id': oadaGraph['meta_id'],
       'user_id': request.user!._id,
-      'authorizationid': request.user!.authorizationid,
-      'client_id': request.user!.client_id,
+      'authorizationid': request.user!.jti,
       'if-match': ifMatch,
       'if-none-match': ifNoneMatch,
       // 'bodyid': bodyid, // No body means delete?
       // body: req.body
       'contentType': '',
-    };
+    } as const satisfies WriteRequest;
     const resp = (await requester.send(
       deleteRequest,
       config.get('kafka.topics.writeRequest'),

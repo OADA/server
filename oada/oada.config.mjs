@@ -15,6 +15,7 @@
  * limitations under the License.
  */
 
+/** @type string */
 const domain = process.env.DOMAIN || 'localhost';
 
 export default {

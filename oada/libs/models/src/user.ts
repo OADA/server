@@ -38,12 +38,12 @@ export type UserID = Opaque<`users/${string}`, User>;
  *  "middle_name": "",
  *  "nickname": "Frankie",
  *  "email": "frank@openag.io",
- *  "oidc": {
- *    "https://example.com/": {
+ *  "oidc": [
+ *    {
  *      "sub": "foo|bar",
  *      "iss": "https://example.com/",
  *    }
- *  }
+ *  ]
  * }
  * ```
  */
@@ -61,11 +61,15 @@ class User extends makeClass<Except<Claims, 'sub'>>() {
     public readonly _id = `users/${generate()}` as UserID,
     public domain = 'localhost',
     public password?: string,
-    public username = user.name ?? user.nickname ?? user.email ?? _id,
     /**
      * Record mapping OIDC domains to OIDC claims for this User
      */
-    public oidc?: Record<string, Claims>,
+    public oidc: readonly Claims[] = [],
+    public username = user.name ??
+      user.nickname ??
+      user.email ??
+      usernameFromOIDC(oidc) ??
+      _id,
     /**
      * The "scopes" of the User (e.g., "oada.admin.user:all")
      */
@@ -80,6 +84,15 @@ class User extends makeClass<Except<Claims, 'sub'>>() {
     public shares: { _id: string } = { _id: '' },
   ) {
     super(user);
+  }
+}
+
+function usernameFromOIDC(oidc: User['oidc']) {
+  for (const { sub, iss, preferred_username, email, nickname } of oidc) {
+    const value = preferred_username ?? email ?? nickname ?? `${iss}|${sub}`;
+    if (value) {
+      return value;
+    }
   }
 }
 

@@ -130,7 +130,7 @@ export function handleRequest(
   } else {
     // Check for read permission
     if (!Array.isArray(request.scope)) {
-      error(request.scope, 'Scope is not an array');
+      error({ scope: request.scope }, 'Scope is not an array');
       request.scope = [];
     }
 
