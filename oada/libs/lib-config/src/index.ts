@@ -66,6 +66,7 @@ const defaults = {
       doc: 'OpenID Connect/Oauth2.0 issuer to use for auth',
       format: 'url',
       default: null as null | URL | string,
+      nullable: true,
       env: 'OIDC_ISSUER',
       arg: 'oidc-issuer',
     },

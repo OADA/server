@@ -136,6 +136,7 @@ export const { config, schema } = await libConfig({
       'publicUri': {
         format: 'url',
         default: null as null | string | URL,
+        nullable: true,
       },
       'proxy': {
         description: 'Whether to trust reverse-proxy headers',
@@ -345,7 +346,7 @@ export const { config, schema } = await libConfig({
       format: await fs.readdir(
         path.join(path.dirname(url.fileURLToPath(import.meta.url)), 'db'),
       ),
-      default: 'flat',
+      default: 'arango',
     },
     hint: {
       username: {

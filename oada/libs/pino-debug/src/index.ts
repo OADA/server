@@ -80,11 +80,6 @@ export function logLevel(): string {
     }
   }
 
-  if (interactive) {
-    // Default to info for interactive shells?
-    return 'info';
-  }
-
   // Assume silent
   return 'silent';
 }
@@ -154,7 +149,7 @@ function createRootLogger(): Logger {
   const map = { ...defaultMap, ...fMap };
   pinoDebug(logger, {
     // Turn off auto so only things enabled in DEBUG var get logged
-    auto: interactive,
+    auto: interactive && !process.env.PINO_LEVEL,
     map,
   });
 

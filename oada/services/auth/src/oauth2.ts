@@ -153,7 +153,19 @@ const JWKS = createLocalJWKSet(jwksPublic);
  */
 export interface TokenClaims extends Authorization, JWTPayload {}
 
-export async function getToken(issuer: string, claims: TokenClaims) {
+export async function getToken(
+  issuer: string,
+  claims: TokenClaims,
+  {
+    iat,
+    nbf,
+    exp = config.get('auth.token.expiresIn'),
+  }: {
+    iat?: string | number | Date;
+    nbf?: string | number | Date;
+    exp?: string | number | Date;
+  } = {},
+) {
   try {
     const jwt = new SignJWT(claims)
       .setProtectedHeader({
@@ -162,18 +174,18 @@ export async function getToken(issuer: string, claims: TokenClaims) {
         jku: config.get('auth.endpoints.certs'),
       })
       .setJti(randomBytes(16).toString('hex'))
-      .setIssuedAt()
+      .setIssuedAt(iat)
       .setIssuer(issuer)
       // ???: Should the audience be something different?
       // .setAudience(issuer)
-      .setNotBefore(new Date());
+      .setNotBefore(nbf ?? new Date());
 
     if (claims.user) {
       jwt.setSubject(claims.user._id);
     }
 
-    if (tokenConfig.expiresIn) {
-      jwt.setExpirationTime(tokenConfig.expiresIn);
+    if (exp) {
+      jwt.setExpirationTime(exp);
     }
 
     return await jwt.sign(privateKey);

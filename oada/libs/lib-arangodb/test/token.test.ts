@@ -31,7 +31,7 @@ test.before(init.run);
 test.after(init.cleanup);
 
 test('should find a token', async (t) => {
-  const token = exampleTokens[0]!;
+  const token = exampleTokens[0];
 
   const tok = await authorizations.findByToken(token.token);
   t.is(tok?.token, token.token);
@@ -43,8 +43,8 @@ test('should find a token', async (t) => {
 });
 
 test('should save a token', async (t) => {
-  const token = exampleTokens[0]!;
-  const user = exampleUsers[0]!;
+  const token = exampleTokens[0];
+  const user = exampleUsers[0];
 
   await authorizations.save({
     ...token,
