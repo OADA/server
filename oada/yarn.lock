@@ -520,9 +520,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@fastify/static@npm:^7.0.1":
-  version: 7.0.1
-  resolution: "@fastify/static@npm:7.0.1"
+"@fastify/static@npm:^7.0.2":
+  version: 7.0.2
+  resolution: "@fastify/static@npm:7.0.2"
   dependencies:
     "@fastify/accept-negotiator": "npm:^1.0.0"
     "@fastify/send": "npm:^2.0.0"
@@ -530,7 +530,7 @@ __metadata:
     fastify-plugin: "npm:^4.0.0"
     fastq: "npm:^1.17.0"
     glob: "npm:^10.3.4"
-  checksum: 10/61886e2d126d4e3de19c40f2771be05d858d735d326a9beda27af451b5b0c90f8b643440a72fdc54e0375e93b15333fd471ece6a1f938f1bcc6d4f025024f523
+  checksum: 10/fbdd99aa54b6a08c09fdb399a938be40e813c5f720184bf20e605fc64f2df4dc0f082677f96debc17704f71d7c0095490ad5493165a212dfa50a531a8faa4968
   languageName: node
   linkType: hard
 
@@ -748,7 +748,7 @@ __metadata:
     "@fastify/request-context": "npm:^5.1.0"
     "@fastify/secure-session": "npm:^7.1.0"
     "@fastify/sensible": "npm:^5.5.0"
-    "@fastify/static": "npm:^7.0.1"
+    "@fastify/static": "npm:^7.0.2"
     "@fastify/type-provider-json-schema-to-ts": "npm:^3.0.0"
     "@fastify/view": "npm:^9.0.0"
     "@oada/certs": "npm:^4.1.1"
@@ -774,14 +774,15 @@ __metadata:
     "@types/passport-local": "npm:^1.0.38"
     "@types/passport-oauth2-client-password": "npm:^0.1.5"
     "@types/pem-jwk": "npm:^2.0.2"
+    "@types/qrcode-terminal": "npm:^0"
     "@types/qs": "npm:^6.9.14"
     "@types/urijs": "npm:^1.19.25"
     "@types/uuid": "npm:^9.0.8"
     arangojs: "npm:^8.8.1"
     bcryptjs: "npm:^2.4.3"
     c8: "npm:^9.1.0"
-    chalk: "npm:^5.3.0"
     clone-deep: "npm:^4.0.1"
+    cmd-ts: "npm:^0.13.0"
     debug: "npm:^4.3.4"
     ejs: "npm:^3.1.9"
     es-main: "npm:^1.3.0"
@@ -791,7 +792,6 @@ __metadata:
     ioredis: "npm:^5.3.2"
     jose: "npm:^5.2.3"
     json-schema-to-ts: "npm:^3.0.1"
-    minimist: "npm:^1.2.8"
     oauth2orize: "npm:^1.12.0"
     oauth2orize-openid: "npm:^0.4.1"
     oauth2orize-pkce: "npm:^0.1.2"
@@ -803,6 +803,7 @@ __metadata:
     passport-local: "npm:^1.0.0"
     passport-oauth2-client-password: "npm:~0.1.2"
     pem-jwk: "npm:^2.0.0"
+    qrcode-terminal: "npm:^0.12.0"
     qs: "npm:^6.12.0"
     serialize-error: "npm:^11.0.3"
     tslib: "npm:2.6.2"
@@ -810,7 +811,8 @@ __metadata:
     urijs: "npm:^1.19.11"
     uuid: "npm:^9.0.1"
   bin:
-    token: ./dist/token.js
+    client: ./dist/cli/client.js
+    token: ./dist/cli/token.js
   languageName: unknown
   linkType: soft
 
@@ -1172,7 +1174,7 @@ __metadata:
   dependencies:
     "@commitlint/cli": "npm:^19.2.1"
     "@commitlint/config-conventional": "npm:^19.1.0"
-    "@tsconfig/node20": "npm:^20.1.3"
+    "@tsconfig/node20": "npm:^20.1.4"
     "@types/eslint": "npm:^8.56.6"
     "@types/mocha": "npm:^10.0.6"
     "@types/node": "npm:^20.11.30"
@@ -1205,7 +1207,7 @@ __metadata:
     eslint-plugin-promise: "npm:^6.1.1"
     eslint-plugin-regexp: "npm:^2.4.0"
     eslint-plugin-security: "npm:^2.1.1"
-    eslint-plugin-sonarjs: "npm:^0.24.0"
+    eslint-plugin-sonarjs: "npm:^0.25.0"
     eslint-plugin-unicorn: "npm:^51.0.1"
     get-port: "npm:^7.1.0"
     pino-pretty: "npm:^11.0.0"
@@ -1491,10 +1493,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@tsconfig/node20@npm:^20.1.3":
-  version: 20.1.3
-  resolution: "@tsconfig/node20@npm:20.1.3"
-  checksum: 10/b303e75c24e5ca848deb5e2a816d07ddef0e1c50f1405ad2485c7a1f37b2524fbb636796bf24cfcde312ee5fe494e469ff6e005130fbda28640b582c924eb802
+"@tsconfig/node20@npm:^20.1.4":
+  version: 20.1.4
+  resolution: "@tsconfig/node20@npm:20.1.4"
+  checksum: 10/345dba8074647f6c11b8d78afa76d9c16e3436cb56a8e78fe2060014d33a09f3f4fd6ed81dc90e955d3509f926cd7fd61c6ddfd3d5a1d80758d7844f7cc3a99e
   languageName: node
   linkType: hard
 
@@ -1980,6 +1982,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/qrcode-terminal@npm:^0":
+  version: 0.12.2
+  resolution: "@types/qrcode-terminal@npm:0.12.2"
+  checksum: 10/ffe217b12f12a260a6d1672f7a1b9d5943c837b6a8e8f7762654ec77a988bf60c516f3be87833b116129c2c8cb9b7890d53b8938cdfa66a5414cf3d458e8d235
+  languageName: node
+  linkType: hard
+
 "@types/qs@npm:*, @types/qs@npm:^6.9.14":
   version: 6.9.14
   resolution: "@types/qs@npm:6.9.14"
@@ -2180,7 +2189,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@typescript-eslint/utils@npm:7.4.0":
+"@typescript-eslint/utils@npm:*, @typescript-eslint/utils@npm:7.4.0":
   version: 7.4.0
   resolution: "@typescript-eslint/utils@npm:7.4.0"
   dependencies:
@@ -3321,6 +3330,18 @@ __metadata:
   languageName: node
   linkType: hard
 
+"cmd-ts@npm:^0.13.0":
+  version: 0.13.0
+  resolution: "cmd-ts@npm:0.13.0"
+  dependencies:
+    chalk: "npm:^4.0.0"
+    debug: "npm:^4.3.4"
+    didyoumean: "npm:^1.2.2"
+    strip-ansi: "npm:^6.0.0"
+  checksum: 10/722a2392d37ce16a91b62a008df31ef47e617bb2f88da7373fc0fb659178e92e98996f4fcdc32c45c02e825dc7a2b1b4d769df04b25a49d8f38ef25f5c474848
+  languageName: node
+  linkType: hard
+
 "code-excerpt@npm:^4.0.0":
   version: 4.0.0
   resolution: "code-excerpt@npm:4.0.0"
@@ -3883,6 +3904,13 @@ __metadata:
     asap: "npm:^2.0.0"
     wrappy: "npm:1"
   checksum: 10/895389c6aead740d2ab5da4d3466d20fa30f738010a4d3f4dcccc9fc645ca31c9d10b7e1804ae489b1eb02c7986f9f1f34ba132d409b043082a86d9a4e745624
+  languageName: node
+  linkType: hard
+
+"didyoumean@npm:^1.2.2":
+  version: 1.2.2
+  resolution: "didyoumean@npm:1.2.2"
+  checksum: 10/de7f11b6a0c8c61018629b7f405bb9746d6e994ce87c1a4b7655c3c718442dc69037a3d46d804950604fd9cbe85c074f7b224a119fc1bda851690a74540c6cf8
   languageName: node
   linkType: hard
 
@@ -4642,12 +4670,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"eslint-plugin-sonarjs@npm:^0.24.0":
-  version: 0.24.0
-  resolution: "eslint-plugin-sonarjs@npm:0.24.0"
+"eslint-plugin-sonarjs@npm:^0.25.0":
+  version: 0.25.0
+  resolution: "eslint-plugin-sonarjs@npm:0.25.0"
   peerDependencies:
     eslint: ^5.0.0 || ^6.0.0 || ^7.0.0 || ^8.0.0
-  checksum: 10/5d313f183d77a654d98b392ac878ab5492417f872e26a57d25649ddce1bf3e40c0765cb05e183f383a583bdc92d2b02b9b38139c180d190de85a9c6732bd1917
+  checksum: 10/921ef6ccbb6881f6b5c5541324131e9736410f2c2a0ef055cd5027fa08e0e92dc8194a7e94a9dd00f1f7b1a598c3cdf85740b7b1ed8e4f99a1dcbb66a9626007
   languageName: node
   linkType: hard
 
@@ -8625,6 +8653,15 @@ __metadata:
   version: 2.3.1
   resolution: "punycode@npm:2.3.1"
   checksum: 10/febdc4362bead22f9e2608ff0171713230b57aff9dddc1c273aa2a651fbd366f94b7d6a71d78342a7c0819906750351ca7f2edd26ea41b626d87d6a13d1bd059
+  languageName: node
+  linkType: hard
+
+"qrcode-terminal@npm:^0.12.0":
+  version: 0.12.0
+  resolution: "qrcode-terminal@npm:0.12.0"
+  bin:
+    qrcode-terminal: ./bin/qrcode-terminal.js
+  checksum: 10/ebfcbdbded6797f2dc0bed08d4d119c207ccb6c1b0010115c37e346a1067a182c11117fe6018dd13a8fae918fa88158a549f81cc47579cc6feb50787656268af
   languageName: node
   linkType: hard
 

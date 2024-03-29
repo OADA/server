@@ -26,6 +26,7 @@ import {
   Issuer,
   Strategy as OIDCStrategy,
   type StrategyVerifyCallbackUserInfo,
+  errors,
 } from 'openid-client';
 import { type OAuth2Server, createServer } from 'oauth2orize';
 import { SignJWT, exportJWK } from 'jose';
@@ -181,88 +182,98 @@ const plugin: FastifyPluginAsync<Options> = async (
 
   const getOIDCAuth = memoize(
     async (from: string, to: string) => {
-      const issuer = await Issuer.discover(to);
+      try {
+        const issuer = await Issuer.discover(to);
 
-      // Next, get the info for the id client middleware based on main domain:
-      /*
-        const domainConfig =
-          domainConfigs.get(from) ??
-          domainConfigs.get('localhost')!;
-        */
+        // Next, get the info for the id client middleware based on main domain:
+        /*
+          const domainConfig =
+            domainConfigs.get(from) ??
+            domainConfigs.get('localhost')!;
+          */
 
-      const redirect = `https://${join(encodeURIComponent(from), fastify.prefix, oidcLogin, encodeURIComponent(to))}`;
-      const { metadata } = await issuer.Client.register(
-        {
-          client_name: 'OADA Auth Server',
-          // Software_statement: domainConfig.software_statement,
-          redirect_uris: [redirect],
-          id_token_signed_response_alg: 'HS256',
-        },
-        { jwks: jwksPrivate },
-      );
-      const client = new issuer.Client({
-        ...metadata,
-        // FIXME: Why does Auth0 need this?
-        id_token_signed_response_alg: 'HS256',
-      });
-      fastify.log.debug({ client, from, to }, 'Registered client with OIDC');
-
-      const name = `oidc-${from}-${to}` as const;
-      fastifyPassport.use(
-        name,
-        new OIDCStrategy<unknown>(
+        const redirect = `https://${join(encodeURIComponent(from), fastify.prefix, oidcLogin, encodeURIComponent(to))}`;
+        const { metadata } = await issuer.Client.register(
           {
-            client,
-            params: {
-              prompt: 'consent',
-              scope: 'openid profile email',
-            },
+            client_name: 'OADA Auth Server',
+            // Software_statement: domainConfig.software_statement,
+            redirect_uris: [redirect],
+            id_token_signed_response_alg: 'HS256',
           },
-          (async (tokenSet, user, done) => {
-            try {
-              fastify.log.debug(
-                { client, tokenSet, user },
-                'OIDC user verify callback',
-              );
-              const claims = tokenSet.claims();
-              let u =
-                (await findByOIDCToken(claims)) ??
-                (user.preferred_username &&
-                  (await findByOIDCUsername(
-                    user.preferred_username,
-                    claims.iss,
-                  )));
+          { jwks: jwksPrivate },
+        );
+        const client = new issuer.Client({
+          ...metadata,
+          // FIXME: Why does Auth0 need this?
+          id_token_signed_response_alg: 'HS256',
+        });
+        fastify.log.debug({ client, from, to }, 'Registered client with OIDC');
 
-              if (!u) {
-                if (
-                  !config.get('auth.oidc.enable') &&
-                  config.get('oidc.issuer') !== claims.iss
-                ) {
-                  // We don't have a user with this sub or username,
-                  // so they don't have an account
-                  throw new Error(
-                    `There is no known user ${claims.sub} from ${claims.iss}`,
-                  );
+        const name = `oidc-${from}-${to}` as const;
+        fastifyPassport.use(
+          name,
+          new OIDCStrategy<unknown>(
+            {
+              client,
+              params: {
+                prompt: 'consent',
+                scope: 'openid profile email',
+              },
+            },
+            (async (tokenSet, user, done) => {
+              try {
+                fastify.log.debug(
+                  { client, tokenSet, user },
+                  'OIDC user verify callback',
+                );
+                const claims = tokenSet.claims();
+                let u =
+                  (await findByOIDCToken(claims)) ??
+                  (user.preferred_username &&
+                    (await findByOIDCUsername(
+                      user.preferred_username,
+                      claims.iss,
+                    )));
+
+                if (!u) {
+                  if (
+                    !config.get('auth.oidc.enable') &&
+                    config.get('oidc.issuer') !== claims.iss
+                  ) {
+                    // We don't have a user with this sub or username,
+                    // so they don't have an account
+                    throw new Error(
+                      `There is no known user ${claims.sub} from ${claims.iss}`,
+                    );
+                  }
+
+                  // Add sub to existing user
+                  // TODO: Make a link function or something
+                  //       instead of shoving sub where it goes?
+                  u = await register({ oidc: [claims] });
                 }
 
-                // Add sub to existing user
-                // TODO: Make a link function or something
-                //       instead of shoving sub where it goes?
-                u = await register({ oidc: [claims] });
+                await update(u);
+
+                // eslint-disable-next-line unicorn/no-null
+                done(null, u);
+              } catch (error: unknown) {
+                done(error as Error);
               }
+            }) satisfies StrategyVerifyCallbackUserInfo<unknown>,
+          ),
+        );
 
-              await update(u);
+        return name;
+      } catch (error: unknown) {
+        if (error instanceof errors.OPError) {
+          error.message =
+            // @ts-expect-error stuff
+            error.response?.body?.message;
+        }
 
-              // eslint-disable-next-line unicorn/no-null
-              done(null, u);
-            } catch (error: unknown) {
-              done(error as Error);
-            }
-          }) satisfies StrategyVerifyCallbackUserInfo<unknown>,
-        ),
-      );
-
-      return name;
+        throw error;
+      }
     },
     {
       cacheKey(all) {
