@@ -480,15 +480,15 @@ __metadata:
   linkType: hard
 
 "@fastify/secure-session@npm:^7.1.0":
-  version: 7.1.0
-  resolution: "@fastify/secure-session@npm:7.1.0"
+  version: 7.4.0
+  resolution: "@fastify/secure-session@npm:7.4.0"
   dependencies:
     "@fastify/cookie": "npm:^9.0.4"
     fastify-plugin: "npm:^4.0.0"
     sodium-native: "npm:^4.0.0"
   bin:
     secure-session: genkey.js
-  checksum: 10/23bbe0d47c7f6d386cbae938977ce5b71f052a0e06edda8fa1ee20811394e433e561e2e0deafb321cf7bf5132d2a89d59f9aacc1ee8911dad9e656c47057311e
+  checksum: 10/85088a8da03ca80ac779411db47fb086c4f838d30a3e125e5cbb19b0cf3a982ba54f258b71455edbd236c9b04d734e0e81e9c646856c4ac3461d4562331ae4ae
   languageName: node
   linkType: hard
 
