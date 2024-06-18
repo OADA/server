@@ -479,16 +479,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@fastify/secure-session@npm:^7.1.0":
-  version: 7.4.0
-  resolution: "@fastify/secure-session@npm:7.4.0"
+"@fastify/secure-session@npm:^7.3.0":
+  version: 7.5.1
+  resolution: "@fastify/secure-session@npm:7.5.1"
   dependencies:
     "@fastify/cookie": "npm:^9.0.4"
     fastify-plugin: "npm:^4.0.0"
     sodium-native: "npm:^4.0.0"
   bin:
     secure-session: genkey.js
-  checksum: 10/85088a8da03ca80ac779411db47fb086c4f838d30a3e125e5cbb19b0cf3a982ba54f258b71455edbd236c9b04d734e0e81e9c646856c4ac3461d4562331ae4ae
+  checksum: 10/9e3f52089034327534537d0ed13b00adb349521cbe6f63dd2a8fbf7c24791b6f61281aaf0f6b7a7f26875dd3fc15ef7ade25b96ca3cc8ef9f4255af1c762c032
   languageName: node
   linkType: hard
 
@@ -746,7 +746,7 @@ __metadata:
     "@fastify/passport": "npm:^2.4.0"
     "@fastify/rate-limit": "npm:^9.1.0"
     "@fastify/request-context": "npm:^5.1.0"
-    "@fastify/secure-session": "npm:^7.1.0"
+    "@fastify/secure-session": "npm:^7.3.0"
     "@fastify/sensible": "npm:^5.5.0"
     "@fastify/static": "npm:^7.0.1"
     "@fastify/type-provider-json-schema-to-ts": "npm:^3.0.0"
@@ -10414,8 +10414,8 @@ __metadata:
   linkType: hard
 
 "ws@npm:^8.0.0, ws@npm:^8.16.0":
-  version: 8.16.0
-  resolution: "ws@npm:8.16.0"
+  version: 8.17.1
+  resolution: "ws@npm:8.17.1"
   peerDependencies:
     bufferutil: ^4.0.1
     utf-8-validate: ">=5.0.2"
@@ -10424,7 +10424,7 @@ __metadata:
       optional: true
     utf-8-validate:
       optional: true
-  checksum: 10/7c511c59e979bd37b63c3aea4a8e4d4163204f00bd5633c053b05ed67835481995f61a523b0ad2b603566f9a89b34cb4965cb9fab9649fbfebd8f740cea57f17
+  checksum: 10/4264ae92c0b3e59c7e309001e93079b26937aab181835fb7af79f906b22cd33b6196d96556dafb4e985742dd401e99139572242e9847661fdbc96556b9e6902d
   languageName: node
   linkType: hard
 
