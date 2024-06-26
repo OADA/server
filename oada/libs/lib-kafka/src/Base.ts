@@ -17,7 +17,7 @@
 
 import { config } from './config.js';
 
-import { once } from 'node:events';
+import { type EventEmitter as NodeEventEmitter, once } from 'node:events';
 import process from 'node:process';
 
 import type { Consumer, EachMessagePayload, Producer } from 'kafkajs';
@@ -56,8 +56,8 @@ function die(reason: Error) {
 
 export interface ConstructorOptions {
   consumeTopic: string | readonly string[];
-  // eslint-disable-next-line @typescript-eslint/ban-types
-  produceTopic?: string | null;
+
+  produceTopic?: string | undefined;
   group: string;
   /**
    * @todo Document these opts
@@ -92,7 +92,6 @@ function isArray(value: unknown): value is unknown[] | readonly unknown[] {
 
 export class Base extends EventEmitter {
   protected static done = Symbol('kafka-base-done');
-
   readonly consumeTopics;
   readonly produceTopic;
   readonly group;
@@ -141,7 +140,7 @@ export class Base extends EventEmitter {
       }
     });
 
-    this.ready = once(this, Base.done);
+    this.ready = once(this as unknown as NodeEventEmitter, Base.done);
   }
 
   override on(
@@ -153,11 +152,13 @@ export class Base extends EventEmitter {
       ...arguments_: any[]
     ) => unknown,
   ): this;
+
   override on(
     event: string | symbol,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     listener: (...arguments_: any[]) => unknown,
   ): this;
+
   override on(
     event: string | symbol,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -178,7 +179,7 @@ export class Base extends EventEmitter {
   {
     mesg: Record<string, unknown>;
     topic?: string;
-    // eslint-disable-next-line @typescript-eslint/ban-types
+
     part: number | null;
   }): Promise<void> {
     // Wait for producer to be ready?

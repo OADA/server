@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-import { once } from 'node:events';
+import { type EventEmitter as NodeEventEmitter, once } from 'node:events';
 import { setTimeout } from 'node:timers/promises';
 
 import { EventEmitter } from 'eventemitter3';
@@ -61,10 +61,11 @@ export class Requester extends Base {
 
   // eslint-disable-next-line @typescript-eslint/ban-types
   async send(request: {}, topic?: string): Promise<KafkaBase>;
+
   async send(
     request: Record<string, unknown>,
-    // eslint-disable-next-line @typescript-eslint/ban-types
-    topic: string | null | undefined = this.produceTopic,
+
+    topic: string | undefined = this.produceTopic,
   ): Promise<KafkaBase> {
     if (!topic) {
       throw new Error('Send called with no topic specified');
@@ -74,7 +75,10 @@ export class Requester extends Base {
     const timeout = this.#timeouts.get(topic) ?? topicTimeout(topic);
     this.#timeouts.set(topic, timeout);
 
-    const requestDone = once(this, `response-${id}`) as Promise<[KafkaBase]>;
+    const requestDone = once(
+      this as unknown as NodeEventEmitter,
+      `response-${id}`,
+    ) as Promise<[KafkaBase]>;
     // TODO: Handle partitions?
     await this.produce({
       mesg: { ...request, [REQ_ID_KEY]: id, resp_partition: '0' },
@@ -94,8 +98,8 @@ export class Requester extends Base {
    */
   async emitter(
     request: KafkaBase,
-    // eslint-disable-next-line @typescript-eslint/ban-types
-    topic: string | null | undefined = this.produceTopic,
+
+    topic: string | undefined = this.produceTopic,
   ): Promise<EventEmitter & { close(): Promise<void> }> {
     if (!topic) {
       throw new Error('Emit called with no topic specified');

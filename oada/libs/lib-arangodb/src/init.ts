@@ -22,8 +22,6 @@
  * with `yarn run init`.
  */
 
-/* eslint-disable max-depth */
-
 import { config } from './config.js';
 import { hashPw } from './libs/users.js';
 
@@ -42,7 +40,7 @@ const auth = config.get('arangodb.auth');
 const cols = config.get('arangodb.collections');
 const colsarr = Object.values(cols);
 
-// eslint-disable-next-line complexity, sonarjs/cognitive-complexity
+// eslint-disable-next-line sonarjs/cognitive-complexity
 export async function run(): Promise<void> {
   // Can't use ./db because we're creating the actual database
   const systemDB = new Database({

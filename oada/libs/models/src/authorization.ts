@@ -28,6 +28,7 @@ export
 @destructure
 class Authorization {
   constructor(authorization?: Partial<Authorization>);
+
   // eslint-disable-next-line max-params
   constructor(
     _: Partial<Authorization> = {},

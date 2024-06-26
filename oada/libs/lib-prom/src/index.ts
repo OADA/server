@@ -19,7 +19,7 @@ import { config } from './config.js';
 
 import { createServer } from 'node:http';
 
-import { collectDefaultMetrics, contentType, register } from 'prom-client';
+import { collectDefaultMetrics, register } from 'prom-client';
 import type NStats from 'nstats';
 
 collectDefaultMetrics({ register });
@@ -40,7 +40,7 @@ export const nstats: typeof NStats = (...parameters) => {
 export const server = createServer(async (_, response) => {
   try {
     const metrics = await register.metrics();
-    response.writeHead(200, { 'Content-Type': contentType });
+    response.writeHead(200, { 'Content-Type': register.contentType });
 
     if (stats) {
       response.write(stats.toPrometheus());

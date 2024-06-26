@@ -51,7 +51,7 @@ export async function findById(
       return undefined;
     }
 
-    throw error as Error;
+    throw error;
   }
 }
 

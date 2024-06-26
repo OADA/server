@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-/* eslint-disable @typescript-eslint/ban-types, unicorn/no-null */
+/* eslint-disable unicorn/no-null */
 
 import libConfig from '@oada/lib-config';
 
@@ -80,12 +80,16 @@ export const { config, schema } = await libConfig({
       format: Object,
       default: {
         well_known_version: '1.1.0',
+
         oada_version: '0.1.0', // Override the version in oada.config.js
+
         oada_base_uri: null as string | null,
+
         scopes_supported: [
           {
             'name': 'oada.all.1', // Can do anything the user can do
             /* pattern: /oada\..*\.1/  */
+
             'read+write': true, // Can read/write anything the user can read/write
           },
         ],

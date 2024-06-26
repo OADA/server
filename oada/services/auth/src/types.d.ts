@@ -159,8 +159,87 @@ declare module 'passport-oauth2-jwt-bearer' {
   ) => void;
   class OAuth2JWTBearerStrategy extends Strategy {
     name: 'oauth2-jwt-bearer';
+
     constructor(options: Options, verify: VerifyFunction);
+
     constructor(verify: VerifyFunction);
   }
   export { OAuth2JWTBearerStrategy as Strategy };
+}
+
+declare module 'random-id-base36' {
+  namespace RandomIdBase36 {
+    function randId(digits: number, base = 36): string;
+  }
+  export = RandomIdBase36;
+}
+
+declare module 'oauth2orize-device-code' {
+  import type { MiddlewareFunction } from 'oauth2orize';
+
+  export class TokenError extends Error {
+    constructor(message: string, code: string, uri?: string, status?: string);
+  }
+  interface Done<R extends [...unknown]> {
+    (error?: Error): void;
+    (error: undefined, ...rest: R): void;
+  }
+  export interface Options {
+    verificationURI?: string;
+    /** @default 'user' */
+    userProperty?: string;
+    /** @default ' ' */
+    scopeSeparator?: string;
+  }
+  export type IssueDeviceCodeFunctionArity5<Client> = (
+    client: Client,
+    scope: readonly string[],
+    body: unknown,
+    authInfo: { issuer: string },
+    done: Done<
+      [
+        deviceCode: string,
+        userCode: string,
+        params: {
+          [key: string]: unknown;
+          expires_in: number;
+        },
+      ]
+    >,
+  ) => void;
+  export type IssueDeviceCodeFunction<Client> =
+    IssueDeviceCodeFunctionArity5<Client>;
+
+  export namespace middleware {
+    export function authorization<Client, User>(
+      issue: IssueDeviceCodeFunction<Client>,
+    ): MiddlewareFunction<Client, User>;
+    export function authorization<Client, User>(
+      options: Options,
+      issue: IssueDeviceCodeFunction<Client>,
+    ): MiddlewareFunction<Client, User>;
+  }
+  export type ActivateDeviceCodeFunction<Client, User> = (
+    client: Client,
+    deviceCode: string,
+    user: User,
+    done: Done<never[]>,
+  ) => void;
+  export namespace grant {
+    export function deviceCode<Client, User>(
+      activateDeviceCode: ActivateDeviceCodeFunction<Client, User>,
+    ): MiddlewareFunction<Client, User>;
+  }
+  export type ExchangeDeviceCodeFunction<Client> = (
+    client: Client,
+    deviceCode: string,
+    body: unknown,
+    authInfo: { issuer: string },
+    done: Done<[accessToken: string, refreshToken?: string]>,
+  ) => void;
+  export namespace exchange {
+    export function deviceCode<Client, User>(
+      issueToken: ExchangeDeviceCodeFunction<Client>,
+    ): MiddlewareFunction<Client, User>;
+  }
 }

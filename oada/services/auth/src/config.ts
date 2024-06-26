@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-/* eslint-disable @typescript-eslint/ban-types, unicorn/no-null */
+/* eslint-disable unicorn/no-null */
 
 import type { File } from 'node:buffer';
 import fs from 'node:fs/promises';
@@ -80,6 +80,7 @@ export const { config, schema } = await libConfig({
           doc: 'Redis URI to use for rate-limit storage',
           format: String,
           nullable: true,
+
           default: null as string | null,
           env: 'REDIS_URI',
           arg: 'redis-uri',
@@ -90,6 +91,7 @@ export const { config, schema } = await libConfig({
           format: String,
           sensitive: true,
           nullable: true,
+
           default: null as string | null,
           env: 'SESSION_KEY',
         },
@@ -104,6 +106,7 @@ export const { config, schema } = await libConfig({
           format: String,
           sensitive: true,
           nullable: true,
+
           default: null as string | null,
           env: 'SESSION_SALT',
         },
@@ -119,6 +122,7 @@ export const { config, schema } = await libConfig({
       'port': {
         format: 'port',
         nullable: true,
+
         default: null as null | number,
         env: 'PORT',
         arg: 'port',
@@ -135,6 +139,7 @@ export const { config, schema } = await libConfig({
       },
       'publicUri': {
         format: 'url',
+
         default: null as null | string | URL,
         nullable: true,
       },
@@ -160,11 +165,19 @@ export const { config, schema } = await libConfig({
       },
       authorize: {
         format: String,
-        default: 'auth',
+        default: 'authorization',
       },
       token: {
         format: String,
         default: 'token',
+      },
+      deviceAuthorization: {
+        format: String,
+        default: 'device-authorization',
+      },
+      activate: {
+        format: String,
+        default: 'activate',
       },
       decision: {
         format: String,
@@ -264,7 +277,7 @@ export const { config, schema } = await libConfig({
         doc: 'Key to use for encrypting codes',
         format: 'file-url',
         nullable: true,
-        default: null as unknown as Promise<File | null>,
+        default: null as unknown as Promise<File | undefined>,
         env: 'AUTH_KEY_CODE',
       },
       alg: {
@@ -283,6 +296,12 @@ export const { config, schema } = await libConfig({
         },
       },
     },
+    deviceCode: {
+      expiresIn: {
+        format: 'duration',
+        default: '10 minutes' as unknown as number,
+      },
+    },
     token: {
       expiresIn: {
         format: 'duration',
@@ -292,7 +311,7 @@ export const { config, schema } = await libConfig({
         doc: 'Key to use for signing tokens',
         format: 'file-url',
         nullable: true,
-        default: null as unknown as Promise<File | null>,
+        default: null as unknown as Promise<File | undefined>,
         env: 'AUTH_KEY_TOKEN',
       },
       alg: {
@@ -310,7 +329,7 @@ export const { config, schema } = await libConfig({
         doc: 'Private key to use for signing id tokens',
         format: 'file-url',
         nullable: true,
-        default: null as unknown as Promise<File | null>,
+        default: null as unknown as Promise<File | undefined>,
         env: 'AUTH_KEY_ID_TOKEN',
       },
       alg: {
@@ -367,8 +386,6 @@ export const { config, schema } = await libConfig({
 });
 
 // Set port default based on mode?
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment, @typescript-eslint/prefer-ts-expect-error
-// @ts-ignore
 if (config.get('auth.server.port') === null) {
   switch (config.get('auth.server.mode')) {
     case 'https': {
@@ -418,7 +435,6 @@ for await (const dirname of await fs.readdir(domainsDirectory)) {
   const fname = path.join(domainsDirectory, dirname, 'config');
   for await (const extensions of ['js', 'mjs', 'cjs'] as const) {
     try {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       const { default: dConfig } = await import(`${fname}.${extensions}`); // Nosemgrep: javascript.lang.security.detect-non-literal-require.detect-non-literal-require
       domainConfigs.set(dConfig.domain, dConfig);
       break;
@@ -429,10 +445,8 @@ for await (const dirname of await fs.readdir(domainsDirectory)) {
 }
 
 const publicUri = config.get('auth.server.publicUri')
-  ? // eslint-disable-next-line @typescript-eslint/no-base-to-string
-    new URI(config.get('auth.server.publicUri')).normalize().toString()
-  : // eslint-disable-next-line @typescript-eslint/no-base-to-string
-    new URI()
+  ? new URI(config.get('auth.server.publicUri')).normalize().toString()
+  : new URI()
       .hostname(config.get('auth.server.domain'))
       .port(`${config.get('auth.server.port')}`)
       .protocol(config.get('auth.server.mode'))

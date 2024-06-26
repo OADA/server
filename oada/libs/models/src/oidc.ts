@@ -264,21 +264,16 @@ export interface AddressClaim {
  * @see {@link https://openid.net/specs/openid-connect-core-1_0.html#Claims Claims}
  * @see {@link https://openid.net/specs/openid-connect-core-1_0.html#AdditionalClaims Additional Claims}
  */
-// eslint-disable-next-line @typescript-eslint/consistent-indexed-object-style
-export interface Claims extends StandardClaims {
-  /**
-   * @see {@link https://openid.net/specs/openid-connect-core-1_0.html#AdditionalClaims Additional Claims}
-   */
-  [claim: string]: unknown;
-}
+
+export type Claims = Record<string, unknown> & StandardClaims;
 
 /**
  * End-User's default profile Claims
  *
  * @see {@link https://openid.net/specs/openid-connect-core-1_0.html#ScopeClaims Scope Claims}
  */
-export interface ProfileClaims
-  extends Pick<
+export type ProfileClaims = Record<string, unknown> &
+  Pick<
     Claims,
     | 'name'
     | 'family_name'
@@ -294,7 +289,7 @@ export interface ProfileClaims
     | 'zoneinfo'
     | 'locale'
     | 'updated_at'
-  > {}
+  >;
 
 /**
  * End-User's `email` and `email_verified` Claims
@@ -304,7 +299,8 @@ export interface ProfileClaims
  * @see {@link StandardClaims.email}
  * @see {@link StandardClaims.email_verified}
  */
-export interface EmailClaims extends Pick<Claims, 'email' | 'email_verified'> {}
+export type EmailClaims = Record<string, unknown> &
+  Pick<Claims, 'email' | 'email_verified'>;
 
 /**
  * End-User's `address` Claim
@@ -313,7 +309,7 @@ export interface EmailClaims extends Pick<Claims, 'email' | 'email_verified'> {}
  *
  * @see {@link StandardClaims.address}
  */
-export interface AddressClaims extends Pick<Claims, 'address'> {}
+export type AddressClaims = Record<string, unknown> & Pick<Claims, 'address'>;
 
 /**
  * End-User's `phone_number` and `phone_number_verified` Claims
@@ -323,5 +319,5 @@ export interface AddressClaims extends Pick<Claims, 'address'> {}
  * @see {@link StandardClaims.phone_number}
  * @see {@link StandardClaims.phone_number_verified}
  */
-export interface PhoneClaims
-  extends Pick<Claims, 'phone_number' | 'phone_number_verified'> {}
+export type PhoneClaims = Record<string, unknown> &
+  Pick<Claims, 'phone_number' | 'phone_number_verified'>;

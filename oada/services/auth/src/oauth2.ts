@@ -25,9 +25,10 @@ import {
   randomBytes,
 } from 'node:crypto';
 import type { ServerResponse } from 'node:http';
+import { join } from 'node:path/posix';
 import { promisify } from 'node:util';
 
-import type {} from '@fastify/formbody';
+import type { } from '@fastify/formbody';
 import type { FastifyPluginAsync, FastifyReply, FastifyRequest } from 'fastify';
 import { fastifyPassport } from './auth.js';
 
@@ -45,6 +46,7 @@ import {
 } from 'jose';
 import oauth2orize, {
   AuthorizationError,
+  type IssueExchangeCodeFunctionArity5,
   type IssueGrantCodeFunctionArity6,
   type IssueGrantTokenFunctionArity4,
   type MiddlewareRequest,
@@ -54,6 +56,12 @@ import oauth2orize, {
   TokenError,
   type ValidateFunctionArity2,
 } from 'oauth2orize';
+import oauth2orizeDeviceCode, {
+  type ActivateDeviceCodeFunction,
+  type ExchangeDeviceCodeFunction,
+  type IssueDeviceCodeFunction,
+} from 'oauth2orize-device-code';
+import base36 from 'random-id-base36';
 import { extensions } from 'oauth2orize-pkce';
 
 import { trustedCDP } from '@oada/lookup';
@@ -90,11 +98,13 @@ declare module 'oauth2orize' {
   // eslint-disable-next-line @typescript-eslint/no-shadow
   interface OAuth2Req {
     nonce?: string;
-    issuer: string;
+    authInfo: {
+      issuer: string;
+    };
   }
 
   // eslint-disable-next-line @typescript-eslint/no-shadow
-  interface MiddlewareRequest extends FastifyRequest {}
+  interface MiddlewareRequest extends FastifyRequest { }
 }
 interface DeserializedOauth2<C = Client> extends OAuth2 {
   client: C;
@@ -110,12 +120,14 @@ export interface Options {
     authorize?: string;
     decision?: string;
     token?: string;
+    deviceAuthorization?: string;
+    activate?: string;
   };
 }
 
 export const kid = 'oauth2-1';
-// eslint-disable-next-line @typescript-eslint/ban-types
-export async function getKeyPair(file: File | string | null, alg: string) {
+
+export async function getKeyPair(file: File | string | undefined, alg: string) {
   if (!file) {
     return generateKeyPair(alg);
   }
@@ -151,7 +163,7 @@ const JWKS = createLocalJWKSet(jwksPublic);
 /**
  * Set of claims we include in our signed JWT bearer tokens
  */
-export interface TokenClaims extends Authorization, JWTPayload {}
+export type TokenClaims = Record<string, unknown> & Authorization & JWTPayload;
 
 export async function getToken(
   issuer: string,
@@ -214,7 +226,7 @@ export const issueToken = (async (
       scope: request.scope.join(' '),
     });
     // TODO: Fill out user info
-    const token = await getToken(request.issuer, { ...auth });
+    const token = await getToken(request.authInfo.issuer, { ...auth });
     // eslint-disable-next-line unicorn/no-null
     done(null, token, { expires_in: tokenConfig.expiresIn });
   } catch (error: unknown) {
@@ -229,10 +241,10 @@ interface CodePayload {
 }
 
 const authCode = config.get('auth.code');
-const key = (await authCode.key)
+const codeKey = (await authCode.key)
   ? createSecretKey(
-      (await (await authCode.key)!.arrayBuffer()) as NodeJS.ArrayBufferView,
-    )
+    (await (await authCode.key)!.arrayBuffer()) as NodeJS.ArrayBufferView,
+  )
   : await generateSecret(authCode.alg);
 export const issueCode: IssueGrantCodeFunctionArity6 = async (
   client: Client,
@@ -266,7 +278,7 @@ export const issueCode: IssueGrantCodeFunctionArity6 = async (
 
     const payload = {
       user: user._id,
-      issuer: request.issuer,
+      issuer: request.authInfo.issuer,
       scope: request.scope.join(' '),
     } as const satisfies CodePayload;
     const code = await new EncryptJWT(payload)
@@ -275,9 +287,168 @@ export const issueCode: IssueGrantCodeFunctionArity6 = async (
       .setAudience(client.client_id)
       .setIssuedAt()
       .setExpirationTime(authCode.expiresIn)
-      .encrypt(key);
+      .encrypt(codeKey);
     // eslint-disable-next-line unicorn/no-null
     done(null, code);
+  } catch (error: unknown) {
+    done(error as Error);
+  }
+};
+
+export const exchangeCode: IssueExchangeCodeFunctionArity5<Client> = async (
+  client,
+  code,
+  redirectUri,
+  { code_verifier },
+  done,
+  // eslint-disable-next-line max-params
+) => {
+  try {
+    const { payload } = (await jwtDecrypt(code, codeKey, {
+      audience: client.client_id,
+      subject: redirectUri,
+    })) as JWTDecryptResult & { payload?: CodePayload };
+    if (!payload) {
+      throw new TokenError('Invalid code', 'invalid_code');
+    }
+
+    // Do PKCE check for the code
+    if (payload.codeChallenge) {
+      switch (payload.codeChallengeMethod) {
+        case 'plain': {
+          if (code_verifier !== payload.codeChallenge) {
+            throw new TokenError('Invalid code_verifier', 'invalid_grant');
+          }
+
+          break;
+        }
+
+        /**
+         * @see {@link https://datatracker.ietf.org/doc/html/rfc7636#section-4.6}
+         */
+        case 'S256': {
+          const sha256 = createHash('sha256');
+          const hash = sha256
+            .update(code_verifier as string)
+            .digest('base64url');
+          if (hash !== payload.codeChallenge) {
+            throw new TokenError('Invalid code_verifier', 'invalid_grant');
+          }
+
+          break;
+        }
+
+        default: {
+          throw new TokenError(
+            `Unknown code_challenge_method ${payload.codeChallengeMethod}`,
+            'invalid_grant',
+          );
+        }
+      }
+    }
+
+    const { issuer, user, scope } = payload;
+    const auth = new Authorization({
+      user: { _id: user },
+      scope,
+    });
+    const token = await getToken(issuer, {
+      ...auth,
+    });
+    const extras: Record<string, unknown> = {
+      expires_in: tokenConfig.expiresIn,
+    };
+
+    /**
+     * @todo Implement refresh tokens
+     */
+    const refresh = undefined;
+
+    // eslint-disable-next-line unicorn/no-null
+    done(null, token, refresh, extras);
+  } catch (error: unknown) {
+    done(error as Error);
+  }
+};
+
+const deviceCodeExp = config.get('auth.deviceCode.expiresIn') / 1000;
+export const issueDeviceCode: IssueDeviceCodeFunction<Client> = async (
+  _client,
+  _scope,
+  _body,
+  { issuer },
+  done,
+  // eslint-disable-next-line max-params
+) => {
+  try {
+    /**
+     * Machine-readable code for client use
+     */
+    const deviceCode =
+      `${randomBytes(15).toString('base64')}_${randomBytes(15).toString('base64')}` as const;
+
+    const id = base36.randId(8);
+    /**
+     * Human-readable code to present to user
+     */
+    const userCode =
+      `${id.slice(0, 4).toUpperCase()}-${id.slice(4).toUpperCase()}` as const;
+
+    // TODO: Record in DB for when user verifies
+
+    done(undefined, deviceCode, userCode, {
+      expires_in: deviceCodeExp,
+      toJSON() {
+        const verificationUri = new URL(`${this.verification_uri}`, issuer);
+        return {
+          ...this,
+          verification_uri: `${verificationUri}`,
+          verification_uri_complete: `${verificationUri}?user_code=${this.user_code}`,
+        };
+      },
+    });
+  } catch (error: unknown) {
+    done(error as Error);
+  }
+};
+
+export const activateDeviceCode: ActivateDeviceCodeFunction<
+  Client,
+  User
+> = async (_client, _deviceCode, _user, done) => {
+  try {
+    /*
+    Throw new TokenError(
+      'Waiting for user activation',
+      'authorization_pending',
+    );
+    */
+    done();
+  } catch (error: unknown) {
+    done(error as Error);
+  }
+};
+
+export const exchangeDeviceCode: ExchangeDeviceCodeFunction<Client> = async (
+  client,
+  _deviceCode,
+  _body,
+  { issuer },
+  done,
+  // eslint-disable-next-line max-params
+) => {
+  try {
+    // Get user/scope from DB from user activation?
+    const user = { _id: 'users/test' };
+    const scope = ['all:all'];
+
+    const auth = new Authorization({
+      client: { client_id: client.client_id },
+      user,
+      scope: scope.join(' '),
+    });
+    const token = await getToken(issuer, { ...auth });
+    done(undefined, token);
   } catch (error: unknown) {
     done(error as Error);
   }
@@ -294,15 +465,28 @@ const plugin: FastifyPluginAsync<Options> = async (
       authorize = 'auth',
       decision = 'decision',
       token: tokenEndpoint = 'token',
+      deviceAuthorization = 'device-authorization',
+      activate = 'activate',
     } = {},
   },
 ) => {
+  fastify.addHook('onRequest', async (request) => {
+    const issuer = `${request.protocol}://${request.hostname}/` as const;
+    request.authInfo = { issuer };
+  });
+
   // PKCE
   oauth2server.grant(extensions());
 
-  oauth2server.grant('*', (request) => ({
-    issuer: `${request.protocol}://${request.hostname}/` as const,
-  }));
+  // Device code flow
+  oauth2server.grant(
+    'urn:ietf:params:oauth:grant-type:device_code',
+    oauth2orizeDeviceCode.grant.deviceCode(activateDeviceCode),
+  );
+  oauth2server.exchange(
+    'urn:ietf:params:oauth:grant-type:device_code',
+    oauth2orizeDeviceCode.exchange.deviceCode(exchangeDeviceCode),
+  );
 
   if (config.get('auth.oauth2.allowImplicitFlows')) {
     // Implicit flow (token)
@@ -311,94 +495,8 @@ const plugin: FastifyPluginAsync<Options> = async (
 
   // Code flow (code)
   oauth2server.grant(oauth2orize.grant.code(issueCode));
-
   // Code flow exchange
-  oauth2server.exchange(
-    oauth2orize.exchange.code(
-      async (
-        client: Client,
-        code,
-        redirectUri,
-        { code_verifier },
-        _authInfo,
-        done,
-        // eslint-disable-next-line max-params
-      ) => {
-        try {
-          const { payload } = (await jwtDecrypt(code, key, {
-            audience: client.client_id,
-            subject: redirectUri,
-          })) as JWTDecryptResult & { payload?: CodePayload };
-          if (!payload) {
-            throw new TokenError('Invalid code', 'invalid_code');
-          }
-
-          // Do PKCE check for the code
-          if (payload.codeChallenge) {
-            switch (payload.codeChallengeMethod) {
-              case 'plain': {
-                if (code_verifier !== payload.codeChallenge) {
-                  throw new TokenError(
-                    'Invalid code_verifier',
-                    'invalid_grant',
-                  );
-                }
-
-                break;
-              }
-
-              /**
-               * @see {@link https://datatracker.ietf.org/doc/html/rfc7636#section-4.6}
-               */
-              case 'S256': {
-                const sha256 = createHash('sha256');
-                const hash = sha256
-                  .update(code_verifier as string)
-                  .digest('base64url');
-                if (hash !== payload.codeChallenge) {
-                  throw new TokenError(
-                    'Invalid code_verifier',
-                    'invalid_grant',
-                  );
-                }
-
-                break;
-              }
-
-              default: {
-                throw new TokenError(
-                  `Unknown code_challenge_method ${payload.codeChallengeMethod}`,
-                  'invalid_grant',
-                );
-              }
-            }
-          }
-
-          const { issuer, user, scope } = payload;
-          const auth = new Authorization({
-            user: { _id: user },
-            scope,
-          });
-          const token = await getToken(issuer, {
-            ...auth,
-          });
-          const extras: Record<string, unknown> = {
-            expires_in: tokenConfig.expiresIn,
-          };
-
-          /**
-           * @todo Implement refresh tokens
-           */
-          const refresh = undefined;
-
-          // eslint-disable-next-line unicorn/no-null
-          done(null, token, refresh, extras);
-        } catch (error: unknown) {
-          done(error as Error);
-        }
-      },
-    ),
-  );
+  oauth2server.exchange(oauth2orize.exchange.code(exchangeCode));
 
   // Decorate fastify reply for compatibility with connect response
   fastify.decorateReply(
@@ -442,8 +540,6 @@ const plugin: FastifyPluginAsync<Options> = async (
         done(null, false);
       } catch (error: unknown) {
         done(error as Error);
-        // eslint-disable-next-line no-useless-return
-        return;
       }
     }) as ValidateFunctionArity2),
   );
@@ -594,6 +690,30 @@ const plugin: FastifyPluginAsync<Options> = async (
       }
     },
   );
+
+  const doDeviceAuthorize = promisifyMiddleware(
+    oauth2orizeDeviceCode.middleware.authorization<Client, User>(
+      { verificationURI: join(fastify.prefix, activate) },
+      issueDeviceCode,
+    ),
+  );
+  fastify.post(deviceAuthorization, async (request, reply) => {
+    try {
+      await doDeviceAuthorize(
+        request as unknown as MiddlewareRequest<Client, User>,
+        reply as unknown as ServerResponse,
+      );
+    } catch (error: unknown) {
+      request.log.error(error, 'OAuth2 device authorization error');
+      await doErrorHandlerDirect(
+        error as Error,
+        request as unknown as MiddlewareRequest,
+        reply as unknown as ServerResponse,
+      );
+    }
+  });
+
+  fastify.get(activate, async (_request, _reply) => { });
 };
 
 export default plugin;

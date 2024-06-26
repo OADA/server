@@ -82,11 +82,13 @@ export async function addRemoteId(
 
 // FIXME: Better way to handler errors?
 // ErrorNum from: https://docs.arangodb.com/2.8/ErrorCodes/
+
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export const NotFoundError = {
   name: 'ArangoError',
   errorNum: 1202,
 };
+
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export const UniqueConstraintError = {
   name: 'ArangoError',

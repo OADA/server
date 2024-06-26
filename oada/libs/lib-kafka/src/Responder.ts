@@ -48,10 +48,10 @@ function isIterable<T>(
   );
 }
 
-export interface ConstructorOptions extends BaseConstructorOptions {
+export type ConstructorOptions = {
   consumeTopic: string;
   old?: boolean;
-}
+} & BaseConstructorOptions;
 export class Responder<Request extends KafkaBase = KafkaBase> extends Base {
   protected requests: Map<string, Generator<KafkaBase, void> | true>;
   readonly #timeout;
@@ -84,11 +84,13 @@ export class Responder<Request extends KafkaBase = KafkaBase> extends Base {
       data: EachMessagePayload,
     ) => Response<R> | Promise<Response<R>>,
   ): this;
+
   override on(
     event: string | symbol,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     listener: (...arguments_: any[]) => unknown,
   ): this;
+
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   override on<L extends (...arguments_: any[]) => unknown>(
     event: string | symbol,
@@ -180,7 +182,7 @@ export class Responder<Request extends KafkaBase = KafkaBase> extends Base {
         const { string: newId } = await ksuid.random();
 
         r[REQ_ID_KEY] = newId;
-        // eslint-disable-next-line @typescript-eslint/no-empty-function
+
         util.deprecate(() => {}, 'Please use ReResponder instead')();
       } else {
         r[REQ_ID_KEY] = id;

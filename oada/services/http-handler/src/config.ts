@@ -75,7 +75,7 @@ export const { config, schema } = await libConfig({
         doc: 'Redis URI to use for rate-limit storage',
         format: String,
         nullable: true,
-        // eslint-disable-next-line @typescript-eslint/ban-types, unicorn/no-null
+        // eslint-disable-next-line unicorn/no-null
         default: null as string | null,
         env: 'REDIS_URI',
         arg: 'redis-uri',
@@ -90,7 +90,7 @@ export const { config, schema } = await libConfig({
   'kafka': {
     topics: {
       doc: 'Kafka topic names to use',
-      // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+
       default: {
         tokenRequest: 'token_request',
         graphRequest: 'graph_request',

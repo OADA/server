@@ -35,7 +35,7 @@ await Promise.all([initArangoDB.run(), initKafka.run()]);
 info('Initialization complete');
 
 if (exit) {
-  // eslint-disable-next-line no-process-exit, unicorn/no-process-exit
+  // eslint-disable-next-line unicorn/no-process-exit, n/no-process-exit
   process.exit(0);
 }
 

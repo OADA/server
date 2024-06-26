@@ -50,8 +50,7 @@ export async function findById(id: string): Promise<Authorization | undefined> {
       FILTER t._key == ${id}
       RETURN UNSET(t, '_key')`);
 
-  // eslint-disable-next-line @typescript-eslint/ban-types
-  const t = (await cursor.next()) as Authorization | null;
+  const t = (await cursor.next()) as Authorization | undefined;
   return t ?? undefined;
 }
 
@@ -64,8 +63,8 @@ export async function findByToken(
         FILTER t.token == ${token}
         RETURN t`,
   );
-  // eslint-disable-next-line @typescript-eslint/ban-types
-  const auth = (await cursor.next()) as Authorization | null;
+
+  const auth = (await cursor.next()) as Authorization | undefined;
 
   if (!auth) {
     return undefined;

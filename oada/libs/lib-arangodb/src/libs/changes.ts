@@ -108,6 +108,7 @@ export async function getChange(
     return {
       resource_id: resourceId,
       path: '',
+      // eslint-disable-next-line unicorn/no-null
       body: null,
       type: 'delete',
     };
@@ -173,6 +174,7 @@ export async function getChangeArray(
       {
         resource_id: resourceId,
         path: '',
+        // eslint-disable-next-line unicorn/no-null
         body: null,
         type: 'delete',
       },
@@ -284,19 +286,19 @@ export async function putChange({
           type: ${type},
           resource_id: ${resId},
           number: ${number},
-          authorization_id: ${authorizationId ?? null},
-          user_id: ${userId ?? null}
+          authorization_id: ${authorizationId ?? null /* eslint-disable-line unicorn/no-null */},
+          user_id: ${userId ?? null /* eslint-disable-line unicorn/no-null */}
         } IN ${changes}
         RETURN NEW
       )
 
       LET children = (
-        FOR child IN ${children}
+  FOR child IN ${children}
           INSERT {
-            _to: child,
-            _from: doc._id,
-            path: ${path ?? null}
-          } in ${changeEdges}
+  _to: child,
+    _from: doc._id,
+      path: ${path ?? null /* eslint-disable-line unicorn/no-null */}
+} in ${changeEdges}
       )
       RETURN doc._id`,
   );

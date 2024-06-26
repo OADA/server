@@ -95,7 +95,7 @@ responder.on<WriteResponse>('request', async (request) => {
   // Run once last write finishes (whether it worked or not)
   const p = ps
     // eslint-disable-next-line github/no-then
-    .catch(() => {}) // eslint-disable-line @typescript-eslint/no-empty-function
+    .catch(() => {})
     // eslint-disable-next-line github/no-then
     .then(async () => {
       try {
@@ -117,7 +117,7 @@ responder.on<WriteResponse>('request', async (request) => {
 /**
  * Data passed from request to response
  */
-interface WriteContext extends KafkaBase {
+type WriteContext = {
   /**
    * @todo what is this?
    */
@@ -140,12 +140,12 @@ interface WriteContext extends KafkaBase {
   contentType: string;
   resource_id: string;
   path_leftover: string;
-}
+} & KafkaBase;
 
 /**
  * Interface for expected request objects
  */
-export interface WriteRequest extends WriteContext {
+export type WriteRequest = {
   'source'?: string;
   'rev'?: number;
   /**
@@ -181,17 +181,18 @@ export interface WriteRequest extends WriteContext {
    * @todo what is this?
    */
   'from_change_id'?: string[];
-}
+} & WriteContext;
 
 /**
  * Response to a write request
  */
-export interface WriteResponse extends KafkaBase, WriteContext {
+export type WriteResponse = {
   msgtype: 'write-response';
   _rev: number;
   _orev?: number;
   change_id?: string;
-}
+} & KafkaBase &
+  WriteContext;
 
 async function checkPreconditions(request: WriteRequest) {
   if (request['if-match']) {
@@ -259,7 +260,7 @@ async function doWrite(
   let path = JsonPointer.decode(request.path_leftover);
   const method: typeof resources.putResource = isDelete
     ? async (pid, partial) =>
-        resources.deletePartialResource(pid, Array.from(path), partial)
+        resources.deletePartialResource(pid, [...path], partial)
     : resources.putResource;
   const object: DeepPartial<Resource> = {};
 
@@ -455,7 +456,7 @@ export async function handleRequest(
           });
     // Send errors over kafka
     error({ request, error: cError }, message);
-    // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+
     return {
       msgtype: 'write-response',
       code: code ?? message,

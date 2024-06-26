@@ -15,8 +15,7 @@
  * limitations under the License.
  */
 
-/* eslint-disable no-console -- This is a cli command */
-/* eslint-disable @typescript-eslint/no-shadow */
+/* eslint-disable no-console */
 
 import '@oada/pino-debug';
 
@@ -53,12 +52,16 @@ import { getToken } from '../oauth2.js';
 async function getClient(iss: string) {
   try {
     const issuer = await Issuer.discover(iss);
+    const issuerUrl = new URL(issuer.metadata.issuer);
     const { metadata } = await issuer.Client.register({
       client_name: 'OADA Auth CLI',
       application_type: 'native',
-      redirect_uris: [],
+      redirect_uris: ['https://localhost:3000/redirect'],
       grant_types: ['urn:ietf:params:oauth:grant-type:device_code'],
-      token_endpoint_auth_method: 'none',
+      ...// TODO: Figure out better place for issuer specific quirks?
+      (issuerUrl.hostname.endsWith('auth0.com')
+        ? { token_endpoint_auth_method: 'none' }
+        : {}),
     });
     return new issuer.Client(metadata);
   } catch (error: unknown) {

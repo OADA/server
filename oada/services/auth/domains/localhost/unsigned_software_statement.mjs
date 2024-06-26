@@ -15,8 +15,6 @@
  * limitations under the License.
  */
 
-/* eslint-disable camelcase */
-
 export default {
   redirect_uris: ['https://localhost/oadaauth/id-redirect'],
   token_endpoint_auth_method:

@@ -5,7 +5,7 @@
   "main": "dist/index.js",
   "type": "module",
   "engines": {
-    "node": ">=16.0.0"
+    "node": ">=20.0.0"
   },
   "files": [
     "src/**/*",
@@ -37,11 +37,11 @@
     "convict": "^6.2.4",
     "convict-format-with-moment": "^6.2.0",
     "convict-format-with-validator": "^6.2.0",
-    "debug": "^4.3.4",
+    "debug": "^4.3.5",
     "dotenv": "^16.4.5",
     "json5": "^2.2.3",
-    "tslib": "2.6.2",
-    "yaml": "^2.4.1"
+    "tslib": "2.6.3",
+    "yaml": "^2.4.5"
   },
   "devDependencies": {
     "@types/convict": "^6.1.6",

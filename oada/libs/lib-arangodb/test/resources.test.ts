@@ -30,6 +30,7 @@ test.after(async () => {
 test('should find parents based on resource id', async (t) => {
   const p = await resources.getParents('/resources:default:resources_rock_123');
   t.plan(3);
+
   // eslint-disable-next-line no-unreachable-loop
   for await (const parent of p) {
     t.is(parent.path, '/rocks-index/90j2klfdjss');

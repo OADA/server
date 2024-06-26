@@ -12,10 +12,10 @@ on:
   workflow_dispatch: {}
   # Scan mainline branches and report all findings:
   push:
-    branches: ["master", "main"]
+    branches: [master, main]
   # Schedule the CI job (this method uses cron syntax):
   schedule:
-    - cron: '24 3 * * 3'
+    - cron: 24 3 * * 3
 
 jobs:
   semgrep:

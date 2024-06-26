@@ -55,6 +55,8 @@ import esMain from 'es-main';
 import qs from 'qs';
 import { serializeError } from 'serialize-error';
 
+import loadSchemas from '@oada/schemas';
+
 import { type Client, findById } from './db/models/client.js';
 import dynReg from './dynReg.js';
 import { fastifyPassport } from './auth.js';
@@ -260,7 +262,8 @@ const plugin: FastifyPluginAsync = async (f) => {
   // ----------------------------------------------------------------
   // Local user login/logout:
   await fastify.register(login, { endpoints });
-  await fastify.register(async (instance) => {
+  /*
+  Await fastify.register(async (instance) => {
     // Ensure that the local user is authenticated before proceeding
     instance.addHook('preHandler', async (request, reply) => {
       const authenticated = request.isAuthenticated();
@@ -278,6 +281,11 @@ const plugin: FastifyPluginAsync = async (f) => {
       await fastify.register(oauth2, { oauth2server, endpoints });
     }
   });
+  */
+
+  if (config.get('auth.oauth2.enable') || config.get('auth.oidc.enable')) {
+    await fastify.register(oauth2, { oauth2server, endpoints });
+  }
 
   // ----------------------------------------------------------------
   // Dynamic client registration:
@@ -346,7 +354,16 @@ export async function start(): Promise<void> {
     trustProxy,
     logger,
     ignoreTrailingSlash: true,
+    ajv: {
+      customOptions: {
+        keywords: ['tsType'],
+      },
+    },
   });
+
+  for await (const { schema } of loadSchemas()) {
+    fastify.addSchema(schema);
+  }
 
   try {
     const port = config.get('auth.server.port');
@@ -377,7 +394,7 @@ export async function start(): Promise<void> {
     }
   } catch (error: unknown) {
     fastify.log.fatal(error, 'Failed to start server');
-    throw error as Error;
+    throw error;
   }
 }
 
@@ -387,7 +404,7 @@ if (esMain(import.meta)) {
   } catch (error: unknown) {
     // eslint-disable-next-line no-console
     console.error(error);
-    // eslint-disable-next-line unicorn/no-process-exit, no-process-exit
+    // eslint-disable-next-line unicorn/no-process-exit, n/no-process-exit
     process.exit(1);
   }
 }

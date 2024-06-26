@@ -22,6 +22,8 @@
  * @packageDocumentation
  */
 
+/* eslint-disable @typescript-eslint/naming-convention */
+
 // TODO: Add more of the error codes from above link
 
 export { ArangoError } from 'arangojs/error.js';

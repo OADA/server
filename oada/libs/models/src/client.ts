@@ -45,7 +45,6 @@ class Client extends makeClass<ReadonlyDeep<OmitIndexSignature<Metadata>>>() {
 
   // eslint-disable-next-line max-params
   constructor(
-    // eslint-disable-next-line @typescript-eslint/default-param-last
     rest: Partial<Client> = {},
 
     override readonly client_id: ClientID,
@@ -55,6 +54,7 @@ class Client extends makeClass<ReadonlyDeep<OmitIndexSignature<Metadata>>>() {
       'authorization_code',
     ],
     override readonly response_types: Metadata['response_types'] = ['code'],
+    override readonly application_type: Metadata['application_type'] = 'web',
     readonly puc?: string,
     readonly licenses: ReadonlyArray<{ id: string; name: string }> = [],
     readonly trusted?: boolean,
@@ -70,7 +70,7 @@ class Client extends makeClass<ReadonlyDeep<OmitIndexSignature<Metadata>>>() {
     }
 
     // TODO: More client secret logic/configurability
-    if (!client_secret) {
+    if (this.application_type === 'native' && !client_secret) {
       this.client_secret = randomBytes(256).toString('hex');
       this.client_secret_expires_at = 0;
     }

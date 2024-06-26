@@ -117,19 +117,20 @@
     "prettier.prettierPath": "oada/.yarn/sdks/prettier/index.js",
     "typescript.tsdk": "oada/.yarn/sdks/typescript/lib",
     "typescript.enablePromptUseWorkspaceTsdk": true,
-    "eslint.nodePath": "../../.yarn/sdks",
-    "eslint.workingDirectories": [{ "directory": "./oada/", "!cwd": true }],
+    "eslint.nodePath": "../../../oada/.yarn/sdks",
     "files.exclude": {
       ".actrc": true,
-      ".history": true,
       ".dccache": true,
+      ".history": true,
       "**/.DS_Store": true,
       "**/.grunt": true,
+      "**/.history": true,
       "**/.lock-wscript": true,
       "**/.node_repl_history": true,
       "**/.npm": true,
       "**/.nyc_output": true,
       "**/.pnp.*": true,
+      "**/.test": true,
       "**/.vim": true,
       "**/.yarn": true,
       "**/*.log": true,
@@ -138,7 +139,6 @@
       "**/*.tsbuildinfo": true,
       "**/coverage": true,
       "**/dist": true,
-      "**/.test": true,
       "**/lib-cov": true,
       "**/logs": true,
       "**/node_modules": true,
@@ -211,11 +211,19 @@
       "Yaguang",
       "Zhang"
     ],
-    "eslint.useESLintClass": true,
     "licenser.author": "Open Ag Data Alliance",
     "licenser.license": "AL2",
     "commitlint.config.file": "oada/commitlint.config.cjs",
     "html.format.templating": true,
-    "html.validate.styles": false
+    "html.validate.styles": false,
+    "eslint.format.enable": true,
+    "eslint.lintTask.enable": true,
+    "eslint.useFlatConfig": true,
+    "eslint.debug": true,
+    "eslint.useESLintClass": true,
+    "eslint.validate": [
+      "typescript",
+      "javascript"
+    ]
   }
 }

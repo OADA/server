@@ -15,8 +15,6 @@
  * limitations under the License.
  */
 
-/* eslint-disable @typescript-eslint/ban-types */
-
 import type { Link } from '@oada/types/oada/link/v1.js';
 import type Resource from '@oada/types/oada/resource.js';
 
@@ -58,7 +56,7 @@ const resourceGraph = config.get('arangodb.graphs.resources.name');
 const MAX_DEPTH = 100; // TODO: Is this good?
 
 type Nullable<T> = {
-  [K in keyof T]: T[K] | null;
+  [K in keyof T]: T[K] | undefined;
 };
 
 export interface Permission {
@@ -142,6 +140,7 @@ export async function lookupFromUrl(
   const cursor = await database.query(query);
   const result: {
     rev: number;
+
     type: string | null;
     permissions: Array<Nullable<Permission>>;
     vertices:
@@ -150,7 +149,7 @@ export async function lookupFromUrl(
           is_resource: boolean;
           path?: string;
         }>
-      | [null];
+      | [undefined];
     edges:
       | ReadonlyArray<{
           _to: string;
@@ -158,9 +157,10 @@ export async function lookupFromUrl(
           name: string;
           versioned: boolean;
         }>
-      | [null];
+      | [undefined];
   } = (await cursor.next()) as {
     rev: number;
+
     type: string | null;
     permissions: Array<Nullable<Permission>>;
     vertices:
@@ -169,7 +169,7 @@ export async function lookupFromUrl(
           is_resource: boolean;
           path?: string;
         }>
-      | [null];
+      | [undefined];
     edges:
       | ReadonlyArray<{
           _to: string;
@@ -177,27 +177,27 @@ export async function lookupFromUrl(
           name: string;
           versioned: boolean;
         }>
-      | [null];
+      | [undefined];
   };
 
   // Get rid of leading slash from json pointer
-  let resource_id = JsonPointer.create(id.concat(pieces))
+  let resourceId = JsonPointer.create(id.concat(pieces))
     .toString()
     .replace(/^\//, '');
 
   let { rev, type, edges, vertices } = result;
   let resourceExists = true;
 
-  let path_leftover = '';
+  let pathLeftover = '';
   let from;
 
   if (!result) {
-    trace('1 return resource id %s', resource_id);
+    trace('1 return resource id %s', resourceId);
     return {
       resourceExists: false,
       permissions: {},
-      resource_id,
-      path_leftover,
+      resource_id: resourceId,
+      path_leftover: pathLeftover,
       from,
       rev,
     };
@@ -246,16 +246,17 @@ export async function lookupFromUrl(
 
     return false;
   });
+  // eslint-disable-next-line unicorn/no-null
   type = permissions.type ?? null;
 
   // Check for a traversal that did not finish (aka not found)
   if (vertices[0] === null) {
     trace('graph-lookup traversal did not finish');
-    trace('2 return resource id %s', resource_id);
+    trace('2 return resource id %s', resourceId);
 
     return {
-      resource_id,
-      path_leftover,
+      resource_id: resourceId,
+      path_leftover: pathLeftover,
       from,
       permissions,
       rev,
@@ -268,22 +269,22 @@ export async function lookupFromUrl(
   // A dangling edge indicates uncreated resource; return graph lookup
   // starting at this uncreated resource
   if (lastV) {
-    resource_id = lastV.resource_id;
-    trace('graph-lookup traversal found resource %s', resource_id);
+    resourceId = lastV.resource_id;
+    trace('graph-lookup traversal found resource %s', resourceId);
     const fromV = vertices.at(-2);
     const edge = edges.at(-1);
     // If the desired url has more pieces than the longest path, the
     // pathLeftover is the extra pieces
     if (vertices.length - 1 < pieces.length) {
-      const revVertices = Array.from(cloneDeep(vertices)).reverse();
+      const revVertices = [...cloneDeep(vertices)].reverse();
       const lastResource =
         vertices.length - 1 - revVertices.findIndex((v) => v?.is_resource);
       // Slice a negative value to take the last n pieces of the array
-      path_leftover = JsonPointer.create(
+      pathLeftover = JsonPointer.create(
         pieces.slice(lastResource - pieces.length),
       ).toString();
     } else {
-      path_leftover = lastV.path ?? '';
+      pathLeftover = lastV.path ?? '';
     }
 
     from = {
@@ -294,11 +295,11 @@ export async function lookupFromUrl(
     };
   } else {
     const lastEdge = edges.at(-1)?._to;
-    path_leftover = '';
-    resource_id = `resources/${
+    pathLeftover = '';
+    resourceId = `resources/${
       lastEdge?.split('graphNodes/resources:')[1] ?? ''
     }`;
-    trace('graph-lookup traversal uncreated resource %s', resource_id);
+    trace('graph-lookup traversal uncreated resource %s', resourceId);
     rev = 0;
     const fromV = vertices.at(-2);
     const edge = edges.at(-1);
@@ -314,8 +315,8 @@ export async function lookupFromUrl(
   return {
     type: type ?? undefined,
     rev,
-    resource_id,
-    path_leftover,
+    resource_id: resourceId,
+    path_leftover: pathLeftover,
     permissions,
     from,
     resourceExists,
@@ -370,7 +371,7 @@ export async function getResource(
       return undefined;
     }
 
-    throw error as Error;
+    throw error;
   }
 }
 
@@ -407,7 +408,7 @@ export async function getResourceOwnerIdRev(
       return undefined;
     }
 
-    throw error as Error;
+    throw error;
   }
 }
 
@@ -443,7 +444,7 @@ export async function getParents(id: string) {
       })();
     }
 
-    throw error as Error;
+    throw error;
   }
 }
 
@@ -712,7 +713,7 @@ export async function deletePartialResource(
   const key = id.replace(/^resources\//, '');
   const pointer = new JsonPointer(inPath);
 
-  const path = pointer.path.slice();
+  const path = [...pointer.path];
   const name = path.pop();
 
   const resource = aql`DOCUMENT(${resources}, ${key})`;
@@ -731,7 +732,9 @@ export async function deletePartialResource(
   );
   const hasObject = (await cursor.next()) as { has: boolean; rev: number };
   if (hasObject.has) {
+    // eslint-disable-next-line unicorn/no-null
     pointer.set(document, null);
+    // eslint-disable-next-line unicorn/no-null
     const sPath = JsonPointer.create(path).toString() || null;
 
     // ???: Why the heck does arango error if I update resource before graph?

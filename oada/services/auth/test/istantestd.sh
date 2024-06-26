@@ -16,44 +16,44 @@
 #
 
 function check_success {
-  if (( $? > 0 )); then echo "Unable to prepare test environment.." && exit 1; fi
+  if (($? > 0)); then echo "Unable to prepare test environment.." && exit 1; fi
 }
 SIGINT=2
 NPM=npm
 PORT=8443
 cd ../
 ROOTPATH=$(pwd)
-$NPM run clean
+${NPM} run clean
 check_success
 #$NPM install
 echo "Cloning test.."
 git clone -b authorization https://github.com/OADA/oada-compliance.git test/oada-compliance
 check_success
-cd test/oada-compliance && $NPM install
-cd $ROOTPATH
+cd test/oada-compliance && ${NPM} install
+cd "${ROOTPATH}" || exit
 echo "Starting instrumented server.."
-PORT=$PORT istanbul cover -x "*gulpfile.js*" --include-all-sources --handle-sigint index.js -- ./config.js &
+PORT=${PORT} istanbul cover -x "*gulpfile.js*" --include-all-sources --handle-sigint index.js -- ./config.js &
 PID=$!
-echo "PID " $PID
+echo "PID " "${PID}"
 
 while true; do
-	echo "Waiting for server to start"
-	curl --insecure https://localhost:$PORT
-	if (( $? == 0 )); then
-		break
-	fi
-	sleep 1
+  echo "Waiting for server to start"
+  curl --insecure https://localhost:"${PORT}"
+  if (($? == 0)); then
+    break
+  fi
+  sleep 1
 done
 
 # Run the test here
 echo "Running testcases.."
-cd test/oada-compliance
+cd test/oada-compliance || exit
 ECODE=0
 ./test authorization
-if (( $? > 0 )); then
+if (($? > 0)); then
   echo "Test failed! Log below"
-	ECODE=1
+  ECODE=1
 fi
-kill -$SIGINT $PID
-wait $PID
-exit $ECODE
+kill -"${SIGINT}" "${PID}"
+wait "${PID}"
+exit "${ECODE}"

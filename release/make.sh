@@ -1,6 +1,5 @@
 #!/bin/sh
 
-
 # Find directory where this file is
 SCRIPT=$(readlink -f "$0")
 SCRIPTPATH=$(dirname "${SCRIPT}")
@@ -8,7 +7,7 @@ SCRIPTPATH=$(dirname "${SCRIPT}")
 OVERRIDES=${SCRIPTPATH}/docker-compose.override.yml
 
 if [ -z "${RELEASE_VERSION}" ]; then
-    RELEASE_VERSION=${OADA_VERSION}
+  RELEASE_VERSION=${OADA_VERSION}
 fi
 
 # Pull desired version of images
@@ -19,39 +18,38 @@ echo "# OADA release ${RELEASE_VERSION} compose file ($(date))\n"
 
 # Load config, clean anything potentially not fit for release, merge overrides
 docker-compose \
-    --env-file="${SCRIPTPATH}/.env" \
-    -f "${SCRIPTPATH}/../docker-compose.yml" \
-    -f "${OVERRIDES}" \
-    config --resolve-image-digests | {
-    #  Remove build info
-    yq 'del(.. | select(has("build")).build)'
+  --env-file="${SCRIPTPATH}/.env" \
+  -f "${SCRIPTPATH}/../docker-compose.yml" \
+  -f "${OVERRIDES}" \
+  config --resolve-image-digests | {
+  #  Remove build info
+  yq 'del(.. | select(has("build")).build)'
 } | {
-    #  Remove dev volumes?
-    yq 'del(.. | select(has("volumes")).volumes)'
+  #  Remove dev volumes?
+  yq 'del(.. | select(has("volumes")).volumes)'
 } | {
-    #  Remove dev environments?
-    yq 'del(.. | select(has("environment")).environment)'
+  #  Remove dev environments?
+  yq 'del(.. | select(has("environment")).environment)'
 } | {
-    #  Remove dev ports?
-    yq 'del(.. | select(has("ports")).ports)'
+  #  Remove dev ports?
+  yq 'del(.. | select(has("ports")).ports)'
 } | {
-    #  Remove name
-    yq 'del(.name)'
+  #  Remove name
+  yq 'del(.name)'
 } | {
-    # Merge in release settings
-    yq "load(\"${OVERRIDES}\") *n ."
+  # Merge in release settings
+  yq "load(\"${OVERRIDES}\") *n ."
 } | {
-    # Explode anchors
-    # They are technically valid yaml but they were giving me issues
-    yq 'explode(.)'
+  # Explode anchors
+  # They are technically valid yaml but they were giving me issues
+  yq 'explode(.)'
 } | {
-    #  Remove x-release
-    yq 'del(.x-release)'
+  #  Remove x-release
+  yq 'del(.x-release)'
 } | {
-    # Sort the output by key
-    yq 'sortKeys(..)'
+  # Sort the output by key
+  yq 'sortKeys(..)'
 } | {
-    # Allow pulling our images by tag OADA_VERSION, or default to this digest
-    sed "s/image: oada\/\(.*\)\(@.*\)/image: oada\/\1:\${OADA_VERSION:-$OADA_VERSION\2}/"
+  # Allow pulling our images by tag OADA_VERSION, or default to this digest
+  sed "s/image: oada\/\(.*\)\(@.*\)/image: oada\/\1:\${OADA_VERSION:-${OADA_VERSION}\2}/"
 }
-

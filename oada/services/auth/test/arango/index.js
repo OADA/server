@@ -15,7 +15,6 @@
  * limitations under the License.
  */
 
-import _ from 'lodash';
 import { expect } from 'chai';
 import oadaLib from '@oada/lib-arangodb';
 const libs = {
@@ -69,7 +68,7 @@ describe('arango driver', () => {
     });
 
     it('should be able to successfully save a new client', (done) => {
-      const newclient = _.cloneDeep(clientdocs[0]);
+      const newclient = structuredClone(clientdocs[0]);
       delete newclient._key;
       delete newclient._id;
       newclient.clientId = '12345abcd';
@@ -91,7 +90,7 @@ describe('arango driver', () => {
     });
 
     it('should be able to successfully save a new code', (done) => {
-      const newcode = _.cloneDeep(codedocs[0]);
+      const newcode = structuredClone(codedocs[0]);
       delete newcode._key;
       delete newcode._id;
       newcode.code = '012345abcd';
@@ -114,7 +113,7 @@ describe('arango driver', () => {
     });
 
     it('should be able to successfully save a new token', (done) => {
-      const newtoken = _.cloneDeep(tokendocs[0]);
+      const newtoken = structuredClone(tokendocs[0]);
       delete newtoken._key;
       delete newtoken._id;
       newtoken.token = '012345abcd';

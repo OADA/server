@@ -44,7 +44,7 @@ services:
       args:
         OADA_SERVICE: http-handler
     healthcheck:
-      test: [ 'CMD', 'yarn', 'healthcheck' ]
+      test: [ CMD, yarn, healthcheck ]
     depends_on:
       - startup
     networks:
@@ -204,7 +204,7 @@ services:
       # - ARANGO_RANDOM_ROOT_PASSWORD=1
       ARANGO_NO_AUTH: 1
       ARANGO_STORAGE_ENGINE: rocksdb
-    command: [ 'arangod', '--server.statistics=false' ]
+    command: [ arangod, --server.statistics=false ]
 
   # Redpanda is API compatible with kafka.
   redpanda:
@@ -292,7 +292,7 @@ services:
       - prometheus_config:/etc/prometheus
     user: root
     entrypoint:
-      - '/bin/sh'
+      - /bin/sh
       - -c
     command:
       - |
@@ -312,7 +312,7 @@ services:
     networks:
       grafana_net:
     ports:
-      - '3000:3000'
+      - 3000:3000
     volumes:
       - grafana_data:/var/lib/grafana
       - grafana_prov:/etc/grafana/provisioning
@@ -331,7 +331,7 @@ services:
     volumes:
       - grafana_prov:/etc/grafana/provisioning
     entrypoint:
-      - '/bin/sh'
+      - /bin/sh
       - -c
     command:
       - |
@@ -355,7 +355,7 @@ services:
     volumes:
       - grafana_prov:/etc/grafana/provisioning
     entrypoint:
-      - '/bin/sh'
+      - /bin/sh
       - -c
     command:
       - |
@@ -382,7 +382,7 @@ services:
       - grafana_data:/var/lib/grafana
       - grafana_prov:/etc/grafana/provisioning
     entrypoint:
-      - '/bin/sh'
+      - /bin/sh
       - -c
     command:
       - |
@@ -416,14 +416,14 @@ networks:
 x-mutagen:
   forward:
     agrango:
-      source: 'tcp:localhost:8529'
-      destination: 'network://arango_net:tcp:arangodb:8529'
+      source: tcp:localhost:8529
+      destination: network://arango_net:tcp:arangodb:8529
     kafka:
-      source: 'tcp:localhost:9092'
-      destination: 'network://kafka_net:tcp:kafka:9092'
+      source: tcp:localhost:9092
+      destination: network://kafka_net:tcp:kafka:9092
     prometheus:
-      source: 'tcp:localhost:9090'
-      destination: 'network://grafana_net:tcp:prometheus:9090'
+      source: tcp:localhost:9090
+      destination: network://grafana_net:tcp:prometheus:9090
     grafana:
-      source: 'tcp:localhost:3000'
-      destination: 'network://grafana_net:tcp:grafana:3000'
+      source: tcp:localhost:3000
+      destination: network://grafana_net:tcp:grafana:3000

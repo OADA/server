@@ -16,7 +16,7 @@
  */
 
 /* eslint-disable unicorn/prefer-module */
-/* eslint-disable @typescript-eslint/no-require-imports */
+
 /* eslint-disable import/no-dynamic-require */
 
 import { resolve } from 'node:path';

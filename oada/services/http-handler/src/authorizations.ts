@@ -27,8 +27,8 @@ export interface Options {
 
 async function addClientToAuth(
   request: FastifyRequest,
-  // eslint-disable-next-line @typescript-eslint/ban-types
-  auth: authorizations.Authorization | null,
+
+  auth: authorizations.Authorization | undefined,
 ) {
   if (auth?.clientId) {
     request.log.trace(
@@ -58,8 +58,8 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, _options) => {
   fastify.get('/', async (request, reply) => {
     const results = await authorizations.findByUser(request.user!._id);
 
-    // eslint-disable-next-line @typescript-eslint/ban-types
-    const response: Record<string, authorizations.Authorization | null> = {};
+    const response: Record<string, authorizations.Authorization | undefined> =
+      {};
     for await (const auth of results) {
       const k = auth._id.replace(/^authorizations\//, '');
       response[k] = await addClientToAuth(request, auth);

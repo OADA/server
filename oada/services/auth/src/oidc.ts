@@ -104,10 +104,10 @@ const jwksPrivate = {
 export const issueIdToken: IssueIDToken<Client, User> = async (
   client,
   user,
-  req,
+  request,
   done,
 ) => {
-  const userinfoScope: string[] = req.userinfo ? req.scope : [];
+  const userinfoScope: string[] = request.userinfo ? request.scope : [];
   const userinfo = createUserinfo(
     user as unknown as Record<string, unknown>,
     userinfoScope,
@@ -115,7 +115,7 @@ export const issueIdToken: IssueIDToken<Client, User> = async (
 
   const payload: Record<string, unknown> = {
     ...userinfo,
-    nonce: req.nonce,
+    nonce: request.nonce,
   };
 
   const token = await new SignJWT(payload)
@@ -123,7 +123,7 @@ export const issueIdToken: IssueIDToken<Client, User> = async (
     .setIssuedAt()
     .setExpirationTime(idToken.expiresIn)
     .setAudience(client.client_id)
-    .setIssuer(req.issuer)
+    .setIssuer(request.authInfo.issuer)
     .setSubject(user._id)
     .sign(privateKey);
   // eslint-disable-next-line unicorn/no-null
@@ -336,6 +336,7 @@ const plugin: FastifyPluginAsync<Options> = async (
             {
               failWithError: true,
             },
+
             // eslint-disable-next-line max-params
             async (req, res, error, user, info, status) => {
               const cause = error ?? (info instanceof Error ? info : undefined);
@@ -355,7 +356,7 @@ const plugin: FastifyPluginAsync<Options> = async (
       process.env.NODE_ENV === 'production' ? 'Logged in' : request.user,
   );
 
-  fastify.get(config.get('auth.endpoints.certs'), async () => jwksPublic);
+  fastify.get(config.get('auth.endpoints.certs'), () => jwksPublic);
 
   fastify.get(
     config.get('auth.endpoints.userinfo'),
@@ -382,6 +383,7 @@ const plugin: FastifyPluginAsync<Options> = async (
     registration_endpoint: `.${join('/', fastify.prefix, config.get('auth.endpoints.register'))}`,
     authorization_endpoint: `.${join('/', fastify.prefix, config.get('auth.endpoints.authorize'))}`,
     token_endpoint: `.${join('/', fastify.prefix, config.get('auth.endpoints.token'))}`,
+    device_authorization_endpoint: `.${join('/', fastify.prefix, config.get('auth.endpoints.deviceAuthorization'))}`,
     userinfo_endpoint: `.${join('/', fastify.prefix, config.get('auth.endpoints.userinfo'))}`,
     jwks_uri: `.${join('/', fastify.prefix, config.get('auth.endpoints.certs'))}`,
     response_types_supported: [
@@ -402,12 +404,12 @@ const plugin: FastifyPluginAsync<Options> = async (
 
   // Redirect other OIDC config endpoints to openid-configuration endpoint
   await fastify.register(
-    async (app) => {
-      app.all('/oada-configuration', async (_request, reply) =>
-        reply.redirect(301, 'openid-configuration'),
+    (app) => {
+      app.all('/oada-configuration', {}, async (_request, reply) =>
+        reply.redirect('openid-configuration', 301),
       );
-      app.all('/oauth-authorization-server', async (_request, reply) =>
-        reply.redirect(301, 'openid-configuration'),
+      app.all('/oauth-authorization-server', {}, async (_request, reply) =>
+        reply.redirect('openid-configuration', 301),
       );
     },
     { prefix: '/.well-known/' },

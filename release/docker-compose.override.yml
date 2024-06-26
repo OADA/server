@@ -18,7 +18,7 @@ x-release:
     &env
     CONFIG: ${OADA_CONFIG-/oada.config.mjs}
     NODE_ENV: ${NODE_ENV-production}
-    NODE_OPTIONS: "$$INSPECT --enable-source-maps --unhandled-rejections=strict"
+    NODE_OPTIONS: $$INSPECT --enable-source-maps --unhandled-rejections=strict
     DEBUG: ${DEBUG-*}
     INSPECT: ${INSPECT-}
     PINO_LEVEL: ${PINO_LEVEL-info}
@@ -193,14 +193,14 @@ x-mutagen:
   # see https://mutagen.io/documentation/orchestration/compose
   forward:
     agrango:
-      source: 'tcp:localhost:8529'
-      destination: 'network://arango_net:tcp:arangodb:8529'
+      source: tcp:localhost:8529
+      destination: network://arango_net:tcp:arangodb:8529
     kafka:
-      source: 'tcp:localhost:9092'
-      destination: 'network://kafka_net:tcp:kafka:9092'
+      source: tcp:localhost:9092
+      destination: network://kafka_net:tcp:kafka:9092
     prometheus:
-      source: 'tcp:localhost:9090'
-      destination: 'network://grafana_net:tcp:prometheus:9090'
+      source: tcp:localhost:9090
+      destination: network://grafana_net:tcp:prometheus:9090
     grafana:
-      source: 'tcp:localhost:3000'
-      destination: 'network://grafana_net:tcp:grafana:3000'
+      source: tcp:localhost:3000
+      destination: network://grafana_net:tcp:grafana:3000

@@ -59,6 +59,7 @@ export async function discoverConfiguration(issuer: string | URL) {
 }
 
 const trustProxy = config.get('trustProxy');
+
 // eslint-disable-next-line new-cap
 const fastify = Fastify({
   trustProxy,
@@ -169,8 +170,11 @@ await fastify.register(
           }
         }),
       );
-      // eslint-disable-next-line @typescript-eslint/ban-types
-      return Object.assign(payload as object, ...rest) as unknown;
+
+      return Object.assign(
+        payload as Record<string, unknown>,
+        ...rest,
+      ) as unknown;
     });
 
     // Include well_known_handler AFTER the subservices check so that
@@ -182,6 +186,7 @@ await fastify.register(
 
 const stats = nstats();
 const plugin = stats.fastify();
+// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
 plugin[Symbol.for('plugin-meta')].fastify = '>=3.0.0';
 await fastify.register(plugin);
 

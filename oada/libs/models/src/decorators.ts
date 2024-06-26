@@ -38,7 +38,6 @@ export function destructure<T, R extends [...unknown[]]>(
         a.push(argument[property]);
       }
 
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-call
       super(argument, ...a);
     }
   } as unknown as Class<T, [Partial<T>]>;

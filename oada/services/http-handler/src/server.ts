@@ -21,7 +21,7 @@ import { config } from './config.js';
 
 import { KafkaError } from '@oada/lib-kafka';
 import { nstats } from '@oada/lib-prom';
-import { users as userDb } from '@oada/lib-arangodb';
+import { users as userDatabase } from '@oada/lib-arangodb';
 
 import { plugin as formats } from '@oada/formats-server';
 
@@ -119,6 +119,7 @@ mixins.push(() => ({
 }));
 
 const trustProxy = config.get('trustProxy');
+
 // eslint-disable-next-line new-cap
 export const fastify = Fastify({
   trustProxy,
@@ -206,13 +207,13 @@ const { enabled, maxRequests, timeWindow, redis, useDraftSpec } =
   config.get('server.rateLimit');
 if (enabled) {
   const options: RateLimitPluginOptions = {
-    async keyGenerator(request) {
+    keyGenerator(request) {
       const mode = ['PUT', 'POST', 'DELETE'].includes(request.method)
         ? 'write'
         : 'read';
       return `${request.ip}-${mode}`;
     },
-    async max(request) {
+    max(request) {
       return ['PUT', 'POST', 'DELETE'].includes(request.method)
         ? maxRequests.write
         : maxRequests.read;
@@ -347,7 +348,7 @@ await fastify.register(fastifyJwtJwks, {
 
   issuer: [
     `${issuer}`,
-    // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+
     {
       test(value: string) {
         return requestContext.get('issuer') === value;
@@ -365,7 +366,7 @@ async function enureOIDCUser({ sub, iss, ...rest }: TokenClaims) {
     throw new Error('OIDC: No sub in claims');
   }
 
-  const u = await userDb.findByOIDCToken({
+  const u = await userDatabase.findByOIDCToken({
     sub,
     iss: iss ?? requestContext.get('issuer')!,
   });
@@ -458,6 +459,7 @@ await fastify.register(async (instance) => {
 
 const stats = nstats(fastify.websocketServer);
 const plugin = stats.fastify();
+// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
 plugin[Symbol.for('plugin-meta')].fastify = '>=3.0.0';
 await fastify.register(plugin);
 
@@ -466,7 +468,7 @@ if (esMain(import.meta)) {
     await start();
   } catch (error: unknown) {
     fastify.log.fatal({ error }, 'Failed to start server');
-    // eslint-disable-next-line unicorn/no-process-exit
+    // eslint-disable-next-line unicorn/no-process-exit, n/no-process-exit
     process.exit(1);
   }
 }
@@ -481,10 +483,10 @@ async function close(error: Error): Promise<void> {
     await fastify.close();
   } finally {
     // Always exit
-    // eslint-disable-next-line unicorn/no-process-exit
+    // eslint-disable-next-line unicorn/no-process-exit, n/no-process-exit
     process.exit(1);
   }
 }
 
-process.on('uncaughtException', close);
-process.on('unhandledRejection', close);
+process.on('uncaughtException', (error) => void close(error));
+process.on('unhandledRejection', (error) => void close(error as Error));
