@@ -45,7 +45,9 @@ export default [
           use: 'sig',
           alg: 'RS256',
           kid: 'nc63dhaSdd82w32udx6v',
+          // @ts-expect-error nonsese with JWK type
           n: 'AKj8uuRIHMaq-EJVf2d1QoB1DSvFvYQ3Xa1gvVxaXgxDiF9-Dh7bO5f0VotrYD05MqvY9X_zxF_ioceCh3_rwjNFVRxNnnIfGx8ooOO-1f4SZkHE-mbhFOe0WFXJqt5PPSL5ZRYbmZKGUrQWvRRy_KwBHZDzD51b0-rCjlqiFh6N',
+          // @ts-expect-error nonsese with JWK type
           e: 'AQAB',
         },
       ],
@@ -69,7 +71,9 @@ export default [
           use: 'sig',
           alg: 'RS256',
           kid: 'xkja3u7ndod83jxnzhs6',
+          // @ts-expect-error nonsese with JWK type
           n: 'AMnhs6vxl2miCgEGyfqAnwUWeyIMcD9taodazMOJOLUXIKarMExjdVjadmPuEbD9wsz9Fao3X7NPCWuLQKD1aDSRAVJFLANGAFjEhGMLo8pFRFUZQX-SK1k8agpPoJUgOgPJNaY4-YPOqudzaK53EiF0Ab3pSnLX8GjZwZfdNfYM9cMrk_3SJVYAYKJUtGnuuARnTOve-7U_Pl5Kstn8mDsRnDuiOBBRIEcBNHuz3tHNrORyr2pz7qwujbIxfpHYHaWfw29EgoZ4rjF42Bf8DCEeewiq8i5TzFLdgPPg50w-kY2Q7oSeqh4ua_n3JTdru8X1TpD4Ftn8b-03opRJ2vE',
+          // @ts-expect-error nonsese with JWK type
           e: 'AQAB',
         },
       ],

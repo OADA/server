@@ -136,6 +136,7 @@ export class ResponderRequester extends Base {
     event: 'request',
     listener: (reg: Request & KafkaBase) => Response<R> | Promise<Response<R>>,
   ): this;
+
   override on(
     event: typeof DATA,
     listener: (
@@ -146,11 +147,13 @@ export class ResponderRequester extends Base {
       ...rest: any[]
     ) => unknown,
   ): this;
+
   override on(
     event: string | symbol,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     listener: (...arguments_: any[]) => unknown,
   ): this;
+
   override on(
     event: string | symbol,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any

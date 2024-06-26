@@ -63,7 +63,6 @@ class Watch {
    */
   readonly requests = new Set<string>();
   readonly resourceId;
-
   readonly #send;
   readonly #cb;
 
@@ -97,7 +96,7 @@ class Watch {
     const message = {
       resourceId,
       change,
-      requestId: Array.from(requests) as [string, ...string[]],
+      requestId: [...requests] as [string, ...string[]],
     };
 
     void this.sendChange(message);
@@ -106,7 +105,7 @@ class Watch {
 
 function parseRequest(data: WebSocket.Data): SocketRequest {
   // Assert(typeof data === 'string');
-  // eslint-disable-next-line @typescript-eslint/no-base-to-string
+
   const message: unknown = JSON.parse(data.toString());
 
   // Assert type
@@ -412,8 +411,10 @@ const plugin: FastifyPluginAsync = async (fastify) => {
                 sendRev,
                 message.requestId,
               );
+
               // eslint-disable-next-line no-await-in-loop
               const change = await changes.getChangeArray(resourceId, sendRev);
+
               // eslint-disable-next-line no-await-in-loop
               await watch.sendChange({
                 requestId: [message.requestId],

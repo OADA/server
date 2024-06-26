@@ -156,7 +156,6 @@ test('should respond to a request', async (t) => {
 
   const emitter = new EventEmitter();
   await cons.run({
-    // eslint-disable-next-line @typescript-eslint/no-shadow
     async eachMessage({ message: { value } }) {
       // Assume all messages are JSON
       const v: unknown = value && JSON.parse(value.toString());

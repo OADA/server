@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-/* eslint-disable no-process-exit, unicorn/no-process-exit -- This is a cli command */
+/* eslint-disable unicorn/no-process-exit, n/no-process-exit -- This is a cli command */
 
 import '@oada/pino-debug';
 import { config } from './config.js';
@@ -38,6 +38,7 @@ const trace = debug('useradd:trace');
 
 async function findUserByUsername(username: string) {
   const like = await users.like({ username });
+
   // eslint-disable-next-line no-unreachable-loop
   for await (const user of like) {
     trace({ user }, 'findUserByUsername: Finished users.like');

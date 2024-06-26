@@ -48,7 +48,7 @@ test('should save a token', async (t) => {
 
   await authorizations.save({
     ...token,
-    // @ts-expect-error
+    // @ts-expect-error secrey key
     _key: `${token._key}-no-duplicates`,
     token: 'abc-no-duplicates',
     user: {

@@ -154,7 +154,7 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
     const path =
       request.method === 'POST'
         ? // Treat POST as PUT put append random id
-          join(url, id)
+        join(url, id)
         : url.replace(/\/$/, '');
     request.oadaPath = path;
   });
@@ -639,8 +639,8 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
   fastify.delete('*', async (request, reply) => {
     let path = request.oadaPath;
     let { rev: _, ...oadaGraph } = request.oadaGraph;
-    // eslint-disable-next-line prefer-destructuring
-    let resourceExists = request.resourceExists;
+
+    let { resourceExists } = request;
 
     // Don't let users delete their shares?
     noModifyShares(request, reply);

@@ -26,7 +26,6 @@ export function isArray(
 }
 
 type Arguments<M extends MiddlewareFunction | MiddlewareErrorFunction> =
-  // eslint-disable-next-line @typescript-eslint/ban-types
   Parameters<M> extends [...rest: infer R, next: unknown] ? R : [];
 export function promisifyMiddleware<
   M extends MiddlewareFunction | MiddlewareErrorFunction,

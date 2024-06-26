@@ -15,7 +15,10 @@
  * limitations under the License.
  */
 
-/** @type string */
+// @ts-check
+
+import process from 'node:process';
+
 const domain = process.env.DOMAIN || 'localhost';
 
 export default {
@@ -166,13 +169,12 @@ export default {
       { resource: 'openid-configuration', base: 'http://auth:8080' },
     ],
     'openid-configuration': {
-      // eslint-disable-next-line camelcase
       well_known_version: '1.1.0',
-      // eslint-disable-next-line camelcase
+
       oada_version: '3.5.1',
-      // eslint-disable-next-line camelcase
+
       oada_base_uri: './',
-      // eslint-disable-next-line camelcase
+
       scopes_supported: [
         {
           'name': 'oada.all.1', // Can do anything the user can do

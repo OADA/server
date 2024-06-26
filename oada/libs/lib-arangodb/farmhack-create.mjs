@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-/* eslint-disable camelcase, sonarjs/no-duplicate-string */
+/* eslint-disable sonarjs/no-duplicate-string */
 
 import { config } from './dist/config.js';
 

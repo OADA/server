@@ -39,7 +39,7 @@ export interface Graph {
 /**
  * @todo actually validate format?
  */
-// eslint-disable-next-line @typescript-eslint/no-empty-function
+
 export function collection(_value: unknown): asserts _value is Collection {}
 
 export const { config, schema } = await libConfig({
@@ -93,6 +93,7 @@ export const { config, schema } = await libConfig({
       doc: 'Ensure the default (i.e., debug) documents are loaded',
       format: Boolean,
       nullable: true,
+      // eslint-disable-next-line unicorn/no-null
       default: null,
       // This name is for historical reasons
       env: 'arangodb__ensureDefaults',
@@ -124,7 +125,7 @@ export const { config, schema } = await libConfig({
         env: 'ARANGODB_PASSWORD',
       },
     },
-    // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+
     collections: {
       users: {
         format: Object, // Collection,,
@@ -218,7 +219,7 @@ export const { config, schema } = await libConfig({
       },
       // HACK: convict types don't understand assert
     } as Record<string, { default: Collection }>,
-    // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+
     graphs: {
       resources: {
         format: Object, // Graph,,
@@ -270,7 +271,6 @@ export const { config, schema } = await libConfig({
     },
     init: {
       defaultData: {
-        // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
         default: {} as Record<string, string>,
       },
     },
@@ -288,7 +288,8 @@ export const { config, schema } = await libConfig({
       format: String,
       sensitive: true,
       nullable: true,
-      // eslint-disable-next-line @typescript-eslint/ban-types
+
+      // eslint-disable-next-line unicorn/no-null
       default: null as string | null,
       env: 'BCRYPT_SALT',
     },

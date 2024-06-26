@@ -51,12 +51,14 @@ export
 @destructure
 class User extends makeClass<Except<Claims, 'sub'>>() {
   constructor(user?: Partial<User>);
+
   // eslint-disable-next-line max-params
   constructor(
     user: Partial<User> = {},
     /**
      * Our unique ID for this user
      */
+
     // eslint-disable-next-line @typescript-eslint/naming-convention
     public readonly _id = `users/${generate()}` as UserID,
     public domain = 'localhost',

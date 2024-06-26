@@ -23,8 +23,6 @@ import { Database } from 'arangojs';
 
 import { cleanup, run } from '../dist/init.js';
 
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment, @typescript-eslint/prefer-ts-expect-error
-// @ts-ignore
 const databaseName = config.get('arangodb.database');
 
 const arangodb = new Database({

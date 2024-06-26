@@ -9,7 +9,7 @@ maintainers:
     email: alex@layton.in
 type: application
 version: 3.4.0
-appVersion: '3.10.0'
+appVersion: 3.10.0
 annotations:
   artifacthub.io/recommendations: |
     - url: https://artifacthub.io/packages/helm/cert-manager/cert-manager

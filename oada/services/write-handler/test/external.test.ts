@@ -29,9 +29,8 @@ const middleID = `resources/WRITEHANDLERTEST_MIDDLE1`;
 const bottomID = `resources/WRITEHANDLERTEST_BOTTOM1`;
 
 const con = await connect({
-  domain: process.env.DOMAIN || 'localhost',
-
-  token: process.env.TOKEN || 'god',
+  domain: process.env.DOMAIN ?? 'localhost',
+  token: process.env.TOKEN ?? 'god',
 });
 
 test.beforeEach(async (t) => {
@@ -84,7 +83,7 @@ async function buildTree(t: ExecutionContext) {
     });
   } catch (error: unknown) {
     t.log(error, 'FAILED TO BUILD TREE');
-    throw error as Error;
+    throw error;
   }
 }
 

@@ -21,7 +21,6 @@ import libConfig from '@oada/lib-config';
 export const { config, schema } = await libConfig({
   kafka: {
     topics: {
-      // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
       default: {
         writeRequest: 'write_request',
         httpResponse: 'http_response',

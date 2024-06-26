@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-/* eslint-disable unicorn/no-null, @typescript-eslint/ban-types */
+/* eslint-disable unicorn/no-null */
 
 import { File } from 'node:buffer';
 import { extname } from 'node:path';
@@ -65,6 +65,7 @@ const defaults = {
     issuer: {
       doc: 'OpenID Connect/Oauth2.0 issuer to use for auth',
       format: 'url',
+
       default: null as null | URL | string,
       nullable: true,
       env: 'OIDC_ISSUER',
@@ -77,7 +78,7 @@ const defaults = {
 
 // Add more formats to convict
 convict.addFormats(validator);
-// eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+
 convict.addFormats(moment);
 
 function fileUrl(pathOrUrl: string) {
@@ -184,7 +185,7 @@ export default async function loadConfig<S>(
       // Allow extra items
       allowed: 'warn',
       // Do not actually output warnings about extra items?
-      // eslint-disable-next-line @typescript-eslint/no-empty-function
+
       output() {},
     });
 

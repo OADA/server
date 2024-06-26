@@ -25,9 +25,9 @@ import type { Client } from '@oada/models/client';
 import type { Opaque } from 'type-fest';
 
 export type DBClientID = Opaque<string, DBClient>;
-export interface DBClient extends Client {
+export type DBClient = {
   _id: DBClientID;
-}
+} & Client;
 
 const clients = database.collection<Client>(
   config.get('arangodb.collections.clients.name'),

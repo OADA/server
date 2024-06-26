@@ -19,8 +19,9 @@ import debug from 'debug';
 
 import { users } from '@oada/lib-arangodb';
 
-import type { User } from '../models/user.js';
 import type { SetOptional } from 'type-fest';
+
+import type { User } from '../models/user.js';
 
 const trace = debug('arango:user:trace');
 

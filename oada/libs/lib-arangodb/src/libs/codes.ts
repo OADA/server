@@ -38,10 +38,10 @@ export interface Code {
   clientId: string;
   redirectUri: string;
 }
-export interface DBCode extends Code {
+export type DBCode = {
   _id: CodeID;
   _rev: number;
-}
+} & Code;
 
 const codes = database.collection(
   config.get('arangodb.collections.codes.name'),
@@ -56,8 +56,8 @@ export async function findByCode(
       FILTER c.code == ${code}
       RETURN c`,
   );
-  // eslint-disable-next-line @typescript-eslint/ban-types
-  const c = (await cursor.next()) as DBCode | null;
+
+  const c = (await cursor.next()) as DBCode | undefined;
 
   if (!c) {
     return undefined;

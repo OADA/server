@@ -156,4 +156,4 @@ rules:
   ava/no-import-test-files: off
   ava/no-skip-test: warn
   ava/no-skip-assert: warn
-  '@typescript-eslint/switch-exhaustiveness-check': off
+  '@typescript-eslint/switch-exhaustiveness-check': 0

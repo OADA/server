@@ -20,7 +20,7 @@ import { config } from './config.js';
 import { Database, aql } from 'arangojs';
 import debug from 'debug';
 
-import { db } from './db.js';
+import { db as database } from './db.js';
 
 const info = debug('@oada/lib-arangodb:import:info');
 const trace = debug('@oada/lib-arangodb:import:trace');
@@ -35,7 +35,7 @@ const {
 
 const collections = config.get('arangodb.collections');
 
-const importDb = new Database({
+const importDatabase = new Database({
   auth,
   url,
   databaseName,
@@ -49,8 +49,8 @@ interface T {
 
 for await (const { name } of Object.values(collections)) {
   trace(`Starting to import collection ${name}`);
-  const importCollection = importDb.collection<T>(name);
-  const cursor = await importDb.query<T>(
+  const importCollection = importDatabase.collection<T>(name);
+  const cursor = await importDatabase.query<T>(
     aql`
     FOR doc IN ${importCollection}
       RETURN doc
@@ -65,7 +65,7 @@ for await (const { name } of Object.values(collections)) {
     },
   );
 
-  const collection = db.collection<T>(name);
+  const collection = database.collection<T>(name);
   let imported = 0;
   try {
     for await (const documents of cursor.batches) {

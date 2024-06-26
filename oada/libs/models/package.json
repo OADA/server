@@ -27,16 +27,16 @@
   "author": "Alex Layton <alex@layton.in> (https://github.com/awlayton)",
   "license": "Apache-2.0",
   "dependencies": {
-    "@oada/types": "^3.5.3",
+    "@oada/types": "^4.0.0",
     "@qlever-llc/interface2class": "^1.1.0",
-    "tslib": "2.6.2",
-    "type-fest": "^4.14.0",
+    "tslib": "2.6.3",
+    "type-fest": "^4.20.1",
     "xksuid": "https://github.com/aultac/xksuid.git#commit=22a21eb01331191feb62ea0a4e67d96d2e80f396"
   },
   "volta": {
     "node": "20.2.0"
   },
   "devDependencies": {
-    "@types/node": "^20.11.30"
+    "@types/node": "^20.14.8"
   }
 }

@@ -39,7 +39,7 @@ export const { config, schema } = await libConfig({
     },
     timeouts: {
       doc: 'Mapping of topic to timeouts (ms)',
-      // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+
       default: {
         default: 5000,
         writeRequest: 45_000,
@@ -48,7 +48,7 @@ export const { config, schema } = await libConfig({
     },
     topics: {
       doc: 'Kafka topic names to use',
-      // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+
       default: {
         tokenRequest: 'token_request',
         graphRequest: 'graph_request',

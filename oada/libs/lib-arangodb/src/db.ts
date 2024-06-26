@@ -60,6 +60,7 @@ class DatabaseWrapper extends Database {
           tries <= deadlockRetries
         ) {
           warn({ error }, `Retrying query due to deadlock (retry #${tries})`);
+
           // eslint-disable-next-line no-await-in-loop
           await setTimeout(deadlockDelay);
           continue;
@@ -71,7 +72,7 @@ class DatabaseWrapper extends Database {
           warn({ error, ...rest }, `AQL Query failed:\n${aql}`);
         }
 
-        throw error as Error;
+        throw error;
       }
     }
 

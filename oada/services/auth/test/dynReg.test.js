@@ -22,7 +22,6 @@ import {
   createRequest as mockRequest,
   createResponse as mockResponse,
 } from 'node-mocks-http';
-import _ from 'lodash';
 import chai from 'chai';
 import debug from 'debug';
 import jwt from 'jsonwebtoken';
@@ -43,7 +42,7 @@ const mockdb = {
   async saveAsync(clientreg) {
     // Return metadata with new clientId from database:
     const clientId = uuid();
-    mockdb.clients[clientId] = _.cloneDeep(clientreg);
+    mockdb.clients[clientId] = structuredClone(clientreg);
     mockdb.clients[clientId].clientId = clientId;
     return mockdb.clients[clientId];
   },
@@ -105,9 +104,9 @@ const untrusted_jwk_signed_client_reg = jwt.sign(
   },
 );
 // Signed with a jwk that is embedded in the signature header, and it IS served on a trusted list:
-const privJwk2 = _.cloneDeep(privJwk);
+const privJwk2 = structuredClone(privJwk);
 privJwk2.kid = uuid(); // Can use same underlying keys, but need new kid so that we can list as it's own "trusted" key
-const pubJwk2 = _.cloneDeep(pubJwk);
+const pubJwk2 = structuredClone(pubJwk);
 pubJwk2.kid = privJwk2.kid;
 const trusted_jwk_signed_client_reg = jwt.sign(
   JSON.stringify(unsigned_client_reg),
@@ -130,7 +129,7 @@ describe('dynReg middleware', () => {
   // Setup the mock server to serve a trusted list with a URL for it's own jwk set
   // When the main function tries to get the Trusted List, this will respond instead of github:
   beforeEach(function mockList() {
-    const uri = url.parse(dynReg.test.oadacerts.validate.TRUSTED_LIST_URI);
+    const uri = new URL(dynReg.test.oadacerts.validate.TRUSTED_LIST_URI);
     nock(url.format({ protocol: uri.protocol, host: uri.host }))
       .log(nocklog)
       .get(uri.path)
@@ -141,7 +140,7 @@ describe('dynReg middleware', () => {
       });
 
     // Also host another identical one at a custom domain to test customizable trusted lists:
-    const custom_uri = url.parse(CUSTOM_TRUSTED_LIST);
+    const custom_uri = new URL(CUSTOM_TRUSTED_LIST);
     nock(url.format({ protocol: custom_uri.protocol, host: custom_uri.host }))
       .log(nocklog)
       .get(custom_uri.path)
@@ -186,7 +185,7 @@ describe('dynReg middleware', () => {
       expect(res.statusCode).to.equal(201);
       const clientreg = res._getJSONData();
       const clientid = clientreg.client_id;
-      const dbvalue = _.cloneDeep(mockdb.clients[clientid]);
+      const dbvalue = structuredClone(mockdb.clients[clientid]);
       dbvalue.client_id = dbvalue.clientId;
       delete dbvalue.clientId; // For legacy reasons the clientId and client_id is handled specially
       expect(dbvalue).to.deep.equal(clientreg);
@@ -205,7 +204,7 @@ describe('dynReg middleware', () => {
       expect(res.statusCode).to.equal(201);
       const clientreg = res._getJSONData();
       const clientid = clientreg.client_id;
-      const dbvalue = _.cloneDeep(mockdb.clients[clientid]);
+      const dbvalue = structuredClone(mockdb.clients[clientid]);
       dbvalue.client_id = dbvalue.clientId;
       delete dbvalue.clientId; // For legacy reasons the clientId and client_id is handled specially
       expect(dbvalue).to.deep.equal(clientreg);
@@ -224,7 +223,7 @@ describe('dynReg middleware', () => {
       expect(res.statusCode).to.equal(201);
       const clientreg = res._getJSONData();
       const clientid = clientreg.client_id;
-      const dbvalue = _.cloneDeep(mockdb.clients[clientid]);
+      const dbvalue = structuredClone(mockdb.clients[clientid]);
       dbvalue.client_id = dbvalue.clientId;
       delete dbvalue.clientId; // For legacy reasons the clientId and client_id is handled specially
       expect(dbvalue).to.deep.equal(clientreg);
@@ -243,7 +242,7 @@ describe('dynReg middleware', () => {
       expect(res.statusCode).to.equal(201);
       const clientreg = res._getJSONData();
       const clientid = clientreg.client_id;
-      const dbvalue = _.cloneDeep(mockdb.clients[clientid]);
+      const dbvalue = structuredClone(mockdb.clients[clientid]);
       dbvalue.client_id = dbvalue.clientId;
       delete dbvalue.clientId; // For legacy reasons the clientId and client_id is handled specially
       expect(dbvalue).to.deep.equal(clientreg);

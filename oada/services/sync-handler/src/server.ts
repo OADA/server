@@ -22,7 +22,7 @@ import { config } from './config.js';
 import '@oada/lib-prom';
 
 import { URL } from 'node:url';
-import { join } from 'node:path';
+import { join } from 'node:path/posix';
 
 import { remoteResources, resources } from '@oada/lib-arangodb';
 import type { KafkaBase } from '@oada/lib-kafka';
@@ -187,42 +187,40 @@ responder.on<WriteResponse>('request', async (request) => {
           const type = change._meta._type;
 
           // Fix links etc.
-          const body = JSON.stringify(
-            change,
-            function (this: unknown, k, v: unknown) {
-              switch (k) {
-                case '_meta': // Don't send resources's _meta
-                case '_rev': {
-                  // Don't send resource's _rev
-                  if (this === change) {
-                    return;
-                  }
+          const body = JSON.stringify(change, function (k, v: unknown) {
+            switch (k) {
+              case '_meta': // Don't send resources's _meta
+              case '_rev': {
+                // Don't send resource's _rev
 
-                  return v;
+                if (this === change) {
+                  return;
                 }
 
-                case '_id': {
-                  if (this === change) {
-                    // Don't send resource's _id
-                    return;
-                  }
-
-                  // TODO: Better link detection?
-                  if (idMapping[v as string]) {
-                    return idMapping[v as string];
-                  }
-
-                  warn('Could not resolve link to %s at %s', v, domain);
-                  // TODO: What to do in this case?
-                  return '';
-                }
-
-                default: {
-                  return v;
-                }
+                return v;
               }
-            },
-          );
+
+              case '_id': {
+                if (this === change) {
+                  // Don't send resource's _id
+                  return;
+                }
+
+                // TODO: Better link detection?
+                if (idMapping[v as string]) {
+                  return idMapping[v as string];
+                }
+
+                warn('Could not resolve link to %s at %s', v, domain);
+                // TODO: What to do in this case?
+                return '';
+              }
+
+              default: {
+                return v;
+              }
+            }
+          });
 
           // TODO: Support DELETE
           const put = got({
