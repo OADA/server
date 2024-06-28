@@ -15,21 +15,19 @@
  * limitations under the License.
  */
 
-import type { IUsers, User } from '../models/user.js';
+import cloneDeep from 'clone-deep';
 
+import type { Code } from '../models/code.js';
 // @ts-expect-error IDEK
-import users from './users.json';
+import codes from './codes.json';
 
-const database = new Map(Object.entries(users as Record<string, User>));
+const database = new Map<string, Code>(Object.entries(codes));
 
-export const findByUsername = function (username: string) {
-  return structuredClone(database.get(username)) ?? undefined;
-} satisfies IUsers['findByUsername'];
+export function findByCode(code: string) {
+  return cloneDeep(database.get(code));
+}
 
-export const findByUsernamePassword = function (
-  username: string,
-  password: string,
-) {
-  const user = database.get(username);
-  return user?.password === password ? structuredClone(user) : undefined;
-} satisfies IUsers['findByUsernamePassword'];
+export function save(code: Code) {
+  database.set(code.code, cloneDeep(code));
+  return findByCode(code.code);
+}

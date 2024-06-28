@@ -31,12 +31,13 @@
     "@qlever-llc/interface2class": "^1.1.0",
     "tslib": "2.6.3",
     "type-fest": "^4.20.1",
-    "xksuid": "https://github.com/aultac/xksuid.git#commit=22a21eb01331191feb62ea0a4e67d96d2e80f396"
+    "xksuid": "^0.0.4"
   },
   "volta": {
     "node": "20.2.0"
   },
   "devDependencies": {
-    "@types/node": "^20.14.8"
+    "@types/node": "^20.14.9",
+    "jose": "^5.6.2"
   }
 }

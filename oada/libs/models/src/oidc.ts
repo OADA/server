@@ -206,6 +206,56 @@ export interface StandardClaims {
 }
 
 /**
+ * This is from the official JWT claim registry
+ *
+ * They can be requested to be returned either
+ * in the {@link https://openid.net/specs/openid-connect-core-1_0.html#UserInfoResponse UserInfo Response},
+ * or in the {@link https://openid.net/specs/openid-connect-core-1_0.html#IDToken ID Token}
+ *
+ * @todo some claims still need to be added
+ * @todo should probably get this from oada types
+ *
+ * @see {@link https://www.iana.org/assignments/jwt/jwt.xhtml#claims JWT Registered Claims}
+ */
+export interface RegisteredClaims extends StandardClaims {
+  /**
+   * Scope Values
+   *
+   * String containing a space-separate list of scopes
+   *
+   * @see {@link https://www.rfc-editor.org/rfc/rfc8693.html#name-scope-scopes-claim RFC 8693 Scopes Claim}
+   */
+  scope?: string;
+  /**
+   * Client Identifier
+   *
+   * @see {@link https://www.rfc-editor.org/rfc/rfc8693.html#name-client_id-client-identifier RFC 8693 Client Identifier Claim}
+   */
+  client_id?: string;
+  /**
+   * Roles
+   *
+   * @see {@link https://www.iana.org/go/rfc7643#section-4.1 RFC 7643 User Resource Schema}
+   * @see {@link https://www.rfc-editor.org/rfc/rfc9068.html#name-claims-for-authorization-ou RFC 9068 Section 2.2.3.1}
+   */
+  roles?: readonly string[];
+  /**
+   * Groups
+   *
+   * @see {@link https://www.iana.org/go/rfc7643#section-4.1 RFC 7643 User Resource Schema}
+   * @see {@link https://www.rfc-editor.org/rfc/rfc9068.html#name-claims-for-authorization-ou RFC 9068 Section 2.2.3.1}
+   */
+  groups?: readonly string[];
+  /**
+   * Entitlements
+   *
+   * @see {@link https://www.iana.org/go/rfc7643#section-4.1 RFC 7643 User Resource Schema}
+   * @see {@link https://www.rfc-editor.org/rfc/rfc9068.html#name-claims-for-authorization-ou RFC 9068 Section 2.2.3.1}
+   */
+  entitlements?: readonly string[];
+}
+
+/**
  * The Address Claim represents a physical mailing address
  *
  * Implementations **MAY** return only a subset of the fields of an address,
@@ -265,7 +315,7 @@ export interface AddressClaim {
  * @see {@link https://openid.net/specs/openid-connect-core-1_0.html#AdditionalClaims Additional Claims}
  */
 
-export type Claims = Record<string, unknown> & StandardClaims;
+export type Claims = Record<string, unknown> & RegisteredClaims;
 
 /**
  * End-User's default profile Claims

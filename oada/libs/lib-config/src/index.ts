@@ -18,6 +18,7 @@
 /* eslint-disable unicorn/no-null */
 
 import { File } from 'node:buffer';
+// eslint-disable-next-line unicorn/import-style
 import { extname } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { readFileSync } from 'node:fs';
@@ -80,6 +81,8 @@ const defaults = {
 convict.addFormats(validator);
 
 convict.addFormats(moment);
+
+export const addFormats = convict.addFormats.bind(convict);
 
 function fileUrl(pathOrUrl: string) {
   try {

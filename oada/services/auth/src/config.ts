@@ -27,12 +27,27 @@ import debug from 'debug';
 
 import type { jwksUtils as jwku } from '@oada/certs';
 
-import libConfig from '@oada/lib-config';
+import libConfig, { addFormats } from '@oada/lib-config';
 
 import { schema as arangoSchema } from '@oada/lib-arangodb/dist/config.js';
 
 const trace = debug('auth#config:trace');
 const warn = debug('auth#config:warn');
+
+const dataStores = await fs.readdir(
+  path.join(path.dirname(url.fileURLToPath(import.meta.url)), 'db'),
+);
+addFormats({
+  dataStore: {
+    validate(value: unknown) {
+      if (Array.isArray(value)) {
+        return value.every((v) => dataStores.includes(`${v}`));
+      }
+
+      return dataStores.includes(`${value}`);
+    },
+  },
+});
 
 export const { config, schema } = await libConfig({
   trustProxy: {
@@ -269,6 +284,11 @@ export const { config, schema } = await libConfig({
       },
     },
     code: {
+      dataStore: {
+        format: 'dataStore',
+        default: 'jwt' as string | string[],
+        env: 'AUTH_CODE_DATA_STORE',
+      },
       expiresIn: {
         format: String,
         default: '10 seconds',
@@ -297,15 +317,25 @@ export const { config, schema } = await libConfig({
       },
     },
     deviceCode: {
+      dataStore: {
+        format: 'dataStore',
+        default: 'jwt' as string | string[],
+        env: 'AUTH_DEVICE_CODE_DATA_STORE',
+      },
       expiresIn: {
         format: 'duration',
         default: '10 minutes' as unknown as number,
       },
     },
     token: {
+      dataStore: {
+        format: 'dataStore',
+        default: 'jwt' as string | string[],
+        env: 'AUTH_TOKEN_DATA_STORE',
+      },
       expiresIn: {
         format: 'duration',
-        default: 0,
+        default: Number.MAX_VALUE,
       },
       key: {
         doc: 'Key to use for signing tokens',
@@ -321,6 +351,11 @@ export const { config, schema } = await libConfig({
       },
     },
     idToken: {
+      dataStore: {
+        format: 'dataStore',
+        default: 'jwt' as string | string[],
+        env: 'AUTH_ID_TOKEN_DATA_STORE',
+      },
       expiresIn: {
         format: 'duration',
         default: 0,
@@ -336,6 +371,20 @@ export const { config, schema } = await libConfig({
         doc: 'Algorithm to use for signing id tokens',
         format: String,
         default: 'RS256' as 'HS256' | 'RS256' | 'PS256',
+      },
+    },
+    client: {
+      dataStore: {
+        format: 'dataStore',
+        default: 'arango' as string | string[],
+        env: 'AUTH_CLIENT_DATA_STORE',
+      },
+    },
+    user: {
+      dataStore: {
+        format: 'dataStore',
+        default: 'arango' as string | string[],
+        env: 'AUTH_USER_DATA_STORE',
       },
     },
     certs: {
@@ -360,12 +409,6 @@ export const { config, schema } = await libConfig({
         format: Boolean,
         default: true,
       },
-    },
-    datastoresDriver: {
-      format: await fs.readdir(
-        path.join(path.dirname(url.fileURLToPath(import.meta.url)), 'db'),
-      ),
-      default: 'arango',
     },
     hint: {
       username: {
@@ -427,6 +470,7 @@ export interface DomainConfig {
   };
 }
 
+// eslint-disable-next-line security/detect-non-literal-fs-filename
 for await (const dirname of await fs.readdir(domainsDirectory)) {
   if (dirname.startsWith('.')) {
     continue;
@@ -445,8 +489,10 @@ for await (const dirname of await fs.readdir(domainsDirectory)) {
 }
 
 const publicUri = config.get('auth.server.publicUri')
-  ? new URI(config.get('auth.server.publicUri')).normalize().toString()
-  : new URI()
+  ? // eslint-disable-next-line @typescript-eslint/no-base-to-string
+    new URI(config.get('auth.server.publicUri')).normalize().toString()
+  : // eslint-disable-next-line @typescript-eslint/no-base-to-string
+    new URI()
       .hostname(config.get('auth.server.domain'))
       .port(`${config.get('auth.server.port')}`)
       .protocol(config.get('auth.server.mode'))

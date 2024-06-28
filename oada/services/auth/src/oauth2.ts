@@ -28,7 +28,7 @@ import type { ServerResponse } from 'node:http';
 import { join } from 'node:path/posix';
 import { promisify } from 'node:util';
 
-import type { } from '@fastify/formbody';
+import type {} from '@fastify/formbody';
 import type { FastifyPluginAsync, FastifyReply, FastifyRequest } from 'fastify';
 import { fastifyPassport } from './auth.js';
 
@@ -36,13 +36,11 @@ import {
   EncryptJWT,
   type JWTDecryptResult,
   type JWTPayload,
-  SignJWT,
   createLocalJWKSet,
   exportJWK,
   generateKeyPair,
   generateSecret,
   jwtDecrypt,
-  jwtVerify,
 } from 'jose';
 import oauth2orize, {
   AuthorizationError,
@@ -66,10 +64,10 @@ import { extensions } from 'oauth2orize-pkce';
 
 import { trustedCDP } from '@oada/lookup';
 
+import { type Client, findById } from './db/models/client.js';
+import { type Token, create, verify } from './db/models/token.js';
 import { Authorization } from '@oada/models/authorization';
-import type { Client } from './db/models/client.js';
 import type { User } from './db/models/user.js';
-import { findById } from './db/models/client.js';
 import { promisifyMiddleware } from './utils.js';
 
 // If the array of scopes contains ONLY openid OR openid and profile, auto-accept.
@@ -104,7 +102,7 @@ declare module 'oauth2orize' {
   }
 
   // eslint-disable-next-line @typescript-eslint/no-shadow
-  interface MiddlewareRequest extends FastifyRequest { }
+  interface MiddlewareRequest extends FastifyRequest {}
 }
 interface DeserializedOauth2<C = Client> extends OAuth2 {
   client: C;
@@ -143,8 +141,11 @@ export async function getKeyPair(file: File | string | undefined, alg: string) {
 
 const tokenConfig = config.get('auth.token');
 
-// TODO: Support key rotation and stuff
-const { publicKey, privateKey } = await getKeyPair(
+/**
+ * @internal
+ * @todo Support key rotation and stuff
+ */
+export const { publicKey, privateKey } = await getKeyPair(
   await tokenConfig.key,
   tokenConfig.alg,
 );
@@ -158,7 +159,9 @@ export const jwksPublic = {
     },
   ],
 };
-const JWKS = createLocalJWKSet(jwksPublic);
+
+/** @internal */
+export const JWKS = createLocalJWKSet(jwksPublic);
 
 /**
  * Set of claims we include in our signed JWT bearer tokens
@@ -167,66 +170,36 @@ export type TokenClaims = Record<string, unknown> & Authorization & JWTPayload;
 
 export async function getToken(
   issuer: string,
-  claims: TokenClaims,
   {
-    iat,
-    nbf,
-    exp = config.get('auth.token.expiresIn'),
-  }: {
-    iat?: string | number | Date;
-    nbf?: string | number | Date;
-    exp?: string | number | Date;
-  } = {},
+    exp = config.get('auth.token.expiresIn') / 1000,
+    ...claims
+  }: Partial<Token>,
 ) {
   try {
-    const jwt = new SignJWT(claims)
-      .setProtectedHeader({
-        alg: tokenConfig.alg,
-        kid,
-        jku: config.get('auth.endpoints.certs'),
-      })
-      .setJti(randomBytes(16).toString('hex'))
-      .setIssuedAt(iat)
-      .setIssuer(issuer)
-      // ???: Should the audience be something different?
-      // .setAudience(issuer)
-      .setNotBefore(nbf ?? new Date());
-
-    if (claims.user) {
-      jwt.setSubject(claims.user._id);
-    }
-
-    if (exp) {
-      jwt.setExpirationTime(exp);
-    }
-
-    return await jwt.sign(privateKey);
+    return await create({ ...claims, exp }, issuer);
   } catch (error: unknown) {
     throw new Error('Failed to issue token', { cause: error });
   }
 }
 
 export async function verifyToken(issuer: string, token: string) {
-  const { payload } = await jwtVerify<TokenClaims>(token, JWKS, {
-    issuer,
-    audience: issuer,
-  });
-  return payload;
+  try {
+    return await verify(token, issuer);
+  } catch (error: unknown) {
+    throw new Error('Failed to verify token', { cause: error });
+  }
 }
 
 export const issueToken = (async (
   _client: Client,
-  user: User,
+  { sub }: User,
   request: OAuth2Req,
   done,
 ) => {
   try {
-    const auth = new Authorization({
-      user,
-      scope: request.scope.join(' '),
-    });
+    const scope = request.scope.join(' ');
     // TODO: Fill out user info
-    const token = await getToken(request.authInfo.issuer, { ...auth });
+    const token = await getToken(request.authInfo.issuer, { scope, sub });
     // eslint-disable-next-line unicorn/no-null
     done(null, token, { expires_in: tokenConfig.expiresIn });
   } catch (error: unknown) {
@@ -243,8 +216,8 @@ interface CodePayload {
 const authCode = config.get('auth.code');
 const codeKey = (await authCode.key)
   ? createSecretKey(
-    (await (await authCode.key)!.arrayBuffer()) as NodeJS.ArrayBufferView,
-  )
+      (await (await authCode.key)!.arrayBuffer()) as NodeJS.ArrayBufferView,
+    )
   : await generateSecret(authCode.alg);
 export const issueCode: IssueGrantCodeFunctionArity6 = async (
   client: Client,
@@ -347,9 +320,9 @@ export const exchangeCode: IssueExchangeCodeFunctionArity5<Client> = async (
       }
     }
 
-    const { issuer, user, scope } = payload;
+    const { issuer, user, scope, sub } = payload;
     const auth = new Authorization({
-      user: { _id: user },
+      sub: sub ?? user,
       scope,
     });
     const token = await getToken(issuer, {
@@ -439,12 +412,12 @@ export const exchangeDeviceCode: ExchangeDeviceCodeFunction<Client> = async (
 ) => {
   try {
     // Get user/scope from DB from user activation?
-    const user = { _id: 'users/test' };
+    const user = { sub: 'users/test' };
     const scope = ['all:all'];
 
     const auth = new Authorization({
-      client: { client_id: client.client_id },
-      user,
+      client_id: client.client_id,
+      sub: user.sub,
       scope: scope.join(' '),
     });
     const token = await getToken(issuer, { ...auth });
@@ -713,7 +686,7 @@ const plugin: FastifyPluginAsync<Options> = async (
     }
   });
 
-  fastify.get(activate, async (_request, _reply) => { });
+  fastify.get(activate, async (_request, _reply) => {});
 };
 
 export default plugin;

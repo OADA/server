@@ -17,73 +17,92 @@
 
 import { config } from '../../config.js';
 
-import path from 'node:path';
-import url from 'node:url';
+import type { Except, Promisable } from 'type-fest';
 
 import { User } from '@oada/models/user';
 
-import type { Except } from 'type-fest';
+import { getDataStores, tryDataStores } from './index.js';
 
 export interface IUsers {
-  findById(id: string): Promise<User | undefined>;
-  findByUsername(username: User['username']): Promise<User | undefined>;
+  findById(id: string): Promisable<User | undefined>;
+  findByUsername(username: User['username']): Promisable<User | undefined>;
   findByUsernamePassword(
     username: User['username'],
     password: User['password'],
-  ): Promise<User | undefined>;
+  ): Promisable<User | undefined>;
   findByOIDCToken(token: {
     sub: string;
     iss: string;
-  }): Promise<User | undefined>;
+  }): Promisable<User | undefined>;
   findByOIDCUsername(
     username: User['username'],
     iss: string,
-  ): Promise<User | undefined>;
-  update(user: User): Promise<void>;
-  create(user: Omit<User, '_id'>): Promise<User>;
+  ): Promisable<User | undefined>;
+  update(user: User): Promisable<void>;
+  create(user: Omit<User, '_id'>): Promisable<User>;
 }
 
-const dirname = path.dirname(url.fileURLToPath(import.meta.url));
-const datastoresDriver = config.get('auth.datastoresDriver');
-const database = (await import(
-  path.join(dirname, '..', datastoresDriver, 'users.js')
-)) as IUsers;
+const dataStores = await getDataStores<IUsers>(
+  config.get('auth.user.dataStore'),
+  'users',
+);
 
 export { User } from '@oada/models/user';
 
 export async function findById(id: string) {
-  const u = await database.findById(id);
-  return u ? new User(u) : undefined;
+  async function findUserById(dataStore: IUsers) {
+    const u = await dataStore.findById(id);
+    return u ? new User(u) : undefined;
+  }
+
+  return tryDataStores(dataStores, findUserById);
 }
 
 export async function findByUsername(username: User['username']) {
-  const u = await database.findByUsername(username);
-  return u ? new User(u) : undefined;
+  async function findUserByUsername(dataStore: IUsers) {
+    const u = await dataStore.findByUsername(username);
+    return u ? new User(u) : undefined;
+  }
+
+  return tryDataStores(dataStores, findUserByUsername);
 }
 
 export async function findByUsernamePassword(
   username: User['username'],
   password: User['password'],
 ) {
-  const u = await database.findByUsernamePassword(username, password);
-  return u ? new User(u) : undefined;
+  async function findUserByUsernamePassword(dataStore: IUsers) {
+    const u = await dataStore.findByUsernamePassword(username, password);
+    return u ? new User(u) : undefined;
+  }
+
+  return tryDataStores(dataStores, findUserByUsernamePassword);
 }
 
 export async function findByOIDCToken(token: { sub: string; iss: string }) {
-  const u = await database.findByOIDCToken(token);
-  return u ? new User(u) : undefined;
+  async function findUserByOIDCToken(dataStore: IUsers) {
+    const u = await dataStore.findByOIDCToken(token);
+    return u ? new User(u) : undefined;
+  }
+
+  return tryDataStores(dataStores, findUserByOIDCToken);
 }
 
 export async function findByOIDCUsername(
   username: User['username'],
   iss: string,
 ) {
-  const u = await database.findByOIDCUsername(username, iss);
-  return u ? new User(u) : undefined;
+  async function findUserByOIDCUsername(dataStore: IUsers) {
+    const u = await dataStore.findByOIDCUsername(username, iss);
+    return u ? new User(u) : undefined;
+  }
+
+  return tryDataStores(dataStores, findUserByOIDCUsername);
 }
 
 export async function update(user: User): Promise<void> {
-  await database.update(user);
+  // ???: Should it only save to first datastore?
+  await dataStores[0]!.update(user);
 }
 
 /**
@@ -91,5 +110,6 @@ export async function update(user: User): Promise<void> {
  * They may already have an existing account with another OIDC provider.
  */
 export async function register(user: Except<Partial<User>, '_id'>) {
-  return database.create(new User(user));
+  // ???: Should it only save to first datastore?
+  return dataStores[0]!.create(new User(user));
 }

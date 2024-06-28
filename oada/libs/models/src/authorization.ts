@@ -15,7 +15,14 @@
  * limitations under the License.
  */
 
-import type { Opaque } from 'type-fest';
+import { randomBytes } from 'node:crypto';
+
+import type { OmitIndexSignature, Opaque } from 'type-fest';
+import type { JWTPayload } from 'jose';
+
+import { makeClass } from '@qlever-llc/interface2class';
+
+import type { Claims } from './oidc.js';
 import { destructure } from './decorators.js';
 
 export type AuthorizationID = Opaque<string, Authorization>;
@@ -26,27 +33,32 @@ export type AuthorizationID = Opaque<string, Authorization>;
  */
 export
 @destructure
-class Authorization {
+class Authorization extends makeClass<
+  OmitIndexSignature<JWTPayload & Claims>
+>() {
+  // @ts-expect-error HACK
   constructor(authorization?: Partial<Authorization>);
 
   // eslint-disable-next-line max-params
   constructor(
-    _: Partial<Authorization> = {},
-    /**
-     * The user associated with this authorization
-     */
-    readonly user?: { _id: string },
-    /**
-     * The API client which requested this authorization
-     */
-    readonly client?: { client_id: string },
+    rest: Partial<Authorization> = {},
+    override readonly jti = randomBytes(16).toString('hex'),
+    override readonly sub: string,
     // Readonly _id = `authorizations/${generate()}` as AuthorizationID,
-    readonly token = '',
-    readonly scope = '',
-    readonly createTime = Date.now() / 1000,
-    readonly expiresIn = 0,
+    override readonly scope = '',
+    override readonly roles: readonly string[] = [],
+    override readonly iat = Date.now() / 1000,
+    // TODO: Config for default expiration?
+    override readonly exp = Number.MAX_VALUE,
     readonly revoked?: boolean,
-  ) {}
+  ) {
+    super({ sub, ...rest });
+    if (!sub) {
+      throw new TypeError(
+        'Authorization must have a sub (i.e., an associated user)',
+      );
+    }
+  }
 }
 
 export default Authorization;

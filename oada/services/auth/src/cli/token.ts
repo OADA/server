@@ -99,6 +99,7 @@ export const get = command({
       type: optional(boolean),
     }),
   },
+  // eslint-disable-next-line @typescript-eslint/no-shadow
   async handler({ scope, iss, qr }) {
     const client = await getClient(
       iss ? `${iss}` : `${config.get('oidc.issuer')}`,
@@ -168,15 +169,17 @@ export const create = command({
       short: 'e',
     }),
   },
-  async handler({ iss, scope, user, iat, exp }) {
+  // eslint-disable-next-line @typescript-eslint/no-shadow
+  async handler({ iss, scope, user: { sub }, iat, exp }) {
     const auth = new Authorization({
-      user,
+      sub,
+      iat: iat as number,
+      exp: exp as number,
       scope: scope?.join(' '),
     });
     const token = await getToken(
       iss ? `${iss}` : `${config.get('oidc.issuer')}`,
-      { ...auth },
-      { exp: exp ?? auth.expiresIn, iat: iat ?? auth.createTime },
+      auth,
     );
     console.log(token);
   },
@@ -197,7 +200,7 @@ export const revoke = command({
       description: 'Token to revoke',
     }),
   },
-  async handler() {
+  handler() {
     throw new Error('Not yet implemented');
   },
 });
