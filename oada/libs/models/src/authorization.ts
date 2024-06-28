@@ -53,11 +53,6 @@ class Authorization extends makeClass<
     readonly revoked?: boolean,
   ) {
     super({ sub, ...rest });
-    if (!sub) {
-      throw new TypeError(
-        'Authorization must have a sub (i.e., an associated user)',
-      );
-    }
   }
 }
 
