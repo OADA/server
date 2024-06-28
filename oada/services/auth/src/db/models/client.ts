@@ -17,35 +17,37 @@
 
 import { config } from '../../config.js';
 
-import path from 'node:path';
-import url from 'node:url';
-
 import { Codes, OADAError } from '@oada/error';
+import type { Except, Promisable } from 'type-fest';
 
 import { Client } from '@oada/models/client';
-import type { Except } from 'type-fest';
+
+import { getDataStores, tryDataStores } from './index.js';
 
 export { Client } from '@oada/models/client';
 
 export interface IClients {
-  findById(id: string): Promise<Client | undefined>;
-  save(client: Except<Client, 'client_id'>): Promise<void>;
+  findById(id: string): Promisable<Client | undefined>;
+  save(client: Except<Client, 'client_id'>): Promisable<void>;
 }
 
-const dirname = path.dirname(url.fileURLToPath(import.meta.url));
-const datastoresDriver = config.get('auth.datastoresDriver');
-const database = (await import(
-  path.join(dirname, '..', datastoresDriver, 'clients.js')
-)) as IClients;
+const dataStores = await getDataStores<IClients>(
+  config.get('auth.client.dataStore'),
+  'clients',
+);
 
 export async function findById(id: string) {
-  const c = await database.findById(id);
-  return c ? new Client(c) : undefined;
+  async function findClientById(dataStore: IClients) {
+    const c = await dataStore.findById(id);
+    return c ? new Client(c) : undefined;
+  }
+
+  return tryDataStores(dataStores, findClientById);
 }
 
 export async function save(c: Partial<Except<Client, 'client_id'>>) {
   const client = new Client(c);
-  if (await database.findById(client.client_id)) {
+  if (await findById(client.client_id)) {
     throw new OADAError(
       'Client Id already exists',
       Codes.BadRequest,
@@ -53,7 +55,8 @@ export async function save(c: Partial<Except<Client, 'client_id'>>) {
     );
   }
 
-  await database.save(client);
+  // ???: Should it only save to first datastore?
+  await dataStores[0]!.save(client);
   const saved = await findById(client.client_id);
   if (!saved) {
     throw new Error('Could not save client');

@@ -92,7 +92,7 @@ try {
     domain,
     password,
     // Add scope if you want the user to have permission to create other users
-    scope: isAdmin ? ['oada.admin.user:all'] : [],
+    roles: isAdmin ? ['oada.admin.user:all'] : [],
   };
   const response = (await kafkareq.send({
     // @ts-expect-error secret prop

@@ -16,7 +16,6 @@
  */
 
 import type { FastifyPluginAsync, FastifyRequest } from 'fastify';
-import { v4 as uuid } from 'uuid';
 
 import { authorizations, clients } from '@oada/lib-arangodb';
 import Authorization from '@oada/models/authorization';
@@ -52,6 +51,7 @@ async function addClientToAuth(
   }
 }
 
+// eslint-disable-next-line @typescript-eslint/require-await
 const plugin: FastifyPluginAsync<Options> = async (fastify, _options) => {
   // Authorizations routes
   // TODO: How the heck should this work??
@@ -109,18 +109,14 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, _options) => {
     // TODO: Check scope of current token
     const auth = new Authorization({
       // TODO: Which fields should be selectable by the client?
-      user: {
-        _id: request.user!._id,
-      },
-      // Client: { client_id: request.user!.client_id },
-      expiresIn: 3600,
-      // TODO: How to generate token?
-      token: uuid(),
+      exp: 3600,
+      sub: request.user!.sub,
       ...(request.body as Partial<Authorization>),
+      client_id: request.user!.client_id,
     });
 
     // Don't allow making tokens for other users unless admin.user
-    if (auth.user!._id !== request.user!._id) {
+    if (auth.sub !== request.user!.sub) {
       if (
         !request.user!.roles.some(
           (s: string) => s === 'oada.admin.user:all' || 'oada.admin.user:write',
@@ -152,10 +148,7 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, _options) => {
     );
     return reply.send({ ...returnValue, user: u ? { _id: u._id } : undefined });
     */
-    return reply.send({
-      ...auth,
-      user: auth.user ? { _id: auth.user._id } : undefined,
-    });
+    return reply.send(auth);
   });
 
   // TODO: Should another microservice revoke authorizations?

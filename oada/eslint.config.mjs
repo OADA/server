@@ -43,7 +43,6 @@ import security from 'eslint-plugin-security';
 import sonarjs from 'eslint-plugin-sonarjs';
 import unicorn from 'eslint-plugin-unicorn';
 
-
 const __filename = fileURLToPath(import.meta.url);
 
 const __dirname = path.dirname(__filename);
@@ -147,7 +146,7 @@ export default typescript.config(
       'notice/notice': [
         'error',
         {
-          template: /* javascript */`/**
+          template: /* javascript */ `/**
               * @license
               * Copyright <%= YEAR %> Open Ag Data Alliance
               *
@@ -310,7 +309,7 @@ export default typescript.config(
         'error',
         { checksVoidReturn: false },
       ],
-      '@typescript-eslint/require-await': 'warn'
+      '@typescript-eslint/require-await': 'warn',
     },
   },
   {

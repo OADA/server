@@ -75,6 +75,7 @@ fastifyPassport.use(
   }),
 );
 
+// eslint-disable-next-line @typescript-eslint/require-await
 fastifyPassport.registerUserSerializer<User, string>(async (user) => {
   trace('Serializing user by _id as %s', user._id);
   if (!user._id) {
@@ -227,7 +228,7 @@ fastifyPassport.use(
       }
 
       // eslint-disable-next-line unicorn/no-null
-      done(null, payload.user, { scope: [...payload.scope] });
+      done(null, payload.sub, { scope: [...payload.scope] });
     } catch (error: unknown) {
       done(error);
     }

@@ -17,24 +17,29 @@
 
 import debug from 'debug';
 
-import { clients } from '@oada/lib-arangodb';
+import { codes } from '@oada/lib-arangodb';
 
-import type { Client, IClients } from '../models/client.js';
+import type { ICode } from '../models/code.js';
 
-const trace = debug('arango:client:trace');
+const trace = debug('arango:codes:trace');
 
-export const findById = async function (id: string) {
-  trace('Retrieving client { client_id: "%s" }', id);
-  const found = await clients.findById(id);
+export async function findByCode(code: string): Promise<ICode | undefined> {
+  trace('findByCode: searching for code %s', code);
+  const found = await codes.findByCode(code);
   if (!found) {
     return found;
   }
 
-  const { _id, ...client } = found;
-  return { ...client, id: _id as string };
-} satisfies IClients['findById'];
+  const { _id, ...c } = found;
+  return { ...c, id: _id, user: { id: c.user._id } };
+}
 
-export const save = async function (client: Client) {
-  trace('Saving clientId %s', client.client_id);
-  await clients.save(client);
-} satisfies IClients['save'];
+export async function save(code: ICode) {
+  const { id, user, ...c } = code;
+  return codes.save({
+    ...c,
+    _id: id,
+    // Link user
+    user: { _id: user.id },
+  });
+}

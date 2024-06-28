@@ -21,38 +21,41 @@ import { users } from '@oada/lib-arangodb';
 
 import type { SetOptional } from 'type-fest';
 
-import type { User } from '../models/user.js';
+import type { IUsers, User } from '../models/user.js';
 
 const trace = debug('arango:user:trace');
 
-export async function findById(id: string) {
+export const findById = async function (id: string) {
   trace('findById: searching for user %s', id);
   return users.findById(id);
-}
+} satisfies IUsers['findById'];
 
-export async function findByUsername(username: User['username']) {
+export const findByUsername = async function (username: User['username']) {
   trace('findByUsername: searching for user %s', username);
   return users.findByUsername(username);
-}
+} satisfies IUsers['findByUsername'];
 
-export async function findByUsernamePassword(
+export const findByUsernamePassword = async function (
   username: User['username'],
   password: string,
 ) {
   trace('findByUsername: searching for user %s with  password', username);
   return users.findByUsernamePassword(username, password);
-}
+} satisfies IUsers['findByUsernamePassword'];
 
-export async function findByOIDCToken(token: { sub: string; iss: string }) {
+export const findByOIDCToken = async function (token: {
+  sub: string;
+  iss: string;
+}) {
   trace(
     'findByOIDCToken: searching for oidc token sub=%s, iss=%s',
     token.sub,
     token.iss,
   );
   return users.findByOIDCToken(token);
-}
+} satisfies IUsers['findByOIDCToken'];
 
-export async function findByOIDCUsername(
+export const findByOIDCUsername = async function (
   username: User['username'],
   domain: string,
 ) {
@@ -62,12 +65,12 @@ export async function findByOIDCUsername(
     domain,
   );
   return users.findByOIDCUsername(username, domain);
-}
+} satisfies IUsers['findByOIDCUsername'];
 
-export async function update(user: User) {
+export const update = async function (user: User) {
   await users.update(user);
-}
+} satisfies IUsers['update'];
 
-export async function create(user: SetOptional<User, '_id'>) {
+export const create = async function (user: SetOptional<User, '_id'>) {
   return users.create(user);
-}
+} satisfies IUsers['create'];

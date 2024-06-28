@@ -61,6 +61,7 @@ class User extends makeClass<Except<Claims, 'sub'>>() {
 
     // eslint-disable-next-line @typescript-eslint/naming-convention
     public readonly _id = `users/${generate()}` as UserID,
+    public readonly sub: string = _id,
     public domain = 'localhost',
     public password?: string,
     /**
@@ -75,7 +76,7 @@ class User extends makeClass<Except<Claims, 'sub'>>() {
     /**
      * The "scopes" of the User (e.g., "oada.admin.user:all")
      */
-    public roles: readonly string[] = [],
+    public override roles: readonly string[] = [],
     /**
      * Link to the resource of this User's /bookmarks
      */

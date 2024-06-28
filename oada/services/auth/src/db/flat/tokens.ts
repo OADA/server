@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2017-2022 Open Ag Data Alliance
+ * Copyright 2017-2024 Open Ag Data Alliance
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,17 +15,22 @@
  * limitations under the License.
  */
 
-import type { Client, IClients } from '../models/client.js';
-
+import { ITokens, type Token } from '../models/token.js';
 // @ts-expect-error IDEK
-import clients from './clients.json';
+import tokens from './tokens.json';
 
-const database = new Map(Object.entries(clients as Record<string, Client>));
+const database = new Map(Object.entries(tokens as Record<string, Token>));
 
-export const findById = function (id: string) {
-  return structuredClone(database.get(id)) ?? undefined;
-} satisfies IClients['findById'];
+export const verify = function (token: string) {
+  const found = structuredClone(database.get(token));
+  if (!found) {
+    throw new Error(`Token not found`);
+  }
 
-export const save = function (client: Client) {
-  database.set(client.client_id, client);
-} satisfies IClients['save'];
+  return found;
+} satisfies ITokens['verify'];
+
+export const create = function (token: Token) {
+  database.set(token.jti, token);
+  return token.jti;
+} satisfies ITokens['create'];

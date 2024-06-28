@@ -20,6 +20,7 @@ import type { User, UserID } from '@oada/models/user';
 export default [
   {
     _id: 'users/default:users_frank_123' as UserID,
+    sub: 'users/default:users_frank_123',
     username: 'frank',
     password: 'test',
     domain: 'localhost',
@@ -37,6 +38,7 @@ export default [
   /*
   {
     '_id': 'users/default:users_frank2_124' as UserID,
+    'sub': 'users/default:users_frank2_124',
     'domain': 'localhost',
     'username': 'dummy_username_oidc_user_frank2',
     'oidc': [{
@@ -55,6 +57,7 @@ export default [
 */
   {
     _id: 'users/default:users_sam_321' as UserID,
+    sub: 'users/default:users_sam_321',
     username: 'sam',
     password: 'test',
     domain: 'localhost',
@@ -71,6 +74,7 @@ export default [
   },
   {
     _id: 'users/default:users_sam_321-proxy' as UserID,
+    sub: 'users/default:users_sam_321-proxy',
     username: 'sam-proxy',
     password: 'test',
     domain: 'proxy',
@@ -87,6 +91,7 @@ export default [
   },
   {
     _id: 'users/default:users_audrey_999' as UserID,
+    sub: 'users/default:users_audrey_999',
     username: 'audrey',
     password: 'test',
     domain: 'abcaudits.trellisfw.io',
@@ -103,6 +108,7 @@ export default [
   },
   {
     _id: 'users/default:users_gary_growersync' as UserID,
+    sub: 'users/default:users_gary_growersync',
     username: 'gary@gmail.com',
     password: 'test',
     domain: 'growersync.trellisfw.io',
@@ -119,6 +125,7 @@ export default [
   },
   {
     _id: 'users/default:users_pete_pspperfection' as UserID,
+    sub: 'users/default:users_pete_pspperfection',
     username: 'pete@gmail.com',
     password: 'test',
     domain: 'pspperfection.trellisfw.io',
@@ -135,6 +142,7 @@ export default [
   },
   {
     _id: 'users/default:users_rick_retailfresh' as UserID,
+    sub: 'users/default:users_rick_retailfresh',
     username: 'rick@gmail.com',
     password: 'test',
     domain: 'retailfresh.trellisfw.io',
@@ -151,6 +159,7 @@ export default [
   },
   {
     _id: 'users/default:users_diane_distributingexcellence' as UserID,
+    sub: 'users/default:users_diane_distributingexcellence',
     username: 'diane@gmail.com',
     password: 'test',
     domain: 'distributingexcellence.trellisfw.io',
