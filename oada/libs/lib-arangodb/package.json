@@ -61,7 +61,6 @@
     "@oada/types": "^4.0.0",
     "arangojs": "^8.8.1",
     "bcryptjs": "^2.4.3",
-    "clone-deep": "^4.0.1",
     "debug": "^4.3.5",
     "deep-equal": "^2.2.3",
     "flat": "^6.0.1",
@@ -71,7 +70,6 @@
   "devDependencies": {
     "@ava/typescript": "^5.0.0",
     "@types/bcryptjs": "^2.4.6",
-    "@types/clone-deep": "^4.0.4",
     "@types/convict": "^6.1.6",
     "@types/debug": "^4.1.12",
     "@types/deep-equal": "^1.0.4",

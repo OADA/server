@@ -24,7 +24,6 @@ import '@oada/lib-prom';
 import { ArangoError, ArangoErrorCode, users } from '@oada/lib-arangodb';
 import { ResponderRequester } from '@oada/lib-kafka';
 
-import cloneDeep from 'clone-deep';
 import debug from 'debug';
 import ksuid from 'ksuid';
 
@@ -131,7 +130,7 @@ export async function handleReq(request: UserRequest): Promise<UserResponse> {
   trace({ request }, 'User request');
   // While this could fit in permissions_handler, since users are not really resources (i.e. no graph),
   // we'll add a check here that the user has oada.admin.user:write or oada.admin.user:all scope
-  const authorization = cloneDeep(request.authorization) ?? { scope: '' };
+  const authorization = structuredClone(request.authorization) ?? { scope: '' };
   const tokenscope = isArray(authorization.scope)
     ? authorization.scope.join(' ')
     : authorization.scope; // Force to space-separated string

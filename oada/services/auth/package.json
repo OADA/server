@@ -108,7 +108,6 @@
   "devDependencies": {
     "@fastify/type-provider-json-schema-to-ts": "^3.0.0",
     "@types/bcryptjs": "^2.4.6",
-    "@types/clone-deep": "^4.0.4",
     "@types/debug": "^4.1.12",
     "@types/ejs": "^3.1.5",
     "@types/minimist": "^1.2.5",
