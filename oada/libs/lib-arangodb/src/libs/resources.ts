@@ -32,7 +32,6 @@ import { sanitizeResult } from '../util.js';
 import { JsonPointer, type PathSegments } from 'json-ptr';
 import { type JsonObject } from 'type-fest';
 import { aql } from 'arangojs';
-import cloneDeep from 'clone-deep';
 import debug from 'debug';
 
 type IResource = OADAified<Resource>;
@@ -276,7 +275,7 @@ export async function lookupFromUrl(
     // If the desired url has more pieces than the longest path, the
     // pathLeftover is the extra pieces
     if (vertices.length - 1 < pieces.length) {
-      const revVertices = [...cloneDeep(vertices)].reverse();
+      const revVertices = [...structuredClone(vertices)].reverse();
       const lastResource =
         vertices.length - 1 - revVertices.findIndex((v) => v?.is_resource);
       // Slice a negative value to take the last n pieces of the array

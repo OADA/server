@@ -30,7 +30,6 @@
     "@oada/models": "workspace:^",
     "@oada/pino-debug": "^3.7.0",
     "chalk": "^5.3.0",
-    "clone-deep": "^4.0.1",
     "debug": "^4.3.5",
     "ksuid": "^3.0.0",
     "minimist": "^1.2.8",
@@ -38,7 +37,6 @@
     "tslib": "2.6.3"
   },
   "devDependencies": {
-    "@types/clone-deep": "^4.0.4",
     "@types/debug": "^4.1.12",
     "@types/minimist": "^1.2.5",
     "@types/promptly": "^3.0.5",

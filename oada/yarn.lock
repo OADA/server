@@ -1018,7 +1018,6 @@ __metadata:
     "@oada/well-known-json": "npm:^4.0.2"
     "@qlever-llc/interface2class": "npm:^1.1.0"
     "@types/bcryptjs": "npm:^2.4.6"
-    "@types/clone-deep": "npm:^4.0.4"
     "@types/debug": "npm:^4.1.12"
     "@types/ejs": "npm:^3.1.5"
     "@types/minimist": "npm:^1.2.5"
@@ -1247,7 +1246,6 @@ __metadata:
     "@oada/oadaify": "npm:^2.1.0"
     "@oada/types": "npm:^4.0.0"
     "@types/bcryptjs": "npm:^2.4.6"
-    "@types/clone-deep": "npm:^4.0.4"
     "@types/convict": "npm:^6.1.6"
     "@types/debug": "npm:^4.1.12"
     "@types/deep-equal": "npm:^1.0.4"
@@ -1257,7 +1255,6 @@ __metadata:
     arangojs: "npm:^8.8.1"
     ava: "npm:6.1.3"
     bcryptjs: "npm:^2.4.3"
-    clone-deep: "npm:^4.0.1"
     debug: "npm:^4.3.5"
     deep-equal: "npm:^2.2.3"
     flat: "npm:^6.0.1"
@@ -1594,12 +1591,10 @@ __metadata:
     "@oada/lib-prom": "workspace:^"
     "@oada/models": "workspace:^"
     "@oada/pino-debug": "npm:^3.7.0"
-    "@types/clone-deep": "npm:^4.0.4"
     "@types/debug": "npm:^4.1.12"
     "@types/minimist": "npm:^1.2.5"
     "@types/promptly": "npm:^3.0.5"
     chalk: "npm:^5.3.0"
-    clone-deep: "npm:^4.0.1"
     debug: "npm:^4.3.5"
     ksuid: "npm:^3.0.0"
     minimist: "npm:^1.2.8"
@@ -1856,13 +1851,6 @@ __metadata:
     "@types/node": "npm:*"
     "@types/responselike": "npm:^1.0.0"
   checksum: 10/159f9fdb2a1b7175eef453ae2ced5ea04c0d2b9610cc9ccd9f9abb066d36dacb1f37acd879ace10ad7cbb649490723feb396fb7307004c9670be29636304b988
-  languageName: node
-  linkType: hard
-
-"@types/clone-deep@npm:^4.0.4":
-  version: 4.0.4
-  resolution: "@types/clone-deep@npm:4.0.4"
-  checksum: 10/84cfd1ad9abe164aed3c8c4e9af0b3beab6f68f959cb77174cc00618ce3a752954b9025af0783e8f9923e736286dd5be4d2883ec712d6c86fbc2b66a7176433d
   languageName: node
   linkType: hard
 
