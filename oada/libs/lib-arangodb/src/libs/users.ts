@@ -26,7 +26,7 @@ import { config } from '../config.js';
 import { db as database } from '../db.js';
 import { sanitizeResult } from '../util.js';
 
-import type { SetOptional, SetRequired } from 'type-fest';
+import type { SetOptional } from 'type-fest';
 import type { User } from '@oada/models/user';
 
 const info = debug('arangodb#resources:info');
@@ -127,7 +127,7 @@ export async function findByUsernamePassword(
 /**
  * @throws if user already exists
  */
-export async function create(user: SetOptional<User, '_id'>): Promise<User> {
+export async function create(user: User): Promise<User> {
   info({ user }, 'Create user was called');
 
   user.password &&= await hashPw(user.password);
@@ -141,14 +141,13 @@ export async function remove(u: Selector<User>): Promise<void> {
   await users.remove(u);
 }
 
-export async function update(
-  user: SetRequired<Partial<User>, '_id'>,
-): Promise<User> {
+export async function update(user: Partial<User>): Promise<User> {
   info({ user }, 'Update user was called');
+  const id = user._id as string;
 
   user.password &&= await hashPw(user.password);
 
-  const u = await users.update(user._id, user, {
+  const u = await users.update(id, user, {
     returnNew: true,
   });
   return sanitizeResult(u.new);

@@ -22,7 +22,7 @@ import { config } from './config.js';
 import '@oada/lib-prom';
 
 import { URL } from 'node:url';
-import fs from 'node:fs';
+import fs from 'node:fs/promises';
 
 import { Responder } from '@oada/lib-kafka';
 
@@ -57,8 +57,10 @@ if (esMain(import.meta)) {
 
 trace(scopeTypes, 'Parsed builtin scopes');
 // Augment scopeTypes by merging in anything in /scopes/additional-scopes
-const additionalScopesFiles = fs
-  .readdirSync(new URL('../scopes/additional-scopes', import.meta.url))
+const additionalScopesFiles = (
+  await fs.readdir(new URL('../scopes/additional-scopes', import.meta.url))
+)
+  // eslint-disable-next-line unicorn/no-await-expression-member
   .filter(
     (f) => !f.startsWith('.'), // Remove hidden files
   );

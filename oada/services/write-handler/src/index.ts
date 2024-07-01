@@ -117,7 +117,7 @@ responder.on<WriteResponse>('request', async (request) => {
 /**
  * Data passed from request to response
  */
-type WriteContext = {
+interface WriteContext extends KafkaBase {
   /**
    * @todo what is this?
    */
@@ -140,12 +140,12 @@ type WriteContext = {
   contentType: string;
   resource_id: string;
   path_leftover: string;
-} & KafkaBase;
+}
 
 /**
  * Interface for expected request objects
  */
-export type WriteRequest = {
+export interface WriteRequest extends WriteContext {
   'source'?: string;
   'rev'?: number;
   /**
@@ -181,18 +181,17 @@ export type WriteRequest = {
    * @todo what is this?
    */
   'from_change_id'?: string[];
-} & WriteContext;
+}
 
 /**
  * Response to a write request
  */
-export type WriteResponse = {
+export interface WriteResponse extends KafkaBase, WriteContext {
   msgtype: 'write-response';
   _rev: number;
   _orev?: number;
   change_id?: string;
-} & KafkaBase &
-  WriteContext;
+}
 
 async function checkPreconditions(request: WriteRequest) {
   if (request['if-match']) {

@@ -15,111 +15,55 @@
  * limitations under the License.
  */
 
-import { authorizations } from '@oada/lib-arangodb';
-
 import debug from 'debug';
 
-const trace = debug('token-lookup:trace');
-const info = debug('token-lookup:info');
+import Authorization from '@oada/models/authorization';
+import { authorizations } from '@oada/lib-arangodb';
+
 const warn = debug('token-lookup:warn');
 
 export interface TokenRequest {
   token: string;
 }
-export interface TokenResponse {
-  token?: string;
-  token_exists: boolean;
-  doc: {
-    expired: boolean;
-    authorizationid: string;
-    user_id: string;
-    user_scope: readonly string[];
-    scope: readonly string[];
-    bookmarks_id: string;
-    shares_id: string;
-    client_id: string;
-  };
-}
 
 export default async function tokenLookup(
   request: TokenRequest,
-): Promise<TokenResponse> {
-  const response: TokenResponse = {
-    // Type: 'http_response',
-    token: request.token,
-    token_exists: false,
-    // Partition: req.resp_partition,
-    // connection_id: req.connection_id,
-    doc: {
-      expired: false,
-      authorizationid: '',
-      user_id: '',
-      scope: [],
-      user_scope: [],
-      bookmarks_id: '',
-      shares_id: '',
-      client_id: '',
-    },
-  };
-
-  if (request.token === undefined) {
-    trace('No token supplied with the request.');
-    return response;
-  }
-
+): Promise<Authorization | undefined> {
   // Get token from db.
   // FIXME: We should speed this up by getting everything in one query.
-  const t = await authorizations.findByToken(
+  const found = await authorizations.findByToken(
     request.token.trim().replace(/^Bearer /, ''),
   );
 
-  if (!t) {
+  if (!found) {
     warn('Token %s does not exist.', request.token);
-    response.token = undefined;
-    return response;
+    return;
   }
 
-  if (!t._id) {
-    warn('_id for token does not exist in response');
-  }
+  const {
+    _id: _,
+    token: t,
+    clientId,
+    user: {
+      sub,
+      // @ts-expect-error deprecated key
+      _id,
+      ...user
+    },
+    scope,
+    createTime,
+    expiresIn,
+    ...rest
+  } = found;
 
-  if (!t.user) {
-    throw new Error(`user for token ${t.token} not found`);
-  }
-
-  if (!t.user.bookmarks) {
-    info('No bookmarks for user from token %s', t.token);
-    t.user.bookmarks = { _id: '' };
-  }
-
-  let expired = false;
-  if (t.expiresIn && t.createTime) {
-    const now = Date.now();
-    if (now > t.createTime + t.expiresIn) {
-      info('Token is expired');
-      expired = true;
-    }
-
-    trace(
-      'token.createTime = %s, t.expiresIn = %s, now = %s',
-      t.createTime,
-      t.expiresIn,
-      now,
-    );
-  }
-
-  trace('token expired? %s', expired);
-
-  response.token_exists = true;
-  trace('received authorization, _id = %s', t._id);
-  response.doc.authorizationid = t._id;
-  response.doc.client_id = t.clientId;
-  response.doc.user_id = t.user._id || response.doc.user_id;
-  response.doc.user_scope = t.user.roles;
-  response.doc.bookmarks_id = t.user.bookmarks._id || response.doc.bookmarks_id;
-  response.doc.shares_id = t.user.shares._id || response.doc.shares_id;
-  response.doc.scope = t.scope || response.doc.scope;
-  response.doc.expired = expired;
-
-  return response;
+  return new Authorization({
+    jti: t,
+    client_id: clientId,
+    scope: scope.join(' '),
+    iat: createTime,
+    exp: expiresIn,
+    sub: sub ?? _id,
+    ...user,
+    ...rest,
+  });
 }

@@ -102,6 +102,15 @@ export const { config, schema } = await libConfig({
       } as Record<string, string>,
     },
   },
+  'auth': {
+    token: {
+      dataStore: {
+        format: Array,
+        default: 'jwt' as string | string[],
+        env: 'AUTH_TOKEN_DATA_STORE',
+      },
+    },
+  },
   'storage': {
     binary: {
       cacache: {

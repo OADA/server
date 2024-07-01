@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-import { join } from 'node:path';
+import { join } from 'node:path/posix';
 import { pipeline } from 'node:stream/promises';
 
 import { changes, putBodies, resources } from '@oada/lib-arangodb';
@@ -128,6 +128,7 @@ function parseETag(etag: string): { id?: string; rev: number } {
 /**
  * Fastify plugin for OADA /resources
  */
+// eslint-disable-next-line @typescript-eslint/require-await
 const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
   // eslint-disable-next-line unicorn/no-null
   fastify.decorateRequest('oadaPath', null);
@@ -168,10 +169,7 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
      */
     const fullpath = request.oadaPath;
 
-    const result = await resources.lookupFromUrl(
-      `/${fullpath}`,
-      request.user!._id,
-    );
+    const result = await resources.lookupFromUrl(`/${fullpath}`, request.user!);
     request.log.trace({ result }, 'Graph lookup result');
     if (result.resource_id) {
       // Rewire URL to resource found by graph
@@ -197,8 +195,8 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
       // Connection_id: request.id,
       // domain: request.headers.host,
       oadaGraph: request.oadaGraph,
-      user_id: request.user!._id,
-      scope: request.user!.scope.split(' ') as Scope[],
+      user_id: request.user!.sub,
+      scope: request.user!.scope!.split(' ') as Scope[],
       contentType: request.headers['content-type'],
       // RequestType: request.method.toLowerCase(),
     });
@@ -214,7 +212,7 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
         } else if (!response.permissions.owner && !response.permissions.write) {
           request.log.warn(
             '%s tried to PUT resource without proper permissions',
-            request.user!._id,
+            request.user!.sub,
           );
           void reply.forbidden(
             'User does not have write permission for this resource',
@@ -478,6 +476,7 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
     },
     url: '*',
     method: ['HEAD', 'GET', 'DELETE'],
+    // eslint-disable-next-line @typescript-eslint/require-await
     async handler(_request, reply) {
       void reply.badRequest('X-OADA-Ensure-Link not allowed for this method');
     },
@@ -509,6 +508,7 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
     },
     url: '*',
     method: ['PUT', 'POST'],
+    // eslint-disable-next-line @typescript-eslint/require-await
     async handler(_request, reply) {
       void reply.badRequest('Unsupported value for X-OADA-Ensure-Link');
     },
@@ -570,7 +570,7 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
         'resource_id': request.oadaGraph.resource_id,
         'path_leftover': request.oadaGraph.path_leftover,
         // 'meta_id': oadaGraph['meta_id'],
-        'user_id': request.user!._id,
+        'user_id': request.user!.sub,
         'contentType': request.headers['content-type'],
         bodyid,
         'if-match': ifMatch,
@@ -680,7 +680,7 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
       'resource_id': oadaGraph.resource_id,
       'path_leftover': oadaGraph.path_leftover,
       // 'meta_id': oadaGraph['meta_id'],
-      'user_id': request.user!._id,
+      'user_id': request.user!.sub,
       'authorizationid': request.user!.jti,
       'if-match': ifMatch,
       'if-none-match': ifNoneMatch,

@@ -31,7 +31,7 @@ export async function findByCode(code: string): Promise<ICode | undefined> {
   }
 
   const { _id, ...c } = found;
-  return { ...c, id: _id, user: { id: c.user._id } };
+  return { ...c, id: _id, user: c.user };
 }
 
 export async function save(code: ICode) {
@@ -39,7 +39,6 @@ export async function save(code: ICode) {
   return codes.save({
     ...c,
     _id: id,
-    // Link user
-    user: { _id: user.id },
+    user,
   });
 }

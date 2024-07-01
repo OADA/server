@@ -117,11 +117,11 @@ const subservices = new Set(
 
 // Redirect other OIDC config endpoints to openid-configuration endpoint
 await fastify.register(
-  async (app) => {
-    app.all('/oada-configuration', async (_request, reply) =>
+  (app) => {
+    app.all('/oada-configuration', {}, async (_request, reply) =>
       reply.redirect(301, 'openid-configuration'),
     );
-    app.all('/oauth-authorization-server', async (_request, reply) =>
+    app.all('/oauth-authorization-server', {}, async (_request, reply) =>
       reply.redirect(301, 'openid-configuration'),
     );
   },

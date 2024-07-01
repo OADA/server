@@ -26,7 +26,6 @@ import { oadaify } from '@oada/oadaify';
 import { ArangoError } from './errors.js';
 import type { User } from '@oada/models/user';
 import { db as database } from '../db.js';
-import { findById } from './users.js';
 import { sanitizeResult } from '../util.js';
 
 import { JsonPointer, type PathSegments } from 'json-ptr';
@@ -55,7 +54,7 @@ const resourceGraph = config.get('arangodb.graphs.resources.name');
 const MAX_DEPTH = 100; // TODO: Is this good?
 
 type Nullable<T> = {
-  [K in keyof T]: T[K] | undefined;
+  [K in keyof T]: T[K] | null;
 };
 
 export interface Permission {
@@ -89,11 +88,10 @@ function normalizeUrl(user: User, url: string): string {
 
 export async function lookupFromUrl(
   path: string,
-  userId: string,
+  user: User,
 ): Promise<GraphLookup> {
-  const user = await findById(userId);
   if (!user) {
-    throw new Error(`No User Found for given userId ${userId}`);
+    throw new TypeError(`No user given`);
   }
 
   const url = normalizeUrl(user, path);
@@ -129,9 +127,9 @@ export async function lookupFromUrl(
       FOR r IN resources
       RETURN {
         type: r._type || type,
-        owner: r._meta._owner == ${userId} || r._meta._permissions[${userId}].owner,
-        read: r._meta._owner == ${userId} || r._meta._permissions[${userId}].read,
-        write: r._meta._owner == ${userId} || r._meta._permissions[${userId}].write
+        owner: r._meta._owner == ${user.sub} || r._meta._permissions[${user.sub}].owner,
+        read: r._meta._owner == ${user.sub} || r._meta._permissions[${user.sub}].read,
+        write: r._meta._owner == ${user.sub} || r._meta._permissions[${user.sub}].write
       }
     )
     LET rev = DOCUMENT(LAST(path.vertices).resource_id)._oada_rev

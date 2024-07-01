@@ -85,7 +85,7 @@ responder.on<WriteRequest>('request', async function* (request) {
           resource_id: user.shares._id,
           path_leftover: '',
           //						'meta_id': req['meta_id'],
-          user_id: user._id,
+          user_id: user.sub,
           //					 'authorizationid': req.user.doc['authorizationid'],
           //			     'client_id': req.user.doc['client_id'],
           contentType: 'application/vnd.oada.permission.1+json',

@@ -34,7 +34,12 @@ export const verify = async function (token: string) {
     _id: _,
     token: t,
     clientId,
-    user: { _id, ...user },
+    user: {
+      sub,
+      // @ts-expect-error deprecated key
+      _id,
+      ...user
+    },
     scope,
     createTime,
     expiresIn,
@@ -47,6 +52,7 @@ export const verify = async function (token: string) {
     scope: scope.join(' '),
     iat: createTime,
     exp: expiresIn,
+    sub: sub ?? _id,
     ...user,
     ...rest,
   };
@@ -65,7 +71,10 @@ export const create = async function ({
     ...rest,
     token: jti,
     clientId: client_id!,
-    user: { _id: sub },
+    user: {
+      sub,
+      _id: sub,
+    },
     scope: scope.split(' '),
     createTime: iat,
     expiresIn: exp,

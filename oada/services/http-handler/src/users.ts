@@ -67,6 +67,7 @@ async function requestUserWrite(request: FastifyRequest, id: string) {
   }
 }
 
+// eslint-disable-next-line @typescript-eslint/require-await
 const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
   // Parse JSON content types
   fastify.addContentTypeParser(
@@ -101,7 +102,7 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
     const resp = await requestUserWrite(request, newID);
     // TODO: Better status code choices?
     // if db didn't send back a user, it was an update so use id from URL
-    const id = resp?.user?._id?.replace(/^users\//, '') ?? newID;
+    const id = resp?.user?.sub?.replace(/^users\//, '') ?? newID;
     // Return res.redirect(201, req.baseUrl + '/' + id)
     void reply.header('content-location', join(options.prefix, id));
     return reply.code(201).send();
@@ -120,7 +121,7 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
     const resp = await requestUserWrite(request, id);
     // TODO: Better status code choices?
     // if db didn't send back a user, it was an update so use id from URL
-    const userid = resp?.user?._id.replace(/^users\//, '') ?? id;
+    const userid = resp?.user?.sub.replace(/^users\//, '') ?? id;
     // Return res.redirect(201, req.baseUrl + '/' + id)
     void reply.header('content-location', join(options.prefix, userid));
     return reply.code(201).send();
@@ -180,14 +181,14 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
       u._id,
     );
     return reply
-      .header('Content-Location', join(options.prefix, u._id))
+      .header('Content-Location', join(options.prefix, u.sub))
       .type('application/vnd.oada.user.1+json')
       .status(200)
       .send(u);
   });
 
   fastify.get('/me', async (request, reply) => {
-    await replyUser(request.user!._id, reply);
+    await replyUser(request.user!.sub, reply);
   });
 
   // TODO: don't return stuff to anyone anytime
