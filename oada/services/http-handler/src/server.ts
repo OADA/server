@@ -25,18 +25,13 @@ import { users as userDatabase } from '@oada/lib-arangodb';
 
 import { plugin as formats } from '@oada/formats-server';
 
-import type { TokenClaims } from '@oada/auth';
+import auth, { issuer } from './auth.js';
 import authorizations from './authorizations.js';
 import requester from './requester.js';
 import resources from './resources.js';
 import users from './users.js';
 import websockets from './websockets.js';
 
-import {
-  type Authenticate,
-  type FastifyJwtJwksOptions,
-  fastifyJwtJwks,
-} from 'fastify-jwt-jwks';
 import {
   fastify as Fastify,
   type FastifyReply,
@@ -46,8 +41,8 @@ import {
   fastifyRequestContext,
   requestContext,
 } from '@fastify/request-context';
-import type { FastifyJWTOptions } from '@fastify/jwt';
 import type { RateLimitPluginOptions } from '@fastify/rate-limit';
+import type { TokenClaims } from '@oada/auth';
 import cors from '@fastify/cors';
 import fastifyAccepts from '@fastify/accepts';
 import fastifyGracefulShutdown from 'fastify-graceful-shutdown';
@@ -57,15 +52,10 @@ import helmet from '@fastify/helmet';
 
 import type { HTTPVersion, Handler } from 'find-my-way';
 import type { UserRequest, UserResponse } from '@oada/users';
-import { Issuer } from 'openid-client';
 import User from '@oada/models/user';
 import esMain from 'es-main';
 
 declare module 'fastify' {
-  interface FastifyInstance {
-    authenticate: Authenticate;
-  }
-
   // eslint-disable-next-line @typescript-eslint/no-shadow
   interface FastifyRequest {
     user?: User & TokenClaims;
@@ -93,6 +83,7 @@ const serializers = {
       version: version ? `${version}` : undefined,
       hostname: request.hostname,
       userAgent: request.headers?.['user-agent'],
+      contentType: request.headers?.['content-type'],
       remoteAddress: request.ip,
       remotePort: request.socket?.remotePort,
     };
@@ -232,6 +223,7 @@ await fastify.register(fastifyRequestContext, {
 });
 
 // Add id to request context
+// eslint-disable-next-line @typescript-eslint/require-await
 fastify.addHook('onRequest', async (request) => {
   requestContext.set('id', request.id);
   requestContext.set('domain', request.hostname);
@@ -306,61 +298,6 @@ await fastify.register(formats);
  */
 await fastify.register(websockets);
 
-/**
- * Create context for authenticated stuff
- */
-
-async function discoverConfiguration(uri: string | URL) {
-  try {
-    try {
-      const { metadata, issuer } = await Issuer.discover(`${uri}`);
-      return { metadata, issuer };
-    } catch {
-      const { metadata, issuer } = await Issuer.discover(`https://${uri}`);
-      return { metadata, issuer };
-    }
-  } catch (error: unknown) {
-    throw new Error(`Failed OIDC discovery for issuer '${uri}'`, {
-      cause: error,
-    });
-  }
-}
-
-// Find JWKSet URI for auth issuer with OIDC
-const {
-  metadata: { jwks_uri: jwksUrl },
-  issuer,
-} = await discoverConfiguration(config.get('oidc.issuer'));
-fastify.log.debug({ jwksUrl }, `Loaded OIDC configuration for ${issuer}`);
-
-declare module '@fastify/jwt' {
-  interface FastifyJWT {
-    payload: TokenClaims;
-    // User: { _id: string };
-  }
-}
-declare module 'fastify-jwt-jwks' {
-  export interface FastifyJwtJwksOptions extends FastifyJWTOptions {}
-}
-
-await fastify.register(fastifyJwtJwks, {
-  jwksUrl,
-
-  issuer: [
-    `${issuer}`,
-
-    {
-      test(value: string) {
-        return requestContext.get('issuer') === value;
-      },
-    } as RegExp,
-  ],
-  formatUser(claims) {
-    fastify.log.debug({ claims }, 'JWT claims');
-    return claims;
-  },
-} as const satisfies FastifyJwtJwksOptions);
-
 async function enureOIDCUser({ sub, iss, ...rest }: TokenClaims) {
   if (!sub) {
     throw new Error('OIDC: No sub in claims');
@@ -395,12 +332,18 @@ async function enureOIDCUser({ sub, iss, ...rest }: TokenClaims) {
   return resp.user;
 }
 
+/**
+ * Create context for authenticated stuff
+ */
 await fastify.register(async (instance) => {
+  await fastify.register(auth);
   instance.addHook('onRequest', instance.authenticate);
 
   // Fetch user info etc. for subject of current token
   instance.addHook('onRequest', async (request, reply) => {
+    request.log.debug('Retrieving user info for request');
     if (!request.user?.sub) {
+      request.log.error('Not user subject found for request');
       return reply.unauthorized();
     }
 
@@ -408,7 +351,7 @@ await fastify.register(async (instance) => {
     const claims = request.user as unknown as TokenClaims;
     const user = await enureOIDCUser(claims);
 
-    request.log.debug({ user }, 'User/Auth info loaded');
+    request.log.trace({ user }, 'User/Auth info loaded');
     request.user = { ...claims, ...user! };
   });
 

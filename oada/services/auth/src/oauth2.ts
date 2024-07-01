@@ -322,7 +322,7 @@ export const exchangeCode: IssueExchangeCodeFunctionArity5<Client> = async (
 
     const { issuer, user, scope, sub } = payload;
     const auth = new Authorization({
-      sub: sub ?? user,
+      sub: sub ?? (user as string),
       scope,
     });
     const token = await getToken(issuer, {

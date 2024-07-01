@@ -16,7 +16,6 @@
  */
 
 import type { Code, CodeID } from '../codes.js';
-import type { UserID } from '@oada/models/user';
 
 export default [
   {
@@ -24,7 +23,7 @@ export default [
     code: 'xyz',
     scope: [],
     nonce: '',
-    user: { _id: 'users/123frank' as UserID },
+    user: 'users/123frank',
     createTime: 1_413_831_649_937,
     expiresIn: 60,
     redeemed: true,

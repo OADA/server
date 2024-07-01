@@ -15,7 +15,6 @@
  * limitations under the License.
  */
 
-import type { User } from '@oada/models/user';
 import { config } from '../config.js';
 import { db as database } from '../db.js';
 import { findById as findUserById } from './users.js';
@@ -39,9 +38,21 @@ export interface Authorization {
   scope: readonly string[];
   createTime: number;
   expiresIn: number;
-  user: { _id: string };
+  user: { sub: string };
   clientId: string;
   revoked?: boolean;
+}
+
+function fixup({ user, ...rest }: Authorization) {
+  return {
+    ...rest,
+    user: {
+      sub:
+        user.sub ??
+        // @ts-expect-error old style
+        user._id,
+    },
+  };
 }
 
 export async function findById(id: string): Promise<Authorization | undefined> {
@@ -51,12 +62,12 @@ export async function findById(id: string): Promise<Authorization | undefined> {
       RETURN UNSET(t, '_key')`);
 
   const t = (await cursor.next()) as Authorization | undefined;
-  return t ?? undefined;
+  return t ? fixup(t) : undefined;
 }
 
 export async function findByToken(
   token: string,
-): Promise<(Authorization & { user: User }) | undefined> {
+): Promise<Authorization | undefined> {
   const cursor = await database.query(
     aql`
       FOR t IN ${authorizations}
@@ -64,19 +75,17 @@ export async function findByToken(
         RETURN t`,
   );
 
-  const auth = (await cursor.next()) as Authorization | undefined;
+  const t = (await cursor.next()) as Authorization | undefined;
 
-  if (!auth) {
+  if (!t) {
     return undefined;
   }
 
-  // No longer needed with new _id scheme
-  // t._id = t._key;
-
+  const auth = fixup(t);
   trace({ auth }, 'Found authorization by token, filling out user by user._id');
-  const user = await findUserById(auth.user._id);
+  const user = await findUserById(auth.user.sub);
   if (!user) {
-    throw new Error(`Invalid user ${auth.user._id} for token ${token}`);
+    throw new Error(`Invalid user ${auth.user.sub} for token ${token}`);
   }
 
   return sanitizeResult({ ...auth, user });
@@ -88,16 +97,16 @@ export async function findByUser(
 ): Promise<AsyncIterable<Authorization>> {
   return database.query<Authorization>(aql`
     FOR t IN ${authorizations}
-      FILTER t.user._id == ${user}
+      FILTER t.user.sub == ${user}
       FILTER t.revoked != true
-      RETURN UNSET(t, '_key')`);
+      RETURN UNSET(MERGE(t, {user: {sub: ${user}}})), '_key')`);
 }
 
 export async function save(
   auth: Except<Authorization, '_id'>,
 ): Promise<Authorization> {
   // Make sure nothing but id is in user info
-  const user = { _id: auth.user._id };
+  const user = { sub: auth.user.sub };
   // Have to get rid of illegal document handle _id
 
   trace({ auth, user }, 'save: Replacing/Inserting token');

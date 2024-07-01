@@ -18,10 +18,8 @@
 import type { Opaque } from 'type-fest';
 import { aql } from 'arangojs';
 
-import type { User, UserID } from '@oada/models/user';
 import { config } from '../config.js';
 import { db as database } from '../db.js';
-import { findById } from './users.js';
 import { sanitizeResult } from '../util.js';
 
 export type CodeID = Opaque<string, Code>;
@@ -31,7 +29,7 @@ export interface Code {
   code: string;
   scope: readonly string[];
   nonce?: string;
-  user: { _id: UserID };
+  user: string;
   createTime: number;
   expiresIn: number;
   redeemed: boolean;
@@ -47,36 +45,21 @@ const codes = database.collection(
   config.get('arangodb.collections.codes.name'),
 );
 
-export async function findByCode(
-  code: string,
-): Promise<(DBCode & { user: User }) | undefined> {
-  const cursor = await database.query(
+export async function findByCode(code: string): Promise<DBCode | undefined> {
+  const cursor = await database.query<DBCode>(
     aql`
       FOR c IN ${codes}
       FILTER c.code == ${code}
       RETURN c`,
   );
 
-  const c = (await cursor.next()) as DBCode | undefined;
-
-  if (!c) {
-    return undefined;
-  }
-
-  // Removed this since we now have arango's _id === oada's _id
-  // c._id = c._key;
-
-  const user = await findById(c.user._id);
-  if (!user) {
-    throw new Error(`Invalid user ${c.user._id} for code ${code}`);
-  }
-
-  return sanitizeResult({ ...c, user });
+  const c = await cursor.next();
+  return c ? sanitizeResult(c) : undefined;
 }
 
 export async function save(
   code: Partial<Code> & { code: string },
-): Promise<(DBCode & { user: User }) | undefined> {
+): Promise<DBCode | undefined> {
   await database.query(aql`
     UPSERT { code: ${code.code} }
     INSERT ${code}
@@ -85,9 +68,4 @@ export async function save(
   `);
 
   return findByCode(code.code);
-  /* This old method doesn't work because it only inserts:
-  return db.collection(config.get('arangodb:collections:codes:name'))
-    .save(code)
-    .then(() => findByCode(code.code));
-  */
 }

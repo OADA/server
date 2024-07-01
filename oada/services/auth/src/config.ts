@@ -40,11 +40,11 @@ const dataStores = await fs.readdir(
 addFormats({
   dataStore: {
     validate(value: unknown) {
-      if (Array.isArray(value)) {
-        return value.every((v) => dataStores.includes(`${v}`));
-      }
-
-      return dataStores.includes(`${value}`);
+      const values = Array.isArray(value) ? value : `${value}`.split(',');
+      return values.every((v) => dataStores.includes(`${v}`));
+    },
+    coerce(value: unknown) {
+      return Array.isArray(value) ? value : `${value}`.split(',');
     },
   },
 });
@@ -351,11 +351,13 @@ export const { config, schema } = await libConfig({
       },
     },
     idToken: {
-      dataStore: {
+      /*
+      DataStore: {
         format: 'dataStore',
         default: 'jwt' as string | string[],
         env: 'AUTH_ID_TOKEN_DATA_STORE',
       },
+      */
       expiresIn: {
         format: 'duration',
         default: 0,

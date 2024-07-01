@@ -31,6 +31,8 @@ data:
   PINO_LOKI: {{ .Values.pino.loki.url | quote }}
   PROM_HOST: '::'
   DOMAIN: {{ include "oada.domain" . }}
+  AUTH_CLIENT_DATA_STORE: {{ .Values.oada.dataStores.clients | toJson | trimAll "[]" | replace "\"" "" }}
+  AUTH_USER_DATA_STORE: {{ .Values.oada.dataStores.users | toJson | trimAll "[]" | replace "\"" "" }}
   # Have OADA http handle rate-limit until we can get k8s to do it
   RATE_LIMIT_ENABLED: {{ .Values.oada.rateLimit.enabled | quote }}
   RATE_LIMIT_DRAFT_SPEC: {{ .Values.oada.rateLimit.useDraftSpec | quote }}
@@ -48,10 +50,15 @@ data:
   {{- end }}
   {{ if .Values.oauth.issuer -}}
   OIDC_ISSUER: {{ .Values.oauth.issuer | quote }}
+  #AUTH_TOKEN_DATA_STORE: jwt
+  AUTH_TOKEN_DATA_STORE: {{ append .Values.oada.dataStores.tokens "jwt" | uniq | toJson | trimAll "[]" | replace "\"" "" }}
   WELLKNOWN_SUBSERVICES: ''
   {{ else -}}
   # Use our internal Auth server
   OIDC_ISSUER: http://auth-{{ .Release.Name }}/oadaauth
+  AUTH_TOKEN_DATA_STORE: {{ .Values.oada.dataStores.tokens | toJson | trimAll "[]" | replace "\"" "" }}
+  AUTH_CODE_DATA_STORE: {{ .Values.oada.dataStores.auth.codes | toJson | trimAll "[]" | replace "\"" "" }}
+  AUTH_DEVICE_CODE_DATA_STORE: {{ .Values.oada.dataStores.auth.deviceCodes | toJson | trimAll "[]" | replace "\"" "" }}
   AUTH_PREFIX: /oadaauth/
   WELLKNOWN_SUBSERVICES: http://auth-{{ .Release.Name }}/oadaauth/
   {{- end }}

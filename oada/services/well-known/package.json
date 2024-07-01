@@ -43,7 +43,7 @@
     "allow-methods": "^6.2.0",
     "cors": "^2.8.5",
     "debug": "^4.3.5",
-    "fastify": "^4.28.0",
+    "fastify": "^4.28.1",
     "got": "^14.4.1",
     "openid-client": "^5.6.5",
     "tslib": "2.6.3"

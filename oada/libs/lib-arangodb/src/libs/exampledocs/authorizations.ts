@@ -26,7 +26,7 @@ export default [
     scope: ['oada.yield:all', 'trellisfw:all'],
     createTime: 1_413_831_649_937,
     expiresIn: 0,
-    user: { _id: 'users/default:users_frank_123' },
+    user: { sub: 'users/default:users_frank_123' },
     clientId: 'jf93caauf3uzud7f308faesf3@provider.oada-dev.com',
   },
   {
@@ -35,7 +35,7 @@ export default [
     scope: ['oada.fields:all', 'oada.operations:all'],
     createTime: 1_413_831_649_937,
     expiresIn: 0,
-    user: { _id: 'users/default:users_servio_012' },
+    user: { sub: 'users/default:users_servio_012' },
     clientId: 'jf93caauf3uzud7f308faesf3@provider.oada-dev.com',
   },
   {
@@ -44,7 +44,7 @@ export default [
     scope: ['oada.rocks:all'],
     createTime: 1_413_831_649_937,
     expiresIn: 0,
-    user: { _id: 'users/default:users_frank2_124' },
+    user: { sub: 'users/default:users_frank2_124' },
     clientId: 'jf93caauf3uzud7f308faesf3@provider.oada-dev.com',
   },
 
@@ -54,7 +54,7 @@ export default [
     scope: ['oada.yield:all', 'trellisfw:all'],
     createTime: 1_413_831_649_937,
     expiresIn: 0,
-    user: { _id: 'users/default:users_sam_321' },
+    user: { sub: 'users/default:users_sam_321' },
     clientId: 'jf93caauf3uzud7f308faesf3@provider.oada-dev.com',
   },
   {
@@ -63,7 +63,7 @@ export default [
     scope: ['all:all', 'oada.admin.user:all'],
     createTime: 1_413_831_649_937,
     expiresIn: 0,
-    user: { _id: 'users/default:users_sam_321' },
+    user: { sub: 'users/default:users_sam_321' },
     clientId: 'jf93caauf3uzud7f308faesf3@provider.oada-dev.com',
   },
   {
@@ -72,7 +72,7 @@ export default [
     scope: ['all:all', 'oada.admin.user:all'],
     createTime: 1_413_831_649_937,
     expiresIn: 0,
-    user: { _id: 'users/default:users_sam_321-proxy' },
+    user: { sub: 'users/default:users_sam_321-proxy' },
     clientId: 'jf93caauf3uzud7f308faesf3@provider.oada-dev.com',
   },
   {
@@ -81,7 +81,7 @@ export default [
     scope: ['oada.rocks:all'],
     createTime: 1_413_831_649_937,
     expiresIn: 0,
-    user: { _id: 'users/default:users_sam_321' },
+    user: { sub: 'users/default:users_sam_321' },
     clientId: 'jf93caauf3uzud7f308faesf3@provider.oada-dev.com',
   },
   {
@@ -90,7 +90,7 @@ export default [
     scope: ['trellisfw:all'],
     createTime: 1_413_831_649_937,
     expiresIn: 0,
-    user: { _id: 'users/default:users_audrey_999' },
+    user: { sub: 'users/default:users_audrey_999' },
     clientId: 'jf93caauf3uzud7f308faesf3@provider.oada-dev.com',
   },
   {
@@ -99,7 +99,7 @@ export default [
     scope: ['trellisfw:all'],
     createTime: 1_413_831_649_937,
     expiresIn: 0,
-    user: { _id: 'users/default:users_gary_growersync' },
+    user: { sub: 'users/default:users_gary_growersync' },
     clientId: 'jf93caauf3uzud7f308faesf3@provider.oada-dev.com',
   },
   {
@@ -108,7 +108,7 @@ export default [
     scope: ['trellisfw:all'],
     createTime: 1_413_831_649_937,
     expiresIn: 0,
-    user: { _id: 'users/default:users_pete_pspperfection' },
+    user: { sub: 'users/default:users_pete_pspperfection' },
     clientId: 'jf93caauf3uzud7f308faesf3@provider.oada-dev.com',
   },
   {
@@ -117,7 +117,7 @@ export default [
     scope: ['trellisfw:all'],
     createTime: 1_413_831_649_937,
     expiresIn: 0,
-    user: { _id: 'users/default:users_rick_retailfresh' },
+    user: { sub: 'users/default:users_rick_retailfresh' },
     clientId: 'jf93caauf3uzud7f308faesf3@provider.oada-dev.com',
   },
   {
@@ -126,7 +126,7 @@ export default [
     scope: ['trellisfw:all'],
     createTime: 1_413_831_649_937,
     expiresIn: 0,
-    user: { _id: 'users/default:users_diane_distributingexcellence' },
+    user: { sub: 'users/default:users_diane_distributingexcellence' },
     clientId: 'jf93caauf3uzud7f308faesf3@provider.oada-dev.com',
   },
 ] as const satisfies Authorization[];

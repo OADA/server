@@ -56,6 +56,20 @@ oada:
     requests:
       cpu: 20m
       memory: 128Mi
+  # oada.dataStores configures where/how various related data are stored
+  # e.g., jwt, arango, flat
+  dataStores:
+    # oada.dataStores.tokens is where/how token metadata are stored
+    tokens:
+      - jwt
+      - arango
+    auth:
+      # oada.dataStores.auth.codes is where/how auth code data are stored
+      codes: jwt
+      # oada.dataStores.auth.deviceCodes is where/how auth device code data are stored
+      deviceCodes: arango
+    clients: arango
+    users: arango
 
 oauth:
   # OAuth 2.0 issuer to use for auth.

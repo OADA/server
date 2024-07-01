@@ -56,7 +56,7 @@ export async function stopResp(): Promise<void> {
 }
 
 export async function createNewUser(request: UserRequest): Promise<User> {
-  const userId = request.user._id;
+  const userId = request.user.sub;
   const _id =
     userId &&
     ((userId?.startsWith('users') ? userId : `users/${userId}`) as UserID);
@@ -146,7 +146,7 @@ export async function handleReq(request: UserRequest): Promise<UserResponse> {
 
   // First, check if the ID exists already:
   let currentUser: User | undefined;
-  const userId = request.user._id;
+  const userId = request.user.sub;
   if (userId) {
     trace('Checking if user id %s exists.', userId);
     currentUser = await users.findById(userId, { graceful: true });
@@ -188,15 +188,15 @@ export async function handleReq(request: UserRequest): Promise<UserResponse> {
 
   // Now we know the user exists and has bookmarks/shares.  Now update/merge it with the requested data
   if (!createUser) {
-    const { _id } = currentUser ?? {};
+    const { sub } = currentUser ?? {};
     trace(
       'We did not create a new user, so we are now updating user id %s',
-      _id,
+      sub,
     );
     currentUser = await users.update({
       // Assume req.user is a full user now?
       ...request.user,
-      _id: _id!,
+      _id: sub!,
     });
   }
 

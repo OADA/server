@@ -56,7 +56,7 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, _options) => {
   // Authorizations routes
   // TODO: How the heck should this work??
   fastify.get('/', async (request, reply) => {
-    const results = await authorizations.findByUser(request.user!._id);
+    const results = await authorizations.findByUser(request.user!.sub);
 
     const response: Record<string, authorizations.Authorization | undefined> =
       {};
@@ -70,11 +70,11 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, _options) => {
 
   fastify.get('/:authId', async (request, reply) => {
     const { authId } = request.params as { authId: string };
-    const { _id: userid } = request.user!;
+    const { sub } = request.user!;
 
     const auth = await authorizations.findById(authId);
     // Only let users see their own authorizations
-    if (auth?.user._id !== userid) {
+    if (auth?.user.sub !== sub) {
       void reply.forbidden();
       return;
     }
@@ -158,7 +158,7 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, _options) => {
     const auth = await authorizations.findById(authId);
 
     // Only let users see their own authorizations
-    if (auth?.user._id !== request.user!._id) {
+    if (auth?.user.sub !== request.user!.sub) {
       void reply.forbidden();
       return;
     }

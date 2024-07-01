@@ -58,9 +58,7 @@ class User extends makeClass<Except<Claims, 'sub'>>() {
     /**
      * Our unique ID for this user
      */
-
-    // eslint-disable-next-line @typescript-eslint/naming-convention
-    public readonly _id = `users/${generate()}` as UserID,
+    /* public readonly */ _id = `users/${generate()}` as UserID,
     public readonly sub: string = _id,
     public domain = 'localhost',
     public password?: string,

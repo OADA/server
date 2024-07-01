@@ -77,12 +77,12 @@ fastifyPassport.use(
 
 // eslint-disable-next-line @typescript-eslint/require-await
 fastifyPassport.registerUserSerializer<User, string>(async (user) => {
-  trace('Serializing user by _id as %s', user._id);
-  if (!user._id) {
-    throw new TypeError('User has no id');
+  trace('Serializing user by sub as %s', user.sub);
+  if (!user.sub) {
+    throw new TypeError('User has no sub/id');
   }
 
-  return user._id;
+  return user.sub;
 });
 
 fastifyPassport.registerUserDeserializer<string, User>(async (userid) => {

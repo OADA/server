@@ -20,7 +20,6 @@ import { config } from '../../config.js';
 import debug from 'debug';
 
 import type { CodeID } from '@oada/lib-arangodb/dist/libs/codes.js';
-import type { UserID } from '@oada/models/user';
 
 import { getDataStores, tryDataStores } from './index.js';
 
@@ -41,7 +40,7 @@ export interface ICode {
   readonly code: string;
   readonly nonce?: string;
   readonly scope?: readonly string[];
-  readonly user: { readonly id: UserID };
+  readonly user: string;
   readonly clientId: string;
   readonly createTime?: number;
   readonly expiresIn?: number;

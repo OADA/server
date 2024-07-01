@@ -124,7 +124,7 @@ export const issueIdToken: IssueIDToken<Client, User> = async (
     .setExpirationTime(idToken.expiresIn)
     .setAudience(client.client_id)
     .setIssuer(request.authInfo.issuer)
-    .setSubject(user._id)
+    .setSubject(user.sub)
     .sign(privateKey);
   // eslint-disable-next-line unicorn/no-null
   done(null, token);
