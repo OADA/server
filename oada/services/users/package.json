@@ -40,7 +40,7 @@
     "@types/debug": "^4.1.12",
     "@types/minimist": "^1.2.5",
     "@types/promptly": "^3.0.5",
-    "type-fest": "^4.20.1"
+    "type-fest": "^4.21.0"
   },
   "volta": {
     "node": "20.2.0"

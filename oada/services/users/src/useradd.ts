@@ -21,6 +21,7 @@ import '@oada/pino-debug';
 import { config } from './config.js';
 
 import { Requester } from '@oada/lib-kafka';
+import User from '@oada/models/user';
 import { users } from '@oada/lib-arangodb';
 
 import chalk from 'chalk';
@@ -93,7 +94,7 @@ try {
     password,
     // Add scope if you want the user to have permission to create other users
     roles: isAdmin ? ['oada.admin.user:all'] : [],
-  };
+  } satisfies Partial<User>;
   const response = (await kafkareq.send({
     // @ts-expect-error secret prop
     connection_id: 'useradd',

@@ -58,8 +58,8 @@ class User extends makeClass<Except<Claims, 'sub'>>() {
     /**
      * Our unique ID for this user
      */
-    /* public readonly */ _id = `users/${generate()}` as UserID,
-    public readonly sub: string = _id,
+    // eslint-disable-next-line @typescript-eslint/no-base-to-string
+    public readonly sub: string = user._id ? `${user._id}` : `${generate()}`,
     public domain = 'localhost',
     public password?: string,
     /**
@@ -70,7 +70,7 @@ class User extends makeClass<Except<Claims, 'sub'>>() {
       user.nickname ??
       user.email ??
       usernameFromOIDC(oidc) ??
-      _id,
+      sub,
     /**
      * The "scopes" of the User (e.g., "oada.admin.user:all")
      */

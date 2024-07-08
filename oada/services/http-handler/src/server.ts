@@ -298,23 +298,30 @@ await fastify.register(formats);
  */
 await fastify.register(websockets);
 
-async function enureOIDCUser({ sub, iss, ...rest }: TokenClaims) {
+// TODO: Config/logic to decide if iss is trusted
+const TRUSTED_ISSUERS = new Set([`${issuer}`]);
+
+// eslint-disable-next-line unicorn/prevent-abbreviations
+async function enureOIDCUser({ sub, iss: i, ...rest }: TokenClaims) {
   if (!sub) {
-    throw new Error('OIDC: No sub in claims');
+    throw new TypeError('OIDC: No sub in claims');
   }
 
-  const u = await userDatabase.findByOIDCToken({
+  const reqIss = requestContext.get('issuer')!;
+  const iss = i ?? reqIss;
+
+  if (!(TRUSTED_ISSUERS.has(iss) || iss === reqIss)) {
+    throw new Error(`Untrusted issuer ${iss}`);
+  }
+
+
+  const u = iss === reqIss ? await userDatabase.findById(sub) : await userDatabase.findByOIDCToken({
     sub,
-    iss: iss ?? requestContext.get('issuer')!,
+    iss,
   });
 
   if (u) {
     return u;
-  }
-
-  // TODO: Config/logic to decide if iss is trusted
-  if (iss !== issuer) {
-    return;
   }
 
   const user = new User({ ...rest, oidc: [{ sub, iss }] });
@@ -341,18 +348,23 @@ await fastify.register(async (instance) => {
 
   // Fetch user info etc. for subject of current token
   instance.addHook('onRequest', async (request, reply) => {
-    request.log.debug('Retrieving user info for request');
+    // TODO: Use an OADA prefix for JWT claims?
+    const claims = request.user as unknown as TokenClaims;
+
+    request.log.debug({ claims }, 'Retrieving user info for request');
     if (!request.user?.sub) {
-      request.log.error('Not user subject found for request');
+      request.log.error({ claims }, 'No user subject found for request');
       return reply.unauthorized();
     }
 
-    // TODO: Use an OADA prefix for JWT claims?
-    const claims = request.user as unknown as TokenClaims;
     const user = await enureOIDCUser(claims);
+    if (!user) {
+      request.log.error({ claims }, 'No user for request');
+      return reply.unauthorized();
+    }
 
     request.log.trace({ user }, 'User/Auth info loaded');
-    request.user = { ...claims, ...user! };
+    request.user = { ...claims, ...user };
   });
 
   /**

@@ -64,6 +64,7 @@ export async function createNewUser(request: UserRequest): Promise<User> {
   const { password, ...user } = await users.create(u);
   // Create empty resources for user
   for await (const resource of ['bookmarks', 'shares'] as const) {
+    // eslint-disable-next-line security/detect-object-injection
     if (!user[resource]?._id) {
       const { string: resourceId } = await ksuid.random();
       const resourceID = `resources/${resourceId}`;
@@ -73,7 +74,7 @@ export async function createNewUser(request: UserRequest): Promise<User> {
         resourceID,
         resource,
         user._id,
-
+        // eslint-disable-next-line security/detect-object-injection
         contentTypes[resource],
       );
       const resp = await responder.send({
@@ -87,6 +88,7 @@ export async function createNewUser(request: UserRequest): Promise<User> {
         // 'authorizationid': ,
         // 'client_id': ,
 
+        // eslint-disable-next-line security/detect-object-injection
         contentType: contentTypes[resource],
         body: {},
       });
@@ -96,6 +98,7 @@ export async function createNewUser(request: UserRequest): Promise<User> {
         throw new Error(`Failed to create ${resource}`);
       }
 
+      // eslint-disable-next-line security/detect-object-injection
       user[resource] = { _id: resourceID };
     }
   }

@@ -19,6 +19,8 @@ import type { Class, Constructor } from 'type-fest';
 
 /**
  * Class decorator for automagically destructuring the constructor argument
+ *
+ * @experimental
  */
 export function destructure<T, R extends [...unknown[]]>(
   // eslint-disable-next-line @typescript-eslint/naming-convention
