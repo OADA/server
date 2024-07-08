@@ -78,7 +78,7 @@ declare module '@fastify/jwt' {
   }
 }
 declare module 'fastify-jwt-jwks' {
-  export interface FastifyJwtJwksOptions extends FastifyJWTOptions {}
+  export interface FastifyJwtJwksOptions extends FastifyJWTOptions { }
 }
 
 export const decoratorName = 'authenticate';

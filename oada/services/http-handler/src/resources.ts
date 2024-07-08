@@ -80,8 +80,10 @@ function unflattenMeta(document: {
     return document;
   }
 
+  // eslint-disable-next-line security/detect-object-injection
   const meta = document[_meta];
   if (meta) {
+    // eslint-disable-next-line security/detect-object-injection
     document[_meta] = {
       _id: meta._id,
       _rev: meta._rev,
@@ -155,7 +157,7 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
     const path =
       request.method === 'POST'
         ? // Treat POST as PUT put append random id
-          join(url, id)
+        join(url, id)
         : url.replace(/\/$/, '');
     request.oadaPath = path;
   });
@@ -170,12 +172,15 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
     const fullpath = request.oadaPath;
 
     const result = await resources.lookupFromUrl(`/${fullpath}`, request.user!);
-    request.log.trace({ result }, 'Graph lookup result');
+    request.log.trace(
+      { user: request.user, result },
+      'OADA Graph lookup result',
+    );
     if (result.resource_id) {
       // Rewire URL to resource found by graph
       const url = `${result.resource_id}${result.path_leftover}`;
       // Log
-      request.log.info('Graph lookup: %s => %s', fullpath, url);
+      request.log.debug('Graph lookup: %s => %s', fullpath, url);
       // Remove `/resources`? IDK
       request.oadaPath = url;
     }
@@ -232,7 +237,7 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
         if (!response.permissions.owner && !response.permissions.read) {
           request.log.warn(
             '%s tried to GET resource without proper permissions',
-            request.user!._id,
+            request.user!.sub,
           );
           void reply.forbidden(
             'User does not have read permission for this resource',
@@ -444,7 +449,7 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
     versioned = true,
   ) {
     // Create a new resource?
-    log.trace('EnsureLink: creating new resource');
+    log.debug('EnsureLink: creating new resource');
     const {
       headers: { 'content-location': location },
     } = await fastify.inject({

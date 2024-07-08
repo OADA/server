@@ -84,7 +84,7 @@
     "fastify-graceful-shutdown": "^3.5.3",
     "fastify-healthcheck": "^4.4.0",
     "ioredis": "^5.4.1",
-    "jose": "^5.6.2",
+    "jose": "^5.6.3",
     "oauth2orize": "^1.12.0",
     "oauth2orize-device-code": "^0.1.0",
     "oauth2orize-openid": "^0.4.1",
@@ -124,7 +124,7 @@
     "@types/uuid": "^10.0.0",
     "c8": "^10.1.2",
     "json-schema-to-ts": "^3.1.0",
-    "type-fest": "^4.20.1"
+    "type-fest": "^4.21.0"
   },
   "volta": {
     "node": "20.2.0"

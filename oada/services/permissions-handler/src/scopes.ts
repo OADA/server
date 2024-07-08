@@ -15,6 +15,8 @@
  * limitations under the License.
  */
 
+import type { Scopes } from './server.js';
+
 /**
  * Set of built-in scopes.
  * More can be added to the `additional-scopes` directory.
@@ -141,6 +143,6 @@ const scopes = {
     'application/vnd.oada.as-harvested.geohash.1+json',
     'application/json',
   ],
-};
+} as const satisfies Scopes;
 
 export default scopes;

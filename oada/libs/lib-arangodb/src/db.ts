@@ -26,8 +26,9 @@ import { Database } from 'arangojs';
 import type { QueryOptions } from 'arangojs/database.js';
 import debug from 'debug';
 
-const trace = debug('arangodb#aql:trace');
+const error = debug('arangodb#aql:error');
 const warn = debug('arangodb#aql:warn');
+const trace = debug('arangodb#aql:trace');
 
 const { profile } = config.get('arangodb.aql');
 const deadlockRetries = config.get('arangodb.retry.deadlock.retries');
@@ -51,28 +52,29 @@ class DatabaseWrapper extends Database {
         }
 
         return res;
-      } catch (error: unknown) {
+      } catch (cError: unknown) {
         // Automatically retry queries on deadlock?
         if (
-          error instanceof ArangoError &&
+          cError instanceof ArangoError &&
           // DeadlockError
-          (error.errorNum as ArangoErrorCode) === ArangoErrorCode.DEADLOCK &&
+          (cError.errorNum as ArangoErrorCode) === ArangoErrorCode.DEADLOCK &&
           tries <= deadlockRetries
         ) {
-          warn({ error }, `Retrying query due to deadlock (retry #${tries})`);
+          warn(
+            { error: cError },
+            `Retrying query due to deadlock (retry #${tries})`,
+          );
 
           // eslint-disable-next-line no-await-in-loop
           await setTimeout(deadlockDelay);
           continue;
         }
 
-        // ???: Should this be a trace, a warn, or an error??
-        if (warn.enabled) {
-          const { query: aql, ...rest } = query;
-          warn({ error, ...rest }, `AQL Query failed:\n${aql}`);
-        }
+        const err = new Error('AQL Query error', { cause: cError });
+        const { query: aql, ...rest } = query;
+        error({ error: err, ...rest }, `Failed AQL query:\n${aql}`);
 
-        throw error;
+        throw err;
       }
     }
 

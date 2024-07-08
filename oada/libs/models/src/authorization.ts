@@ -42,8 +42,8 @@ class Authorization extends makeClass<
   // eslint-disable-next-line max-params
   constructor(
     rest: Partial<Authorization> = {},
-    override readonly jti = randomBytes(16).toString('hex'),
     override readonly sub: string,
+    override readonly jti = randomBytes(16).toString('hex'),
     // Readonly _id = `authorizations/${generate()}` as AuthorizationID,
     override readonly scope = '',
     override readonly roles: readonly string[] = [],
