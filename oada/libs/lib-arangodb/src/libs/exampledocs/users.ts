@@ -15,11 +15,11 @@
  * limitations under the License.
  */
 
-import type { User, UserID } from '@oada/models/user';
+import type { User } from '../users.js';
 
 export default [
   {
-    _id: 'users/default:users_frank_123' as UserID,
+    _id: 'users/default:users_frank_123',
     sub: 'users/default:users_frank_123',
     username: 'frank',
     password: 'test',
@@ -37,7 +37,7 @@ export default [
   },
   /*
   {
-    '_id': 'users/default:users_frank2_124' as UserID,
+    '_id': 'users/default:users_frank2_124',
     'sub': 'users/default:users_frank2_124',
     'domain': 'localhost',
     'username': 'dummy_username_oidc_user_frank2',
@@ -56,7 +56,7 @@ export default [
   },
 */
   {
-    _id: 'users/default:users_sam_321' as UserID,
+    _id: 'users/default:users_sam_321',
     sub: 'users/default:users_sam_321',
     username: 'sam',
     password: 'test',
@@ -73,7 +73,7 @@ export default [
     oidc: [],
   },
   {
-    _id: 'users/default:users_sam_321-proxy' as UserID,
+    _id: 'users/default:users_sam_321-proxy',
     sub: 'users/default:users_sam_321-proxy',
     username: 'sam-proxy',
     password: 'test',
@@ -90,7 +90,7 @@ export default [
     oidc: [],
   },
   {
-    _id: 'users/default:users_audrey_999' as UserID,
+    _id: 'users/default:users_audrey_999',
     sub: 'users/default:users_audrey_999',
     username: 'audrey',
     password: 'test',
@@ -107,7 +107,7 @@ export default [
     roles: [],
   },
   {
-    _id: 'users/default:users_gary_growersync' as UserID,
+    _id: 'users/default:users_gary_growersync',
     sub: 'users/default:users_gary_growersync',
     username: 'gary@gmail.com',
     password: 'test',
@@ -124,7 +124,7 @@ export default [
     roles: [],
   },
   {
-    _id: 'users/default:users_pete_pspperfection' as UserID,
+    _id: 'users/default:users_pete_pspperfection',
     sub: 'users/default:users_pete_pspperfection',
     username: 'pete@gmail.com',
     password: 'test',
@@ -141,7 +141,7 @@ export default [
     roles: [],
   },
   {
-    _id: 'users/default:users_rick_retailfresh' as UserID,
+    _id: 'users/default:users_rick_retailfresh',
     sub: 'users/default:users_rick_retailfresh',
     username: 'rick@gmail.com',
     password: 'test',
@@ -158,7 +158,7 @@ export default [
     roles: [],
   },
   {
-    _id: 'users/default:users_diane_distributingexcellence' as UserID,
+    _id: 'users/default:users_diane_distributingexcellence',
     sub: 'users/default:users_diane_distributingexcellence',
     username: 'diane@gmail.com',
     password: 'test',

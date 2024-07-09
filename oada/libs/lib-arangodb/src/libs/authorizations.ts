@@ -82,10 +82,10 @@ export async function findByToken(
   }
 
   const auth = fixup(t);
-  trace({ auth }, 'Found authorization by token, filling out user by user._id');
+  trace({ auth }, 'Found authorization by token, filling out user by user.sub');
   const user = await findUserById(auth.user.sub);
   if (!user) {
-    throw new Error(`Invalid user ${auth.user.sub} for token ${token}`);
+    throw new Error(`Invalid user ${auth.user.sub} for authorization ${t._id}`);
   }
 
   return sanitizeResult({ ...auth, user });

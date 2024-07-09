@@ -98,7 +98,7 @@
     "passport-oauth2-client-password": "~0.1.2",
     "pem-jwk": "^2.0.0",
     "qrcode-terminal": "^0.12.0",
-    "qs": "^6.12.2",
+    "qs": "^6.12.3",
     "random-id-base36": "^1.0.3",
     "serialize-error": "^11.0.3",
     "tslib": "2.6.3",

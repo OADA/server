@@ -108,21 +108,21 @@ export class ResponderRequester extends Base {
     );
 
     // Mux the consumer between requester and responder
-    this.on(DATA, (value: KafkaBase, data, ...rest) => {
-      trace(data, 'Received data: %o', value);
-      if (this.#requester.consumeTopics.includes(data.topic)) {
+    this.on(DATA, (data: KafkaBase, payload, ...rest: unknown[]) => {
+      trace({ payload, data }, 'Received data');
+      if (this.#requester.consumeTopics.includes(payload.topic)) {
         trace('Muxing data to requester');
-        this.#requester.emit(DATA, value, data, ...rest);
+        this.#requester.emit(DATA, data, payload, ...rest);
       }
 
-      if (this.#responder.consumeTopics.includes(data.topic)) {
-        if (!this.#respondOwn && value.group === this.group) {
+      if (this.#responder.consumeTopics.includes(payload.topic)) {
+        if (!this.#respondOwn && data.group === this.group) {
           // Don't respond to own requests
           return;
         }
 
         trace('Muxing data to responder');
-        this.#responder.emit(DATA, value, data, ...rest);
+        this.#responder.emit(DATA, data, payload, ...rest);
       }
     });
 

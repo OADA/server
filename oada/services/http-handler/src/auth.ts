@@ -78,7 +78,7 @@ declare module '@fastify/jwt' {
   }
 }
 declare module 'fastify-jwt-jwks' {
-  export interface FastifyJwtJwksOptions extends FastifyJWTOptions { }
+  export interface FastifyJwtJwksOptions extends FastifyJWTOptions {}
 }
 
 export const decoratorName = 'authenticate';
@@ -148,7 +148,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
               return true;
             }
           } catch (error: unknown) {
-            request.log.debug({ error }, 'Token error');
+            request.log.debug(error, 'Token error');
           }
 
           return false;

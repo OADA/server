@@ -19,8 +19,6 @@ import debug from 'debug';
 
 import { users } from '@oada/lib-arangodb';
 
-import type { SetOptional } from 'type-fest';
-
 import type { IUsers, User } from '../models/user.js';
 
 const trace = debug('arango:user:trace');
@@ -71,6 +69,6 @@ export const update = async function (user: User) {
   await users.update(user);
 } satisfies IUsers['update'];
 
-export const create = async function (user: SetOptional<User, '_id'>) {
+export const create = async function (user: User) {
   return users.create(user);
 } satisfies IUsers['create'];

@@ -157,7 +157,7 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
     const path =
       request.method === 'POST'
         ? // Treat POST as PUT put append random id
-        join(url, id)
+          join(url, id)
         : url.replace(/\/$/, '');
     request.oadaPath = path;
   });

@@ -36,7 +36,12 @@ function sanitizeDatabaseResult(user: User | undefined) {
     return;
   }
 
-  const { _rev, password, ...u } = user;
+  const {
+    // @ts-expect-error hidden key
+    _rev,
+    password,
+    ...u
+  } = user;
   return u;
 }
 
@@ -153,11 +158,9 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
 
     // Check user's scope
     request.log.trace(authorization, 'username-index: Checking user scope');
-    const haveuserscope =
-      Array.isArray(authorization.user_scope) &&
-      (authorization.user_scope as string[]).find(
-        (s) => s === 'oada.admin.user:read' || s === 'oada.admin.user:all',
-      );
+    const haveuserscope = authorization.roles.find(
+      (s) => s === 'oada.admin.user:read' || s === 'oada.admin.user:all',
+    );
     if (!haveuserscope) {
       request.log.warn(
         'Attempt to lookup user by username (username-index), but USER does not have oada.admin.user:read or oada.admin.user:all scope!',
@@ -178,7 +181,7 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
 
     request.log.info(
       '#username-index: found user, returning info for userid %s',
-      u._id,
+      u.sub,
     );
     return reply
       .header('Content-Location', join(options.prefix, u.sub))
