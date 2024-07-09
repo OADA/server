@@ -78,6 +78,7 @@ const serializers = {
   req(request: FastifyRequest) {
     const version = request.headers?.['accept-version'];
     return {
+      requestId: request.headers?.['x-request-id'],
       method: request.method,
       url: request.url,
       version: version ? `${version}` : undefined,
@@ -161,13 +162,13 @@ if (process.env.NODE_ENV !== 'production') {
     request.log.error({ err: error, res });
     void reply.code(code).send(res?.body ?? res);
   });
-
-  // Add request id header for debugging purposes
-  fastify.addHook('onSend', async (request, reply, payload) => {
-    void reply.header('X-Request-Id', request.id);
-    return payload;
-  });
 }
+
+// Add request id header for tracing/debugging purposes
+fastify.addHook('onSend', async (request, reply, payload) => {
+  void reply.header('X-Request-Id', request.headers['x-request-id']);
+  return payload;
+});
 
 const port = config.get('server.port');
 export async function start(): Promise<void> {
