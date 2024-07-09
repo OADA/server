@@ -165,14 +165,14 @@ export function handleRequest(
   const owner = Boolean(request.oadaGraph.permissions?.owner);
   response.permissions = request.oadaGraph.resourceExists
     ? {
-      ...request.oadaGraph.permissions,
-      owner,
-    }
+        ...request.oadaGraph.permissions,
+        owner,
+      }
     : {
-      read: true,
-      write: true,
-      owner,
-    };
+        read: true,
+        write: true,
+        owner,
+      };
 
   trace({ response }, 'permissions response');
   return response;

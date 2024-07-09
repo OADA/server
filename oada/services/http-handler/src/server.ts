@@ -314,11 +314,13 @@ async function enureOIDCUser({ sub, iss: i, ...rest }: TokenClaims) {
     throw new Error(`Untrusted issuer ${iss}`);
   }
 
-
-  const u = iss === reqIss ? await userDatabase.findById(sub) : await userDatabase.findByOIDCToken({
-    sub,
-    iss,
-  });
+  const u =
+    iss === reqIss
+      ? await userDatabase.findById(sub)
+      : await userDatabase.findByOIDCToken({
+          sub,
+          iss,
+        });
 
   if (u) {
     return u;

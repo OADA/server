@@ -26,12 +26,18 @@ import { config } from '../config.js';
 import { db as database } from '../db.js';
 import { sanitizeResult } from '../util.js';
 
-import type { SetOptional } from 'type-fest';
-import type { User } from '@oada/models/user';
+import type { User as IUser } from '@oada/models/user';
+import type { SetRequired } from 'type-fest';
+
+export interface User extends IUser {
+  /** @deprecated use sub/_key instead */
+  _id?: `users/${string}`;
+  _key?: string;
+}
 
 const info = debug('arangodb#resources:info');
 
-const users = database.collection<SetOptional<User, '_id'>>(
+const users = database.collection<User>(
   config.get('arangodb.collections.users.name'),
 );
 
@@ -39,11 +45,11 @@ const roundsOrSalt =
   config.get('bcrypt.saltRounds') || config.get('bcrypt.salt');
 
 export async function findById(
-  id: string,
+  sub: string,
   options?: CollectionReadOptions,
 ): Promise<User | undefined> {
   try {
-    const result = await users.document(id, options);
+    const result = await users.document(sub, options);
     return result ? sanitizeResult(result) : undefined;
   } catch (error: unknown) {
     // @ts-expect-error errors in TS are annoying
@@ -55,8 +61,8 @@ export async function findById(
   }
 }
 
-export async function exists(id: string): Promise<boolean> {
-  return users.documentExists(id);
+export async function exists(sub: string): Promise<boolean> {
+  return users.documentExists(sub);
 }
 
 export async function findByUsername(
@@ -132,7 +138,15 @@ export async function create(user: User): Promise<User> {
 
   user.password &&= await hashPw(user.password);
 
-  const u = await users.save(user, { returnNew: true });
+  const u = await users.save(
+    {
+      ...user,
+      // @ts-expect-error HACK for old users
+      _id: user.sub,
+      _key: user.sub,
+    },
+    { returnNew: true },
+  );
   return sanitizeResult(u.new);
 }
 
@@ -141,13 +155,13 @@ export async function remove(u: Selector<User>): Promise<void> {
   await users.remove(u);
 }
 
-export async function update(user: Partial<User>): Promise<User> {
+export async function update(
+  user: SetRequired<Partial<User>, 'sub'>,
+): Promise<User> {
   info({ user }, 'Update user was called');
-  const id = user._id as string;
-
   user.password &&= await hashPw(user.password);
 
-  const u = await users.update(id, user, {
+  const u = await users.update({ _key: user.sub }, user, {
     returnNew: true,
   });
   return sanitizeResult(u.new);

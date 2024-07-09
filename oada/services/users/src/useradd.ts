@@ -121,7 +121,7 @@ try {
 
   // Now we have a user
   const su = response.user;
-  info(chalk.green`User {cyan ${su!._id}} now exists`);
+  info(chalk.green`User {cyan ${su!.sub}} now exists`);
 } catch (cError: unknown) {
   error({ error: cError });
   process.exit(1);

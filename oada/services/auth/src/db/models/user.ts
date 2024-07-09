@@ -17,7 +17,7 @@
 
 import { config } from '../../config.js';
 
-import type { Except, Promisable } from 'type-fest';
+import type { Promisable } from 'type-fest';
 
 import { User } from '@oada/models/user';
 
@@ -39,7 +39,7 @@ export interface IUsers {
     iss: string,
   ): Promisable<User | undefined>;
   update(user: User): Promisable<void>;
-  create(user: Omit<User, '_id'>): Promisable<User>;
+  create(user: User): Promisable<User>;
 }
 
 const dataStores = await getDataStores<IUsers>(
@@ -109,7 +109,7 @@ export async function update(user: User): Promise<void> {
  * Register a user who is new to us and initialize associated metadata.
  * They may already have an existing account with another OIDC provider.
  */
-export async function register(user: Except<Partial<User>, '_id'>) {
+export async function register(user: Partial<User>) {
   // ???: Should it only save to first datastore?
   return dataStores[0]!.create(new User(user));
 }

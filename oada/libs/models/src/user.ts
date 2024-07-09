@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-import type { Except, Opaque } from 'type-fest';
+import type { Except, OmitIndexSignature, Opaque } from 'type-fest';
 import type { Claims } from './oidc.js';
 import { destructure } from './decorators.js';
 import { generate } from 'xksuid';
@@ -49,7 +49,7 @@ export type UserID = Opaque<`users/${string}`, User>;
  */
 export
 @destructure
-class User extends makeClass<Except<Claims, 'sub'>>() {
+class User extends makeClass<Except<OmitIndexSignature<Claims>, 'sub'>>() {
   constructor(user?: Partial<User>);
 
   // eslint-disable-next-line max-params
@@ -58,7 +58,7 @@ class User extends makeClass<Except<Claims, 'sub'>>() {
     /**
      * Our unique ID for this user
      */
-    // eslint-disable-next-line @typescript-eslint/no-base-to-string
+    // @ts-expect-error deprecated field
     public readonly sub: string = user._id ? `${user._id}` : `${generate()}`,
     public domain = 'localhost',
     public password?: string,

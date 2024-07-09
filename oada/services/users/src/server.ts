@@ -27,8 +27,8 @@ import { ResponderRequester } from '@oada/lib-kafka';
 import debug from 'debug';
 import ksuid from 'ksuid';
 
-import { User, type UserID } from '@oada/models/user';
 import type { SetRequired } from 'type-fest';
+import { User } from '@oada/models/user';
 export type * from '@oada/models/user';
 
 const trace = debug('users:trace');
@@ -56,11 +56,7 @@ export async function stopResp(): Promise<void> {
 }
 
 export async function createNewUser(request: UserRequest): Promise<User> {
-  const userId = request.user.sub;
-  const _id =
-    userId &&
-    ((userId?.startsWith('users') ? userId : `users/${userId}`) as UserID);
-  const u = new User({ _id, ...request.user });
+  const u = new User(request.user);
   const { password, ...user } = await users.create(u);
   // Create empty resources for user
   for await (const resource of ['bookmarks', 'shares'] as const) {
@@ -73,7 +69,7 @@ export async function createNewUser(request: UserRequest): Promise<User> {
         'Creating %s for %s of %s as _type = %s',
         resourceID,
         resource,
-        user._id,
+        user.sub,
         // eslint-disable-next-line security/detect-object-injection
         contentTypes[resource],
       );
@@ -83,7 +79,7 @@ export async function createNewUser(request: UserRequest): Promise<User> {
         resource_id: `/${resourceID}`,
         path_leftover: '',
         meta_id: `${resourceID}/_meta`,
-        user_id: user._id,
+        user_id: user.sub,
         // TODO: What to put for these?
         // 'authorizationid': ,
         // 'client_id': ,
@@ -199,7 +195,7 @@ export async function handleReq(request: UserRequest): Promise<UserResponse> {
     currentUser = await users.update({
       // Assume req.user is a full user now?
       ...request.user,
-      _id: sub!,
+      sub: sub!,
     });
   }
 

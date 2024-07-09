@@ -209,7 +209,7 @@ export const issueToken = (async (
 
 interface CodePayload {
   issuer: string;
-  user: User['_id'];
+  user: User['sub'];
   scope: string;
 }
 
@@ -250,7 +250,7 @@ export const issueCode: IssueGrantCodeFunctionArity6 = async (
     }
 
     const payload = {
-      user: user._id,
+      user: user.sub,
       issuer: request.authInfo.issuer,
       scope: request.scope.join(' '),
     } as const satisfies CodePayload;
@@ -322,7 +322,7 @@ export const exchangeCode: IssueExchangeCodeFunctionArity5<Client> = async (
 
     const { issuer, user, scope, sub } = payload;
     const auth = new Authorization({
-      sub: sub ?? (user as string),
+      sub: sub ?? user,
       scope,
     });
     const token = await getToken(issuer, {
@@ -351,7 +351,7 @@ export const issueDeviceCode: IssueDeviceCodeFunction<Client> = async (
   _body,
   { issuer },
   done,
-  // eslint-disable-next-line max-params
+  // eslint-disable-next-line max-params, @typescript-eslint/require-await
 ) => {
   try {
     /**
@@ -388,6 +388,7 @@ export const issueDeviceCode: IssueDeviceCodeFunction<Client> = async (
 export const activateDeviceCode: ActivateDeviceCodeFunction<
   Client,
   User
+  // eslint-disable-next-line @typescript-eslint/require-await
 > = async (_client, _deviceCode, _user, done) => {
   try {
     /*
@@ -442,7 +443,9 @@ const plugin: FastifyPluginAsync<Options> = async (
       activate = 'activate',
     } = {},
   },
+  // eslint-disable-next-line @typescript-eslint/require-await
 ) => {
+  // eslint-disable-next-line @typescript-eslint/require-await
   fastify.addHook('onRequest', async (request) => {
     const issuer = `${request.protocol}://${request.hostname}/` as const;
     request.authInfo = { issuer };
@@ -647,6 +650,7 @@ const plugin: FastifyPluginAsync<Options> = async (
         const domainConfig = domainConfigs.get(request.hostname) ?? {
           baseuri: 'https://localhost/',
         };
+        // @ts-expect-error IDK
         user.reqdomain = domainConfig.baseuri;
 
         await doToken(
