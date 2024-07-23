@@ -276,7 +276,7 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
       // ???: Should _meta have parent's type as a media type parameter?
       const type = isMeta
         ? 'application/vnd.oada.meta+json'
-        : request.oadaGraph.type ?? 'application/json';
+        : (request.oadaGraph.type ?? 'application/json');
       void reply.type(type);
       // TODO: Why does this not work as a fastify plugin??
       const headers = handleResponse(type);

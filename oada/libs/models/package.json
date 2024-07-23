@@ -9,7 +9,8 @@
   "exports": {
     "./user": "./dist/user.js",
     "./client": "./dist/client.js",
-    "./authorization": "./dist/authorization.js"
+    "./authorization": "./dist/authorization.js",
+    "./decorators": "./dist/decorators.js"
   },
   "files": [
     "src/**/*",
@@ -30,14 +31,14 @@
     "@oada/types": "^4.0.0",
     "@qlever-llc/interface2class": "^1.1.0",
     "tslib": "2.6.3",
-    "type-fest": "^4.21.0",
+    "type-fest": "^4.23.0",
     "xksuid": "^0.0.4"
   },
   "volta": {
     "node": "20.2.0"
   },
   "devDependencies": {
-    "@types/node": "^20.14.10",
+    "@types/node": "^20.14.11",
     "jose": "^5.6.3"
   }
 }

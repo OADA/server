@@ -44,13 +44,14 @@ const plugin: FastifyPluginAsync<Options> = async (
     } = {},
     views: { loginPage = 'login' } = {},
   },
+  // eslint-disable-next-line @typescript-eslint/require-await
 ) => {
   // --------------------------------------------------------------------------
   // Login page: someone has navigated or been redirected to the login page.
   // Populate based on the domain.
   // If session already has a userid, then just use that.
   // Deepcode ignore NoRateLimitingForExpensiveWebOperation: This runs behind a reverse-proxy
-  fastify.get(login, (request, reply) => {
+  fastify.get(login, async (request, reply) => {
     request.log.trace(
       `GET ${login}: setting X-Frame-Options=SAMEORIGIN before rendering login`,
     );
@@ -97,6 +98,7 @@ const plugin: FastifyPluginAsync<Options> = async (
         failureRedirect: `${login}?error=1`,
       }),
     },
+    // eslint-disable-next-line @typescript-eslint/require-await
     async ({ user }) => `Logged in as ${user?.name} (${user?.username})`,
   );
 

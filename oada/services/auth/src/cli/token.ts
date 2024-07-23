@@ -37,19 +37,16 @@ import {
   union,
 } from 'cmd-ts';
 import { Url } from 'cmd-ts/batteries/url';
+import chalk from 'chalk';
 
 import { config } from '../config.js';
 
-import { Issuer, errors } from 'openid-client';
-import Authorization from '@oada/models/authorization';
-import User from '@oada/models/user';
-import esMain from 'es-main';
-import qrcode from 'qrcode-terminal';
+import type User from '@oada/models/user';
 
-import { findById, findByUsername } from '../db/models/user.js';
-import { getToken } from '../oauth2.js';
+import esMain from 'es-main';
 
 async function getClient(iss: string) {
+  const { Issuer, errors } = await import('openid-client');
   try {
     const issuer = await Issuer.discover(iss);
     const issuerUrl = new URL(issuer.metadata.issuer);
@@ -109,23 +106,27 @@ export const get = command({
       scope: scope?.join(' '),
     });
 
-    console.error('Verify user:');
-    console.group('user-verify');
-    console.error('User Code:', handle.user_code);
-    console.error('Verification URI:', handle.verification_uri);
+    console.group('User verification:');
+    console.error(chalk.reset(`User Code: ${chalk.green(handle.user_code)}`));
     console.error(
-      'Verification URI (complete):',
-      handle.verification_uri_complete,
+      chalk.reset(`Verification URI: ${chalk.blue(handle.verification_uri)}`),
+    );
+    console.error(
+      chalk.reset(
+        `Verification URI (complete): ${chalk.blue(handle.verification_uri_complete.replace(handle.user_code, chalk.green(handle.user_code)))}`,
+      ),
     );
     if (qr !== false) {
+      const { default: qrcode } = await import('qrcode-terminal');
       qrcode.generate(
         handle.verification_uri_complete,
         { small: true },
-        console.error,
+        (code) => console.error(chalk.bgBlack.white(code)),
       );
     }
 
     console.groupEnd();
+
     const token = await handle.poll();
     console.log('%j', token);
   },
@@ -134,6 +135,9 @@ export const get = command({
 // eslint-disable-next-line @typescript-eslint/naming-convention
 const UserType: Type<string, User> = {
   async from(id) {
+    const { User } = await import('@oada/models/user');
+    const { findById, findByUsername } = await import('../db/models/user.js');
+
     const user = (await findById(id)) ?? (await findByUsername(id));
     if (!user) {
       throw new Error(`User ${id} not found`);
@@ -171,6 +175,9 @@ export const create = command({
   },
   // eslint-disable-next-line @typescript-eslint/no-shadow
   async handler({ iss, scope, user: { sub }, iat, exp }) {
+    const { Authorization } = await import('@oada/models/authorization');
+    const { getToken } = await import('../oauth2.js');
+
     const auth = new Authorization({
       sub,
       iat: iat as number,
@@ -181,6 +188,7 @@ export const create = command({
       iss ? `${iss}` : `${config.get('oidc.issuer')}`,
       auth,
     );
+
     console.log(token);
   },
 });

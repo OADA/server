@@ -20,8 +20,8 @@ import { randomBytes } from 'node:crypto';
 import { SignJWT, jwtVerify } from 'jose';
 import debug from 'debug';
 
-import { ITokens, type Token } from '../models/token.js';
-import { JWKS, kid, privateKey } from '../../oauth2.js';
+import type { ITokens, Token } from '../models/token.js';
+import { JWKS, kid, privateKey } from '../../keys.js';
 import type { TokenClaims } from '../../index.js';
 import { config } from '../../config.js';
 

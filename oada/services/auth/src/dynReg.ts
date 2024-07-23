@@ -105,6 +105,7 @@ export interface Options {
 const plugin: FastifyPluginAsync<Options> = async (
   fastify,
   { endpoints: { register = 'register' } = {} },
+  // eslint-disable-next-line @typescript-eslint/require-await
 ) => {
   fastify.post(
     register,

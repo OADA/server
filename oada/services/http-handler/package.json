@@ -56,12 +56,12 @@
     "@oada/permissions-handler": "^3.7.0",
     "@oada/pino-debug": "^3.7.0",
     "@oada/types": "^4.0.0",
-    "cacache": "^18.0.3",
+    "cacache": "^18.0.4",
     "debug": "^4.3.5",
     "es-main": "^1.3.0",
     "eventemitter3": "^5.0.1",
     "fastify": "4.28.1",
-    "fastify-graceful-shutdown": "^3.5.3",
+    "fastify-graceful-shutdown": "^4.0.1",
     "fastify-healthcheck": "^4.4.0",
     "fastify-jwt-jwks": "^1.1.5",
     "ioredis": "^5.4.1",
@@ -79,14 +79,14 @@
     "@oada/write-handler": "^3.7.0",
     "@types/cacache": "^17.0.2",
     "@types/debug": "^4.1.12",
-    "@types/node": "^20.14.10",
+    "@types/node": "^20.14.11",
     "@types/type-is": "^1.6.6",
     "@types/uuid": "^10.0.0",
-    "@types/ws": "^8.5.10",
+    "@types/ws": "^8.5.11",
     "connect": "^3.7.0",
     "find-my-way": "^8.2.0",
     "light-my-request": "^5.13.0",
-    "type-fest": "^4.21.0"
+    "type-fest": "^4.23.0"
   },
   "volta": {
     "node": "20.2.0"
