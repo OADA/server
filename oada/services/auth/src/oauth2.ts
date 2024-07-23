@@ -17,29 +17,18 @@
 
 import { config, domainConfigs } from './config.js';
 
-import {
-  createHash,
-  createPrivateKey,
-  createPublicKey,
-  createSecretKey,
-  randomBytes,
-} from 'node:crypto';
 import type { ServerResponse } from 'node:http';
+import { createHash } from 'node:crypto';
 import { join } from 'node:path/posix';
 import { promisify } from 'node:util';
 
 import type {} from '@fastify/formbody';
 import type { FastifyPluginAsync, FastifyReply, FastifyRequest } from 'fastify';
-import { fastifyPassport } from './auth.js';
 
 import {
   EncryptJWT,
   type JWTDecryptResult,
   type JWTPayload,
-  createLocalJWKSet,
-  exportJWK,
-  generateKeyPair,
-  generateSecret,
   jwtDecrypt,
 } from 'jose';
 import oauth2orize, {
@@ -59,15 +48,27 @@ import oauth2orizeDeviceCode, {
   type ExchangeDeviceCodeFunction,
   type IssueDeviceCodeFunction,
 } from 'oauth2orize-device-code';
-import base36 from 'random-id-base36';
 import { extensions } from 'oauth2orize-pkce';
 
 import { trustedCDP } from '@oada/lookup';
 
 import { type Client, findById } from './db/models/client.js';
-import { type Token, create, verify } from './db/models/token.js';
+import {
+  type Token,
+  create as createToken,
+  verify,
+} from './db/models/token.js';
+import {
+  activate as _activateDeviceCode,
+  create as createDeviceCode,
+  findByDeviceCode,
+  // FindByUserCode,
+  redeem,
+} from './db/models/deviceCode.js';
 import { Authorization } from '@oada/models/authorization';
 import type { User } from './db/models/user.js';
+import { fastifyPassport } from './auth.js';
+import { getSymmetricKey } from './keys.js';
 import { promisifyMiddleware } from './utils.js';
 
 // If the array of scopes contains ONLY openid OR openid and profile, auto-accept.
@@ -123,45 +124,7 @@ export interface Options {
   };
 }
 
-export const kid = 'oauth2-1';
-
-export async function getKeyPair(file: File | string | undefined, alg: string) {
-  if (!file) {
-    return generateKeyPair(alg);
-  }
-
-  // Assume file is a private key
-  const privateKey = createPrivateKey(
-    typeof file === 'string' ? file : Buffer.from(await file.arrayBuffer()),
-  );
-  // Derive a public key from the private key
-  const publicKey = createPublicKey(privateKey);
-  return { privateKey, publicKey };
-}
-
 const tokenConfig = config.get('auth.token');
-
-/**
- * @internal
- * @todo Support key rotation and stuff
- */
-export const { publicKey, privateKey } = await getKeyPair(
-  await tokenConfig.key,
-  tokenConfig.alg,
-);
-export const jwksPublic = {
-  keys: [
-    {
-      kid,
-      alg: tokenConfig.alg,
-      use: 'sig',
-      ...(await exportJWK(publicKey)),
-    },
-  ],
-};
-
-/** @internal */
-export const JWKS = createLocalJWKSet(jwksPublic);
 
 /**
  * Set of claims we include in our signed JWT bearer tokens
@@ -176,7 +139,7 @@ export async function getToken(
   }: Partial<Token>,
 ) {
   try {
-    return await create({ ...claims, exp }, issuer);
+    return await createToken({ ...claims, exp }, issuer);
   } catch (error: unknown) {
     throw new Error('Failed to issue token', { cause: error });
   }
@@ -214,11 +177,7 @@ interface CodePayload {
 }
 
 const authCode = config.get('auth.code');
-const codeKey = (await authCode.key)
-  ? createSecretKey(
-      (await (await authCode.key)!.arrayBuffer()) as NodeJS.ArrayBufferView,
-    )
-  : await generateSecret(authCode.alg);
+const codeKey = await getSymmetricKey(await authCode.key, authCode.alg);
 export const issueCode: IssueGrantCodeFunctionArity6 = async (
   client: Client,
   redirectUri,
@@ -346,28 +305,18 @@ export const exchangeCode: IssueExchangeCodeFunctionArity5<Client> = async (
 
 const deviceCodeExp = config.get('auth.deviceCode.expiresIn') / 1000;
 export const issueDeviceCode: IssueDeviceCodeFunction<Client> = async (
-  _client,
-  _scope,
+  client,
+  scope,
   _body,
   { issuer },
   done,
-  // eslint-disable-next-line max-params, @typescript-eslint/require-await
+  // eslint-disable-next-line max-params
 ) => {
   try {
-    /**
-     * Machine-readable code for client use
-     */
-    const deviceCode =
-      `${randomBytes(15).toString('base64')}_${randomBytes(15).toString('base64')}` as const;
-
-    const id = base36.randId(8);
-    /**
-     * Human-readable code to present to user
-     */
-    const userCode =
-      `${id.slice(0, 4).toUpperCase()}-${id.slice(4).toUpperCase()}` as const;
-
-    // TODO: Record in DB for when user verifies
+    const { deviceCode, userCode } = await createDeviceCode({
+      clientId: client.client_id,
+      scope,
+    });
 
     done(undefined, deviceCode, userCode, {
       expires_in: deviceCodeExp,
@@ -388,8 +337,7 @@ export const issueDeviceCode: IssueDeviceCodeFunction<Client> = async (
 export const activateDeviceCode: ActivateDeviceCodeFunction<
   Client,
   User
-  // eslint-disable-next-line @typescript-eslint/require-await
-> = async (_client, _deviceCode, _user, done) => {
+> = async (_client, deviceCode, _user, done) => {
   try {
     /*
     Throw new TokenError(
@@ -397,6 +345,9 @@ export const activateDeviceCode: ActivateDeviceCodeFunction<
       'authorization_pending',
     );
     */
+    const code = await findByDeviceCode(deviceCode);
+    // TODO: Approval logic
+    await _activateDeviceCode({ ...code, approved: true });
     done();
   } catch (error: unknown) {
     done(error as Error);
@@ -405,20 +356,21 @@ export const activateDeviceCode: ActivateDeviceCodeFunction<
 
 export const exchangeDeviceCode: ExchangeDeviceCodeFunction<Client> = async (
   client,
-  _deviceCode,
+  deviceCode,
   _body,
   { issuer },
   done,
   // eslint-disable-next-line max-params
 ) => {
   try {
+    const code = await findByDeviceCode(deviceCode);
+
     // Get user/scope from DB from user activation?
-    const user = { sub: 'users/test' };
-    const scope = ['all:all'];
+    const { userId, scope } = await redeem(client.client_id, code);
 
     const auth = new Authorization({
       client_id: client.client_id,
-      sub: user.sub,
+      sub: userId,
       scope: scope.join(' '),
     });
     const token = await getToken(issuer, { ...auth });

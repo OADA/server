@@ -43,12 +43,8 @@ import {
   register,
   update,
 } from './db/models/user.js';
-import {
-  getKeyPair,
-  issueCode,
-  issueToken,
-  jwksPublic as oauthJWKs,
-} from './oauth2.js';
+import { getKeyPair, jwksPublic as oauthJWKs } from './keys.js';
+import { issueCode, issueToken } from './oauth2.js';
 import type { Client } from './db/models/client.js';
 import type { JsonSchemaToTsProvider } from '@fastify/type-provider-json-schema-to-ts';
 import { createUserinfo } from './utils.js';
@@ -300,10 +296,11 @@ const plugin: FastifyPluginAsync<Options> = async (
         },
       },
     },
-    (request, reply) =>
-      reply.redirect(
+    async (request, reply) => {
+      void reply.redirect(
         join(oidcLogin, encodeURIComponent(request.body.dest_domain)),
-      ),
+      );
+    },
   );
   fastify.get(
     join(oidcLogin, '/:dest_domain'),
@@ -352,18 +349,20 @@ const plugin: FastifyPluginAsync<Options> = async (
           .call(this, request, reply);
       },
     },
-    (request) =>
+    // eslint-disable-next-line @typescript-eslint/require-await
+    async (request) =>
       process.env.NODE_ENV === 'production' ? 'Logged in' : request.user,
   );
 
-  fastify.get(config.get('auth.endpoints.certs'), () => jwksPublic);
+  // eslint-disable-next-line @typescript-eslint/require-await
+  fastify.get(config.get('auth.endpoints.certs'), async () => jwksPublic);
 
   fastify.get(
     config.get('auth.endpoints.userinfo'),
     {
       preValidation: fastifyPassport.authenticate('bearer', { session: false }),
     },
-    (request, reply) => {
+    async (request, reply) => {
       const userinfo = createUserinfo(
         request.user as unknown as Record<string, unknown>,
         request.authInfo?.scope,
@@ -404,7 +403,8 @@ const plugin: FastifyPluginAsync<Options> = async (
 
   // Redirect other OIDC config endpoints to openid-configuration endpoint
   await fastify.register(
-    (app) => {
+    // eslint-disable-next-line @typescript-eslint/require-await
+    async (app) => {
       app.all('/oada-configuration', {}, async (_request, reply) =>
         reply.redirect('openid-configuration', 301),
       );

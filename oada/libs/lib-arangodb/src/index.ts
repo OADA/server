@@ -24,6 +24,7 @@ export * as changes from './libs/changes.js';
 export * as remoteResources from './libs/remoteResources.js';
 export * as clients from './libs/clients.js';
 export * as codes from './libs/codes.js';
+export * as deviceCodes from './libs/deviceCodes.js';
 export * as authorizations from './libs/authorizations.js';
 export * as putBodies from './libs/putBodies.js';
 

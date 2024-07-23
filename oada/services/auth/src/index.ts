@@ -61,8 +61,6 @@ import { type Client, findById } from './db/models/client.js';
 import dynReg from './dynReg.js';
 import { fastifyPassport } from './auth.js';
 import login from './login.js';
-import oauth2 from './oauth2.js';
-import oidc from './oidc.js';
 
 /**
  * Workaround for default exports/esm nonsense
@@ -104,6 +102,7 @@ async function makeRedis(uri: string) {
  */
 const plugin: FastifyPluginAsync = async (f) => {
   const fastify = f.withTypeProvider<JsonSchemaToTsProvider>();
+  fastify.log.debug('start');
   const {
     /**
      * Auth API endpoints
@@ -139,7 +138,7 @@ const plugin: FastifyPluginAsync = async (f) => {
   if (process.env.NODE_ENV !== 'production') {
     const defaultHandler = fastify.errorHandler;
     // Send errors on to client for debug purposes
-    fastify.setErrorHandler((error, request, reply) => {
+    fastify.setErrorHandler(async (error, request, reply) => {
       // @ts-expect-error stuff
       const cause: unknown = error.response?.body ?? error.response ?? error;
       void reply.code(500);
@@ -181,6 +180,7 @@ const plugin: FastifyPluginAsync = async (f) => {
   });
 
   // Add id to request context
+  // eslint-disable-next-line @typescript-eslint/require-await
   fastify.addHook('onRequest', async (request) => {
     requestContext.set('id', request.id);
     requestContext.set('session', request.session);
@@ -261,6 +261,7 @@ const plugin: FastifyPluginAsync = async (f) => {
 
   // ----------------------------------------------------------------
   // Local user login/logout:
+  fastify.log.debug('login');
   await fastify.register(login, { endpoints });
   /*
   Await fastify.register(async (instance) => {
@@ -278,22 +279,30 @@ const plugin: FastifyPluginAsync = async (f) => {
     });
 
     if (config.get('auth.oauth2.enable') || config.get('auth.oidc.enable')) {
+      const { default: oauth2 } = await import('./oauth2.js');
       await fastify.register(oauth2, { oauth2server, endpoints });
     }
   });
   */
 
+  fastify.log.debug('oauth2');
   if (config.get('auth.oauth2.enable') || config.get('auth.oidc.enable')) {
+    const { default: oauth2 } = await import('./oauth2.js');
     await fastify.register(oauth2, { oauth2server, endpoints });
   }
 
   // ----------------------------------------------------------------
   // Dynamic client registration:
+  fastify.log.debug('dynReg');
   await fastify.register(dynReg, { endpoints });
 
+  fastify.log.debug('oidc');
   if (config.get('auth.oidc.enable')) {
+    const { default: oidc } = await import('./oidc.js');
     await fastify.register(oidc, { oauth2server, endpoints });
   }
+
+  fastify.log.debug('end');
 };
 
 function serializeJwt(jwt: `${string}.${string}.${string}`) {
@@ -375,11 +384,12 @@ export async function start(): Promise<void> {
       // HACK: make root .well-known redirect to our auth prefix
       fastify.all<{ Params: { document: string } }>(
         '/.well-known/:document',
-        (request, reply) =>
-          reply.redirect(
-            301,
+        async (request, reply) => {
+          void reply.redirect(
             join(prefix, '.well-known', request.params.document),
-          ),
+            301,
+          );
+        },
       );
     }
 

@@ -25,7 +25,7 @@
   "dependencies": {
     "cls-rtracer": "^2.6.3",
     "is-interactive": "^2.0.0",
-    "pino": "^9.2.0",
+    "pino": "^9.3.1",
     "pino-caller": "^3.4.0",
     "pino-debug": "^2.0.0",
     "pino-loki": "^2.3.0",
@@ -34,7 +34,7 @@
   },
   "devDependencies": {
     "@types/debug": "^4.1.12",
-    "@types/node": "^20.14.10"
+    "@types/node": "^20.14.11"
   },
   "peerDependencies": {
     "debug": "*"

@@ -33,13 +33,10 @@ import {
 import { File } from 'cmd-ts/batteries/fs';
 import { Url } from 'cmd-ts/batteries/url';
 
-import { writeFile } from 'node:fs/promises';
-
 import { config } from '../config.js';
 
 import type Metadata from '@oada/types/oauth-dyn-reg/metadata.js';
 
-import { Issuer, errors } from 'openid-client';
 import esMain from 'es-main';
 
 export const cmd = command({
@@ -67,6 +64,7 @@ export const cmd = command({
     }),
   },
   async handler({ dataFile, redirects, iss, outFile }) {
+    const { Issuer, errors } = await import('openid-client');
     try {
       const issuer = await Issuer.discover(
         iss ? `${iss}` : `${config.get('oidc.issuer')}`,
@@ -90,6 +88,7 @@ export const cmd = command({
       console.dir(out);
 
       if (outFile) {
+        const { writeFile } = await import('node:fs/promises');
         await writeFile(outFile, JSON.stringify(out, undefined, 2));
       }
     } catch (error: unknown) {

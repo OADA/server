@@ -15,6 +15,8 @@
  * limitations under the License.
  */
 
+/* eslint-disable unicorn/no-null */
+
 import libConfig from '@oada/lib-config';
 
 import type { CreateCollectionOptions } from 'arangojs/collection.js';
@@ -93,7 +95,6 @@ export const { config, schema } = await libConfig({
       doc: 'Ensure the default (i.e., debug) documents are loaded',
       format: Boolean,
       nullable: true,
-      // eslint-disable-next-line unicorn/no-null
       default: null,
       // This name is for historical reasons
       env: 'arangodb__ensureDefaults',
@@ -128,15 +129,15 @@ export const { config, schema } = await libConfig({
 
     collections: {
       users: {
-        format: Object, // Collection,,
+        format: Object, // Collection,
         default: {
           name: 'users',
-          indexes: ['username'],
+          indexes: ['username', 'sub'],
           defaults: './libs/exampledocs/users.js',
         },
       },
       clients: {
-        format: Object, // Collection,,
+        format: Object, // Collection,
         default: {
           name: 'clients',
           indexes: ['clientId'],
@@ -144,7 +145,7 @@ export const { config, schema } = await libConfig({
         },
       },
       authorizations: {
-        format: Object, // Collection,,
+        format: Object, // Collection,
         default: {
           name: 'authorizations',
           indexes: ['token', { name: 'user', unique: false }],
@@ -152,15 +153,23 @@ export const { config, schema } = await libConfig({
         },
       },
       codes: {
-        format: Object, // Collection,,
+        format: Object, // Collection,
         default: {
           name: 'codes',
           indexes: ['code'],
           defaults: './libs/exampledocs/codes.js',
         },
       },
+      deviceCodes: {
+        format: Object, // Collection,
+        default: {
+          name: 'deviceCodes',
+          indexes: ['deviceCode', 'userCode'],
+          defaults: './libs/exampledocs/codes.js',
+        },
+      },
       resources: {
-        format: Object, // Collection,,
+        format: Object, // Collection,
         default: {
           name: 'resources',
           indexes: [],
@@ -168,7 +177,7 @@ export const { config, schema } = await libConfig({
         },
       },
       graphNodes: {
-        format: Object, // Collection,,
+        format: Object, // Collection,
         default: {
           name: 'graphNodes',
           indexes: [],
@@ -176,7 +185,7 @@ export const { config, schema } = await libConfig({
         },
       },
       changes: {
-        format: Object, // Collection,,
+        format: Object, // Collection,
         default: {
           name: 'changes',
           indexes: [],
@@ -184,7 +193,7 @@ export const { config, schema } = await libConfig({
         },
       },
       changeEdges: {
-        format: Object, // Collection,,
+        format: Object, // Collection,
         default: {
           name: 'changeEdges',
           indexes: [{ name: 'name', unique: false }],
@@ -193,7 +202,7 @@ export const { config, schema } = await libConfig({
         },
       },
       edges: {
-        format: Object, // Collection,,
+        format: Object, // Collection,
         default: {
           name: 'edges',
           indexes: [{ name: 'name', unique: false }],
@@ -202,7 +211,7 @@ export const { config, schema } = await libConfig({
         },
       },
       putBodies: {
-        format: Object, // Collection,,
+        format: Object, // Collection,
         default: {
           name: 'putBodies',
           indexes: [],
@@ -211,7 +220,7 @@ export const { config, schema } = await libConfig({
         },
       },
       remoteResources: {
-        format: Object, // Collection,,
+        format: Object, // Collection,
         default: {
           name: 'remoteResources',
           indexes: [{ name: ['domain', 'resource_id'], unique: true }],
@@ -222,7 +231,7 @@ export const { config, schema } = await libConfig({
 
     graphs: {
       resources: {
-        format: Object, // Graph,,
+        format: Object, // Graph,
         default: {
           name: 'resources',
           edges: [
@@ -235,7 +244,7 @@ export const { config, schema } = await libConfig({
         },
       },
       changes: {
-        format: Object, // Graph,,
+        format: Object, // Graph,
         default: {
           name: 'changes',
           edges: [
@@ -288,8 +297,6 @@ export const { config, schema } = await libConfig({
       format: String,
       sensitive: true,
       nullable: true,
-
-      // eslint-disable-next-line unicorn/no-null
       default: null as string | null,
       env: 'BCRYPT_SALT',
     },

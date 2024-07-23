@@ -319,7 +319,7 @@ export const { config, schema } = await libConfig({
     deviceCode: {
       dataStore: {
         format: 'dataStore',
-        default: 'jwt' as string | string[],
+        default: 'arango' as string | string[],
         env: 'AUTH_DEVICE_CODE_DATA_STORE',
       },
       expiresIn: {

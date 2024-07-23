@@ -76,12 +76,13 @@
     "@qlever-llc/interface2class": "^1.1.0",
     "arangojs": "^8.8.1",
     "bcryptjs": "^2.4.3",
+    "chalk": "^5.3.0",
     "cmd-ts": "^0.13.0",
     "debug": "^4.3.5",
     "ejs": "^3.1.10",
     "es-main": "^1.3.0",
     "fastify": "^4.28.1",
-    "fastify-graceful-shutdown": "^3.5.3",
+    "fastify-graceful-shutdown": "^4.0.1",
     "fastify-healthcheck": "^4.4.0",
     "ioredis": "^5.4.1",
     "jose": "^5.6.3",
@@ -124,9 +125,9 @@
     "@types/uuid": "^10.0.0",
     "c8": "^10.1.2",
     "json-schema-to-ts": "^3.1.0",
-    "type-fest": "^4.21.0"
+    "type-fest": "^4.23.0"
   },
   "volta": {
-    "node": "20.2.0"
+    "node": "20.15.1"
   }
 }
