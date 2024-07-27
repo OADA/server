@@ -49,6 +49,7 @@ import type { Client } from './db/models/client.js';
 import type { JsonSchemaToTsProvider } from '@fastify/type-provider-json-schema-to-ts';
 import { createUserinfo } from './utils.js';
 import { fastifyPassport } from './auth.js';
+import { requestContext } from '@fastify/request-context';
 
 export interface Options {
   oauth2server?: OAuth2Server;
@@ -114,12 +115,13 @@ export const issueIdToken: IssueIDToken<Client, User> = async (
     nonce: request.nonce,
   };
 
+  const issuer = requestContext.get('issuer')!;
   const token = await new SignJWT(payload)
     .setProtectedHeader({ kid, alg: idToken.alg })
     .setIssuedAt()
     .setExpirationTime(idToken.expiresIn)
     .setAudience(client.client_id)
-    .setIssuer(request.authInfo.issuer)
+    .setIssuer(issuer)
     .setSubject(user.sub)
     .sign(privateKey);
   // eslint-disable-next-line unicorn/no-null

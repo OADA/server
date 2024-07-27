@@ -22,11 +22,11 @@ import debug from 'debug';
 
 import { Authorization as Token } from '@oada/models/authorization';
 
-import { getDataStores, tryDataStores } from './index.js';
+import { type Store, getDataStores, tryDataStores } from './index.js';
 
 const log = debug('model-tokens');
 
-export interface ITokens {
+export interface ITokens extends Store {
   /**
    * Verify a token and return the associated claims
    */

@@ -25,32 +25,22 @@ const trace = debug('arango:deviceCodes:trace');
 
 export const findByDeviceCode = async function (deviceCode) {
   trace('findByCode: searching for code %s', deviceCode);
-  const found = await deviceCodes.findByDeviceCode(deviceCode);
-  if (!found) {
-    return found;
-  }
-
-  const { _id, _key, ...c } = found;
-  return c;
+  return deviceCodes.findByDeviceCode(deviceCode);
 } satisfies IDeviceCodes['findByDeviceCode'];
 
 export const findByUserCode = async function (userCode) {
   trace('findByCode: searching for code %s', userCode);
-  const found = await deviceCodes.findByUserCode(userCode);
-  if (!found) {
-    return found;
-  }
-
-  const { _id, _key, ...c } = found;
-  return c;
+  return deviceCodes.findByUserCode(userCode);
 } satisfies IDeviceCodes['findByUserCode'];
 
 export const save = async function <C extends DeviceCode>(deviceCode: C) {
   return (await deviceCodes.save(deviceCode)) as C;
 } satisfies IDeviceCodes['save'];
 
-export const remove = async function (deviceCode) {
-  return deviceCodes.remove(deviceCode) as unknown as Promise<
-    DeviceCode | undefined
-  >;
-} satisfies IDeviceCodes['remove'];
+export const redeem = async function (deviceCode) {
+  const { redeemed, code } = await deviceCodes.redeem(deviceCode);
+  return {
+    redeemed,
+    code: code as DeviceCode,
+  }
+} satisfies IDeviceCodes['redeem'];

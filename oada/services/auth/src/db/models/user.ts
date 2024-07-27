@@ -21,9 +21,9 @@ import type { Promisable } from 'type-fest';
 
 import { User } from '@oada/models/user';
 
-import { getDataStores, tryDataStores } from './index.js';
+import { type Store, getDataStores, tryDataStores } from './index.js';
 
-export interface IUsers {
+export interface IUsers extends Store {
   findById(id: string): Promisable<User | undefined>;
   findByUsername(username: User['username']): Promisable<User | undefined>;
   findByUsernamePassword(

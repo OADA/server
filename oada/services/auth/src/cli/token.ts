@@ -64,7 +64,7 @@ async function getClient(iss: string) {
   } catch (error: unknown) {
     if (error instanceof errors.OPError) {
       // @ts-expect-error stuff
-      error.message = `${error.response.body.message}`;
+      error.message ??= `${error.response.body.message}`;
     }
 
     throw error;
@@ -97,13 +97,13 @@ export const get = command({
     }),
   },
   // eslint-disable-next-line @typescript-eslint/no-shadow
-  async handler({ scope, iss, qr }) {
+  async handler({ scope = [], iss, qr }) {
     const client = await getClient(
       iss ? `${iss}` : `${config.get('oidc.issuer')}`,
     );
 
     const handle = await client.deviceAuthorization({
-      scope: scope?.join(' '),
+      scope: scope.join(' '),
     });
 
     console.group('User verification:');

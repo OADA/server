@@ -22,7 +22,7 @@ import { createHash } from 'node:crypto';
 import { join } from 'node:path/posix';
 import { promisify } from 'node:util';
 
-import type {} from '@fastify/formbody';
+import type { } from '@fastify/formbody';
 import type { FastifyPluginAsync, FastifyReply, FastifyRequest } from 'fastify';
 
 import {
@@ -70,6 +70,7 @@ import type { User } from './db/models/user.js';
 import { fastifyPassport } from './auth.js';
 import { getSymmetricKey } from './keys.js';
 import { promisifyMiddleware } from './utils.js';
+import { requestContext } from '@fastify/request-context';
 
 // If the array of scopes contains ONLY openid OR openid and profile, auto-accept.
 // Better to handle this by asking only the first time, but this is quicker to get PoC working.
@@ -97,13 +98,10 @@ declare module 'oauth2orize' {
   // eslint-disable-next-line @typescript-eslint/no-shadow
   interface OAuth2Req {
     nonce?: string;
-    authInfo: {
-      issuer: string;
-    };
   }
 
   // eslint-disable-next-line @typescript-eslint/no-shadow
-  interface MiddlewareRequest extends FastifyRequest {}
+  interface MiddlewareRequest extends FastifyRequest { }
 }
 interface DeserializedOauth2<C = Client> extends OAuth2 {
   client: C;
@@ -160,9 +158,10 @@ export const issueToken = (async (
   done,
 ) => {
   try {
+    const issuer = requestContext.get('issuer')!;
     const scope = request.scope.join(' ');
     // TODO: Fill out user info
-    const token = await getToken(request.authInfo.issuer, { scope, sub });
+    const token = await getToken(issuer, { scope, sub });
     // eslint-disable-next-line unicorn/no-null
     done(null, token, { expires_in: tokenConfig.expiresIn });
   } catch (error: unknown) {
@@ -208,9 +207,10 @@ export const issueCode: IssueGrantCodeFunctionArity6 = async (
       );
     }
 
+    const issuer = requestContext.get('issuer')!;
     const payload = {
       user: user.sub,
-      issuer: request.authInfo.issuer,
+      issuer,
       scope: request.scope.join(' '),
     } as const satisfies CodePayload;
     const code = await new EncryptJWT(payload)
@@ -307,15 +307,13 @@ const deviceCodeExp = config.get('auth.deviceCode.expiresIn') / 1000;
 export const issueDeviceCode: IssueDeviceCodeFunction<Client> = async (
   client,
   scope,
-  _body,
-  { issuer },
   done,
-  // eslint-disable-next-line max-params
 ) => {
   try {
+    const issuer = requestContext.get('issuer')!;
     const { deviceCode, userCode } = await createDeviceCode({
       clientId: client.client_id,
-      scope,
+      scope: typeof scope === 'string' ? scope : scope.join(' '),
     });
 
     done(undefined, deviceCode, userCode, {
@@ -346,6 +344,10 @@ export const activateDeviceCode: ActivateDeviceCodeFunction<
     );
     */
     const code = await findByDeviceCode(deviceCode);
+    if (!code) {
+      throw new TokenError('Invalid device code', 'access_denied');
+    }
+
     // TODO: Approval logic
     await _activateDeviceCode({ ...code, approved: true });
     done();
@@ -357,21 +359,36 @@ export const activateDeviceCode: ActivateDeviceCodeFunction<
 export const exchangeDeviceCode: ExchangeDeviceCodeFunction<Client> = async (
   client,
   deviceCode,
-  _body,
-  { issuer },
   done,
-  // eslint-disable-next-line max-params
 ) => {
   try {
-    const code = await findByDeviceCode(deviceCode);
+    const issuer = requestContext.get('issuer')!;
+    const { redeemed, code } = await redeem(client.client_id, deviceCode);
+    if (!code) {
+      // ??? What error to return here?
+      throw new TokenError('Invalid device code', 'access_denied');
+    }
+
+    /* TODO: Implement expiration
+    if (code.expired) {
+      throw new TokenError('Expired device code', 'expired_token');
+    }
+    */
+
+    if (!redeemed) {
+      throw new TokenError('Device code not activated', 'authorization_pending');
+    }
 
     // Get user/scope from DB from user activation?
-    const { userId, scope } = await redeem(client.client_id, code);
+    const { userId, scope, approved } = code;
+    if (!approved) {
+      throw new TokenError('User denied authorization request', 'access_denied');
+    }
 
     const auth = new Authorization({
       client_id: client.client_id,
       sub: userId,
-      scope: scope.join(' '),
+      scope,
     });
     const token = await getToken(issuer, { ...auth });
     done(undefined, token);
@@ -397,12 +414,6 @@ const plugin: FastifyPluginAsync<Options> = async (
   },
   // eslint-disable-next-line @typescript-eslint/require-await
 ) => {
-  // eslint-disable-next-line @typescript-eslint/require-await
-  fastify.addHook('onRequest', async (request) => {
-    const issuer = `${request.protocol}://${request.hostname}/` as const;
-    request.authInfo = { issuer };
-  });
-
   // PKCE
   oauth2server.grant(extensions());
 
@@ -626,23 +637,32 @@ const plugin: FastifyPluginAsync<Options> = async (
       issueDeviceCode,
     ),
   );
-  fastify.post(deviceAuthorization, async (request, reply) => {
-    try {
-      await doDeviceAuthorize(
-        request as unknown as MiddlewareRequest<Client, User>,
-        reply as unknown as ServerResponse,
-      );
-    } catch (error: unknown) {
-      request.log.error(error, 'OAuth2 device authorization error');
-      await doErrorHandlerDirect(
-        error as Error,
-        request as unknown as MiddlewareRequest,
-        reply as unknown as ServerResponse,
-      );
-    }
-  });
+  fastify.post(deviceAuthorization,
+    {
+      preValidation: fastifyPassport.authenticate(
+        ['oauth2-client-password', 'oauth2-client-assertion'],
+        {
+          session: false,
+        },
+      ),
+    },
+    async (request, reply) => {
+      try {
+        await doDeviceAuthorize(
+          request as unknown as MiddlewareRequest<Client, User>,
+          reply as unknown as ServerResponse,
+        );
+      } catch (error: unknown) {
+        request.log.error(error, 'OAuth2 device authorization error');
+        await doErrorHandlerDirect(
+          error as Error,
+          request as unknown as MiddlewareRequest,
+          reply as unknown as ServerResponse,
+        );
+      }
+    });
 
-  fastify.get(activate, async (_request, _reply) => {});
+  fastify.get(activate, async (_request, _reply) => { });
 };
 
 export default plugin;

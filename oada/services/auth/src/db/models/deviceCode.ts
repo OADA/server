@@ -24,9 +24,9 @@ import base36 from 'random-id-base36';
 
 import { destructure } from '@oada/models/decorators';
 
-import { getDataStores, tryDataStores } from './index.js';
+import { type Store, getDataStores, tryDataStores } from './index.js';
 
-export interface IDeviceCodes {
+export interface IDeviceCodes extends Store {
   findByDeviceCode(
     deviceCode: DeviceCode['deviceCode'],
   ): Promisable<Partial<DeviceCode> | undefined>;
@@ -34,7 +34,7 @@ export interface IDeviceCodes {
     userCode: DeviceCode['userCode'],
   ): Promisable<Partial<DeviceCode> | undefined>;
   save<C extends DeviceCode>(code: C): Promisable<C>;
-  remove(code: DeviceCode): Promisable<DeviceCode | undefined>;
+  redeem(code: DeviceCode['deviceCode']): Promisable<{ redeemed: boolean, code?: DeviceCode }>;
 }
 
 const dataStores = await getDataStores<IDeviceCodes>(
@@ -63,7 +63,7 @@ class DeviceCode {
   constructor(
     rest: Partial<DeviceCode> = {},
     readonly clientId: string,
-    readonly scope: readonly string[],
+    readonly scope: string,
     /**
      * Machine-readable code for client use
      */
@@ -117,20 +117,23 @@ export async function activate(
   }
 }
 
-export async function redeem(clientId: string, deviceCode: DeviceCode) {
+export async function redeem(clientId: string, deviceCode: DeviceCode['deviceCode']): Promise<{ redeemed: boolean, code?: DeviceCode }> {
   async function redeemDeviceCode(dataStore: IDeviceCodes) {
-    const old = await dataStore.remove(deviceCode);
-    if (!old) {
+    const { redeemed, code } = await dataStore.redeem(deviceCode);
+    if (!code) {
       return;
     }
 
-    const code = new DeviceCode(old);
+    const out = new DeviceCode(code);
     if (code.clientId !== clientId) {
       throw new Error('Client does not match original client');
     }
 
-    return code;
+    return {
+      redeemed,
+      code: out,
+    };
   }
 
-  return tryDataStores(dataStores, redeemDeviceCode);
+  return (await tryDataStores(dataStores, redeemDeviceCode)) ?? { redeemed: false }
 }

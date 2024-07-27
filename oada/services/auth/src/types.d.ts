@@ -191,11 +191,9 @@ declare module 'oauth2orize-device-code' {
     /** @default ' ' */
     scopeSeparator?: string;
   }
-  export type IssueDeviceCodeFunctionArity5<Client> = (
+  export type IssueDeviceCodeFunctionArity3<Client> = (
     client: Client,
-    scope: readonly string[],
-    body: unknown,
-    authInfo: { issuer: string },
+    scope: string | readonly string[],
     done: Done<
       [
         deviceCode: string,
@@ -208,7 +206,7 @@ declare module 'oauth2orize-device-code' {
     >,
   ) => void;
   export type IssueDeviceCodeFunction<Client> =
-    IssueDeviceCodeFunctionArity5<Client>;
+    IssueDeviceCodeFunctionArity3<Client>;
 
   export namespace middleware {
     export function authorization<Client, User>(
@@ -233,9 +231,7 @@ declare module 'oauth2orize-device-code' {
   export type ExchangeDeviceCodeFunction<Client> = (
     client: Client,
     deviceCode: string,
-    body: unknown,
-    authInfo: { issuer: string },
-    done: Done<[accessToken: string, refreshToken?: string]>,
+    done: Done<[acessToken: string, refreshToken?: string]>,
   ) => void;
   export namespace exchange {
     export function deviceCode<Client, User>(
