@@ -36,7 +36,7 @@ export const { config, schema } = await libConfig({
     host: {
       doc: 'Bind host for exposing metrics endpoint',
       format: String,
-      default: 'localhost',
+      default: '0.0.0.0',
       env: 'PROM_HOST',
       arg: 'prom-host',
     },

@@ -22,10 +22,6 @@ import { db as database } from '../db.js';
 import { sanitizeResult } from '../util.js';
 
 export interface DeviceCode {
-  /** @internal  */
-  _id?: string;
-  /** @internal  */
-  _key?: string;
   deviceCode: string;
   userCode: string;
 }
@@ -40,8 +36,8 @@ export async function findByDeviceCode(
   const cursor = await database.query<DeviceCode>(
     aql`
       FOR c IN ${deviceCodes}
-      FILTER c.deviceCode == ${deviceCode}
-      RETURN c`,
+        FILTER c.deviceCode == ${deviceCode}
+        RETURN c`,
   );
 
   const c = await cursor.next();
@@ -54,8 +50,8 @@ export async function findByUserCode(
   const cursor = await database.query<DeviceCode>(
     aql`
       FOR c IN ${deviceCodes}
-      FILTER c.userCode == ${userCode}
-      RETURN c`,
+        FILTER c.userCode == ${userCode}
+        RETURN c`,
   );
 
   const c = await cursor.next();
@@ -65,19 +61,28 @@ export async function findByUserCode(
 export async function save(
   deviceCode: DeviceCode,
 ): Promise<DeviceCode | undefined> {
-  const { new: saved } = await deviceCodes.save(deviceCode);
+  const { new: saved } = await deviceCodes.save(deviceCode, { returnNew: true });
   return saved;
 }
 
-export async function remove({
-  _id,
-}: DeviceCode): Promise<DeviceCode | undefined> {
-  if (_id === undefined) {
-    throw new TypeError('Invalid device code');
-  }
-
-  try {
-    const { old } = await deviceCodes.remove(_id, { returnOld: true });
-    return old!;
-  } catch {}
+export async function redeem(deviceCode: string) {
+  const cursor = await database.query<{ redeemed: boolean, code?: DeviceCode }>(
+    aql`
+        LET code = (
+          FOR c IN ${deviceCodes}
+            FILTER c.deviceCode == ${deviceCode}
+            RETURN c
+        )
+        LET clear = (
+          FOR c IN code
+            FILTER HAS(c, 'approved')
+            REMOVE c IN ${deviceCodes}
+            RETURN OLD
+        )
+        RETURN {
+          redeemed: LENGTH(clear) == 1,
+          code: FIRST(code),
+        }
+      `);
+  return (await cursor.next())!;
 }

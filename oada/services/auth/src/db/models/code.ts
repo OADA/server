@@ -21,11 +21,11 @@ import debug from 'debug';
 
 import type { CodeID } from '@oada/lib-arangodb/dist/libs/codes.js';
 
-import { getDataStores, tryDataStores } from './index.js';
+import { type Store, getDataStores, tryDataStores } from './index.js';
 
 const trace = debug('model-codes:trace');
 
-export interface ICodes {
+export interface ICodes extends Store {
   findByCode(code: Code['code']): Promise<ICode | undefined>;
   save(code: Code): Promise<void>;
 }

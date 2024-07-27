@@ -77,6 +77,7 @@ declare module '@fastify/request-context' {
   interface RequestContextData {
     id: string;
     session: fastifySecureSession.Session;
+    issuer: string;
   }
 }
 
@@ -127,9 +128,9 @@ const plugin: FastifyPluginAsync = async (f) => {
   });
   oauth2server.deserializeClient(async (id, done) => {
     try {
-      const out = await findById(id);
+      const client = await findById(id);
       // eslint-disable-next-line unicorn/no-null
-      done(null, out);
+      done(null, client);
     } catch (error: unknown) {
       done(error as Error);
     }
@@ -184,6 +185,10 @@ const plugin: FastifyPluginAsync = async (f) => {
   fastify.addHook('onRequest', async (request) => {
     requestContext.set('id', request.id);
     requestContext.set('session', request.session);
+    requestContext.set(
+      'issuer',
+      `${request.protocol}://${request.hostname}/` as const,
+    );
   });
 
   await fastify.register(fastifySensible);

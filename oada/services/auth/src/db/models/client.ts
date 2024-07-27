@@ -22,11 +22,11 @@ import type { Except, Promisable } from 'type-fest';
 
 import { Client } from '@oada/models/client';
 
-import { getDataStores, tryDataStores } from './index.js';
+import { type Store, getDataStores, tryDataStores } from './index.js';
 
 export { Client } from '@oada/models/client';
 
-export interface IClients {
+export interface IClients extends Store {
   findById(id: string): Promisable<Client | undefined>;
   save(client: Except<Client, 'client_id'>): Promisable<void>;
 }

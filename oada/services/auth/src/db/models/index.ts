@@ -20,14 +20,24 @@ import url from 'node:url';
 
 const dirname = path.dirname(url.fileURLToPath(import.meta.url));
 
-export async function getDataStores<T>(
-  store: string | readonly string[],
+export interface Store {
+  name: string;
+}
+
+export async function getDataStores<T extends Store>(
+  stores: string | readonly string[],
   item: string,
 ): Promise<T[]> {
-  const array = Array.isArray(store) ? store : [store];
+  const array = Array.isArray(stores) ? stores : [stores];
   const promises = array.map(
-    async (dataStore) =>
-      import(path.join(dirname, '..', dataStore, `${item}.js`)) as Promise<T>,
+    async (dataStore) => {
+      const store: unknown = await import(path.join(dirname, '..', dataStore, `${item}.js`));
+      return {
+        name: dataStore,
+        // @ts-expect-error stuff
+        ...store
+      } as T
+    }
   );
 
   return Promise.all(promises);
@@ -36,7 +46,7 @@ export async function getDataStores<T>(
 /**
  * Try `queryFun` against all configured data stores in order
  */
-export async function tryDataStores<T, R>(
+export async function tryDataStores<T extends Store, R>(
   stores: readonly T[],
   queryFun: (store: T) => Promise<R | undefined>,
 ) {
@@ -52,8 +62,13 @@ export async function tryDataStores<T, R>(
     }
   }
 
+  if (errors.length === 0) {
+    return;
+  }
+
+  const names = stores.map(({ name }) => name);
   throw new Error(
-    `${queryFun.name} failed to find result(s) among [${stores}]`,
-    { cause: errors.length > 0 ? errors : undefined },
+    `${queryFun.name} failed to find result(s) among ${names}`,
+    { cause: errors },
   );
 }
