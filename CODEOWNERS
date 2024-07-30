@@ -28,7 +28,8 @@ docker-compose.yml @abalmos @awlayton
 common.yml @abalmos
 
 # eslint
-oada/.eslint* @awlayton
+**/.eslint* @awlayton
+**/eslint.* @awlayton
 
 # Alex made swag based proxy
 support/proxy @awlayton
