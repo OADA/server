@@ -1,11 +1,11 @@
 {
   "name": "@oada/tests",
-  "version": "1.0.0",
+  "version": "4.0.0",
   "type": "module",
   "description": "Generate dummy messages to test different oada microservices.",
   "main": "",
   "engines": {
-    "node": ">=16.0.0"
+    "node": ">=20.0.0"
   },
   "files": [
     "src/**/*",
@@ -42,6 +42,6 @@
   "author": "Yaguang Zhang",
   "license": "Apache-2.0",
   "volta": {
-    "node": "18.13.0"
+    "node": "22.5.1"
   }
 }

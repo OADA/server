@@ -1,11 +1,11 @@
 {
   "name": "@oada/pino-debug",
-  "version": "3.10.0",
+  "version": "4.0.0",
   "description": "OADA pino-debug wrapper",
   "main": "dist/index.js",
   "type": "module",
   "engines": {
-    "node": ">=16.0.0"
+    "node": ">=20.0.0"
   },
   "files": [
     "src/**/*",
@@ -34,12 +34,12 @@
   },
   "devDependencies": {
     "@types/debug": "^4.1.12",
-    "@types/node": "^20.14.12"
+    "@types/node": "^22.0.0"
   },
   "peerDependencies": {
     "debug": "*"
   },
   "volta": {
-    "node": "20.2.0"
+    "node": "22.5.1"
   }
 }

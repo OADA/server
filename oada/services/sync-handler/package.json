@@ -1,11 +1,11 @@
 {
   "name": "@oada/sync-handler",
-  "version": "3.10.0",
+  "version": "4.0.0",
   "type": "module",
   "description": "",
   "main": "dist/server.js",
   "engines": {
-    "node": ">=16.0.0"
+    "node": ">=20.0.0"
   },
   "files": [
     "src/**/*",
@@ -28,21 +28,21 @@
   },
   "homepage": "https://github.com/OADA/oada-srvc-sync-handler#readme",
   "dependencies": {
-    "@oada/lib-arangodb": "^3.7.0",
-    "@oada/lib-config": "^3.7.0",
-    "@oada/lib-kafka": "^3.7.0",
+    "@oada/lib-arangodb": "workspace:^",
+    "@oada/lib-config": "workspace:^",
+    "@oada/lib-kafka": "workspace:^",
     "@oada/lib-prom": "workspace:^",
-    "@oada/pino-debug": "^3.7.0",
-    "debug": "^4.3.5",
+    "@oada/pino-debug": "workspace:^",
+    "debug": "^4.3.6",
     "got": "^14.4.2",
     "tslib": "2.6.3"
   },
   "devDependencies": {
-    "@oada/write-handler": "^3.7.0",
+    "@oada/write-handler": "workspace:^",
     "@types/debug": "^4.1.12",
-    "@types/node": "^20.14.12"
+    "@types/node": "^22.0.0"
   },
   "volta": {
-    "node": "20.2.0"
+    "node": "22.5.1"
   }
 }

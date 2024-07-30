@@ -1,10 +1,10 @@
 {
   "name": "@oada/models",
-  "version": "3.10.0",
+  "version": "4.0.0",
   "description": "OADA model",
   "type": "module",
   "engines": {
-    "node": ">=16.0.0"
+    "node": ">=20.0.0"
   },
   "exports": {
     "./user": "./dist/user.js",
@@ -35,10 +35,10 @@
     "xksuid": "^0.0.4"
   },
   "volta": {
-    "node": "20.2.0"
+    "node": "22.5.1"
   },
   "devDependencies": {
-    "@types/node": "^20.14.12",
+    "@types/node": "^22.0.0",
     "jose": "^5.6.3"
   }
 }
