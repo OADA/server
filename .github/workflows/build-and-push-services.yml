@@ -14,6 +14,21 @@
 
 name: Build and push OADA images
 
+permissions:
+  packages: write
+  security-events: write
+  id-token: write
+  actions: read
+  checks: read
+  contents: read
+  deployments: read
+  issues: read
+  discussions: read
+  pages: read
+  pull-requests: read
+  repository-projects: read
+  statuses: read
+
 on:
   push:
   pull_request:
@@ -40,7 +55,7 @@ jobs:
         id: services
         run: |
           SERVICES=$(ls -1 oada/services | tr '\n' ',' | sed 's/,/","/g' | sed 's/^/["/' | sed 's/,"$/]/')
-          echo ::set-output name=list::${SERVICES}
+          echo list="${SERVICES}" >> "$GITHUB_OUTPUT"
 
       - name: Parse Ref
         id: ref
@@ -78,8 +93,8 @@ jobs:
             exit 1
           fi
 
-          echo ::set-output name=version::${VERSION}
-          echo ::set-output name=release::${RELEASE}
+          echo version="${VERSION}" >> "$GITHUB_OUTPUT"
+          echo release="${RELEASE}" >> "$GITHUB_OUTPUT"
 
       - name: Parse Semver
         id: semver
@@ -111,7 +126,6 @@ jobs:
           version: latest
 
       - name: Cache docker layers
-        if: ${{ !env.ACT }} # Awaiting ACT version after 0.2.17 for this feature
         uses: actions/cache@v4
         id: cache
         with:
@@ -175,7 +189,6 @@ jobs:
           version: latest
 
       - name: Cache docker layers
-        if: ${{ !env.ACT }} # Awaiting ACT version after 0.2.17 for this feature
         uses: actions/cache@v4
         id: cache
         with:
@@ -195,8 +208,8 @@ jobs:
           # Name on GHCR
           GHCR_IMAGE=ghcr.io/${OWNER}/${{ matrix.service}}
 
-          echo ::set-output name=dockerhub::${DOCKER_IMAGE}
-          echo ::set-output name=ghcr::${GHCR_IMAGE}
+          echo dockerhub="${DOCKER_IMAGE}" >> "$GITHUB_OUTPUT"
+          echo ghcr="${GHCR_IMAGE}" >> "$GITHUB_OUTPUT"
 
       - name: Login to DockerHub
         #if: github.event_name != 'pull_request'
@@ -300,9 +313,9 @@ jobs:
             fi
           fi
 
-          echo ::set-output name=tag::${TAG}
-          echo ::set-output name=org::${OWNER}
-          echo ::set-output name=cur::${GHCR_IMAGE}:sha-${GITHUB_SHA::8}
+          echo tag="${TAG}" >> "$GITHUB_OUTPUT"
+          echo org="${OWNER}" >> "$GITHUB_OUTPUT"
+          echo cur="${GHCR_IMAGE}:sha-${GITHUB_SHA::8}" >> "$GITHUB_OUTPUT"
 
       - name: Monitor Service image with Snyk
         uses: snyk/actions/docker@master
@@ -324,6 +337,11 @@ jobs:
         with:
           image: ${{ steps.tag.outputs.tag }}
           args: --org=${{ steps.tag.outputs.org }} --file=${{ matrix.context }}/Dockerfile
+
+      - name: Replace security-severity undefined for license-related findings
+        run: |
+          sed -i 's/"security-severity": "undefined"/"security-severity": "0"/g' snyk.sarif
+          sed -i 's/"security-severity": "null"/"security-severity": "0"/g' snyk.sarif
 
       - name: Secure Code Warrior
         uses: SecureCodeWarrior/github-action-add-sarif-contextual-training@v1
@@ -381,7 +399,7 @@ jobs:
             RELEASE_VERSION="${{ needs.setup.outputs.version }}" \
             ./release/make.sh | tee $RELEASE
 
-          echo ::set-output name=composefile::$RELEASE
+          echo composefile="${RELEASE}" >> "$GITHUB_OUTPUT"
 
       # TODO: More detailed check?
       - name: Verify Compose File

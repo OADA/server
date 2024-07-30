@@ -14,6 +14,8 @@
 
 name: Release Helm charts
 
+permissions: read-all
+
 on:
   push:
     branches:
@@ -21,6 +23,8 @@ on:
 
 jobs:
   release:
+    permissions:
+      contents: write
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -35,6 +39,8 @@ jobs:
 
       - name: Install Helm
         uses: azure/setup-helm@v4
+        env:
+          GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
         with:
           version: v3.8.1
 
