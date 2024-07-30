@@ -14,20 +14,7 @@
 
 name: Build and push OADA images
 
-permissions:
-  packages: write
-  security-events: write
-  id-token: write
-  actions: read
-  checks: read
-  contents: read
-  deployments: read
-  issues: read
-  discussions: read
-  pages: read
-  pull-requests: read
-  repository-projects: read
-  statuses: read
+permissions: read-all
 
 on:
   push:
@@ -161,6 +148,10 @@ jobs:
       - setup
       - prebuild
 
+    permissions:
+      id-token: write
+      packages: write
+
     strategy:
       matrix:
         service: ${{ fromJson(needs.setup.outputs.services) }}
@@ -279,6 +270,9 @@ jobs:
       - setup
       - build-and-push-services
 
+    permissions:
+      security-events: write
+
     strategy:
       matrix:
         service: ${{ fromJson(needs.setup.outputs.services) }}
@@ -363,6 +357,10 @@ jobs:
       - setup
       - build-and-push-services
 
+    permissions:
+      contents: write
+      discussions: write
+
     if: ${{ needs.setup.outputs.release }}
 
     runs-on: ubuntu-latest
@@ -407,15 +405,16 @@ jobs:
 
       - name: Create Release
         id: create_release
-        uses: actions/create-release@v1.1.4
+        uses: softprops/action-gh-release@v2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tag_name: ${{ github.ref }}
-          release_name: OADA v${{ needs.setup.outputs.version }}
+          name: OADA v${{ needs.setup.outputs.version }}
           # Make draft and wait for person to release it?
           draft: true
           prerelease: ${{ !!needs.setup.outputs.prerelease }}
+          token: ${{ secrets.GITHUB_TOKEN}}
 
       - name: Upload Release Compose File
         id: upload-release-asset
