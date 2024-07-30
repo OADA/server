@@ -17,6 +17,7 @@
 
 # eslint
 **/.eslint* @awlayton
+**/eslint.* @awlayton
 
 # TypeScript
 **/tsconfig.* @awlayton
@@ -26,10 +27,6 @@ oada/.dockerignore @awalyton
 oada/Dockerfile @abalmos @awlayton
 docker-compose.yml @abalmos @awlayton
 common.yml @abalmos
-
-# eslint
-**/.eslint* @awlayton
-**/eslint.* @awlayton
 
 # Alex made swag based proxy
 support/proxy @awlayton
