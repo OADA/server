@@ -1,11 +1,11 @@
 {
   "name": "@oada/http-handler",
-  "version": "3.10.0",
+  "version": "4.0.0",
   "type": "module",
   "description": "",
   "main": "dist/server.js",
   "engines": {
-    "node": ">=18.0.0"
+    "node": ">=20.0.0"
   },
   "files": [
     "src/**/*",
@@ -47,17 +47,17 @@
     "@fastify/websocket": "^10.0.1",
     "@oada/error": "^2.0.1",
     "@oada/formats-server": "^4.0.0",
-    "@oada/lib-arangodb": "^3.7.0",
-    "@oada/lib-config": "^3.7.0",
-    "@oada/lib-kafka": "^3.7.0",
+    "@oada/lib-arangodb": "workspace:^",
+    "@oada/lib-config": "workspace:^",
+    "@oada/lib-kafka": "workspace:^",
     "@oada/lib-prom": "workspace:^",
     "@oada/models": "workspace:^",
     "@oada/oadaify": "^2.1.0",
-    "@oada/permissions-handler": "^3.7.0",
-    "@oada/pino-debug": "^3.7.0",
+    "@oada/permissions-handler": "workspace:^",
+    "@oada/pino-debug": "workspace:^",
     "@oada/types": "^4.0.0",
     "cacache": "^18.0.4",
-    "debug": "^4.3.5",
+    "debug": "^4.3.6",
     "es-main": "^1.3.0",
     "eventemitter3": "^5.0.1",
     "fastify": "4.28.1",
@@ -75,20 +75,20 @@
   "devDependencies": {
     "@fastify/jwt": "^8.0.1",
     "@oada/auth": "workspace:^",
-    "@oada/users": "workspace:services/users",
-    "@oada/write-handler": "^3.7.0",
+    "@oada/users": "workspace:^",
+    "@oada/write-handler": "workspace:^",
     "@types/cacache": "^17.0.2",
     "@types/debug": "^4.1.12",
-    "@types/node": "^20.14.12",
+    "@types/node": "^22.0.0",
     "@types/type-is": "^1.6.6",
     "@types/uuid": "^10.0.0",
-    "@types/ws": "^8.5.11",
+    "@types/ws": "^8.5.12",
     "connect": "^3.7.0",
     "find-my-way": "^8.2.0",
     "light-my-request": "^5.13.0",
     "type-fest": "^4.23.0"
   },
   "volta": {
-    "node": "20.2.0"
+    "node": "22.5.1"
   }
 }

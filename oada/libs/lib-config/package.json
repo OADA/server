@@ -1,6 +1,6 @@
 {
   "name": "@oada/lib-config",
-  "version": "3.10.0",
+  "version": "4.0.0",
   "description": "Config wrapper",
   "main": "dist/index.js",
   "type": "module",
@@ -37,7 +37,7 @@
     "convict": "^6.2.4",
     "convict-format-with-moment": "^6.2.0",
     "convict-format-with-validator": "^6.2.0",
-    "debug": "^4.3.5",
+    "debug": "^4.3.6",
     "dotenv": "^16.4.5",
     "json5": "^2.2.3",
     "tslib": "2.6.3",
@@ -49,7 +49,7 @@
     "@types/debug": "^4.1.12"
   },
   "volta": {
-    "node": "20.2.0"
+    "node": "22.5.1"
   },
   "peerDependenciesMeta": {
     "jose": {

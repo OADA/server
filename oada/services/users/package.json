@@ -1,6 +1,6 @@
 {
   "name": "@oada/users",
-  "version": "3.10.0",
+  "version": "4.0.0",
   "type": "module",
   "description": "",
   "author": "Alex Layton <alex@layton.in>",
@@ -8,7 +8,7 @@
   "main": "dist/server.js",
   "module": "lib/server.ts",
   "engines": {
-    "node": ">=18.0.0"
+    "node": ">=20.0.0"
   },
   "files": [
     "src/**/*",
@@ -23,14 +23,14 @@
     "add": "./dist/useradd.js"
   },
   "dependencies": {
-    "@oada/lib-arangodb": "^3.7.0",
-    "@oada/lib-config": "^3.7.0",
-    "@oada/lib-kafka": "^3.7.0",
+    "@oada/lib-arangodb": "workspace:^",
+    "@oada/lib-config": "workspace:^",
+    "@oada/lib-kafka": "workspace:^",
     "@oada/lib-prom": "workspace:^",
     "@oada/models": "workspace:^",
-    "@oada/pino-debug": "^3.7.0",
+    "@oada/pino-debug": "workspace:^",
     "chalk": "^5.3.0",
-    "debug": "^4.3.5",
+    "debug": "^4.3.6",
     "ksuid": "^3.0.0",
     "minimist": "^1.2.8",
     "promptly": "^3.2.0",
@@ -43,6 +43,6 @@
     "type-fest": "^4.23.0"
   },
   "volta": {
-    "node": "20.2.0"
+    "node": "22.5.1"
   }
 }
