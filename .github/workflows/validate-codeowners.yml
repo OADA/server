@@ -32,8 +32,8 @@ jobs:
           #        so we will not be using it for now
           # duppaterns: Reports if codeowners file contains duplicated lines
           # syntax: Reports if file contains an invalid syntax definition
-          checks: files,duppatterns,syntax
-          experimental_checks: notowned
+          checks: files,owners,duppatterns,syntax
+          experimental_checks: notowned,avoid-shadowing
 
           # GitHub access token is required only if the `owners` check is enabled
-          #github_access_token: "${{ secrets.OWNERS_VALIDATOR_PAC }}"
+          github_access_token: ${{ secrets.GITHUB_TOKEN }}

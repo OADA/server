@@ -41,13 +41,13 @@ jobs:
       - uses: actions/checkout@v4
       # Run the "semgrep ci" command on the command line of the docker image.
       - run: semgrep ci --sarif --output=semgrep.sarif
+        continue-on-error: true
         env:
           # Connect to Semgrep Cloud Platform through your SEMGREP_APP_TOKEN.
           # Generate a token from Semgrep Cloud Platform > Settings
           # and add it to your GitHub secrets.
           SEMGREP_APP_TOKEN: ${{ secrets.SEMGREP_APP_TOKEN }}
           SEMGREP_DEPLOYMENT_ID: ${{ secrets.SEMGREP_DEPLOYMENT_ID }}
-          SEMGREP_SUPPRESS_ERRORS: true
 
       - name: Secure Code Warrior
         uses: SecureCodeWarrior/github-action-add-sarif-contextual-training@v1
