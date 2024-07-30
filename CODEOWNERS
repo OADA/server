@@ -23,7 +23,7 @@
 **/tsconfig.* @awlayton
 
 # docker
-oada/.dockerignore @awalyton
+oada/.dockerignore @awlayton
 oada/Dockerfile @abalmos @awlayton
 docker-compose.yml @abalmos @awlayton
 common.yml @abalmos
@@ -42,7 +42,7 @@ oada/libs/lib-config @awlayton
 oada/services/auth @abalmos
 oada/services/http-handler @awlayton
 #oada/services/permissions-handler
-oada/services/rev-graph-update @wang701
+#oada/services/rev-graph-update @wang701
 #oada/services/shares
 oada/services/startup @aultac
 oada/services/sync-handler @awlayton
@@ -52,7 +52,7 @@ oada/services/well-known @awlayton
 oada/services/write-handler @awlayton
 
 # Yaguang wrote the tests
-oada/tests @YaguangZhang
+#oada/tests @YaguangZhang
 
 # Alex made the release nonsense
 release @awlayton
@@ -62,6 +62,6 @@ charts @awlayton
 
 # Andrew intially created all the files in .github with some additions by Aaron
 .github            @abalmos
-.github/workflows/validate-codeowners.yml @aaron97neu
+#.github/workflows/validate-codeowners.yml @aaron97neu
 .github/workflows/build-and-push-services.yml @abalmos @awlayton
 .github/workflows/semgrep-analysis.yml @awlayton
