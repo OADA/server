@@ -5,6 +5,8 @@
 
 name: Semgrep
 
+permissions: read-all
+
 on:
   # Scan changed files in PRs (diff-aware scanning):
   pull_request: {}
@@ -24,6 +26,9 @@ jobs:
     # If you are self-hosting, change the following `runs-on` value:
     runs-on: ubuntu-latest
 
+    permissions:
+      security-events: write
+
     container:
       # A Docker image with Semgrep installed. Do not change this.
       image: semgrep/semgrep
@@ -42,6 +47,7 @@ jobs:
           # and add it to your GitHub secrets.
           SEMGREP_APP_TOKEN: ${{ secrets.SEMGREP_APP_TOKEN }}
           SEMGREP_DEPLOYMENT_ID: ${{ secrets.SEMGREP_DEPLOYMENT_ID }}
+          SEMGREP_SUPPRESS_ERRORS: true
 
       - name: Secure Code Warrior
         uses: SecureCodeWarrior/github-action-add-sarif-contextual-training@v1
