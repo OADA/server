@@ -42,5 +42,5 @@ export const redeem = async function (deviceCode) {
   return {
     redeemed,
     code: code as DeviceCode,
-  }
+  };
 } satisfies IDeviceCodes['redeem'];

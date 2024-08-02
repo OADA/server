@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-/* eslint-disable no-console */
+/* eslint-disable no-console -- This is a CLI */
 
 import '@oada/pino-debug';
 
@@ -147,10 +147,13 @@ const UserType: Type<string, User> = {
   },
 };
 
+/**
+ * @todo support other token storage??
+ */
 export const create = command({
   name: 'create',
   aliases: ['issue', 'new'],
-  description: 'Create a token (only works when using local auth)',
+  description: 'Create a token (only works when using local auth in arango)',
   args: {
     iss,
     scope,
@@ -172,24 +175,30 @@ export const create = command({
       long: 'exp',
       short: 'e',
     }),
+    jti: positional({
+      type: optional(string),
+      displayName: 'token id',
+      description: 'Token to create',
+    }),
   },
   // eslint-disable-next-line @typescript-eslint/no-shadow
-  async handler({ iss, scope, user: { sub }, iat, exp }) {
+  async handler({ iss, scope, user: { sub }, iat, exp, jti }) {
     const { Authorization } = await import('@oada/models/authorization');
-    const { getToken } = await import('../oauth2.js');
+    const { create: createToken } = await import('../db/arango/tokens.js');
 
     const auth = new Authorization({
+      iss: iss ? `${iss}` : `${config.get('oidc.issuer')}`,
       sub,
       iat: iat as number,
       exp: exp as number,
       scope: scope?.join(' '),
+      jti,
     });
-    const token = await getToken(
-      iss ? `${iss}` : `${config.get('oidc.issuer')}`,
-      auth,
-    );
+    const token = await createToken(auth);
 
-    console.log(token);
+    if (!jti) {
+      console.log(token);
+    }
   },
 });
 

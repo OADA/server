@@ -18,4 +18,3 @@
 // @ts-check
 
 export * from './oada/eslint.config.mjs';
-

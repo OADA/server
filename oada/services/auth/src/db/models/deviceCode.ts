@@ -34,7 +34,9 @@ export interface IDeviceCodes extends Store {
     userCode: DeviceCode['userCode'],
   ): Promisable<Partial<DeviceCode> | undefined>;
   save<C extends DeviceCode>(code: C): Promisable<C>;
-  redeem(code: DeviceCode['deviceCode']): Promisable<{ redeemed: boolean, code?: DeviceCode }>;
+  redeem(
+    code: DeviceCode['deviceCode'],
+  ): Promisable<{ redeemed: boolean; code?: DeviceCode }>;
 }
 
 const dataStores = await getDataStores<IDeviceCodes>(
@@ -117,7 +119,10 @@ export async function activate(
   }
 }
 
-export async function redeem(clientId: string, deviceCode: DeviceCode['deviceCode']): Promise<{ redeemed: boolean, code?: DeviceCode }> {
+export async function redeem(
+  clientId: string,
+  deviceCode: DeviceCode['deviceCode'],
+): Promise<{ redeemed: boolean; code?: DeviceCode }> {
   async function redeemDeviceCode(dataStore: IDeviceCodes) {
     const { redeemed, code } = await dataStore.redeem(deviceCode);
     if (!code) {
@@ -135,5 +140,7 @@ export async function redeem(clientId: string, deviceCode: DeviceCode['deviceCod
     };
   }
 
-  return (await tryDataStores(dataStores, redeemDeviceCode)) ?? { redeemed: false }
+  return (
+    (await tryDataStores(dataStores, redeemDeviceCode)) ?? { redeemed: false }
+  );
 }

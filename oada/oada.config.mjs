@@ -46,7 +46,7 @@ export default {
     collections: {
       users: {
         name: 'users',
-        indexes: ['username', { name: 'oadaid', sparse: true }],
+        indexes: ['username', { name: 'oadaid', sparse: true }, 'sub', 'iss'],
         defaults: './libs/exampledocs/users.js',
       },
       clients: {

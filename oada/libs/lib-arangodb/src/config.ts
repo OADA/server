@@ -19,8 +19,8 @@
 
 import libConfig from '@oada/lib-config';
 
-import type { CreateCollectionOptions } from 'arangojs/collection.js';
-import type { EdgeDefinitionOptions } from 'arangojs/graph.js';
+import type { CreateCollectionOptions } from 'arangojs/collection';
+import type { EdgeDefinitionOptions } from 'arangojs/graph';
 
 export interface Collection {
   name: string;
@@ -165,7 +165,7 @@ export const { config, schema } = await libConfig({
         default: {
           name: 'deviceCodes',
           indexes: ['deviceCode', 'userCode'],
-          defaults: './libs/exampledocs/codes.js',
+          // Defaults: './libs/exampledocs/deviceCodes.js',
         },
       },
       resources: {

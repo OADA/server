@@ -15,11 +15,10 @@
  * limitations under the License.
  */
 
-import type { CollectionReadOptions } from 'arangojs/collection.js';
+import type { CollectionReadOptions } from 'arangojs/collection';
 import { aql } from 'arangojs';
 import bcrypt from 'bcryptjs';
 import debug from 'debug';
-import { flatten } from 'flat';
 
 import type { Selector } from '../util.js';
 import { config } from '../config.js';
@@ -165,10 +164,6 @@ export async function update(
     returnNew: true,
   });
   return sanitizeResult(u.new);
-}
-
-export async function like(u: Partial<User>): Promise<AsyncIterable<User>> {
-  return users.byExample(flatten(u));
 }
 
 export async function hashPw(pw: string): Promise<string> {

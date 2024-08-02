@@ -22,7 +22,7 @@ import { createHash } from 'node:crypto';
 import { join } from 'node:path/posix';
 import { promisify } from 'node:util';
 
-import type { } from '@fastify/formbody';
+import type {} from '@fastify/formbody';
 import type { FastifyPluginAsync, FastifyReply, FastifyRequest } from 'fastify';
 
 import {
@@ -101,7 +101,7 @@ declare module 'oauth2orize' {
   }
 
   // eslint-disable-next-line @typescript-eslint/no-shadow
-  interface MiddlewareRequest extends FastifyRequest { }
+  interface MiddlewareRequest extends FastifyRequest {}
 }
 interface DeserializedOauth2<C = Client> extends OAuth2 {
   client: C;
@@ -376,13 +376,19 @@ export const exchangeDeviceCode: ExchangeDeviceCodeFunction<Client> = async (
     */
 
     if (!redeemed) {
-      throw new TokenError('Device code not activated', 'authorization_pending');
+      throw new TokenError(
+        'Device code not activated',
+        'authorization_pending',
+      );
     }
 
     // Get user/scope from DB from user activation?
     const { userId, scope, approved } = code;
     if (!approved) {
-      throw new TokenError('User denied authorization request', 'access_denied');
+      throw new TokenError(
+        'User denied authorization request',
+        'access_denied',
+      );
     }
 
     const auth = new Authorization({
@@ -637,7 +643,8 @@ const plugin: FastifyPluginAsync<Options> = async (
       issueDeviceCode,
     ),
   );
-  fastify.post(deviceAuthorization,
+  fastify.post(
+    deviceAuthorization,
     {
       preValidation: fastifyPassport.authenticate(
         ['oauth2-client-password', 'oauth2-client-assertion'],
@@ -660,9 +667,10 @@ const plugin: FastifyPluginAsync<Options> = async (
           reply as unknown as ServerResponse,
         );
       }
-    });
+    },
+  );
 
-  fastify.get(activate, async (_request, _reply) => { });
+  fastify.get(activate, async (_request, _reply) => {});
 };
 
 export default plugin;

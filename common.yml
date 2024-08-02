@@ -20,6 +20,7 @@ services:
       INSPECT: ${INSPECT---inspect=0.0.0.0:9229}
       DEBUG: ${DEBUG-*}
       PINO_LEVEL: ${PINO_LEVEL-debug}
+      PROM_HOST: '::'
       DEBUG_HIDE_DATE: ~
       DEBUG_COLORS: ~
       DEBUG_DEPTH: ~

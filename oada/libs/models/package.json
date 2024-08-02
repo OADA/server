@@ -38,7 +38,7 @@
     "node": "22.5.1"
   },
   "devDependencies": {
-    "@types/node": "^22.0.0",
+    "@types/node": "^22.0.2",
     "jose": "^5.6.3"
   }
 }

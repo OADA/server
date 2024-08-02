@@ -188,7 +188,6 @@ export default async function loadConfig<S>(
       // Allow extra items
       allowed: 'warn',
       // Do not actually output warnings about extra items?
-
       output() {},
     });
 
