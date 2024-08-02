@@ -57,6 +57,8 @@ spec:
             - configMapRef:
                 name: {{ .Chart.Name }}-configmap-{{ .Release.Name }}
           env:
+            - name: CONFIG
+              value: /oada.config.mjs
             - name: ARANGODB_USERNAME
               valueFrom:
                 secretKeyRef:

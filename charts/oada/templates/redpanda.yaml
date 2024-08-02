@@ -1,6 +1,6 @@
 {{- if eq (include "oada.kafka.deploy" .) "true" }}
-apiVersion: redpanda.vectorized.io/v1alpha1
-kind: Cluster
+apiVersion: cluster.redpanda.com/v1alpha1
+kind: Redpanda
 metadata:
   namespace: {{ .Release.Namespace }}
   name: redpanda-{{ .Release.Name }}
@@ -8,66 +8,54 @@ metadata:
     app.kubernetes.io/component: redpanda
     {{- include "oada.chart.labels" . | nindent 4 }}
 spec:
-  image: {{ .Values.kafka.image }}
-  version: {{ .Values.kafka.tag }}
-  replicas: 1
-  resources:
-    requests:
+  chartRef:
+    chartVersion: {{ .Values.kafka.chartVersion }}
+  clusterSpec:
+    image:
+      repository: {{ .Values.kafka.image }}
+      tag: {{ .Values.kafka.tag }}
+    statefulset:
+      replicas: 1
+    resources:
       {{- if .Values.global.development }}
-      cpu: 100m
+      #cpu: 100m
       {{- else }}
-      cpu: 1
-      {{- end }}
-      memory: 1.2Gi
+      cpu:
+        cores: 4
+      memory:
+        enable_memory_locking: true
+        container:
+          max: 10Gi
       #ephemeral-storage: 1Gi
-    limits:
-      cpu: 1
-      memory: 1.2Gi
-      #ephemeral-storage: 1Gi
-  configuration:
-    autoCreateTopics: true
-    rpcServer:
-      port: 33145
-    kafkaApi:
-      - port: 9092
-      {{- if .Values.global.development }}
-      - external:
-          enabled: true
       {{- end }}
-    pandaproxyApi:
-      - port: 8082
-      {{- if .Values.global.development }}
-      - external:
-          enabled: true
+    logging:
+      logLevel: info
+      usageStats:
+        enabled: false
+    {{- if eq (include "oada.prometheus" $) "true" }}
+    monitoring:
+      enabled: true
+    {{- end }}
+    external:
+        {{- if .Values.global.development }}
+      enabled: true
+      service:
+        enabled: true
+      {{- else }}
+      enabled: false
       {{- end }}
-    adminApi:
-      - port: 9644
-      {{- if .Values.global.development }}
-      - external:
-          enabled: true
-      {{- end }}
-    developerMode: {{ .Values.global.development }}
-{{- if eq (include "oada.prometheus" $) "true" }}
----
-apiVersion: monitoring.coreos.com/v1
-kind: ServiceMonitor
-metadata:
-  namespace: {{ .Release.Namespace }}
-  name: redpanda-{{ .Release.Name }}
-  labels:
-    app.kubernetes.io/component: redpanda
-    {{- include "oada.chart.labels" . | nindent 4 }}
-spec:
-  selector:
-    matchLabels:
-      app.kubernetes.io/component: redpanda
-      {{- include "oada.chart.selectorLabels" . | nindent 6 }}
-  endpoints:
-  - port: admin
-    path: /public_metrics
-  - port: admin
-    path: /metrics
-  namespaceSelector:
-    any: false
-{{- end }}
+    listeners:
+      admin:
+        port: 9644
+      kafka:
+        port: 9092
+        tls:
+          enabled: false
+      http:
+        port: 8082
+      rpc:
+        port: 33145
+    config:
+      node:
+        developer_mode: {{ .Values.global.development }}
 {{- end }}
