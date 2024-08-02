@@ -8,12 +8,16 @@ maintainers:
   - name: awlayton
     email: alex@layton.in
 type: application
-version: 3.4.0
-appVersion: 3.10.0
+keywords:
+  - api
+  - oauth 2.0
+  - oidc
+  - oada
+version: 4.0.0
+appVersion: 4.0.0
 annotations:
   artifacthub.io/recommendations: |
     - url: https://artifacthub.io/packages/helm/cert-manager/cert-manager
-    - url: https://artifacthub.io/packages/helm/redpanda/redpanda-operator
-    - url: https://artifacthub.io/packages/helm/source-field/kube-arangodb
-    - url: https://artifacthub.io/packages/helm/source-field/kube-arangodb-crd
+    - url: https://artifacthub.io/packages/helm/redpanda-data/operator
+    - url: https://github.com/arangodb/kube-arangodb#installation-of-latest-release-using-helm
     - url: https://artifacthub.io/packages/helm/ingress-nginx/ingress-nginx
