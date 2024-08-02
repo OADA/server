@@ -79,7 +79,7 @@
     "@oada/write-handler": "workspace:^",
     "@types/cacache": "^17.0.2",
     "@types/debug": "^4.1.12",
-    "@types/node": "^22.0.0",
+    "@types/node": "^22.0.2",
     "@types/type-is": "^1.6.6",
     "@types/uuid": "^10.0.0",
     "@types/ws": "^8.5.12",

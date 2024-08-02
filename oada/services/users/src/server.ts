@@ -170,10 +170,8 @@ export async function handleReq(request: UserRequest): Promise<UserResponse> {
           { user: request.user },
           'Tried to create user, but it already existed (same username). Returning as if we had created it',
         );
-        const like = await users.like({ username: request.user.username });
-        for await (const user of like) {
-          trace(user, 'existing user found');
-        }
+        const user = await users.findByUsername(request.user.username!);
+        trace({ user }, 'existing user found');
       } else {
         throw Object.assign(
           new Error(`Error creating User ${request.user.username}`, {

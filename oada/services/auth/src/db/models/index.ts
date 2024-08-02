@@ -29,16 +29,16 @@ export async function getDataStores<T extends Store>(
   item: string,
 ): Promise<T[]> {
   const array = Array.isArray(stores) ? stores : [stores];
-  const promises = array.map(
-    async (dataStore) => {
-      const store: unknown = await import(path.join(dirname, '..', dataStore, `${item}.js`));
-      return {
-        name: dataStore,
-        // @ts-expect-error stuff
-        ...store
-      } as T
-    }
-  );
+  const promises = array.map(async (dataStore) => {
+    const store: unknown = await import(
+      path.join(dirname, '..', dataStore, `${item}.js`)
+    );
+    return {
+      name: dataStore,
+      // @ts-expect-error stuff
+      ...store,
+    } as T;
+  });
 
   return Promise.all(promises);
 }
@@ -67,8 +67,7 @@ export async function tryDataStores<T extends Store, R>(
   }
 
   const names = stores.map(({ name }) => name);
-  throw new Error(
-    `${queryFun.name} failed to find result(s) among ${names}`,
-    { cause: errors },
-  );
+  throw new Error(`${queryFun.name} failed to find result(s) among ${names}`, {
+    cause: errors,
+  });
 }

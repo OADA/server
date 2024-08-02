@@ -26,7 +26,7 @@
 
 // TODO: Add more of the error codes from above link
 
-export { ArangoError } from 'arangojs/error.js';
+export { ArangoError } from 'arangojs/error';
 
 /**
  * Error codes for ArangoErrorCode

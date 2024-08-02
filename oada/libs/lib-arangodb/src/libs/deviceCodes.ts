@@ -61,12 +61,14 @@ export async function findByUserCode(
 export async function save(
   deviceCode: DeviceCode,
 ): Promise<DeviceCode | undefined> {
-  const { new: saved } = await deviceCodes.save(deviceCode, { returnNew: true });
+  const { new: saved } = await deviceCodes.save(deviceCode, {
+    returnNew: true,
+  });
   return saved;
 }
 
 export async function redeem(deviceCode: string) {
-  const cursor = await database.query<{ redeemed: boolean, code?: DeviceCode }>(
+  const cursor = await database.query<{ redeemed: boolean; code?: DeviceCode }>(
     aql`
         LET code = (
           FOR c IN ${deviceCodes}
@@ -83,6 +85,7 @@ export async function redeem(deviceCode: string) {
           redeemed: LENGTH(clear) == 1,
           code: FIRST(code),
         }
-      `);
+      `,
+  );
   return (await cursor.next())!;
 }

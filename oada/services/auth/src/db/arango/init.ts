@@ -24,6 +24,7 @@ import debug from 'debug';
 
 import type { User } from '@oada/models/user';
 import { config } from '../../config.js';
+import { findByUsername } from './users.js';
 
 const log = debug('arango/init');
 
@@ -105,7 +106,11 @@ async function init() {
   const users = systemDatabase.collection('users');
   for await (const user of Object.values(defaultUsers)) {
     try {
-      await users.firstExample({ username: user.username });
+      const u = await findByUsername(user.username);
+      if (!u) {
+        throw new Error(`User ${user.username} not found`);
+      }
+
       log('User % s exists', user.username);
     } catch {
       log(user, 'Saving user');
