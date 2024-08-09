@@ -112,7 +112,6 @@ mixins.push(() => ({
 
 const trustProxy = config.get('trustProxy');
 
-// eslint-disable-next-line new-cap
 export const fastify = Fastify({
   trustProxy,
   logger,
@@ -300,7 +299,7 @@ await fastify.register(formats);
 await fastify.register(websockets);
 
 // TODO: Config/logic to decide if iss is trusted
-const TRUSTED_ISSUERS = new Set([`${issuer}`]);
+const TRUSTED_ISSUERS = new Set([`${issuer}`, config.get('oidc.issuer')]);
 
 // eslint-disable-next-line unicorn/prevent-abbreviations
 async function enureOIDCUser({ sub, iss: i, ...rest }: TokenClaims) {
@@ -327,7 +326,7 @@ async function enureOIDCUser({ sub, iss: i, ...rest }: TokenClaims) {
     return u;
   }
 
-  const user = new User({ ...rest, oidc: [{ sub, iss }] });
+  const user = new User({ ...rest, sub, oidc: [{ sub, iss }] });
   const resp = (await requester.send(
     {
       connection_id: requestContext.get('id'),
@@ -362,7 +361,7 @@ await fastify.register(async (instance) => {
 
     const user = await enureOIDCUser(claims);
     if (!user) {
-      request.log.error({ claims }, 'No user for request');
+      request.log.error({ claims }, 'No user found for request');
       return reply.unauthorized();
     }
 

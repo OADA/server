@@ -132,7 +132,15 @@ function createRootLogger(): Logger {
           level,
         },
         // Use pino-loki if configured
-        ...(loki ? [{ target: 'pino-loki', options: loki, level }] : []),
+        ...(loki
+          ? [
+              {
+                target: 'pino-loki',
+                options: loki,
+                level: process.env.PINO_LOKI_LEVEL,
+              },
+            ]
+          : []),
       ],
     },
     redact,

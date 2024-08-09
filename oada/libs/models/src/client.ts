@@ -43,7 +43,6 @@ class Client extends makeClass<ReadonlyDeep<OmitIndexSignature<Metadata>>>() {
   // @ts-expect-error HACK
   constructor(client?: Partial<Client>);
 
-  // eslint-disable-next-line max-params
   constructor(
     rest: Partial<Client> = {},
 

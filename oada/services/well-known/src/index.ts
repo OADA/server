@@ -60,7 +60,6 @@ export async function discoverConfiguration(issuer: string | URL) {
 
 const trustProxy = config.get('trustProxy');
 
-// eslint-disable-next-line new-cap
 const fastify = Fastify({
   trustProxy,
   logger: pino(),

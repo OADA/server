@@ -125,7 +125,7 @@
     "@types/uuid": "^10.0.0",
     "c8": "^10.1.2",
     "json-schema-to-ts": "^3.1.0",
-    "type-fest": "^4.23.0"
+    "type-fest": "^4.24.0"
   },
   "volta": {
     "node": "22.5.1"

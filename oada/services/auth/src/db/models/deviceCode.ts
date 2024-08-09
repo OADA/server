@@ -61,7 +61,6 @@ class DeviceCode {
   // @ts-expect-error HACK
   constructor(deviceCode?: Partial<DeviceCode>);
 
-  // eslint-disable-next-line max-params
   constructor(
     rest: Partial<DeviceCode> = {},
     readonly clientId: string,
