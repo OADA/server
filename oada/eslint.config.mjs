@@ -42,6 +42,8 @@ import regexp from 'eslint-plugin-regexp';
 import security from 'eslint-plugin-security';
 import sonarjs from 'eslint-plugin-sonarjs';
 import unicorn from 'eslint-plugin-unicorn';
+import xo from 'eslint-config-xo';
+import xoTypescript from 'eslint-config-xo-typescript';
 
 const __filename = fileURLToPath(import.meta.url);
 
@@ -70,8 +72,8 @@ export default typescript.config(
       'plugin:optimize-regex/recommended',
       'plugin:import/recommended',
       'plugin:ava/recommended',
-      'xo',
     ),
+    ...xo,
   ),
   {
     files: ['**/*.{c,m,}ts'],
@@ -80,8 +82,8 @@ export default typescript.config(
         compat.extends(
           // 'plugin:github/typescript',
           'plugin:import/typescript',
-          // 'xo-typescript',
         ),
+        ...xoTypescript
       ),
     ],
   },
@@ -303,6 +305,7 @@ export default typescript.config(
           argsIgnorePattern: '^_',
         },
       ],
+      'no-unused-vars': 'off',
 
       '@typescript-eslint/consistent-type-definitions': ['warn', 'interface'],
       '@typescript-eslint/no-misused-promises': [

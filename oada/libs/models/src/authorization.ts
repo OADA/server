@@ -39,7 +39,6 @@ class Authorization extends makeClass<
   // @ts-expect-error HACK
   constructor(authorization?: Partial<Authorization>);
 
-  // eslint-disable-next-line max-params
   constructor(
     rest: Partial<Authorization> = {},
     override readonly sub: string,

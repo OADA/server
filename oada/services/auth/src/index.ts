@@ -363,7 +363,6 @@ export async function start(): Promise<void> {
     reqId: requestContext.get('id'),
   }));
 
-  // eslint-disable-next-line new-cap
   const fastify = Fastify({
     trustProxy,
     logger,

@@ -336,7 +336,6 @@ const plugin: FastifyPluginAsync<Options> = async (
               failWithError: true,
             },
 
-            // eslint-disable-next-line max-params
             async (req, res, error, user, info, status) => {
               const cause = error ?? (info instanceof Error ? info : undefined);
               request.log[cause ? 'error' : 'trace'](

@@ -174,7 +174,7 @@ export async function handleReq(request: UserRequest): Promise<UserResponse> {
         trace({ user }, 'existing user found');
       } else {
         throw Object.assign(
-          new Error(`Error creating User ${request.user.username}`, {
+          new Error(`Error creating user ${request.user.username}`, {
             cause: cError,
           }),
           cError,

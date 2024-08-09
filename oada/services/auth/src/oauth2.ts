@@ -184,7 +184,6 @@ export const issueCode: IssueGrantCodeFunctionArity6 = async (
   _,
   request: OAuth2Req,
   done,
-  // eslint-disable-next-line max-params
 ) => {
   try {
     if (!request.codeChallenge && authCode.pkce.required) {
@@ -233,7 +232,6 @@ export const exchangeCode: IssueExchangeCodeFunctionArity5<Client> = async (
   redirectUri,
   { code_verifier },
   done,
-  // eslint-disable-next-line max-params
 ) => {
   try {
     const { payload } = (await jwtDecrypt(code, codeKey, {

@@ -78,7 +78,8 @@ declare module '@fastify/jwt' {
   }
 }
 declare module 'fastify-jwt-jwks' {
-  export interface FastifyJwtJwksOptions extends FastifyJWTOptions {}
+  // eslint-disable-next-line @typescript-eslint/no-empty-object-type
+  export interface FastifyJwtJwksOptions extends FastifyJWTOptions { }
 }
 
 export const decoratorName = 'authenticate';

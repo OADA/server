@@ -412,10 +412,8 @@ const plugin: FastifyPluginAsync = async (fastify) => {
                 message.requestId,
               );
 
-              // eslint-disable-next-line no-await-in-loop
               const change = await changes.getChangeArray(resourceId, sendRev);
 
-              // eslint-disable-next-line no-await-in-loop
               await watch.sendChange({
                 requestId: [message.requestId],
                 resourceId,

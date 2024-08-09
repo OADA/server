@@ -22,6 +22,8 @@ x-release:
     DEBUG: ${DEBUG-*}
     INSPECT: ${INSPECT-}
     PINO_LEVEL: ${PINO_LEVEL-info}
+    PINO_LOKI: ~
+    PINO_LOKI_LEVEL: ~
     DEBUG_HIDE_DATE: ~
     DEBUG_COLORS: ~
     DEBUG_DEPTH: ~

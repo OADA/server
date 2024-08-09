@@ -52,7 +52,6 @@ export
 class User extends makeClass<Except<OmitIndexSignature<Claims>, 'sub'>>() {
   constructor(user?: Partial<User>);
 
-  // eslint-disable-next-line max-params
   constructor(
     user: Partial<User> = {},
     /**
