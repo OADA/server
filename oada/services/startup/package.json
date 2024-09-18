@@ -36,12 +36,12 @@
     "@oada/lib-arangodb": "workspace:^",
     "@oada/lib-kafka": "workspace:^",
     "@oada/pino-debug": "workspace:^",
-    "debug": "^4.3.6",
-    "tslib": "2.6.3"
+    "debug": "^4.3.7",
+    "tslib": "2.7.0"
   },
   "devDependencies": {
     "@types/debug": "^4.1.12",
-    "@types/node": "^22.2.0"
+    "@types/node": "^22.5.5"
   },
   "volta": {
     "node": "22.5.1"

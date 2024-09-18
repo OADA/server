@@ -19,6 +19,8 @@
 
 import '@oada/pino-debug';
 
+import { readFile } from 'node:fs/promises';
+
 import {
   array,
   binary,
@@ -37,6 +39,7 @@ import { config } from '../config.js';
 
 import type Metadata from '@oada/types/oauth-dyn-reg/metadata.js';
 
+import YAML from 'yaml';
 import esMain from 'es-main';
 
 export const cmd = command({
@@ -44,6 +47,11 @@ export const cmd = command({
   args: {
     dataFile: positional({
       type: optional(File),
+    }),
+    yaml: option({
+      long: 'yaml',
+      short: 'y',
+      type: optional(string),
     }),
     outFile: option({
       long: 'out-file',
@@ -54,6 +62,11 @@ export const cmd = command({
       long: 'issuer',
       type: config.get('oidc.issuer') ? optional(Url) : Url,
     }),
+    name: option({
+      long: 'name',
+      short: 'n',
+      type: optional(string),
+    }),
     redirects: multioption({
       long: 'redirect',
       short: 'r',
@@ -63,20 +76,25 @@ export const cmd = command({
       },
     }),
   },
-  async handler({ dataFile, redirects, iss, outFile }) {
+  async handler({ dataFile, yaml, redirects, iss, name, outFile }) {
     const { Issuer, errors } = await import('openid-client');
     try {
       const issuer = await Issuer.discover(
         iss ? `${iss}` : `${config.get('oidc.issuer')}`,
       );
-      const data = (
-        dataFile ? await import(dataFile) : {}
-      ) as Partial<Metadata>;
+      // eslint-disable-next-line security/detect-non-literal-fs-filename
+      const f = dataFile
+        ? (YAML.parse(`${await readFile(dataFile)}`) as Partial<Metadata>)
+        : undefined;
+      const y = yaml ? (YAML.parse(yaml) as Partial<Metadata>) : undefined;
+      const data = { ...f, ...y };
       const { metadata } = await issuer.Client.register({
+        application_type: 'native',
+        client_name: name,
         ...data,
-        redirect_uris: [...redirects, ...(data.redirect_uris ?? [])],
+        redirect_uris: [...redirects, ...(data?.redirect_uris ?? [])],
         id_token_signed_response_alg: 'HS256',
-      });
+      } satisfies Partial<Metadata>);
 
       const client = new issuer.Client({
         ...metadata,
@@ -85,11 +103,11 @@ export const cmd = command({
       });
 
       const out = { ...issuer.metadata, ...client };
-      console.dir(out);
-
       if (outFile) {
         const { writeFile } = await import('node:fs/promises');
         await writeFile(outFile, JSON.stringify(out, undefined, 2));
+      } else {
+        console.dir(out);
       }
     } catch (error: unknown) {
       if (error instanceof errors.OPError) {
