@@ -83,7 +83,7 @@ export default typescript.config(
           // 'plugin:github/typescript',
           'plugin:import/typescript',
         ),
-        ...xoTypescript
+        ...xoTypescript,
       ),
     ],
   },

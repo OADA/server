@@ -31,9 +31,9 @@
     "@oada/lib-kafka": "workspace:^",
     "@oada/lib-prom": "workspace:^",
     "@oada/pino-debug": "workspace:^",
-    "debug": "^4.3.6",
+    "debug": "^4.3.7",
     "got": "^14.4.2",
-    "tslib": "2.6.3"
+    "tslib": "2.7.0"
   },
   "devDependencies": {
     "@oada/types": "^4.0.0",

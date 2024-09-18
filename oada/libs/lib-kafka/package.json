@@ -37,18 +37,18 @@
   "dependencies": {
     "@oada/lib-config": "workspace:^",
     "cls-rtracer": "^2.6.3",
-    "debug": "^4.3.6",
+    "debug": "^4.3.7",
     "eventemitter3": "^5.0.1",
     "kafkajs": "^2.2.4",
     "ksuid": "^3.0.0",
-    "tslib": "2.6.3",
+    "tslib": "2.7.0",
     "uuid": "^10.0.0"
   },
   "devDependencies": {
     "@ava/typescript": "^5.0.0",
     "@types/convict": "^6.1.6",
     "@types/debug": "^4.1.12",
-    "@types/node": "^22.2.0",
+    "@types/node": "^22.5.5",
     "@types/uuid": "^10.0.0",
     "ava": "6.1.3"
   },
