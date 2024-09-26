@@ -138,6 +138,7 @@ const plugin: FastifyPluginAsync<Options> = async (
     endpoints: { oidcLogin = 'oidc-login' } = {},
   },
 ) => {
+  // @ts-expect-error IDK
   const fastify = f.withTypeProvider<JsonSchemaToTsProvider>();
 
   oauth2server.grant(oauth2orizeOpenId.extensions());
@@ -329,25 +330,29 @@ const plugin: FastifyPluginAsync<Options> = async (
         );
 
         const name = await getOIDCAuth(request.hostname, destinationDomain);
-        return fastifyPassport
-          .authenticate(
-            name,
-            {
-              failWithError: true,
-            },
+        return (
+          fastifyPassport
+            .authenticate(
+              name,
+              {
+                failWithError: true,
+              },
 
-            async (req, res, error, user, info, status) => {
-              const cause = error ?? (info instanceof Error ? info : undefined);
-              request.log[cause ? 'error' : 'trace'](
-                { req, res, err: cause, error, user, info, status },
-                'OIDC authenticate callback',
-              );
-              if (cause) {
-                throw new Error('OIDC authentication failure', { cause });
-              }
-            },
-          )
-          .call(this, request, reply);
+              async (req, res, error, user, info, status) => {
+                const cause =
+                  error ?? (info instanceof Error ? info : undefined);
+                request.log[cause ? 'error' : 'trace'](
+                  { req, res, err: cause, error, user, info, status },
+                  'OIDC authenticate callback',
+                );
+                if (cause) {
+                  throw new Error('OIDC authentication failure', { cause });
+                }
+              },
+            )
+            // @ts-expect-error IDK
+            .call(this, request, reply)
+        );
       },
     },
     // eslint-disable-next-line @typescript-eslint/require-await
@@ -361,6 +366,7 @@ const plugin: FastifyPluginAsync<Options> = async (
   fastify.get(
     config.get('auth.endpoints.userinfo'),
     {
+      // @ts-expect-error type bs
       preValidation: fastifyPassport.authenticate('bearer', { session: false }),
     },
     async (request, reply) => {

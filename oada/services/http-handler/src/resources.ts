@@ -132,7 +132,8 @@ function parseETag(etag: string): { id?: string; rev: number } {
  */
 // eslint-disable-next-line @typescript-eslint/require-await
 const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
-  // eslint-disable-next-line unicorn/no-null
+   
+  // @ts-expect-error null is allowed the types are wrong
   fastify.decorateRequest('oadaPath', null);
 
   /**
