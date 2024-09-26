@@ -28,13 +28,13 @@
     "pino": "^9.4.0",
     "pino-caller": "^3.4.0",
     "pino-debug": "^2.0.0",
-    "pino-loki": "^2.3.0",
+    "pino-loki": "^2.3.1",
     "pino-pretty": "^11.2.2",
     "tslib": "2.7.0"
   },
   "devDependencies": {
     "@types/debug": "^4.1.12",
-    "@types/node": "^22.5.5"
+    "@types/node": "^22.7.3"
   },
   "peerDependencies": {
     "debug": "*"

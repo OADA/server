@@ -30,7 +30,6 @@ import typescript from 'typescript-eslint';
 
 import _import from 'eslint-plugin-import';
 import ava from 'eslint-plugin-ava';
-import github from 'eslint-plugin-github';
 import noConstructorBind from 'eslint-plugin-no-constructor-bind';
 import noSecrets from 'eslint-plugin-no-secrets';
 import node from 'eslint-plugin-n';
@@ -67,7 +66,7 @@ export default typescript.config(
   regexp.configs['flat/recommended'],
   ...fixupConfigRules(
     compat.extends(
-      'plugin:github/recommended',
+      // 'plugin:github/recommended',
       'plugin:promise/recommended',
       'plugin:optimize-regex/recommended',
       'plugin:import/recommended',
@@ -104,13 +103,13 @@ export default typescript.config(
   },
   {
     plugins: {
-      'github': fixupPluginRules(github),
+      // 'github': fixupPluginRules(github),
       'promise': fixupPluginRules(promise),
       'optimize-regex': fixupPluginRules(optimizeRegex),
       'no-constructor-bind': noConstructorBind,
       'import': fixupPluginRules(_import),
       'no-secrets': noSecrets,
-      // Sonarjs,
+      // sonarjs,
       'ava': fixupPluginRules(ava),
       notice,
     },
@@ -323,6 +322,7 @@ export default typescript.config(
       'no-dupe-class-members': 'off',
       'no-useless-constructor': 'off',
       'no-invalid-this': 'off',
+      'sonarjs/sonar-no-fallthrough': 'off',
       'filenames/match-regex': 'off',
       'i18n-text/no-en': 'off',
       'github/no-implicit-buggy-globals': 'off',

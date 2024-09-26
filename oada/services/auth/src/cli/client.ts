@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-/* eslint-disable no-console -- This is a CLI */
+ 
 
 import '@oada/pino-debug';
 
@@ -82,7 +82,7 @@ export const cmd = command({
       const issuer = await Issuer.discover(
         iss ? `${iss}` : `${config.get('oidc.issuer')}`,
       );
-      // eslint-disable-next-line security/detect-non-literal-fs-filename
+       
       const f = dataFile
         ? (YAML.parse(`${await readFile(dataFile)}`) as Partial<Metadata>)
         : undefined;

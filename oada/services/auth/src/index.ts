@@ -38,7 +38,6 @@ import {
   requestContext,
 } from '@fastify/request-context';
 import type FastifyRateLimit from '@fastify/rate-limit';
-import type { JsonSchemaToTsProvider } from '@fastify/type-provider-json-schema-to-ts';
 import _fastifyGracefulShutdown from 'fastify-graceful-shutdown';
 import cors from '@fastify/cors';
 import { createServer } from 'oauth2orize';
@@ -101,8 +100,7 @@ async function makeRedis(uri: string) {
 /**
  * Fastify plugin implementing the OADA auth server
  */
-const plugin: FastifyPluginAsync = async (f) => {
-  const fastify = f.withTypeProvider<JsonSchemaToTsProvider>();
+const plugin: FastifyPluginAsync = async (fastify) => {
   fastify.log.debug('start');
   const {
     /**
@@ -416,7 +414,7 @@ if (esMain(import.meta)) {
   try {
     await start();
   } catch (error: unknown) {
-    // eslint-disable-next-line no-console
+     
     console.error(error);
     // eslint-disable-next-line unicorn/no-process-exit, n/no-process-exit
     process.exit(1);

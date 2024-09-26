@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-/* eslint-disable no-console -- This is a CLI */
+ 
 
 import '@oada/pino-debug';
 

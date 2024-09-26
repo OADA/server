@@ -19,7 +19,12 @@ import { config } from './config.js';
 
 import { createServer } from 'node:http';
 
-import { collectDefaultMetrics, register } from 'prom-client';
+import {
+  Gauge,
+  type MetricConfiguration,
+  collectDefaultMetrics,
+  register,
+} from 'prom-client';
 import type NStats from 'nstats';
 
 collectDefaultMetrics({ register });
@@ -37,6 +42,7 @@ export const nstats: typeof NStats = (...parameters) => {
  *
  * *Starts automatically, don't try to start manually.*
  */
+// eslint-disable-next-line sonarjs/no-misused-promises
 export const server = createServer(async (_, response) => {
   try {
     const metrics = await register.metrics();
@@ -60,3 +66,47 @@ const { port, host } = config.get('prometheus');
 server.listen({ host, port });
 
 export * from 'prom-client';
+
+export interface PseudoMetricConfiguration<T extends string> {
+  name: `${string}_info`;
+  help: string;
+  labels?: Record<T, string>;
+  collect?: (this: PseudoMetric<T>) => void | Promise<void>;
+  registers: MetricConfiguration<T>['registers'];
+}
+
+/**
+ * A pseudo-metric that provides metadata about the process to prometheus
+ *
+ * The lables are the reported metadata
+ *
+ * @see {@link https://www.robustperception.io/exposing-the-software-version-to-prometheus/}
+ */
+export class PseudoMetric<T extends string = string> {
+  readonly #gauge;
+
+  constructor({
+    name,
+    help,
+    labels,
+    registers,
+    collect = () => {
+      this.set(labels!);
+    },
+  }: PseudoMetricConfiguration<T>) {
+    this.#gauge = new Gauge<T>({
+      name,
+      help,
+      aggregator: 'first',
+      registers,
+      collect: () => collect.call(this),
+    });
+  }
+
+  /**
+   * !! ***You should only call this from within a collect callback***
+   */
+  public set(labels: Record<T, string>) {
+    this.#gauge.set(labels, 1);
+  }
+}
