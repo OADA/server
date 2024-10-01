@@ -123,7 +123,7 @@ jobs:
             ${{ runner.os }}-buildx-
 
       - name: Build base OADA images
-        uses: docker/build-push-action@v6.7.0
+        uses: docker/build-push-action@v6.9.0
         with:
           context: oada
           file: oada/Dockerfile
@@ -239,7 +239,7 @@ jobs:
             type=sha
 
       - name: Build and push to images
-        uses: docker/build-push-action@v6.7.0
+        uses: docker/build-push-action@v6.9.0
         with:
           context: ${{ matrix.context }}
           file: ${{ matrix.context }}/Dockerfile
