@@ -169,7 +169,7 @@ function createRootLogger(): Logger {
 
 const rootLogger = createRootLogger();
 export function pino(options?: LoggerOptions) {
-  return rootLogger.child({}, options as ChildLoggerOptions);
+  return rootLogger.child(options?.base ?? {}, options as ChildLoggerOptions);
 }
 
 process.on('uncaughtExceptionMonitor', (error) => {
