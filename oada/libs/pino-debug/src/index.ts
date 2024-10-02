@@ -17,7 +17,7 @@
 
 /* eslint-disable unicorn/prefer-module */
 
- 
+
 
 import { resolve } from 'node:path';
 
@@ -25,8 +25,8 @@ import { resolve } from 'node:path';
 import pinoDebug from 'pino-debug';
 
 import _pino, {
+  Logger,
   type ChildLoggerOptions,
-  type Logger,
   type LoggerOptions,
 } from 'pino';
 import debug from 'debug';
@@ -35,6 +35,7 @@ import pinoCaller from 'pino-caller';
 import type pinoLoki from 'pino-loki';
 import rTracer from 'cls-rtracer';
 
+export type { Logger } from 'pino';
 const interactive = isInteractive();
 
 // Needed because the options type is not exported from pino-loki
@@ -168,8 +169,9 @@ function createRootLogger(): Logger {
 }
 
 const rootLogger = createRootLogger();
-export function pino(options?: LoggerOptions) {
-  return rootLogger.child({}, options as ChildLoggerOptions);
+export function pino(options?: LoggerOptions): Logger {
+  //return rootLogger.child({}, options as ChildLoggerOptions);
+  return rootLogger.child(options?.base ?? {}, options as ChildLoggerOptions);
 }
 
 process.on('uncaughtExceptionMonitor', (error) => {
