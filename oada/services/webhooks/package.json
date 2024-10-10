@@ -32,7 +32,7 @@
     "@oada/lib-prom": "workspace:^",
     "@oada/pino-debug": "workspace:^",
     "debug": "^4.3.7",
-    "got": "^14.4.2",
+    "got": "^14.4.3",
     "tslib": "2.7.0"
   },
   "devDependencies": {
