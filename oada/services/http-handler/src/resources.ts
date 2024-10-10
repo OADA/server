@@ -132,7 +132,7 @@ function parseETag(etag: string): { id?: string; rev: number } {
  */
 // eslint-disable-next-line @typescript-eslint/require-await
 const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
-   
+
   // @ts-expect-error null is allowed the types are wrong
   fastify.decorateRequest('oadaPath', null);
 
@@ -483,8 +483,8 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
     url: '*',
     method: ['HEAD', 'GET', 'DELETE'],
     // eslint-disable-next-line @typescript-eslint/require-await
-    async handler(_request, reply) {
-      void reply.badRequest('X-OADA-Ensure-Link not allowed for this method');
+    async handler(request) {
+      request.log.warn('X-OADA-Ensure-Link header not allowed for this method');
     },
   });
 

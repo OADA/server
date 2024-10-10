@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-import { mixins, pino } from '@oada/pino-debug';
+import { mixins } from '@oada/pino-debug';
 
 import { config } from './config.js';
 
@@ -102,7 +102,6 @@ const serializers = {
     };
   },
 };
-const logger = pino({ serializers });
 // HACK: fastify overrides existing serializers. This circumvents that...
 // logger.serializers = serializers;
 
@@ -114,7 +113,10 @@ const trustProxy = config.get('trustProxy');
 
 export const fastify = Fastify({
   trustProxy,
-  logger,
+  logger: {
+    // @ts-expect-error fastify types bs
+    serializers,
+  },
   ignoreTrailingSlash: true,
   constraints: {
     oadaEnsureLink: {
@@ -261,6 +263,7 @@ await fastify.register(fastifyHealthcheck, {
  */
 const { errorHandler } = fastify;
 fastify.setErrorHandler(async (error, request, reply) => {
+  // @ts-expect-error fastify types bs
   errorHandler(error, request, reply);
   // TODO: Make kafka plugin for server?
   if (error instanceof KafkaError) {

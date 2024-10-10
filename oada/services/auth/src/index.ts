@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-import { mixins, pino } from '@oada/pino-debug';
+import { mixins } from '@oada/pino-debug';
 
 import { config, domainConfigs } from './config.js';
 
@@ -355,7 +355,6 @@ export async function start(): Promise<void> {
     jwt: serializeJwt,
     id_token: serializeJwt,
   };
-  const logger = pino({ serializers });
 
   mixins.push(() => ({
     reqId: requestContext.get('id'),
@@ -363,7 +362,10 @@ export async function start(): Promise<void> {
 
   const fastify = Fastify({
     trustProxy,
-    logger,
+    logger: {
+      // @ts-expect-error fastify types bs
+      serializers,
+    },
     ignoreTrailingSlash: true,
     ajv: {
       customOptions: {
@@ -400,10 +402,8 @@ export async function start(): Promise<void> {
       port,
       host: '::',
     });
-    if (logger.isLevelEnabled('debug')) {
-      const routes = fastify.printRoutes();
-      fastify.log.debug({ fastify }, `Server running\n${routes}`);
-    }
+    const routes = fastify.printRoutes();
+    fastify.log.debug({ fastify }, `Server running\n${routes}`);
   } catch (error: unknown) {
     fastify.log.fatal(error, 'Failed to start server');
     throw error;
@@ -414,7 +414,7 @@ if (esMain(import.meta)) {
   try {
     await start();
   } catch (error: unknown) {
-     
+
     console.error(error);
     // eslint-disable-next-line unicorn/no-process-exit, n/no-process-exit
     process.exit(1);
