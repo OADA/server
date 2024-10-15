@@ -48,7 +48,7 @@
   },
   "devDependencies": {
     "@ava/typescript": "^5.0.0",
-    "@oada/client": "^5.2.2",
+    "@oada/client": "^5.2.3",
     "@oada/write-handler": "workspace:^",
     "@types/debug": "^4.1.12",
     "@types/node": "^22.7.5",
