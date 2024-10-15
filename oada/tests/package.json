@@ -12,13 +12,13 @@
     "dist/**/*"
   ],
   "dependencies": {
-    "axios": "^0.21.1",
+    "axios": "^0.28.0",
     "bluebird": "^3.7.0",
     "chai": "^4.2.0",
     "debug": "^4.1.1",
     "kafka-node": "^5.0.0",
     "md5": "^2.2.1",
-    "mocha": "^8.2.1",
+    "mocha": "^10.7.3",
     "node-exec-promise": "^1.0.1",
     "uuid": "^8.3.2",
     "validator": "^13.5.2",
