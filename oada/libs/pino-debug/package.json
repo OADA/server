@@ -25,7 +25,7 @@
   "dependencies": {
     "cls-rtracer": "^2.6.3",
     "is-interactive": "^2.0.0",
-    "pino": "^9.4.0",
+    "pino": "^9.5.0",
     "pino-caller": "^3.4.0",
     "pino-debug": "^2.0.0",
     "pino-loki": "^2.3.1",
