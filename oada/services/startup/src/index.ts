@@ -30,6 +30,7 @@ const info = debug('startup:info');
 const port = process.env.PORT ?? 8080;
 const exit = process.env.EXIT ?? false;
 
+try {
 info('Startup is initializing ArangoDB and Kafka');
 await Promise.all([initArangoDB.run(), initKafka.run()]);
 info('Initialization complete');
@@ -49,3 +50,6 @@ server.on('listening', () => {
 });
 
 server.listen(port);
+} catch (error: unknown) {
+  throw error;
+}
