@@ -225,6 +225,7 @@
     "eslint.validate": [
       "typescript",
       "javascript"
-    ]
+    ],
+    "commitPro.enableDefaultCommitlintRulesDiagnostics": false
   }
 }
