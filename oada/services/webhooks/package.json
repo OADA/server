@@ -29,7 +29,7 @@
     "@oada/lib-arangodb": "workspace:^",
     "@oada/lib-config": "workspace:^",
     "@oada/lib-kafka": "workspace:^",
-    "@oada/lib-prom": "workspace:^",
+    "@oada/lib-prom": "3.5.1",
     "@oada/pino-debug": "workspace:^",
     "debug": "^4.3.7",
     "got": "^14.4.3",
