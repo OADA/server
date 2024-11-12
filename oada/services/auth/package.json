@@ -66,7 +66,7 @@
     "@oada/formats": "^4.1.0",
     "@oada/lib-arangodb": "workspace:^",
     "@oada/lib-config": "workspace:^",
-    "@oada/lib-prom": "workspace:^",
+    "@oada/lib-prom": "3.5.1",
     "@oada/lookup": "^2.0.0",
     "@oada/models": "workspace:^",
     "@oada/pino-debug": "workspace:^",
