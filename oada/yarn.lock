@@ -9418,8 +9418,8 @@ __metadata:
   linkType: hard
 
 "jsonpath-plus@npm:^10.0.0":
-  version: 10.0.0
-  resolution: "jsonpath-plus@npm:10.0.0"
+  version: 10.1.0
+  resolution: "jsonpath-plus@npm:10.1.0"
   dependencies:
     "@jsep-plugin/assignment": "npm:^1.2.1"
     "@jsep-plugin/regex": "npm:^1.0.3"
@@ -9427,7 +9427,7 @@ __metadata:
   bin:
     jsonpath: bin/jsonpath-cli.js
     jsonpath-plus: bin/jsonpath-cli.js
-  checksum: 10/cd8d3f9ebfa2f0b26a362e9b9fb8cf293a6b5798f76e20b3d2ab93da3e885b99dfbba9ac8aa448d62da5a1f4dc327f636ffb242054ee827d27e75500372557c3
+  checksum: 10/d872af63b667c43e7563095b4c88f61be5b298c1ddc1d019b3684f0ba1addcba24857e78058b00c52511f52044e3dfea16f83869facfd6ced7430ebd6257f7ab
   languageName: node
   linkType: hard
 
