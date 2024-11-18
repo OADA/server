@@ -15,6 +15,8 @@
  * limitations under the License.
  */
 
+/* eslint-disable sonarjs/no-hardcoded-credentials */
+
 import type { User } from '../users.js';
 
 export default [

@@ -44,6 +44,7 @@ class DatabaseWrapper extends Database {
     let tries = 0;
     while (++tries) {
       try {
+        // eslint-disable-next-line no-await-in-loop
         const res = await super.query<T>(query, { profile, ...options });
         if (trace.enabled) {
           const { query: aql, ...rest } = query;
@@ -64,6 +65,7 @@ class DatabaseWrapper extends Database {
             `Retrying query due to deadlock (retry #${tries})`,
           );
 
+          // eslint-disable-next-line no-await-in-loop
           await setTimeout(deadlockDelay);
           continue;
         }

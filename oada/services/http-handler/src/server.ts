@@ -111,6 +111,7 @@ mixins.push(() => ({
 
 const trustProxy = config.get('trustProxy');
 
+// eslint-disable-next-line new-cap
 export const fastify = Fastify({
   trustProxy,
   logger: {
@@ -237,6 +238,7 @@ fastify.addHook('onRequest', async (request) => {
 
 await fastify.register(fastifySensible);
 
+// @ts-expect-error types bs
 await fastify.register(fastifyAccepts);
 
 await fastify.register(fastifyGracefulShutdown);
@@ -419,7 +421,7 @@ await fastify.register(async (instance) => {
 
 const stats = nstats(fastify.websocketServer);
 const plugin = stats.fastify();
-// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+
 plugin[Symbol.for('plugin-meta')].fastify = '>=3.0.0';
 await fastify.register(plugin);
 

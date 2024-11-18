@@ -72,7 +72,7 @@ export interface PseudoMetricConfiguration<T extends string> {
   help: string;
   labels?: Record<T, string>;
   collect?: (this: PseudoMetric<T>) => void | Promise<void>;
-  registers: MetricConfiguration<T>['registers'];
+  registers?: MetricConfiguration<T>['registers'];
 }
 
 /**

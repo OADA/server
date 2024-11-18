@@ -491,9 +491,9 @@ for await (const dirname of await fs.readdir(domainsDirectory)) {
 }
 
 const publicUri = config.get('auth.server.publicUri')
-  ? // eslint-disable-next-line @typescript-eslint/no-base-to-string
+  ?  
     new URI(config.get('auth.server.publicUri')).normalize().toString()
-  : // eslint-disable-next-line @typescript-eslint/no-base-to-string
+  :  
     new URI()
       .hostname(config.get('auth.server.domain'))
       .port(`${config.get('auth.server.port')}`)

@@ -17,7 +17,7 @@
 
 import { type Except } from 'type-fest';
 
-export type Selector<T> = T extends { _id?: infer I | undefined }
+export type Selector<T> = T extends { _id?: infer I }
   ? I | { _id: I }
   : never;
 

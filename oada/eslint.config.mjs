@@ -35,14 +35,12 @@ import noSecrets from 'eslint-plugin-no-secrets';
 import node from 'eslint-plugin-n';
 import notice from 'eslint-plugin-notice';
 import optimizeRegex from 'eslint-plugin-optimize-regex';
-import prettier from 'eslint-config-prettier';
 import promise from 'eslint-plugin-promise';
 import regexp from 'eslint-plugin-regexp';
 import security from 'eslint-plugin-security';
 import sonarjs from 'eslint-plugin-sonarjs';
 import unicorn from 'eslint-plugin-unicorn';
-import xo from 'eslint-config-xo';
-import xoTypescript from 'eslint-config-xo-typescript';
+import xoTypescript from 'eslint-config-xo-typescript/space';
 
 const __filename = fileURLToPath(import.meta.url);
 
@@ -57,36 +55,33 @@ const compat = new FlatCompat({
 
 export default typescript.config(
   js.configs.recommended,
-  ...typescript.configs.recommended,
-  ...typescript.configs.recommendedTypeChecked,
   node.configs['flat/recommended'],
   security.configs.recommended,
   sonarjs.configs.recommended,
   unicorn.configs['flat/recommended'],
   regexp.configs['flat/recommended'],
+  promise.configs['flat/recommended'],
+  ...xoTypescript,
   ...fixupConfigRules(
     compat.extends(
-      // 'plugin:github/recommended',
-      'plugin:promise/recommended',
+      'plugin:github/recommended',
+      'plugin:github/typescript',
       'plugin:optimize-regex/recommended',
       'plugin:import/recommended',
       'plugin:ava/recommended',
     ),
-    ...xo,
   ),
   {
     files: ['**/*.{c,m,}ts'],
     extends: [
       ...fixupConfigRules(
         compat.extends(
-          // 'plugin:github/typescript',
+           //'plugin:github/typescript',
           'plugin:import/typescript',
         ),
-        ...xoTypescript,
       ),
     ],
   },
-  prettier,
   {
     ignores: [
       '**/__virtual__/',
@@ -104,7 +99,6 @@ export default typescript.config(
   {
     plugins: {
       // 'github': fixupPluginRules(github),
-      'promise': fixupPluginRules(promise),
       'optimize-regex': fixupPluginRules(optimizeRegex),
       'no-constructor-bind': noConstructorBind,
       'import': fixupPluginRules(_import),
