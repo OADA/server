@@ -25,7 +25,7 @@
 
 import { join } from 'node:path/posix';
 
-import { pino } from '@oada/pino-debug';
+import '@oada/pino-debug';
 
 import { config } from './config.js';
 
@@ -60,9 +60,9 @@ export async function discoverConfiguration(issuer: string | URL) {
 
 const trustProxy = config.get('trustProxy');
 
+// eslint-disable-next-line new-cap
 const fastify = Fastify({
   trustProxy,
-  logger: pino(),
 });
 
 fastify.log.info('Starting server for ./well-known/oada-configuration...');
@@ -73,6 +73,7 @@ await fastify.register(helmet, {
   },
 });
 
+// @ts-expect-error types bs
 await fastify.register(accepts);
 
 // Turn on CORS for all domains, allow the necessary headers
@@ -186,7 +187,7 @@ await fastify.register(
 
 const stats = nstats();
 const plugin = stats.fastify();
-// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+
 plugin[Symbol.for('plugin-meta')].fastify = '>=3.0.0';
 await fastify.register(plugin);
 

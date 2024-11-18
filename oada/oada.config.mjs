@@ -19,7 +19,7 @@
 
 import process from 'node:process';
 
-const domain = process.env.DOMAIN || 'localhost';
+const domain = process.env.DOMAIN ?? 'localhost';
 
 export default {
   domainsDir: '/oada/services/auth/domains', // Served by auth for login pages, software statements, keys, etc.
@@ -37,6 +37,7 @@ export default {
   },
 
   arangodb: {
+    // eslint-disable-next-line sonarjs/no-clear-text-protocols
     connectionString: 'http://arangodb:8529',
     database: 'oada',
     // Important: ensureDefaults has the potential to delete particular documents from the database
@@ -155,6 +156,7 @@ export default {
     datastoresDriver: 'arango',
     hint: {
       username: 'frank',
+      // eslint-disable-next-line sonarjs/no-hardcoded-credentials
       password: 'test',
     },
   },
@@ -166,6 +168,7 @@ export default {
       domain,
     },
     'mergeSubServices': [
+      // eslint-disable-next-line sonarjs/no-clear-text-protocols
       { resource: 'openid-configuration', base: 'http://auth:8080' },
     ],
     'openid-configuration': {

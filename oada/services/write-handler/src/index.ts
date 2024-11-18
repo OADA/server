@@ -86,7 +86,7 @@ const cache = new Cache<number | string>({ defaultTtl: 60 * 1000 });
 responder.on<WriteResponse>('request', async (request) => {
   if (counter++ > 500) {
     counter = 0;
-    global.gc?.();
+    globalThis.gc?.();
   }
 
   const id = request.resource_id.replace(/^\//, '');

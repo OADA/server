@@ -42,6 +42,7 @@ export interface Graph {
  * @todo actually validate format?
  */
 
+// eslint-disable-next-line sonarjs/no-empty-function
 export function collection(_value: unknown): asserts _value is Collection {}
 
 export const { config, schema } = await libConfig({
@@ -49,6 +50,7 @@ export const { config, schema } = await libConfig({
     connectionString: {
       doc: 'URI for connecting to arangodb',
       format: 'url',
+      // eslint-disable-next-line sonarjs/no-clear-text-protocols
       default: 'http://arangodb:8529',
       env: 'ARANGODB_IMPORT_URL',
       arg: 'arangodb-import-url',
@@ -102,6 +104,7 @@ export const { config, schema } = await libConfig({
     connectionString: {
       doc: 'URI for connecting to arangodb',
       format: 'url',
+      // eslint-disable-next-line sonarjs/no-clear-text-protocols
       default: 'http://arangodb:8529',
       env: 'ARANGODB_URL',
     },

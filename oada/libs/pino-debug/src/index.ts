@@ -19,14 +19,14 @@
 
 
 
-import { resolve } from 'node:path';
+import path from 'node:path';
 
 // !!! This needs to be imported before _anything_ using pino or debug
 import pinoDebug from 'pino-debug';
 
 import _pino, {
-  Logger,
   type ChildLoggerOptions,
+  Logger,
   type LoggerOptions,
 } from 'pino';
 import debug from 'debug';
@@ -154,7 +154,7 @@ function createRootLogger(): Logger {
 
   // Load mappings from files
   const fMap = (process.env.OADA_PINO_MAP &&
-    require(resolve(process.cwd(), process.env.OADA_PINO_MAP))) as  // Nosemgrep: javascript.lang.security.detect-non-literal-require.detect-non-literal-require
+    require(path.resolve(process.cwd(), process.env.OADA_PINO_MAP))) as  // Nosemgrep: javascript.lang.security.detect-non-literal-require.detect-non-literal-require
     | undefined
     | Record<string, string>;
   // Merge in mappings
@@ -170,7 +170,7 @@ function createRootLogger(): Logger {
 
 const rootLogger = createRootLogger();
 export function pino(options?: LoggerOptions): Logger {
-  //return rootLogger.child({}, options as ChildLoggerOptions);
+  // Return rootLogger.child({}, options as ChildLoggerOptions);
   return rootLogger.child(options?.base ?? {}, options as ChildLoggerOptions);
 }
 

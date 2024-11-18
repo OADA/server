@@ -31,9 +31,9 @@ const middleID = 'resources/REVGRAPHTEST_MIDDLE1';
 const bottomID = 'resources/REVGRAPHTEST_BOTTOM1';
 
 const con = await connect({
-  domain: process.env.DOMAIN || 'localhost',
+  domain: process.env.DOMAIN ?? 'localhost',
 
-  token: process.env.TOKEN || 'god',
+  token: process.env.TOKEN ?? 'god',
 });
 
 test.after(async () => {

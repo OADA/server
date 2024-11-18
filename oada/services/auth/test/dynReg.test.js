@@ -15,6 +15,8 @@
  * limitations under the License.
  */
 
+/* eslint-disable @typescript-eslint/naming-convention */
+
 import url from 'node:url';
 
 import { jwk2pem, pem2jwk } from 'pem-jwk';
