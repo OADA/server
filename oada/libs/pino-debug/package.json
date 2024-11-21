@@ -34,7 +34,7 @@
   },
   "devDependencies": {
     "@types/debug": "^4.1.12",
-    "@types/node": "^22.9.0"
+    "@types/node": "^22.9.1"
   },
   "peerDependencies": {
     "debug": "*"
