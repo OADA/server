@@ -1,7 +1,7 @@
 #! /bin/sh
 
 # Use yarn workspace as "entry point"
-CMD="yarn workspace @oada/${OADA_SERVICE} run $*"
+CMD="corepack yarn workspace @oada/${OADA_SERVICE} run $*"
 
 # Wait for startup, then run CMD.
 ([ "${OADA_SERVICE}" = "startup" ] || /wait-for startup:8080 -q -t 0) &&
