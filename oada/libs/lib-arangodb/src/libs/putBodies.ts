@@ -27,7 +27,7 @@ const collection = database.collection(
  */
 export async function savePutBody(body: string): Promise<{ _id: string }> {
   // The _id comes back in the response to save
-  return collection.save(`{"body":${body}}`);
+  return collection.save({body});
 }
 
 export async function getPutBody(id: string): Promise<unknown> {

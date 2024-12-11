@@ -48,7 +48,7 @@
     "@oada/lib-kafka": "workspace:^",
     "@oada/lib-prom": "workspace:^",
     "@oada/pino-debug": "workspace:^",
-    "debug": "^4.3.7",
+    "debug": "^4.4.0",
     "json-ptr": "^3.1.1",
     "object-assign-deep": "^0.4.0",
     "timed-cache": "^2.0.0",
@@ -60,7 +60,7 @@
     "@oada/types": "^4.0.0",
     "@types/debug": "^4.1.12",
     "@types/json-pointer": "^1.0.34",
-    "@types/node": "^22.9.1",
+    "@types/node": "^22.10.2",
     "@types/object-assign-deep": "^0.4.3",
     "ava": "6.2.0"
   },

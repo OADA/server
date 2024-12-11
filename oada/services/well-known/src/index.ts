@@ -73,7 +73,6 @@ await fastify.register(helmet, {
   },
 });
 
-// @ts-expect-error types bs
 await fastify.register(accepts);
 
 // Turn on CORS for all domains, allow the necessary headers

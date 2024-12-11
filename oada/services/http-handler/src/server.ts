@@ -238,7 +238,6 @@ fastify.addHook('onRequest', async (request) => {
 
 await fastify.register(fastifySensible);
 
-// @ts-expect-error types bs
 await fastify.register(fastifyAccepts);
 
 await fastify.register(fastifyGracefulShutdown);

@@ -177,7 +177,6 @@ const plugin: FastifyPluginAsync<Options> = async (
     ),
   );
 
-  // @ts-expect-error type bs
   await fastify.register(fastifyAccepts);
 
   const getOIDCAuth = memoize(
