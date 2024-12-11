@@ -111,6 +111,9 @@ WORKDIR /oada/services/${OADA_SERVICE}
 USER node
 ENV PORT=8080
 
+# Have corepack download yarn
+RUN corepack yarn;
+
 FROM production as debug
 
 USER root
