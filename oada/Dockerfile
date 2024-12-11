@@ -112,7 +112,7 @@ USER node
 ENV PORT=8080
 
 # Have corepack download yarn
-RUN corepack yarn;
+RUN corepack install;
 
 FROM production as debug
 
