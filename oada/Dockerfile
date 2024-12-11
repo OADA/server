@@ -8,7 +8,6 @@ WORKDIR /oada
 
 # Need to list out every package.json we need from monorepo for caching stuff...
 COPY --link ./yarn.lock ./.yarnrc.yml /oada/
-COPY --link ./.yarn /oada/.yarn
 # TODO: How to COPY all package.json files with glob?
 COPY ./package.json /oada/package.json
 COPY ./libs/models/package.json /oada/libs/models/package.json
@@ -37,27 +36,27 @@ FROM packages AS yarn
 COPY --link . /oada/
 
 # Run again to be safe?
-RUN yarn workspaces focus --all --production
+RUN corepack yarn workspaces focus --all --production
 
 # Install all deps and run build step
 # Allows for workspaces to have build step (e.g., for TypeScript)
 FROM packages AS dev
 
 # Install _all_ dependencies for build
-RUN yarn install --immutable
+RUN corepack yarn install --immutable
 
 # Copy in actual code
 COPY --link . /oada/
 
 # Run again to be safe?
-RUN yarn install --immutable
+RUN corepack yarn install --immutable
 
-RUN yarn sdks vscode vim
+RUN corepack yarn sdks vscode vim
 
 FROM dev AS build
 
 # Build and then remove yarn stuff
-RUN yarn build --verbose && rm -rfv .yarn .pnp.*
+RUN corepack yarn build --verbose && rm -rfv .yarn .pnp.*
 
 FROM node:${NODE_VER} AS code
 
