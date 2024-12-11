@@ -28,6 +28,36 @@ spec:
           max: 10Gi
       #ephemeral-storage: 1Gi
       {{- end }}
+    statefulset:
+      securityContext:
+        seccompProfile:
+          type: RuntimeDefault
+        runAsNonRoot: true
+        allowPrivilegeEscalation: false
+        readOnlyRootFilesystem: true
+        runAsUser: 1000739999
+        runAsGroup: 1000739999
+        fsGroup: 1000739999
+      podTemplate:
+        spec:
+          securityContext:
+            seccompProfile:
+              type: RuntimeDefault
+            runAsNonRoot: true
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            runAsUser: 1000739999
+            runAsGroup: 1000739999
+            fsGroup: 1000739999
+            fsGroupChangePolicy: "OnRootMismatch"
+    console:
+      enabled: false
+      securityContext:
+        seccompProfile:
+          type: RuntimeDefault
+        runAsNonRoot: true
+        allowPrivilegeEscalation: false
+        readOnlyRootFilesystem: true
     logging:
       logLevel: info
       usageStats:

@@ -28,6 +28,10 @@ spec:
   backoffLimit: 10
   template:
     spec:
+      securityContext:
+        seccompProfile:
+          type: RuntimeDefault
+        runAsNonRoot: true
       restartPolicy: OnFailure
       serviceAccountName: service-account-{{ .Release.Name }}
       initContainers:
@@ -40,6 +44,9 @@ spec:
           resources:
             limits: {{- toYaml $.Values.k8sWaitFor.resources.limits | nindent 14 }}
             requests: {{- toYaml $.Values.k8sWaitFor.resources.limits | nindent 14 }}
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
         {{- end }}
         {{ if eq (include "oada.kafka.deploy" .) "true" -}}
         - name: wait-for-redpanda
@@ -50,6 +57,9 @@ spec:
           resources:
             limits: {{- toYaml $.Values.k8sWaitFor.resources.limits | nindent 14 }}
             requests: {{- toYaml $.Values.k8sWaitFor.resources.limits | nindent 14 }}
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
         {{- end }}
       containers:
         - name: init
@@ -83,4 +93,16 @@ spec:
           resources:
             limits: {{- toYaml $.Values.oada.resources.limits | nindent 14 }}
             requests: {{- toYaml $.Values.oada.resources.limits | nindent 14 }}
+          securityContext:
+            runAsNonRoot: true
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+          volumeMounts:
+            - mountPath: /tmp
+              name: tmp
+      volumes:
+        - name: tmp
+          emptyDir:
+            sizeLimit: 1Gi
+            #medium: Memory
 {{- end -}}

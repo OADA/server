@@ -1,3 +1,4 @@
+# vim: set ft=helm :
 {{/*
    * Copyright 2022 Open Ag Data Alliance
    *
@@ -41,6 +42,10 @@ spec:
         app.kubernetes.io/component: {{ $k }}
         {{- include "oada.chart.selectorLabels" $ | nindent 8 }}
     spec:
+      securityContext:
+        seccompProfile:
+          type: RuntimeDefault
+        runAsNonRoot: true
       serviceAccountName: service-account-{{ $.Release.Name }}
       initContainers:
         - name: wait-for-init
@@ -51,6 +56,10 @@ spec:
           resources:
             limits: {{- toYaml $.Values.k8sWaitFor.resources.limits | nindent 14 }}
             requests: {{- toYaml $.Values.k8sWaitFor.resources.limits | nindent 14 }}
+          securityContext:
+            #runAsUser: 1000 # run as user node (uid 1000)
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
       containers:
         - envFrom:
             - configMapRef:
@@ -88,14 +97,13 @@ spec:
               port: prometheus
             initialDelaySeconds: 10
             periodSeconds: 10
-          securityContext:
-            runAsNonRoot: true
-            runAsUser: 1000 # run as user node (uid 1000)
-            allowPrivilegeEscalation: false
-            readOnlyRootFilesystem: true
           name: {{ $name }}
           resources:
             {{- toYaml $.Values.oada.resources | nindent 12 }}
+          securityContext:
+            #runAsUser: 1000 # run as user node (uid 1000)
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
           ports:
             {{ if $v.http -}}
             - name: http

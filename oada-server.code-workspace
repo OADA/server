@@ -226,6 +226,8 @@
       "typescript",
       "javascript"
     ],
-    "commitPro.enableDefaultCommitlintRulesDiagnostics": false
+    "commitPro.enableDefaultCommitlintRulesDiagnostics": false,
+    "npm.packageManager": "yarn",
+    "cSpell.usePnP": true
   }
 }
