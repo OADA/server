@@ -27,7 +27,7 @@ COPY ./services/users/package.json /oada/services/users/package.json
 COPY ./services/webhooks/package.json /oada/services/webhooks/package.json
 COPY ./services/well-known/package.json /oada/services/well-known/package.json
 COPY ./services/write-handler/package.json /oada/services/write-handler/package.json
-RUN yarn workspaces focus --all --production
+RUN corepack yarn workspaces focus --all --production
 
 # Install just production deps
 FROM packages AS yarn
