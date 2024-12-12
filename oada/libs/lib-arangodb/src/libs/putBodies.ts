@@ -27,7 +27,7 @@ const collection = database.collection<{body: unknown}>(
  */
 export async function savePutBody(body: string): Promise<{ _id: string }> {
   // @ts-expect-error HACK: send body without parsing it
-  const { _id } = await collection.save(`body:${body}`);
+  const { _id } = await collection.save(`"body":${body}`);
   return { _id };
 }
 
