@@ -105,16 +105,18 @@ ARG OADA_SERVICE
 ENV OADA_SERVICE=${OADA_SERVICE}
 ENV INSPECT=
 
+# Have corepack download yarn
+ENV COREPACK_HOME=/oada/.cache/node/corepack
+RUN corepack enable
+RUN corepack install
+
 WORKDIR /oada/services/${OADA_SERVICE}
 
 # Do not run services as root
 USER node
 ENV PORT=8080
 
-# Have corepack download yarn
-RUN corepack install;
-
-FROM production as debug
+FROM production AS debug
 
 USER root
 
