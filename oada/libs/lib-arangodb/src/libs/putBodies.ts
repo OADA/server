@@ -18,7 +18,7 @@
 import { config } from '../config.js';
 import { db as database } from '../db.js';
 
-const collection = database.collection(
+const collection = database.collection<{body: unknown}>(
   config.get('arangodb.collections.putBodies.name'),
 );
 
@@ -26,12 +26,20 @@ const collection = database.collection(
  * Give string of JSON rather than object
  */
 export async function savePutBody(body: string): Promise<{ _id: string }> {
-  // The _id comes back in the response to save
-  return collection.save({body});
+  // HACK: send body without parsing it
+  const cursor = await database.query<string>({
+    query: `
+      INSERT ${body}
+      INTO ${collection.name}
+      RETURN NEW._id
+    `,
+    bindVars: {},
+  });
+  return { _id: (await cursor.next())! };
 }
 
 export async function getPutBody(id: string): Promise<unknown> {
-  const { body } = (await collection.document(id)) as { body: unknown };
+  const { body } = await collection.document(id);
   return body;
 }
 
