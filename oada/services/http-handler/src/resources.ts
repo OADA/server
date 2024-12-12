@@ -550,7 +550,7 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
       const { _id: bodyid } = await putBodies.savePutBody(
         request.body as string,
       );
-      request.log.trace({ oadaGraph: request.oadaGraph }, 'PUT body saved');
+      request.log.debug({ oadaGraph: request.oadaGraph, bodyid }, 'PUT body saved');
 
       request.log.trace('Resource exists: %s', request.resourceExists);
       const ignoreLinks =
