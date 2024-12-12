@@ -26,16 +26,9 @@ const collection = database.collection<{body: unknown}>(
  * Give string of JSON rather than object
  */
 export async function savePutBody(body: string): Promise<{ _id: string }> {
-  // HACK: send body without parsing it
-  const cursor = await database.query<string>({
-    query: `
-      INSERT ${body}
-      INTO ${collection.name}
-      RETURN NEW._id
-    `,
-    bindVars: {},
-  });
-  return { _id: (await cursor.next())! };
+  // @ts-expect-error HACK: send body without parsing it
+  const { _id } = await collection.save(`body:${body}`);
+  return { _id };
 }
 
 export async function getPutBody(id: string): Promise<unknown> {
