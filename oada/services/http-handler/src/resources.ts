@@ -416,7 +416,21 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
 
   // Parse JSON content types as text (but do not parse JSON yet)
   fastify.addContentTypeParser(
-    ['json', '+json'],
+    ['application/json', 'text/json'],
+    {
+      // FIXME: Stream process the body instead
+      parseAs: 'string',
+      // 20 MB
+      bodyLimit: 20 * 1_048_576,
+    },
+    (_, body, done) => {
+      // eslint-disable-next-line unicorn/no-null
+      done(null, body);
+    },
+  );
+  fastify.addContentTypeParser(
+    // application/*+json
+    /^application\/([\w\.-]+)\+json(\;|$)/,
     {
       // FIXME: Stream process the body instead
       parseAs: 'string',
