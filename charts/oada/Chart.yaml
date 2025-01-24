@@ -1,3 +1,4 @@
+# vim: set ft=helm :
 apiVersion: v2
 name: oada
 description: A Helm chart for the OADA API server
@@ -13,7 +14,7 @@ keywords:
   - oauth 2.0
   - oidc
   - oada
-version: 4.0.0
+version: 5.0.0
 appVersion: 4.0.0
 annotations:
   artifacthub.io/recommendations: |

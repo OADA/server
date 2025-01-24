@@ -1,4 +1,4 @@
-# vim: set ft=helm :
+{{/* vim: set ft=helm : */}}
 {{/*
    * Copyright 2022 Open Ag Data Alliance
    *
@@ -18,6 +18,7 @@
 {{- range $k, $v := .Values.oada.services -}}
 {{/* Deploy the OADA uservice `$k` */}}
 {{- $name := print $k "-" $.Release.Name -}}
+{{- if ne $v.enabled false }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -87,7 +88,7 @@ spec:
                   name: {{ include "oada.arango.rootPassword" $ }}
                   key: password
                   optional: {{ $.Values.global.development }}
-          image: {{ print "oada/" $k ":" $tag }}
+          image: {{ print $.Values.oada.namespace $k ":" $tag }}
           imagePullPolicy: {{ $.Values.oada.imagePullPolicy }}
           command: ["/usr/bin/dumb-init", "--rewrite", "15:2", "--", "/bin/sh"]
           args: ["-c", "yarn workspace @oada/{{ $k }} run start"]
@@ -196,4 +197,5 @@ spec:
     any: false
 {{- end }}
 ---
+{{ end -}}
 {{ end -}}

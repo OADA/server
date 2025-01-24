@@ -11,6 +11,8 @@ oada:
   domains: []
   # oada.tag is the Docker tag for the OADA images
   tag: ~
+  # oada.namespace is the OCI registry namespace for the OADA images
+  namespace: "oada/"
   imagePullPolicy: IfNotPresent
   # oada.services is a map of oada services to deploy
   services:

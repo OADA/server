@@ -1,3 +1,4 @@
+{{/* vim: set ft=helm : */}}
 {{/*
    * Copyright 2022 Open Ag Data Alliance
    *
@@ -36,6 +37,7 @@ kind: Secret
 immutable: true
 metadata:
   annotations:
+    helm.sh/hook: pre-install
     helm.sh/resource-policy: keep
   namespace: {{ .Release.Namespace }}
   name: auth-keys-{{ .Release.Name }}

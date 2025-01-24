@@ -1,3 +1,4 @@
+{{/* vim: set ft=helm : */}}
 {{/*
    * Copyright 2022 Open Ag Data Alliance
    *

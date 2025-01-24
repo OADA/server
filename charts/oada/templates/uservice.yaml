@@ -1,3 +1,4 @@
+{{/* vim: set ft=helm : */}}
 {{/*
    * Copyright 2023 Open Ag Data Alliance
    *
@@ -16,6 +17,7 @@
 {{- range $k, $v := .Values.oada.externalServices -}}
 {{/* Deploy external OADA services `$k` */}}
 {{- $name := print $k "-" $.Release.Name -}}
+{{- if ne $v.enabled false }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -48,8 +50,14 @@ spec:
             - service
             - http-handler-{{ $.Release.Name }}
           resources:
-            limits: {{- toYaml $.Values.k8sWaitFor.resources.limits | nindent 14 }}
-            requests: {{- toYaml $.Values.k8sWaitFor.resources.limits | nindent 14 }}
+            limits:
+              {{- toYaml $.Values.k8sWaitFor.resources.limits | nindent 14 }}
+            requests:
+              {{- toYaml $.Values.k8sWaitFor.resources.limits | nindent 14 }}
+          securityContext:
+            #runAsUser: 1000 # run as user node (uid 1000)
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
       containers:
         - envFrom:
             - configMapRef:
@@ -73,7 +81,7 @@ spec:
             periodSeconds: 10
           securityContext:
             runAsNonRoot: true
-            runAsUser: 1000 # run as user node (uid 1000)
+            # runAsUser: 1000 # run as user node (uid 1000)
             allowPrivilegeEscalation: false
             readOnlyRootFilesystem: true
           name: {{ $name }}
@@ -147,4 +155,5 @@ spec:
     any: false
 {{- end }}
 ---
+{{ end -}}
 {{ end -}}
