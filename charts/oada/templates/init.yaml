@@ -1,3 +1,4 @@
+# vim: set ft=helm :
 {{/*
    * Copyright 2022 Open Ag Data Alliance
    *
@@ -13,8 +14,6 @@
    * See the License for the specific language governing permissions and
    * limitations under the License.
    */}}
-{{- $initName := print "init-" .Release.Name -}}
-{{- if empty (lookup "batch/v1" "Job" .Release.Namespace $initName) -}}
 {{- $tag := default .Chart.AppVersion .Values.oada.tag -}}
 apiVersion: batch/v1
 kind: Job
@@ -24,6 +23,12 @@ metadata:
   labels:
     app.kubernetes.io/component: init
     {{- include "oada.chart.labels" . | nindent 4 }}
+  annotations:
+    # This is what defines this resource as a hook. Without this line, the
+    # job is considered part of the release.
+    "helm.sh/hook": post-install
+    #"helm.sh/hook": post-install,post-upgrade
+    "helm.sh/hook-weight": "-5"
 spec:
   backoffLimit: 10
   template:
@@ -88,7 +93,7 @@ spec:
             - name: inspect
               containerPort: 9229
           {{- end }}
-          image: oada/startup:{{ $tag }}
+          image: {{ .Values.oada.namespace }}startup:{{ $tag }}
           imagePullPolicy: {{ .Values.oada.imagePullPolicy }}
           resources:
             limits: {{- toYaml $.Values.oada.resources.limits | nindent 14 }}
@@ -105,4 +110,3 @@ spec:
           emptyDir:
             sizeLimit: 1Gi
             #medium: Memory
-{{- end -}}

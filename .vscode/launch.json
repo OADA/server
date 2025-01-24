@@ -1,3 +1,4 @@
+// vim: set ft=jsonc :
 {
   // Use IntelliSense to learn about possible attributes.
   // Hover to view descriptions of existing attributes.
@@ -69,7 +70,7 @@
       "remoteRoot": "/oada/"
     },
     {
-      "type": "node",
+      "type": "pwa-node",
       "request": "attach",
       "name": "Attach to service",
       "smartStep": true,

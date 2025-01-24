@@ -1,176 +1,212 @@
 {
-  "$schema": "http://json-schema.org/schema#",
-  "type": "object",
-  "$defs": {
-    "resources": {
-      "type": "object"
-    }
-  },
-  "properties": {
-    "replicaCount": {
-      "type": "integer",
-      "minimum": 1
-    },
-    "ingress": {
-      "type": "object",
-      "properties": {
-        "enabled": {
-          "default": true,
-          "type": "boolean"
-        },
-        "className": {
-          "type": ["string", "null"]
-        }
-      }
-    },
-    "oada": {
-      "type": "object",
-      "properties": {
-        "domains": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        },
-        "tag": {
-          "type": ["string", "null"]
-        },
-        "imagePullPolicy": {
-          "type": "string",
-          "enum": ["Always", "IfNotPresent", "Never"]
-        },
-        "services": {
-          "type": "object",
-          "additionalProperties": {
-            "type": "object",
-            "properties": {
-              "http": {
-                "type": "boolean",
-                "default": false
-              },
-              "enabled": {
-                "type": "boolean",
-                "default": true
-              }
-            }
-          }
-        },
-        "users": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "additionalProperties": false,
-            "required": ["name"],
-            "properties": {
-              "name": {
-                "type": "string"
-              },
-              "admin": {
-                "type": "boolean",
-                "default": false
-              },
-              "roles": {
-                "type": "array",
-                "items": {
-                  "type": "string"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "oauth": {
-      "type": "object",
-      "properties": {
-        "issuer": {
-          "type": ["string", "null"]
-        }
-      }
-    },
-    "debug": {
-      "type": "array",
-      "items": {
-        "type": "string"
-      }
-    },
-    "pino": {
-      "type": "object",
-      "properties": {
-        "level": {
-          "type": "string",
-          "enum": ["trace", "debug", "info", "warn", "error", "fatal"]
-        }
-      }
-    },
-    "arangodb": {
-      "type": "object",
-      "properties": {
-        "database": {
-          "type": "string"
-        },
-        "connection": {
-          "type": ["string", "null"]
-        },
-        "image": {
-          "type": "string"
-        },
-        "tag": {
-          "type": "string"
-        },
-        "profileAql": {
-          "enum": [null, false, 0, true, 1, 2]
-        },
-        "resources": {
-          "$ref": "#/$defs/resources"
-        }
-      }
-    },
-    "kafka": {
-      "brokers": {
-        "type": "array",
-        "items": {
-          "type": "string"
-        }
-      },
-      "image": {
-        "type": "string"
-      },
-      "tag": {
-        "type": "string"
-      },
-      "chartVersion": {
-        "type": "string"
-      }
-    },
-    "k8sWaitFor": {
-      "image": {
-        "type": "string"
-      },
-      "tag": {
-        "type": "string"
-      },
-      "resources": {
-        "$ref": "#/$defs/resources"
-      }
-    },
-    "prometheus": {
-      "type": ["string", "null"]
-    },
-    "nameOverride": {
-      "type": ["string", "null"]
-    },
-    "fullnameOverride": {
-      "type": ["string", "null"]
-    },
-    "global": {
-      "type": "object",
-      "properties": {
-        "development": {
-          "type": "boolean",
-          "default": false
-        }
-      }
-    }
-  }
+	"$schema": "http://json-schema.org/draft-07/schema#",
+	"type": "object",
+	"$defs": {
+		"resources": {
+			"type": "object"
+		},
+		"env": {
+			"type": "object"
+		},
+		"envFrom": {
+			"type": "object"
+		}
+	},
+	"properties": {
+		"replicaCount": {
+			"type": "integer",
+			"minimum": 1
+		},
+		"ingress": {
+			"type": "object",
+			"properties": {
+				"enabled": {
+					"default": true,
+					"type": "boolean"
+				},
+				"className": {
+					"type": ["string", "null"]
+				}
+			}
+		},
+		"oada": {
+			"type": "object",
+			"properties": {
+				"domains": {
+					"type": "array",
+					"items": {
+						"type": "string"
+					}
+				},
+				"tag": {
+					"type": ["string", "null"]
+				},
+				"namespace": {
+					"type": "string"
+				},
+				"imagePullPolicy": {
+					"type": "string",
+					"enum": ["Always", "IfNotPresent", "Never"]
+				},
+				"services": {
+					"type": "object",
+					"additionalProperties": {
+						"type": "object",
+						"properties": {
+							"http": {
+								"type": "boolean",
+								"default": false
+							},
+							"enabled": {
+								"type": "boolean",
+								"default": true
+							}
+						}
+					}
+				},
+				"externalServices": {
+					"type": ["object", "null"],
+					"additionalProperties": {
+						"type": "object",
+						"properties": {
+							"image": {
+								"type": "string",
+								"default": false
+							},
+							"tag": {
+								"type": "string",
+								"default": false
+							},
+							"enabled": {
+								"type": "boolean",
+								"default": true
+							},
+							"env": {
+								"$ref": "#/$defs/env"
+							},
+							"envFrom": {
+								"$ref": "#/$defs/envFrom"
+							}
+						},
+						"required": ["image"]
+					}
+				},
+				"users": {
+					"type": "array",
+					"items": {
+						"type": "object",
+						"additionalProperties": false,
+						"required": ["name"],
+						"properties": {
+							"name": {
+								"type": "string"
+							},
+							"admin": {
+								"type": "boolean",
+								"default": false
+							},
+							"roles": {
+								"type": "array",
+								"items": {
+									"type": "string"
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"oauth": {
+			"type": "object",
+			"properties": {
+				"issuer": {
+					"type": ["string", "null"]
+				}
+			}
+		},
+		"debug": {
+			"type": "array",
+			"items": {
+				"type": "string"
+			}
+		},
+		"pino": {
+			"type": "object",
+			"properties": {
+				"level": {
+					"type": "string",
+					"enum": ["trace", "debug", "info", "warn", "error", "fatal"]
+				}
+			}
+		},
+		"arangodb": {
+			"type": "object",
+			"properties": {
+				"database": {
+					"type": "string"
+				},
+				"connection": {
+					"type": ["string", "null"]
+				},
+				"image": {
+					"type": "string"
+				},
+				"tag": {
+					"type": "string"
+				},
+				"profileAql": {
+					"enum": [null, false, 0, true, 1, 2]
+				},
+				"resources": {
+					"$ref": "#/$defs/resources"
+				}
+			}
+		},
+		"kafka": {
+			"brokers": {
+				"type": "array",
+				"items": {
+					"type": "string"
+				}
+			},
+			"image": {
+				"type": "string"
+			},
+			"tag": {
+				"type": "string"
+			},
+			"chartVersion": {
+				"type": "string"
+			}
+		},
+		"k8sWaitFor": {
+			"image": {
+				"type": "string"
+			},
+			"tag": {
+				"type": "string"
+			},
+			"resources": {
+				"$ref": "#/$defs/resources"
+			}
+		},
+		"prometheus": {
+			"type": ["string", "null"]
+		},
+		"nameOverride": {
+			"type": ["string", "null"]
+		},
+		"fullnameOverride": {
+			"type": ["string", "null"]
+		},
+		"global": {
+			"type": "object",
+			"properties": {
+				"development": {
+					"type": "boolean",
+					"default": false
+				}
+			}
+		}
+	}
 }
