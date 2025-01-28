@@ -14,7 +14,7 @@ keywords:
   - oauth 2.0
   - oidc
   - oada
-version: 5.0.0
+version: 5.0.1
 appVersion: 4.0.0
 annotations:
   artifacthub.io/recommendations: |
