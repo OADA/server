@@ -6,10 +6,16 @@
 			"type": "object"
 		},
 		"env": {
-			"type": "object"
+			"type": "array",
+			"items": {
+				"type": "object"
+			}
 		},
 		"envFrom": {
-			"type": "object"
+			"type": "array",
+			"items": {
+				"type": "object"
+			}
 		}
 	},
 	"properties": {
