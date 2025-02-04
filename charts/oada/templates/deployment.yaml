@@ -47,6 +47,10 @@ spec:
         seccompProfile:
           type: RuntimeDefault
         runAsNonRoot: true
+        {{/* OpenShift hates us assigning a uid */}}
+        {{- if not ($.Capabilities.APIVersions.Has "security.openshift.io/v1") }}
+        runAsUser: 1000 # node
+        {{- end }}
       serviceAccountName: service-account-{{ $.Release.Name }}
       initContainers:
         - name: wait-for-init
@@ -58,7 +62,6 @@ spec:
             limits: {{- toYaml $.Values.k8sWaitFor.resources.limits | nindent 14 }}
             requests: {{- toYaml $.Values.k8sWaitFor.resources.limits | nindent 14 }}
           securityContext:
-            #runAsUser: 1000 # run as user node (uid 1000)
             allowPrivilegeEscalation: false
             readOnlyRootFilesystem: true
       containers:
