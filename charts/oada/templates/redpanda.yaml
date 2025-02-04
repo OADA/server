@@ -1,3 +1,4 @@
+{{/* vim: set ft=helm : */}}
 {{- if eq (include "oada.kafka.deploy" .) "true" }}
 apiVersion: cluster.redpanda.com/v1alpha1
 kind: Redpanda
@@ -14,11 +15,13 @@ spec:
     image:
       repository: {{ .Values.kafka.image }}
       tag: {{ .Values.kafka.tag }}
-    statefulset:
-      replicas: 1
     resources:
       {{- if .Values.global.development }}
-      #cpu: 100m
+      cpu:
+        cores: 1
+      memory:
+        container:
+          max: 2Gi
       {{- else }}
       cpu:
         cores: 4
@@ -29,26 +32,31 @@ spec:
       #ephemeral-storage: 1Gi
       {{- end }}
     statefulset:
+      {{- if .Values.global.development }}
+      replicas: 2
+      podAntiAffinity:
+        type: soft
+      {{- end }}
       securityContext:
         seccompProfile:
           type: RuntimeDefault
         runAsNonRoot: true
         allowPrivilegeEscalation: false
         readOnlyRootFilesystem: true
-        runAsUser: 1000739999
-        runAsGroup: 1000739999
-        fsGroup: 1000739999
+        #runAsUser: 1000739999
+        #runAsGroup: 1000739999
+        #fsGroup: 1000739999
       podTemplate:
         spec:
           securityContext:
             seccompProfile:
               type: RuntimeDefault
-            runAsNonRoot: true
+            #runAsNonRoot: true
             allowPrivilegeEscalation: false
             readOnlyRootFilesystem: true
-            runAsUser: 1000739999
-            runAsGroup: 1000739999
-            fsGroup: 1000739999
+            #runAsUser: 1000739999
+            #runAsGroup: 1000739999
+            #fsGroup: 1000739999
             fsGroupChangePolicy: "OnRootMismatch"
     console:
       enabled: false

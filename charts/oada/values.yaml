@@ -79,13 +79,13 @@ oauth:
 
 # debug is the list of debug.js namespaces to enable/disable
 debug:
-  - '*'
+  - "*"
 
 pino:
   # pino.level is the level of messages to send to the pino transport
   level: info
   loki:
-    url: '' #http://loki.monitoring:3100
+    url: "" #http://loki.monitoring:3100
 
 autoscaling:
   enabled: false
@@ -100,7 +100,7 @@ arangodb:
   # arangodb.connection is a URI of an external ArangoDB server.
   # If this is set, the ArangoDB service will not be deployed.
   # If this is not set, the kube-arango operator will be used to deploy a cluster.
-  connection: ''
+  connection: ""
   # arangodb.image is the Docker image to use for arangodb
   image: arangodb/arangodb
   # arangodb.tag is the Docker tag for the ArangoDB images
@@ -122,8 +122,8 @@ kafka:
   # kafka.image is the Docker image to use for Kafka
   image: docker.redpanda.com/redpandadata/redpanda
   # kafka.tag is the Docker tag for the Kafka/Redpanda images
-  tag: v24.1.13
-  chartVersion: 5.8.13
+  tag: v24.3.3
+  chartVersion: 5.9.19
 
 k8sWaitFor:
   image: groundnuty/k8s-wait-for
