@@ -491,10 +491,8 @@ for await (const dirname of await fs.readdir(domainsDirectory)) {
 }
 
 const publicUri = config.get('auth.server.publicUri')
-  ?  
-    new URI(config.get('auth.server.publicUri')).normalize().toString()
-  :  
-    new URI()
+  ? new URI(config.get('auth.server.publicUri')).normalize().toString()
+  : new URI()
       .hostname(config.get('auth.server.domain'))
       .port(`${config.get('auth.server.port')}`)
       .protocol(config.get('auth.server.mode'))

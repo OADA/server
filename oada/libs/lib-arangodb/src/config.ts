@@ -19,8 +19,8 @@
 
 import libConfig from '@oada/lib-config';
 
-import type { CreateCollectionOptions } from 'arangojs/collection';
-import type { EdgeDefinitionOptions } from 'arangojs/graph';
+import type { CreateCollectionOptions } from 'arangojs/collections';
+import type { EdgeDefinitionOptions } from 'arangojs/graphs';
 
 export interface Collection {
   name: string;
@@ -68,6 +68,21 @@ export const { config, schema } = await libConfig({
       env: 'ARANGODB_IMPORT_BATCH_SIZE',
       arg: 'arangodb-import-batch-size',
     },
+    batchThrottle: {
+      limit: {
+        format: 'nat',
+        default: 1,
+        env: 'ARANGODB_IMPORT_BATCH_LIMIT',
+        arg: 'arangodb-import-batch-limit',
+      },
+      interval: {
+        doc: 'throttle interval in ms',
+        format: 'nat',
+        default: 1000,
+        env: 'ARANGODB_IMPORT_BATCH_INTERVAL',
+        arg: 'arangodb-import-batch-interval',
+      },
+    },
     overwriteMode: {
       format: ['replace', 'update', 'ignore'],
       default: 'replace' as 'replace' | 'update' | 'ignore',
@@ -107,12 +122,14 @@ export const { config, schema } = await libConfig({
       // eslint-disable-next-line sonarjs/no-clear-text-protocols
       default: 'http://arangodb:8529',
       env: 'ARANGODB_URL',
+      arg: 'arangodb-url',
     },
     database: {
       doc: 'database in arangodb to use',
       format: String,
       default: 'oada',
       env: 'ARANGODB_DATABASE',
+      arg: 'arangodb-database',
     },
     auth: {
       username: {

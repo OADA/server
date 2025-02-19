@@ -31,14 +31,14 @@
     "@oada/types": "^4.0.0",
     "@qlever-llc/interface2class": "^1.1.0",
     "tslib": "2.8.1",
-    "type-fest": "^4.30.0",
+    "type-fest": "^4.35.0",
     "xksuid": "^0.0.4"
   },
   "volta": {
     "node": "22.5.1"
   },
   "devDependencies": {
-    "@types/node": "^22.10.2",
-    "jose": "^5.9.6"
+    "@types/node": "^22.13.4",
+    "jose": "^5.10.0"
   }
 }

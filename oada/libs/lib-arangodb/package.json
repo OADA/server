@@ -59,12 +59,13 @@
     "@oada/models": "workspace:^",
     "@oada/oadaify": "^2.1.0",
     "@oada/types": "^4.0.0",
-    "arangojs": "^9.2.0",
+    "arangojs": "^10.1.1",
     "bcryptjs": "^2.4.3",
     "debug": "^4.4.0",
     "deep-equal": "^2.2.3",
     "flat": "^6.0.1",
     "json-ptr": "^3.1.1",
+    "p-throttle": "^7.0.0",
     "tslib": "2.8.1"
   },
   "devDependencies": {
@@ -75,9 +76,10 @@
     "@types/deep-equal": "^1.0.4",
     "@types/flat": "^5.0.5",
     "@types/json-pointer": "^1.0.34",
-    "@types/node": "^22.10.2",
+    "@types/node": "^22.13.4",
     "ava": "6.2.0",
-    "type-fest": "^4.30.0"
+    "eslint": "^9.20.1",
+    "type-fest": "^4.35.0"
   },
   "volta": {
     "node": "22.5.1"

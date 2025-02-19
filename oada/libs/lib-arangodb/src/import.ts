@@ -19,21 +19,26 @@ import { config } from './config.js';
 
 import { Database, aql } from 'arangojs';
 import debug from 'debug';
+import pThrottle from 'p-throttle';
 
 import { db as database } from './db.js';
 
 const info = debug('@oada/lib-arangodb:import:info');
 const trace = debug('@oada/lib-arangodb:import:trace');
+const error = debug('@oada/lib-arangodb:import:error');
 
 const {
   auth,
   connectionString: url,
   database: databaseName,
   batchSize,
-  overwriteMode,
+  batchThrottle,
 } = config.get('arangodbImport');
 
-const collections = config.get('arangodb.collections');
+const collections = await database.collections();
+
+const throttle = pThrottle(batchThrottle);
+const throttled = throttle(async () => {});
 
 const importDatabase = new Database({
   auth,
@@ -48,39 +53,61 @@ interface T {
 }
 
 for await (const { name } of Object.values(collections)) {
-  trace(`Starting to import collection ${name}`);
-  const importCollection = importDatabase.collection<T>(name);
-  const cursor = await importDatabase.query<T>(
-    aql`
-    FOR doc IN ${importCollection}
-      RETURN doc
-  `,
-    {
-      batchSize,
-      ttl: 60 * 60 * 10,
-      allowRetry: true,
-      cache: false,
-      fillBlockCache: false,
-      stream: true,
-    },
-  );
-
-  const collection = database.collection<T>(name);
-  let imported = 0;
   try {
-    for await (const documents of cursor.batches) {
-      trace({ imported, docs: documents }, 'importing docs');
-      await collection.import(documents, {
-        waitForSync: true,
-        onDuplicate: overwriteMode,
-      });
-      imported += documents.length;
-    }
-  } finally {
-    try {
-      await cursor.kill();
-    } catch {}
-  }
+    const importCollection = importDatabase.collection<T>(name);
 
-  info(`${imported} documents imported from collection ${name}`);
+    trace(`Querying already imported documents for ${name}`);
+    const done = await database.query<string>(
+      aql`
+      FOR doc IN ${importCollection}
+        RETURN doc._id
+      `,
+      {
+        batchSize,
+        ttl: 60 * 60 * 10,
+        allowRetry: true,
+        cache: false,
+        fillBlockCache: false,
+        stream: false,
+        allowDirtyRead: true,
+        count: true,
+      },
+    );
+
+    const importedIds = await done.all();
+    trace(`Querying all new documents for ${name}`);
+    const all = await importDatabase.query<string>(
+      aql`
+      FOR doc IN ${importCollection}
+        FILTER doc._id NOT IN ${importedIds}
+        RETURN doc._id
+      `,
+      {
+        batchSize,
+        ttl: 60 * 60 * 10,
+        allowRetry: true,
+        cache: false,
+        fillBlockCache: false,
+        stream: false,
+        allowDirtyRead: true,
+        count: true,
+      },
+    );
+    const remainingIds = await all.all();
+    const collection = database.collection<T>(name);
+    let imported = 0;
+    for await (const id of remainingIds) {
+      const doc = await importCollection.document(id);
+      trace({ doc, imported, count: remainingIds.length }, 'importing doc');
+      await collection.save(doc, {
+        waitForSync: true,
+      });
+      imported += 1;
+      await throttled();
+    }
+
+    info(`${imported} documents imported from collection ${name}`);
+  } catch (cError: unknown) {
+    error(cError, `Error importing collection ${name}`);
+  }
 }

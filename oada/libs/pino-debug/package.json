@@ -25,16 +25,16 @@
   "dependencies": {
     "cls-rtracer": "^2.6.3",
     "is-interactive": "^2.0.0",
-    "pino": "^9.5.0",
+    "pino": "^9.6.0",
     "pino-caller": "^3.4.0",
-    "pino-debug": "^2.0.0",
-    "pino-loki": "^2.4.0",
+    "pino-debug": "^3.0.0",
+    "pino-loki": "^2.5.0",
     "pino-pretty": "^13.0.0",
     "tslib": "2.8.1"
   },
   "devDependencies": {
     "@types/debug": "^4.1.12",
-    "@types/node": "^22.10.2"
+    "@types/node": "^22.13.4"
   },
   "peerDependencies": {
     "debug": "*"

@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-import type { CollectionReadOptions } from 'arangojs/collection';
+import type { ReadDocumentOptions } from 'arangojs/documents';
 import { aql } from 'arangojs';
 import bcrypt from 'bcryptjs';
 import debug from 'debug';
@@ -45,7 +45,7 @@ const roundsOrSalt =
 
 export async function findById(
   sub: string,
-  options?: CollectionReadOptions,
+  options?: ReadDocumentOptions,
 ): Promise<User | undefined> {
   try {
     const result = await users.document(sub, options);

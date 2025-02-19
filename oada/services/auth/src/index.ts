@@ -414,7 +414,6 @@ if (esMain(import.meta)) {
   try {
     await start();
   } catch (error: unknown) {
-
     console.error(error);
     // eslint-disable-next-line unicorn/no-process-exit, n/no-process-exit
     process.exit(1);

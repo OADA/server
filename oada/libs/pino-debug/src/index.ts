@@ -17,8 +17,6 @@
 
 /* eslint-disable unicorn/prefer-module */
 
-
-
 import path from 'node:path';
 
 // !!! This needs to be imported before _anything_ using pino or debug

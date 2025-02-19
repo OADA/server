@@ -37,8 +37,8 @@
   },
   "devDependencies": {
     "@types/debug": "^4.1.12",
-    "@types/node": "^22.10.2",
-    "@types/type-is": "^1.6.6"
+    "@types/node": "^22.13.4",
+    "@types/type-is": "^1.6.7"
   },
   "volta": {
     "node": "22.5.1"
