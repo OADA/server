@@ -15,8 +15,6 @@
  * limitations under the License.
  */
 
- 
-
 import '@oada/pino-debug';
 
 import { readFile } from 'node:fs/promises';
@@ -82,7 +80,7 @@ export const cmd = command({
       const issuer = await Issuer.discover(
         iss ? `${iss}` : `${config.get('oidc.issuer')}`,
       );
-       
+
       const f = dataFile
         ? (YAML.parse(`${await readFile(dataFile)}`) as Partial<Metadata>)
         : undefined;

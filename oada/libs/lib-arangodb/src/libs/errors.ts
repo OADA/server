@@ -26,7 +26,7 @@
 
 // TODO: Add more of the error codes from above link
 
-export { ArangoError } from 'arangojs/error';
+export { ArangoError } from 'arangojs/errors';
 
 /**
  * Error codes for ArangoErrorCode

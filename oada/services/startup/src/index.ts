@@ -31,25 +31,25 @@ const port = process.env.PORT ?? 8080;
 const exit = process.env.EXIT ?? false;
 
 try {
-info('Startup is initializing ArangoDB and Kafka');
-await Promise.all([initArangoDB.run(), initKafka.run()]);
-info('Initialization complete');
+  info('Startup is initializing ArangoDB and Kafka');
+  await Promise.all([initArangoDB.run(), initKafka.run()]);
+  info('Initialization complete');
 
-if (exit) {
-  // eslint-disable-next-line unicorn/no-process-exit, n/no-process-exit
-  process.exit(0);
-}
+  if (exit) {
+    // eslint-disable-next-line unicorn/no-process-exit, n/no-process-exit
+    process.exit(0);
+  }
 
-const server = http.createServer((request, response) => {
-  trace(request, 'Request received');
-  response.write('Hello');
-  response.end();
-});
-server.on('listening', () => {
-  info(server.address(), 'Startup finished, listening');
-});
+  const server = http.createServer((request, response) => {
+    trace(request, 'Request received');
+    response.write('Hello');
+    response.end();
+  });
+  server.on('listening', () => {
+    info(server.address(), 'Startup finished, listening');
+  });
 
-server.listen(port);
+  server.listen(port);
 } catch (error: unknown) {
   throw error;
 }

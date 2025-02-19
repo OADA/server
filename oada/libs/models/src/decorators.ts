@@ -40,7 +40,6 @@ export function destructure<T, R extends [...unknown[]]>(
         a.push(argument[property]);
       }
 
-       
       super(argument, ...a);
     }
   } as unknown as Class<T, [Partial<T>]>;

@@ -12,6 +12,7 @@
     "dist/**/*"
   ],
   "dependencies": {
+    "@oada/tests": "file:",
     "axios": "^0.28.0",
     "bluebird": "^3.7.0",
     "chai": "^4.2.0",

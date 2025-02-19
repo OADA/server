@@ -23,7 +23,7 @@ import { ArangoError, ArangoErrorCode } from './libs/errors.js';
 
 import type { AqlQuery } from 'arangojs/aql';
 import { Database } from 'arangojs';
-import type { QueryOptions } from 'arangojs/database';
+import type { QueryOptions } from 'arangojs/queries';
 import debug from 'debug';
 
 const error = debug('arangodb#aql:error');

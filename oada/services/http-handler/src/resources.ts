@@ -132,7 +132,6 @@ function parseETag(etag: string): { id?: string; rev: number } {
  */
 // eslint-disable-next-line @typescript-eslint/require-await
 const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
-
   // @ts-expect-error null is allowed the types are wrong
   fastify.decorateRequest('oadaPath', null);
 
@@ -564,7 +563,10 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
       const { _id: bodyid } = await putBodies.savePutBody(
         request.body as string,
       );
-      request.log.debug({ oadaGraph: request.oadaGraph, bodyid }, 'PUT body saved');
+      request.log.debug(
+        { oadaGraph: request.oadaGraph, bodyid },
+        'PUT body saved',
+      );
 
       request.log.trace('Resource exists: %s', request.resourceExists);
       const ignoreLinks =
