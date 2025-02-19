@@ -28,7 +28,7 @@
   "dependencies": {
     "@oada/lib-config": "workspace:^",
     "@oada/lib-kafka": "workspace:^",
-    "@oada/lib-prom": "workspace:^",
+    "@oada/lib-prom": "3.5.1",
     "@oada/pino-debug": "workspace:^",
     "debug": "^4.4.0",
     "es-main": "^1.3.0",
