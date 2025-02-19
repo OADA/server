@@ -37,7 +37,7 @@
     "@fastify/helmet": "^13.0.1",
     "@oada/formats-server": "^4.0.0",
     "@oada/lib-config": "workspace:^",
-    "@oada/lib-prom": "workspace:^",
+    "@oada/lib-prom": "3.5.1",
     "@oada/pino-debug": "workspace:^",
     "@oada/well-known-json": "^4.0.2",
     "allow-methods": "^6.2.1",
