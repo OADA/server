@@ -1432,11 +1432,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@oada/models@file:, @oada/models@workspace:^, @oada/models@workspace:libs/models":
+"@oada/models@workspace:^, @oada/models@workspace:libs/models":
   version: 0.0.0-use.local
   resolution: "@oada/models@workspace:libs/models"
   dependencies:
-    "@oada/models": "file:"
     "@oada/types": "npm:^4.0.0"
     "@qlever-llc/interface2class": "npm:^1.1.0"
     "@types/node": "npm:^22.13.4"
@@ -1477,11 +1476,10 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@oada/pino-debug@file:, @oada/pino-debug@workspace:^, @oada/pino-debug@workspace:libs/pino-debug":
+"@oada/pino-debug@workspace:^, @oada/pino-debug@workspace:libs/pino-debug":
   version: 0.0.0-use.local
   resolution: "@oada/pino-debug@workspace:libs/pino-debug"
   dependencies:
-    "@oada/pino-debug": "file:"
     "@types/debug": "npm:^4.1.12"
     "@types/node": "npm:^22.13.4"
     cls-rtracer: "npm:^2.6.3"
