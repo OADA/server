@@ -72,7 +72,8 @@ WORKDIR /oada
 
 # Install needed packages
 RUN apk add --no-cache \
-  dumb-init
+  dumb-init \
+  libc6-compat
 
 # Copy in entrypoint script
 COPY ./utils/entrypoint.sh /entrypoint.sh
