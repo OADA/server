@@ -190,7 +190,7 @@ declare module '@fastify/request-context' {
 }
 
 async function makeRedis(uri: string) {
-  const { Redis } = await import('ioredis');
+  const { default: Redis } = await import('ioredis');
   return new Redis(uri, {
     connectTimeout: 500,
     maxRetriesPerRequest: 1,

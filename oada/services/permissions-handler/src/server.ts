@@ -148,6 +148,9 @@ export function handleRequest(
   if (process.env.IGNORE_SCOPE === 'yes') {
     warn('IGNORE_SCOPE environment variable is true');
     response.scopes = { read: true, write: true };
+  } else if (request.oadaGraph.resourceExists === false) {
+    // Non-existent resources are always in scope
+    response.scopes = { read: true, write: true };
   } else {
     if (!Array.isArray(request.scope)) {
       error({ scope: request.scope }, 'Scope is not an array');

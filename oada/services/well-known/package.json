@@ -33,7 +33,7 @@
   },
   "dependencies": {
     "@fastify/accepts": "^5.0.2",
-    "@fastify/cors": "^10.0.2",
+    "@fastify/cors": "^11.0.0",
     "@fastify/helmet": "^13.0.1",
     "@oada/formats-server": "^4.0.0",
     "@oada/lib-config": "workspace:^",
