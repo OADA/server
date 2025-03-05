@@ -90,7 +90,7 @@ declare module '@fastify/secure-session' {
 const trustProxy = config.get('trustProxy');
 
 async function makeRedis(uri: string) {
-  const { Redis } = await import('ioredis');
+  const { default: Redis } = await import('ioredis');
   return new Redis(uri, {
     connectTimeout: 500,
     maxRetriesPerRequest: 1,
