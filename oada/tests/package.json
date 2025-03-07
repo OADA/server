@@ -13,7 +13,7 @@
   ],
   "dependencies": {
     "@oada/tests": "file:",
-    "axios": "^0.28.0",
+    "axios": "^1.8.2",
     "bluebird": "^3.7.0",
     "chai": "^4.2.0",
     "debug": "^4.1.1",
