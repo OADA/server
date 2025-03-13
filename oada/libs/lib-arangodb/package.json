@@ -10,7 +10,10 @@
   "engines": {
     "node": ">=20.0.0"
   },
-  "files": ["src/**/*", "dist/**/*"],
+  "files": [
+    "src/**/*",
+    "dist/**/*"
+  ],
   "contributors": [
     "Alex Layton <alex@layton.in> (https://github.com/awlayton)",
     "Andrew Balmos <andrew@balmos.org> (https://github.com/abalmos)"
@@ -25,7 +28,11 @@
     "url": "https://github.com/OADA/@oada/lib-arangodb/issues"
   },
   "homepage": "https://github.com/OADA/@oada/lib-arangodb#readme",
-  "keywords": ["oada", "arangodb", "lib"],
+  "keywords": [
+    "oada",
+    "arangodb",
+    "lib"
+  ],
   "scripts": {
     "build": "yarn g:tsc",
     "clean": "yarn run build --clean",
@@ -33,9 +40,13 @@
     "test": "yarn run build test && ava"
   },
   "ava": {
-    "files": ["**/*.test.ts"],
+    "files": [
+      "**/*.test.ts"
+    ],
     "typescript": {
-      "extensions": ["ts"],
+      "extensions": [
+        "ts"
+      ],
       "rewritePaths": {
         "src/": "dist/",
         "test/": ".test/"

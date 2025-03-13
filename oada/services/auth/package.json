@@ -15,7 +15,10 @@
     ".": "./dist/index.js",
     "./config": "./dist/config.js"
   },
-  "files": ["src/**/*", "dist/**/*"],
+  "files": [
+    "src/**/*",
+    "dist/**/*"
+  ],
   "repository": {
     "type": "git",
     "url": "https://github.com/oada/oada-ref-auth-js"
