@@ -1,7 +1,10 @@
 {
   "name": "@oada/server",
   "private": true,
-  "workspaces": ["services/*", "libs/*"],
+  "workspaces": [
+    "services/*",
+    "libs/*"
+  ],
   "scripts": {
     "build": "yarn workspaces foreach -Apt run build",
     "clean": "yarn build --clean",

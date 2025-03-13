@@ -9,7 +9,10 @@
   "engines": {
     "node": ">=20.0.0"
   },
-  "files": ["src/**/*", "dist/**/*"],
+  "files": [
+    "src/**/*",
+    "dist/**/*"
+  ],
   "scripts": {
     "test": "yarn run build test && ava",
     "build": "yarn g:tsc",
@@ -17,9 +20,13 @@
     "start": "node ${INSPECT} --enable-source-maps --unhandled-rejections=strict dist/index.js"
   },
   "ava": {
-    "files": ["**/*.test.ts"],
+    "files": [
+      "**/*.test.ts"
+    ],
     "typescript": {
-      "extensions": ["ts"],
+      "extensions": [
+        "ts"
+      ],
       "rewritePaths": {
         "src/": "dist/",
         "test/": ".test/"

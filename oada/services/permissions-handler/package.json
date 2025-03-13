@@ -9,7 +9,10 @@
   "engines": {
     "node": ">=20.0.0"
   },
-  "files": ["src/**/*", "dist/**/*"],
+  "files": [
+    "src/**/*",
+    "dist/**/*"
+  ],
   "scripts": {
     "build": "yarn g:tsc",
     "clean": "yarn run build --clean",
@@ -18,7 +21,9 @@
   },
   "mocha": {
     "require": "ts-node/register",
-    "extension": ["ts"]
+    "extension": [
+      "ts"
+    ]
   },
   "dependencies": {
     "@oada/lib-config": "workspace:^",

@@ -6,7 +6,10 @@
   "engines": {
     "node": ">=20.0.0"
   },
-  "files": ["src/**/*", "dist/**/*"],
+  "files": [
+    "src/**/*",
+    "dist/**/*"
+  ],
   "repository": {
     "type": "git",
     "url": "git+ssh://git@github.com/OADA/oada-srvc-write-handler.git"
@@ -25,9 +28,13 @@
     "start": "node ${INSPECT} --enable-source-maps --expose-gc --unhandled-rejections=strict dist/index.js"
   },
   "ava": {
-    "files": ["**/*.test.ts"],
+    "files": [
+      "**/*.test.ts"
+    ],
     "typescript": {
-      "extensions": ["ts"],
+      "extensions": [
+        "ts"
+      ],
       "rewritePaths": {
         "src/": "dist/",
         "test/": ".test/"
