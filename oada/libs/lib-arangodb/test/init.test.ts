@@ -15,18 +15,18 @@
  * limitations under the License.
  */
 
-import { config } from '../dist/config.js';
+import { config } from "../dist/config.js";
 
-import test from 'ava';
+import test from "ava";
 
-import { Database } from 'arangojs';
+import { Database } from "arangojs";
 
-import { cleanup, run } from '../dist/init.js';
+import { cleanup, run } from "../dist/init.js";
 
-const databaseName = config.get('arangodb.database');
+const databaseName = config.get("arangodb.database");
 
 const arangodb = new Database({
-  url: config.get('arangodb.connectionString'),
+  url: config.get("arangodb.connectionString"),
 });
 // Const cleanup = init.cleanup; // set this to an empty function if you don't want db to be deleted
 
@@ -34,8 +34,8 @@ test.afterEach(async () => {
   await cleanup();
 });
 
-test('should drop test database if it already exists', async (t) => {
-  arangodb.database('_system');
+test("should drop test database if it already exists", async (t) => {
+  arangodb.database("_system");
 
   const dbs = await arangodb.listDatabases();
   for await (const database of dbs) {
@@ -47,20 +47,20 @@ test('should drop test database if it already exists', async (t) => {
   await arangodb.createDatabase(databaseName);
 
   arangodb.database(databaseName);
-  await arangodb.collection('dummycollection').create();
+  await arangodb.collection("dummycollection").create();
 
   await run();
 
   const cols = await arangodb.listCollections();
   for (const col of cols) {
-    t.not(col.name, 'dummycollection');
+    t.not(col.name, "dummycollection");
   }
 });
 
 test(`should create test database ${databaseName}`, async (t) => {
   await run();
 
-  arangodb.database('_system');
+  arangodb.database("_system");
 
   const dbs = await arangodb.listDatabases();
 
@@ -75,12 +75,12 @@ test(`should create test database ${databaseName}`, async (t) => {
   t.fail();
 });
 
-test('should have created all the collections', async (t) => {
+test("should have created all the collections", async (t) => {
   await run();
 
   arangodb.database(databaseName);
   const databaseCols = await arangodb.listCollections();
-  const cols = config.get('arangodb.collections');
+  const cols = config.get("arangodb.collections");
   // Expect the returned list of db collections to contain each name
   for (const col of Object.values(cols)) {
     const hasname = databaseCols.some((d) => d.name === col.name);
@@ -88,17 +88,17 @@ test('should have created all the collections', async (t) => {
   }
 });
 
-test('should create all the indexes on the collections', async (t) => {
+test("should create all the indexes on the collections", async (t) => {
   await run();
 
   arangodb.database(databaseName);
-  const colsarr = Object.values(config.get('arangodb.collections'));
+  const colsarr = Object.values(config.get("arangodb.collections"));
   for await (const c of colsarr) {
     const databaseIndexes = await arangodb.collection(c.name).indexes();
 
     for (const ci of c.indexes) {
       // For each index in collection, check if exists
-      const indexname = typeof ci === 'string' ? ci : ci.name.toString();
+      const indexname = typeof ci === "string" ? ci : ci.name.toString();
       const hasindex = databaseIndexes.some((dbi) =>
         dbi.fields.includes(indexname),
       );
@@ -108,10 +108,10 @@ test('should create all the indexes on the collections', async (t) => {
   }
 });
 
-test('should create any requested default data', async (t) => {
+test("should create any requested default data", async (t) => {
   await run();
   arangodb.database(databaseName);
-  const defaults = config.get('arangodb.init.defaultData');
+  const defaults = config.get("arangodb.init.defaultData");
   const defaultdata = Object.fromEntries(
     await Promise.all(
       Object.entries(defaults).map(async ([k, v]) => {
@@ -125,7 +125,7 @@ test('should create any requested default data', async (t) => {
 
   for await (const [colname, data] of Object.entries(defaultdata)) {
     for await (const document of data) {
-      if (colname === 'users') {
+      if (colname === "users") {
         // @ts-expect-error idk?
         delete document.password; // Don't bother to check hashed password
       }

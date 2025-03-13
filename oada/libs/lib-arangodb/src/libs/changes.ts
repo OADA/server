@@ -15,28 +15,28 @@
  * limitations under the License.
  */
 
-import { JsonPointer } from 'json-ptr';
-import { aql } from 'arangojs';
-import debug from 'debug';
+import { JsonPointer } from "json-ptr";
+import { aql } from "arangojs";
+import debug from "debug";
 
 import {
   type Change,
   assert as assertChangeArray,
-} from '@oada/types/oada/change/v2.js';
+} from "@oada/types/oada/change/v2.js";
 
-import { config } from '../config.js';
-import { db as database } from '../db.js';
+import { config } from "../config.js";
+import { db as database } from "../db.js";
 
-const trace = debug('arangodb#resources:trace');
+const trace = debug("arangodb#resources:trace");
 
 const changes = database.collection(
-  config.get('arangodb.collections.changes.name'),
+  config.get("arangodb.collections.changes.name"),
 );
 const changeEdges = database.collection(
-  config.get('arangodb.collections.changeEdges.name'),
+  config.get("arangodb.collections.changeEdges.name"),
 );
 // HACK: Should use database.graph but there is a bug with aql template tags
-const changeGraph = config.get('arangodb.graphs.changes.name');
+const changeGraph = config.get("arangodb.graphs.changes.name");
 
 const MAX_DEPTH = 100;
 
@@ -107,10 +107,10 @@ export async function getChange(
   if (!changeRev) {
     return {
       resource_id: resourceId,
-      path: '',
+      path: "",
       // eslint-disable-next-line unicorn/no-null
       body: null,
-      type: 'delete',
+      type: "delete",
     };
   }
 
@@ -141,12 +141,12 @@ export async function getChange(
 
   const change = {
     resource_id: resourceId,
-    path: '',
+    path: "",
     body: firstV.body,
     type: firstV.type,
-    wasDelete: result.vertices.at(-1)?.type === 'delete',
+    wasDelete: result.vertices.at(-1)?.type === "delete",
   };
-  let path = '';
+  let path = "";
   for (let index = 0; index < result.vertices.length - 1; index++) {
     path += result.edges[Number(index)]!.path;
     if (change.body) {
@@ -173,10 +173,10 @@ export async function getChangeArray(
     return [
       {
         resource_id: resourceId,
-        path: '',
+        path: "",
         // eslint-disable-next-line unicorn/no-null
         body: null,
-        type: 'delete',
+        type: "delete",
       },
     ];
   }
@@ -204,7 +204,7 @@ export interface ChangePath {
 
 function toChangeObject(arangoPathObject: ChangePath): Change {
   // Get path
-  let path = '';
+  let path = "";
   for (const edge of arangoPathObject.edges) {
     path += edge.path;
   }
@@ -212,12 +212,12 @@ function toChangeObject(arangoPathObject: ChangePath): Change {
   // Get body
   const [lastV] = arangoPathObject.vertices.slice(-1);
   if (!lastV) {
-    throw new Error('No vertices in arangoPathObj');
+    throw new Error("No vertices in arangoPathObj");
   }
 
   const { body, resource_id, type } = lastV;
   // Return change object
-  trace({ body }, 'toChangeObj: returning change object with body');
+  trace({ body }, "toChangeObj: returning change object with body");
   const change = {
     resource_id,
     path,
@@ -263,21 +263,21 @@ export async function putChange({
   userId,
   authorizationId,
 }: {
-  change: Change['body'];
-  resId: Change['resource_id'];
+  change: Change["body"];
+  resId: Change["resource_id"];
   rev: number | string;
-  type: Change['type'];
+  type: Change["type"];
   children: string[];
-  path?: Change['path'];
+  path?: Change["path"];
   userId?: string;
   authorizationId?: string;
 }): Promise<string> {
   if (!Array.isArray(children)) {
-    throw new TypeError('children must be an array.');
+    throw new TypeError("children must be an array.");
   }
 
   const number = Number.parseInt(rev as string, 10);
-  trace({ change }, 'putChange: inserting change');
+  trace({ change }, "putChange: inserting change");
   const cursor = await database.query(
     aql`
       LET doc = FIRST(

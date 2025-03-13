@@ -17,23 +17,23 @@
 
 /* eslint-disable unicorn/prefer-module */
 
-import path from 'node:path';
+import path from "node:path";
 
 // !!! This needs to be imported before _anything_ using pino or debug
-import pinoDebug from 'pino-debug';
+import pinoDebug from "pino-debug";
 
 import _pino, {
   type ChildLoggerOptions,
-  Logger,
+  type Logger,
   type LoggerOptions,
-} from 'pino';
-import debug from 'debug';
-import isInteractive from 'is-interactive';
-import pinoCaller from 'pino-caller';
-import type pinoLoki from 'pino-loki';
-import rTracer from 'cls-rtracer';
+} from "pino";
+import debug from "debug";
+import isInteractive from "is-interactive";
+import pinoCaller from "pino-caller";
+import type pinoLoki from "pino-loki";
+import rTracer from "cls-rtracer";
 
-export type { Logger } from 'pino';
+export type { Logger } from "pino";
 const interactive = isInteractive();
 
 // Needed because the options type is not exported from pino-loki
@@ -43,20 +43,20 @@ type PinoLokiOptions = Parameters<typeof pinoLoki.default>[0];
  * Default mappings of debug namespaces to pino levels
  */
 export const defaultMap = {
-  '*:info': 'info',
-  'info:*': 'info',
-  '*:warn': 'warn',
-  'warn:*': 'warn',
-  '*:trace': 'trace',
-  'trace:*': 'trace',
-  '*:debug': 'debug',
-  'debug:*': 'debug',
-  '*:error': 'error',
-  'error:*': 'error',
-  '*:fatal': 'fatal',
-  'fatal:*': 'fatal',
+  "*:info": "info",
+  "info:*": "info",
+  "*:warn": "warn",
+  "warn:*": "warn",
+  "*:trace": "trace",
+  "trace:*": "trace",
+  "*:debug": "debug",
+  "debug:*": "debug",
+  "*:error": "error",
+  "error:*": "error",
+  "*:fatal": "fatal",
+  "fatal:*": "fatal",
   // Send anything unspecified to debug?
-  '*': 'debug',
+  "*": "debug",
 } as const;
 
 /**
@@ -80,7 +80,7 @@ export function logLevel(): string {
   }
 
   // Assume silent
-  return 'silent';
+  return "silent";
 }
 
 export const mixins: Array<() => Record<string, unknown>> = [
@@ -91,27 +91,27 @@ export const mixins: Array<() => Record<string, unknown>> = [
  * Get pino, wrapping it with fanciness when in development environment
  */
 function createRootLogger(): Logger {
-  const development = process.env.NODE_ENV === 'development';
+  const development = process.env.NODE_ENV === "development";
   const redact =
-    process.env.PINO_REDACT?.split(',') ??
+    process.env.PINO_REDACT?.split(",") ??
     (interactive
       ? []
       : [
-          'password',
-          '*.password',
-          '*.*.password',
-          'token',
-          '*.token',
-          '*.*.token',
-          'access_token',
-          '*.access_token',
-          '*.*.access_token',
-          'jti',
-          '*.jti',
-          '*.*.jti',
-          'client_secret',
-          'client.client_secret',
-          '*.client.client_secret',
+          "password",
+          "*.password",
+          "*.*.password",
+          "token",
+          "*.token",
+          "*.*.token",
+          "access_token",
+          "*.access_token",
+          "*.*.access_token",
+          "jti",
+          "*.jti",
+          "*.*.jti",
+          "client_secret",
+          "client.client_secret",
+          "*.client.client_secret",
         ]);
   const level = logLevel();
   const loki: PinoLokiOptions | undefined = process.env.PINO_LOKI
@@ -124,7 +124,7 @@ function createRootLogger(): Logger {
       targets: [
         {
           // Use pino-pretty in interactive mode
-          target: interactive ? 'pino-pretty' : 'pino/file',
+          target: interactive ? "pino-pretty" : "pino/file",
           options: {
             destination: process.env.PINO_FILE ?? process.stdout.fd,
           },
@@ -134,7 +134,7 @@ function createRootLogger(): Logger {
         ...(loki
           ? [
               {
-                target: 'pino-loki',
+                target: "pino-loki",
                 options: loki,
                 level: process.env.PINO_LOKI_LEVEL,
               },
@@ -152,7 +152,7 @@ function createRootLogger(): Logger {
 
   // Load mappings from files
   const fMap = (process.env.OADA_PINO_MAP &&
-    require(path.resolve(process.cwd(), process.env.OADA_PINO_MAP))) as  // Nosemgrep: javascript.lang.security.detect-non-literal-require.detect-non-literal-require
+    require(path.resolve(process.cwd(), process.env.OADA_PINO_MAP))) as // Nosemgrep: javascript.lang.security.detect-non-literal-require.detect-non-literal-require
     | undefined
     | Record<string, string>;
   // Merge in mappings
@@ -172,6 +172,6 @@ export function pino(options?: LoggerOptions): Logger {
   return rootLogger.child(options?.base ?? {}, options as ChildLoggerOptions);
 }
 
-process.on('uncaughtExceptionMonitor', (error) => {
-  rootLogger.fatal(error, 'Uncaught exception');
+process.on("uncaughtExceptionMonitor", (error) => {
+  rootLogger.fatal(error, "Uncaught exception");
 });

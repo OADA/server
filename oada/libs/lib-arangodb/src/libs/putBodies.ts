@@ -15,11 +15,11 @@
  * limitations under the License.
  */
 
-import { config } from '../config.js';
-import { db as database } from '../db.js';
+import { config } from "../config.js";
+import { db as database } from "../db.js";
 
 const collection = database.collection<{ body: unknown }>(
-  config.get('arangodb.collections.putBodies.name'),
+  config.get("arangodb.collections.putBodies.name"),
 );
 
 /**

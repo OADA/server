@@ -15,19 +15,19 @@
  * limitations under the License.
  */
 
-import { config } from '../config.js';
-import { db as database } from '../db.js';
-import { findById as findUserById } from './users.js';
-import { sanitizeResult } from '../util.js';
+import { config } from "../config.js";
+import { db as database } from "../db.js";
+import { findById as findUserById } from "./users.js";
+import { sanitizeResult } from "../util.js";
 
-import type { Except, Opaque } from 'type-fest';
-import { aql } from 'arangojs';
-import debug from 'debug';
+import type { Except, Opaque } from "type-fest";
+import { aql } from "arangojs";
+import debug from "debug";
 
-const trace = debug('@oada/lib-arangodb#authorizations:trace');
+const trace = debug("@oada/lib-arangodb#authorizations:trace");
 
 const authorizations = database.collection<Authorization>(
-  config.get('arangodb.collections.authorizations.name'),
+  config.get("arangodb.collections.authorizations.name"),
 );
 
 export type AuthorizationID = Opaque<string, Authorization>;
@@ -82,7 +82,7 @@ export async function findByToken(
   }
 
   const auth = fixup(t);
-  trace({ auth }, 'Found authorization by token, filling out user by user.sub');
+  trace({ auth }, "Found authorization by token, filling out user by user.sub");
   const user = await findUserById(auth.user.sub);
   if (!user) {
     throw new Error(`Invalid user ${auth.user.sub} for authorization ${t._id}`);
@@ -103,20 +103,20 @@ export async function findByUser(
 }
 
 export async function save(
-  auth: Except<Authorization, '_id'>,
+  auth: Except<Authorization, "_id">,
 ): Promise<Authorization> {
   // Make sure nothing but id is in user info
   const user = { sub: auth.user.sub };
   // Have to get rid of illegal document handle _id
 
-  trace({ auth, user }, 'save: Replacing/Inserting token');
+  trace({ auth, user }, "save: Replacing/Inserting token");
 
   const _id = undefined as unknown as AuthorizationID;
 
   // Overwrite will replace the given token if it already exists
   const t = await authorizations.save(
     { ...auth, user, _id },
-    { overwriteMode: 'replace' },
+    { overwriteMode: "replace" },
   );
 
   return t.new!;

@@ -113,6 +113,7 @@ arangodb:
       cpu: 100m
       memory: 1Gi
       ephemeral-storage: 1Gi
+      storage: 20Gi
 
 kafka:
   # kafka.brokers is an array of an external Kafka brokers.

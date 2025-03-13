@@ -23,23 +23,23 @@
 // your entire database if it gets run over and over again.  That way
 // it will work as a default script to run on every startup.
 
-import { config } from './config.js';
+import { config } from "./config.js";
 
-import debug from 'debug';
+import debug from "debug";
 
-const log = debug('init');
+const log = debug("init");
 
-const initPath = config.get('auth.init');
+const initPath = config.get("auth.init");
 if (initPath) {
   const { default: init } = (await import(initPath)) as {
     default: (argument: typeof config) => Promise<void>;
   }; // Nosemgrep: javascript.lang.security.detect-non-literal-require.detect-non-literal-require
 
-  if (typeof init === 'function') {
-    log('running init function from %s', initPath);
+  if (typeof init === "function") {
+    log("running init function from %s", initPath);
     await init(config);
-    log('initialization complete.');
+    log("initialization complete.");
   } else {
-    log('No initialization function available');
+    log("No initialization function available");
   }
 }

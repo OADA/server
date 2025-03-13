@@ -15,47 +15,47 @@
  * limitations under the License.
  */
 
-import { mixins } from '@oada/pino-debug';
+import { mixins } from "@oada/pino-debug";
 
-import { config } from './config.js';
+import { config } from "./config.js";
 
-import { KafkaError } from '@oada/lib-kafka';
-import { nstats } from '@oada/lib-prom';
-import { users as userDatabase } from '@oada/lib-arangodb';
+import { KafkaError } from "@oada/lib-kafka";
+import { nstats } from "@oada/lib-prom";
+import { users as userDatabase } from "@oada/lib-arangodb";
 
-import { plugin as formats } from '@oada/formats-server';
+import { plugin as formats } from "@oada/formats-server";
 
-import auth, { issuer } from './auth.js';
-import authorizations from './authorizations.js';
-import requester from './requester.js';
-import resources from './resources.js';
-import users from './users.js';
-import websockets from './websockets.js';
+import auth, { issuer } from "./auth.js";
+import authorizations from "./authorizations.js";
+import requester from "./requester.js";
+import resources from "./resources.js";
+import users from "./users.js";
+import websockets from "./websockets.js";
 
 import {
   fastify as Fastify,
   type FastifyReply,
   type FastifyRequest,
-} from 'fastify';
+} from "fastify";
 import {
   fastifyRequestContext,
   requestContext,
-} from '@fastify/request-context';
-import type { RateLimitPluginOptions } from '@fastify/rate-limit';
-import type { TokenClaims } from '@oada/auth';
-import cors from '@fastify/cors';
-import fastifyAccepts from '@fastify/accepts';
-import fastifyGracefulShutdown from 'fastify-graceful-shutdown';
-import fastifyHealthcheck from 'fastify-healthcheck';
-import fastifySensible from '@fastify/sensible';
-import helmet from '@fastify/helmet';
+} from "@fastify/request-context";
+import type { RateLimitPluginOptions } from "@fastify/rate-limit";
+import type { TokenClaims } from "@oada/auth";
+import cors from "@fastify/cors";
+import fastifyAccepts from "@fastify/accepts";
+import fastifyGracefulShutdown from "fastify-graceful-shutdown";
+import fastifyHealthcheck from "fastify-healthcheck";
+import fastifySensible from "@fastify/sensible";
+import helmet from "@fastify/helmet";
 
-import type { HTTPVersion, Handler } from 'find-my-way';
-import type { UserRequest, UserResponse } from '@oada/users';
-import User from '@oada/models/user';
-import esMain from 'es-main';
+import type { HTTPVersion, Handler } from "find-my-way";
+import type { UserRequest, UserResponse } from "@oada/users";
+import User from "@oada/models/user";
+import esMain from "es-main";
 
-declare module 'fastify' {
+declare module "fastify" {
   // eslint-disable-next-line @typescript-eslint/no-shadow
   interface FastifyRequest {
     user?: User & TokenClaims;
@@ -68,23 +68,23 @@ declare module 'fastify' {
  * Supported values for X-OADA-Ensure-Link header
  */
 export enum EnsureLink {
-  Versioned = 'versioned',
-  Unversioned = 'unversioned',
+  Versioned = "versioned",
+  Unversioned = "unversioned",
 }
 
 // Set up logging stuff
 const serializers = {
   // Customize logging for requests
   req(request: FastifyRequest) {
-    const version = request.headers?.['accept-version'];
+    const version = request.headers?.["accept-version"];
     return {
-      requestId: request.headers?.['x-request-id'],
+      requestId: request.headers?.["x-request-id"],
       method: request.method,
       url: request.url,
       version: version ? `${version}` : undefined,
       hostname: request.hostname,
-      userAgent: request.headers?.['user-agent'],
-      contentType: request.headers?.['content-type'],
+      userAgent: request.headers?.["user-agent"],
+      contentType: request.headers?.["content-type"],
       remoteAddress: request.ip,
       remotePort: request.socket?.remotePort,
     };
@@ -94,9 +94,9 @@ const serializers = {
     return {
       statusCode: reply.statusCode,
       statusText: reply.status,
-      contentLocation: reply.getHeader?.('content-location'),
-      rev: reply.getHeader?.('X-OADA-Rev'),
-      pathLeftover: reply.getHeader?.('X-OADA-Path-Leftover'),
+      contentLocation: reply.getHeader?.("content-location"),
+      rev: reply.getHeader?.("X-OADA-Rev"),
+      pathLeftover: reply.getHeader?.("X-OADA-Path-Leftover"),
       // @ts-expect-error stuff
       body: reply.body,
     };
@@ -106,10 +106,10 @@ const serializers = {
 // logger.serializers = serializers;
 
 mixins.push(() => ({
-  reqId: requestContext.get('id'),
+  reqId: requestContext.get("id"),
 }));
 
-const trustProxy = config.get('trustProxy');
+const trustProxy = config.get("trustProxy");
 
 // eslint-disable-next-line new-cap
 export const fastify = Fastify({
@@ -121,7 +121,7 @@ export const fastify = Fastify({
   ignoreTrailingSlash: true,
   constraints: {
     oadaEnsureLink: {
-      name: 'oadaEnsureLink',
+      name: "oadaEnsureLink",
       storage() {
         const handlers = new Map<unknown, Handler<HTTPVersion.V1>>();
         return {
@@ -148,14 +148,14 @@ export const fastify = Fastify({
         */
       },
       deriveConstraint(request) {
-        return request.headers['x-oada-ensure-link'];
+        return request.headers["x-oada-ensure-link"];
       },
       mustMatchWhenDerived: true,
     },
   },
 });
 
-if (process.env.NODE_ENV !== 'production') {
+if (process.env.NODE_ENV !== "production") {
   // Send errors on to client for debug purposes
   fastify.setErrorHandler((error, request, reply) => {
     // @ts-expect-error stuff
@@ -167,21 +167,21 @@ if (process.env.NODE_ENV !== 'production') {
 }
 
 // Add request id header for tracing/debugging purposes
-fastify.addHook('onSend', async (request, reply, payload) => {
-  void reply.header('X-Request-Id', request.headers['x-request-id']);
+fastify.addHook("onSend", async (request, reply, payload) => {
+  void reply.header("X-Request-Id", request.headers["x-request-id"]);
   return payload;
 });
 
-const port = config.get('server.port');
+const port = config.get("server.port");
 export async function start(): Promise<void> {
   await fastify.listen({
     port,
-    host: '::',
+    host: "::",
   });
-  fastify.log.info('OADA Server started on port %d', port);
+  fastify.log.info("OADA Server started on port %d", port);
 }
 
-declare module '@fastify/request-context' {
+declare module "@fastify/request-context" {
   interface RequestContextData {
     id: string;
     domain: string;
@@ -190,7 +190,7 @@ declare module '@fastify/request-context' {
 }
 
 async function makeRedis(uri: string) {
-  const { default: Redis } = await import('ioredis');
+  const { Redis } = await import("ioredis");
   return new Redis(uri, {
     connectTimeout: 500,
     maxRetriesPerRequest: 1,
@@ -198,17 +198,17 @@ async function makeRedis(uri: string) {
 }
 
 const { enabled, maxRequests, timeWindow, redis, useDraftSpec } =
-  config.get('server.rateLimit');
+  config.get("server.rateLimit");
 if (enabled) {
   const options: RateLimitPluginOptions = {
     keyGenerator(request) {
-      const mode = ['PUT', 'POST', 'DELETE'].includes(request.method)
-        ? 'write'
-        : 'read';
+      const mode = ["PUT", "POST", "DELETE"].includes(request.method)
+        ? "write"
+        : "read";
       return `${request.ip}-${mode}`;
     },
     max(request) {
-      return ['PUT', 'POST', 'DELETE'].includes(request.method)
+      return ["PUT", "POST", "DELETE"].includes(request.method)
         ? maxRequests.write
         : maxRequests.read;
     },
@@ -217,21 +217,21 @@ if (enabled) {
     redis: redis ? await makeRedis(redis) : null,
     enableDraftSpec: useDraftSpec,
   };
-  const { default: plugin } = await import('@fastify/rate-limit');
+  const { default: plugin } = await import("@fastify/rate-limit");
   await fastify.register<RateLimitPluginOptions>(plugin, options);
 }
 
 await fastify.register(fastifyRequestContext, {
-  hook: 'onRequest',
+  hook: "onRequest",
 });
 
 // Add id to request context
 // eslint-disable-next-line @typescript-eslint/require-await
-fastify.addHook('onRequest', async (request) => {
-  requestContext.set('id', request.id);
-  requestContext.set('domain', request.hostname);
+fastify.addHook("onRequest", async (request) => {
+  requestContext.set("id", request.id);
+  requestContext.set("domain", request.hostname);
   requestContext.set(
-    'issuer',
+    "issuer",
     `${request.protocol}://${request.hostname}/` as const,
   );
 });
@@ -246,7 +246,7 @@ await fastify.register(fastifyGracefulShutdown);
  * @todo restrict this to localhost?
  */
 await fastify.register(fastifyHealthcheck, {
-  exposeUptime: process.env.NODE_ENV !== 'production',
+  exposeUptime: process.env.NODE_ENV !== "production",
   // By default everything is off, so give numbers to under-pressure
   underPressureOptions: {
     maxEventLoopDelay: 5000,
@@ -275,7 +275,7 @@ fastify.setErrorHandler(async (error, request, reply) => {
 
 await fastify.register(helmet, {
   crossOriginResourcePolicy: {
-    policy: 'cross-origin',
+    policy: "cross-origin",
   },
 });
 
@@ -283,10 +283,10 @@ await fastify.register(helmet, {
 await fastify.register(cors, {
   strictPreflight: false,
   exposedHeaders: [
-    'x-oada-rev',
-    'x-oada-path-leftover',
-    'location',
-    'content-location',
+    "x-oada-rev",
+    "x-oada-path-leftover",
+    "location",
+    "content-location",
   ],
 });
 
@@ -303,15 +303,15 @@ await fastify.register(formats);
 await fastify.register(websockets);
 
 // TODO: Config/logic to decide if iss is trusted
-const TRUSTED_ISSUERS = new Set([`${issuer}`, config.get('oidc.issuer')]);
+const TRUSTED_ISSUERS = new Set([`${issuer}`, config.get("oidc.issuer")]);
 
 // eslint-disable-next-line unicorn/prevent-abbreviations
 async function enureOIDCUser({ sub, iss: i, ...rest }: TokenClaims) {
   if (!sub) {
-    throw new TypeError('OIDC: No sub in claims');
+    throw new TypeError("OIDC: No sub in claims");
   }
 
-  const reqIss = requestContext.get('issuer')!;
+  const reqIss = requestContext.get("issuer")!;
   const iss = i ?? reqIss;
 
   if (!(TRUSTED_ISSUERS.has(iss) || iss === reqIss)) {
@@ -333,14 +333,14 @@ async function enureOIDCUser({ sub, iss: i, ...rest }: TokenClaims) {
   const user = new User({ ...rest, sub, oidc: [{ sub, iss }] });
   const resp = (await requester.send(
     {
-      connection_id: requestContext.get('id'),
-      domain: requestContext.get('domain'),
+      connection_id: requestContext.get("id"),
+      domain: requestContext.get("domain"),
       authorization: {
-        scope: ['oada.admin.user:all'],
+        scope: ["oada.admin.user:all"],
       },
       user,
     } as UserRequest,
-    config.get('kafka.topics.userRequest'),
+    config.get("kafka.topics.userRequest"),
   )) as UserResponse;
   return resp.user;
 }
@@ -350,26 +350,26 @@ async function enureOIDCUser({ sub, iss: i, ...rest }: TokenClaims) {
  */
 await fastify.register(async (instance) => {
   await fastify.register(auth);
-  instance.addHook('onRequest', instance.authenticate);
+  instance.addHook("onRequest", instance.authenticate);
 
   // Fetch user info etc. for subject of current token
-  instance.addHook('onRequest', async (request, reply) => {
+  instance.addHook("onRequest", async (request, reply) => {
     // TODO: Use an OADA prefix for JWT claims?
     const claims = request.user as unknown as TokenClaims;
 
-    request.log.debug({ claims }, 'Retrieving user info for request');
+    request.log.debug({ claims }, "Retrieving user info for request");
     if (!request.user?.sub) {
-      request.log.error({ claims }, 'No user subject found for request');
+      request.log.error({ claims }, "No user subject found for request");
       return reply.unauthorized();
     }
 
     const user = await enureOIDCUser(claims);
     if (!user) {
-      request.log.error({ claims }, 'No user found for request');
+      request.log.error({ claims }, "No user found for request");
       return reply.unauthorized();
     }
 
-    request.log.trace({ user }, 'User/Auth info loaded');
+    request.log.trace({ user }, "User/Auth info loaded");
     request.user = { ...claims, ...user };
   });
 
@@ -377,7 +377,7 @@ await fastify.register(async (instance) => {
    * Route /bookmarks to resources?
    */
   await instance.register(resources, {
-    prefix: '/bookmarks',
+    prefix: "/bookmarks",
     prefixPath(request) {
       return request.user!.bookmarks._id;
     },
@@ -387,7 +387,7 @@ await fastify.register(async (instance) => {
    * Route /shares to resources?
    */
   await instance.register(resources, {
-    prefix: '/shares',
+    prefix: "/shares",
     prefixPath(request) {
       return request.user!.shares._id;
     },
@@ -397,9 +397,9 @@ await fastify.register(async (instance) => {
    * Handle /resources
    */
   await instance.register(resources, {
-    prefix: '/resources',
+    prefix: "/resources",
     prefixPath() {
-      return 'resources';
+      return "resources";
     },
   });
 
@@ -407,28 +407,28 @@ await fastify.register(async (instance) => {
    * Handle /users
    */
   await instance.register(users, {
-    prefix: '/users',
+    prefix: "/users",
   });
 
   /**
    * Handle /authorizations
    */
   await instance.register(authorizations, {
-    prefix: '/authorizations',
+    prefix: "/authorizations",
   });
 });
 
 const stats = nstats(fastify.websocketServer);
 const plugin = stats.fastify();
 
-plugin[Symbol.for('plugin-meta')].fastify = '>=3.0.0';
+plugin[Symbol.for("plugin-meta")].fastify = ">=3.0.0";
 await fastify.register(plugin);
 
 if (esMain(import.meta)) {
   try {
     await start();
   } catch (error: unknown) {
-    fastify.log.fatal({ error }, 'Failed to start server');
+    fastify.log.fatal({ error }, "Failed to start server");
     // eslint-disable-next-line unicorn/no-process-exit, n/no-process-exit
     process.exit(1);
   }
@@ -439,7 +439,7 @@ if (esMain(import.meta)) {
  */
 async function close(error: Error): Promise<void> {
   try {
-    fastify.log.fatal(error, 'Attempting to cleanup server after error.');
+    fastify.log.fatal(error, "Attempting to cleanup server after error.");
     // Try to close server nicely
     await fastify.close();
   } finally {
@@ -449,5 +449,5 @@ async function close(error: Error): Promise<void> {
   }
 }
 
-process.on('uncaughtException', (error) => void close(error));
-process.on('unhandledRejection', (error) => void close(error as Error));
+process.on("uncaughtException", (error) => void close(error));
+process.on("unhandledRejection", (error) => void close(error as Error));

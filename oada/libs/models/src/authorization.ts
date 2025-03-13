@@ -15,15 +15,15 @@
  * limitations under the License.
  */
 
-import { randomBytes } from 'node:crypto';
+import { randomBytes } from "node:crypto";
 
-import type { OmitIndexSignature, Opaque } from 'type-fest';
-import type { JWTPayload } from 'jose';
+import type { OmitIndexSignature, Opaque } from "type-fest";
+import type { JWTPayload } from "jose";
 
-import { makeClass } from '@qlever-llc/interface2class';
+import { makeClass } from "@qlever-llc/interface2class";
 
-import type { Claims } from './oidc.js';
-import { destructure } from './decorators.js';
+import type { Claims } from "./oidc.js";
+import { destructure } from "./decorators.js";
 
 export type AuthorizationID = Opaque<string, Authorization>;
 
@@ -42,9 +42,9 @@ class Authorization extends makeClass<
   constructor(
     rest: Partial<Authorization> = {},
     override readonly sub: string,
-    override readonly jti = randomBytes(16).toString('hex'),
+    override readonly jti = randomBytes(16).toString("hex"),
     // Readonly _id = `authorizations/${generate()}` as AuthorizationID,
-    override readonly scope = '',
+    override readonly scope = "",
     override readonly roles: readonly string[] = [],
     override readonly iat = Date.now() / 1000,
     // TODO: Config for default expiration?

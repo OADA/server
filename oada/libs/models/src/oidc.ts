@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-import type { LiteralUnion } from 'type-fest';
+import type { LiteralUnion } from "type-fest";
 
 /**
  * This specification defines a set of standard Claims
@@ -127,7 +127,7 @@ export interface StandardClaims {
    *
    * Other values **MAY** be used when neither of the defined values are applicable
    */
-  gender?: LiteralUnion<'male' | 'female', string>;
+  gender?: LiteralUnion<"male" | "female", string>;
   /**
    * End-User's birthday,
    * represented as an {@link https://www.iso.org/standard/81801.html ISO 8601-1} YYYY-MM-DD format
@@ -325,20 +325,20 @@ export type Claims = Record<string, unknown> & RegisteredClaims;
 export type ProfileClaims = Record<string, unknown> &
   Pick<
     Claims,
-    | 'name'
-    | 'family_name'
-    | 'given_name'
-    | 'middle_name'
-    | 'nickname'
-    | 'preferred_username'
-    | 'profile'
-    | 'picture'
-    | 'website'
-    | 'gender'
-    | 'birthdate'
-    | 'zoneinfo'
-    | 'locale'
-    | 'updated_at'
+    | "name"
+    | "family_name"
+    | "given_name"
+    | "middle_name"
+    | "nickname"
+    | "preferred_username"
+    | "profile"
+    | "picture"
+    | "website"
+    | "gender"
+    | "birthdate"
+    | "zoneinfo"
+    | "locale"
+    | "updated_at"
   >;
 
 /**
@@ -350,7 +350,7 @@ export type ProfileClaims = Record<string, unknown> &
  * @see {@link StandardClaims.email_verified}
  */
 export type EmailClaims = Record<string, unknown> &
-  Pick<Claims, 'email' | 'email_verified'>;
+  Pick<Claims, "email" | "email_verified">;
 
 /**
  * End-User's `address` Claim
@@ -359,7 +359,7 @@ export type EmailClaims = Record<string, unknown> &
  *
  * @see {@link StandardClaims.address}
  */
-export type AddressClaims = Record<string, unknown> & Pick<Claims, 'address'>;
+export type AddressClaims = Record<string, unknown> & Pick<Claims, "address">;
 
 /**
  * End-User's `phone_number` and `phone_number_verified` Claims
@@ -370,4 +370,4 @@ export type AddressClaims = Record<string, unknown> & Pick<Claims, 'address'>;
  * @see {@link StandardClaims.phone_number_verified}
  */
 export type PhoneClaims = Record<string, unknown> &
-  Pick<Claims, 'phone_number' | 'phone_number_verified'>;
+  Pick<Claims, "phone_number" | "phone_number_verified">;

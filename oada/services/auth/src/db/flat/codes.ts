@@ -15,9 +15,9 @@
  * limitations under the License.
  */
 
-import type { Code } from '../models/code.js';
+import type { Code } from "../models/code.js";
 // @ts-expect-error IDEK
-import codes from './codes.json';
+import codes from "./codes.json";
 
 const database = new Map<string, Code>(Object.entries(codes));
 

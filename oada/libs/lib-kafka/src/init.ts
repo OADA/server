@@ -15,16 +15,16 @@
  * limitations under the License.
  */
 
-import { config } from './config.js';
+import { config } from "./config.js";
 
-import Kafka from './Kafka.js';
+import Kafka from "./Kafka.js";
 
 /**
  * Ensure our Kafka topics exist
  */
 export async function run(): Promise<void> {
   const kafka = new Kafka();
-  const topics = config.get('kafka.topics');
+  const topics = config.get("kafka.topics");
 
   const admin = kafka.admin();
   await admin.connect();

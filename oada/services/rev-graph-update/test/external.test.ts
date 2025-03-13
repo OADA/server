@@ -15,25 +15,25 @@
  * limitations under the License.
  */
 
-import { setTimeout } from 'node:timers/promises';
+import { setTimeout } from "node:timers/promises";
 
-import type { ExecutionContext } from 'ava';
-import test from 'ava';
+import type { ExecutionContext } from "ava";
+import test from "ava";
 
 // DO NOT include ../ because we are testing externally.  Including here will cause admin copy of it
 // to receive some of the kafka responses.
 
-import { connect } from '@oada/client';
+import { connect } from "@oada/client";
 
-const contentType = 'application/vnd.oada.revgraphtest.1+json';
-const topID = 'resources/REVGRAPHTEST_TOP1';
-const middleID = 'resources/REVGRAPHTEST_MIDDLE1';
-const bottomID = 'resources/REVGRAPHTEST_BOTTOM1';
+const contentType = "application/vnd.oada.revgraphtest.1+json";
+const topID = "resources/REVGRAPHTEST_TOP1";
+const middleID = "resources/REVGRAPHTEST_MIDDLE1";
+const bottomID = "resources/REVGRAPHTEST_BOTTOM1";
 
 const con = await connect({
-  domain: process.env.DOMAIN ?? 'localhost',
+  domain: process.env.DOMAIN ?? "localhost",
 
-  token: process.env.TOKEN ?? 'god',
+  token: process.env.TOKEN ?? "god",
 });
 
 test.after(async () => {
@@ -45,12 +45,12 @@ test.beforeEach(async (t) => {
   await buildTree(t);
 });
 
-test('Should properly update the _rev on parent when a child is changed', async (t) => {
+test("Should properly update the _rev on parent when a child is changed", async (t) => {
   t.timeout(5000);
   const { data: toprev } = await con.get({ path: `${topID}/_rev` });
   await con.put({
     path: `/${bottomID}`,
-    data: { change1: 'isdone' },
+    data: { change1: "isdone" },
     contentType,
   });
   await setTimeout(500); // Give it a second to update the parent
@@ -58,7 +58,7 @@ test('Should properly update the _rev on parent when a child is changed', async 
   t.is(newtoprev, Number(toprev) + 1);
 });
 
-test('Should set _rev to 0 on parent when child resource is deleted', async (t) => {
+test("Should set _rev to 0 on parent when child resource is deleted", async (t) => {
   t.timeout(5000);
   await con.delete({ path: `/${bottomID}` });
   await setTimeout(500); // Give it a second to update the parent
@@ -67,13 +67,13 @@ test('Should set _rev to 0 on parent when child resource is deleted', async (t) 
   t.is(middle?.bottom?._rev, 0);
 });
 
-test('Should not have infinite recursion when a deep loop is present', async (t) => {
+test("Should not have infinite recursion when a deep loop is present", async (t) => {
   await con.put({
     path: `/${bottomID}`,
     data: { middle: { _id: middleID, _rev: 0 } },
   }); // Cycle middle -> bottom -> middle -> bottom -> ...
   // Write again to bottom just for good measure
-  await con.put({ path: `/${bottomID}`, data: { change2: 'isdone' } });
+  await con.put({ path: `/${bottomID}`, data: { change2: "isdone" } });
   await setTimeout(500);
   const { data: newmiddlerev } = await con.get({ path: `/${middleID}/_rev` });
   t.is(newmiddlerev, 3);
@@ -83,21 +83,21 @@ async function buildTree(t: ExecutionContext) {
   try {
     await con.put({
       path: `/${bottomID}`,
-      data: { iam: 'bottom' },
+      data: { iam: "bottom" },
       contentType,
     });
     await con.put({
       path: `/${middleID}`,
-      data: { iam: 'middle', bottom: { _id: bottomID, _rev: 0 } },
+      data: { iam: "middle", bottom: { _id: bottomID, _rev: 0 } },
       contentType,
     });
     await con.put({
       path: `/${topID}`,
-      data: { iam: 'top', middle: { _id: middleID, _rev: 0 } },
+      data: { iam: "top", middle: { _id: middleID, _rev: 0 } },
       contentType,
     });
   } catch (error: unknown) {
-    t.log(error, 'FAILED TO BUILD TREE');
+    t.log(error, "FAILED TO BUILD TREE");
     throw error as Error;
   }
 }

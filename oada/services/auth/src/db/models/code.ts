@@ -15,24 +15,24 @@
  * limitations under the License.
  */
 
-import { config } from '../../config.js';
+import { config } from "../../config.js";
 
-import debug from 'debug';
+import debug from "debug";
 
-import type { CodeID } from '@oada/lib-arangodb/dist/libs/codes.js';
+import type { CodeID } from "@oada/lib-arangodb/dist/libs/codes.js";
 
-import { type Store, getDataStores, tryDataStores } from './index.js';
+import { type Store, getDataStores, tryDataStores } from "./index.js";
 
-const trace = debug('model-codes:trace');
+const trace = debug("model-codes:trace");
 
 export interface ICodes extends Store {
-  findByCode(code: Code['code']): Promise<ICode | undefined>;
+  findByCode(code: Code["code"]): Promise<ICode | undefined>;
   save(code: Code): Promise<void>;
 }
 
 const dataStores = await getDataStores<ICodes>(
-  config.get('auth.code.dataStore'),
-  'codes',
+  config.get("auth.code.dataStore"),
+  "codes",
 );
 
 export interface ICode {
@@ -83,17 +83,17 @@ export class Code implements ICode {
     this.redirectUri = redirectUri;
 
     if (!this.isValid()) {
-      throw new Error('Invalid code');
+      throw new Error("Invalid code");
     }
   }
 
   isValid() {
     return (
-      typeof this.code === 'string' &&
+      typeof this.code === "string" &&
       Array.isArray(this.scope) &&
-      typeof this.user === 'object' &&
-      typeof this.clientId === 'string' &&
-      typeof this.redirectUri === 'string'
+      typeof this.user === "object" &&
+      typeof this.clientId === "string" &&
+      typeof this.redirectUri === "string"
     );
   }
 
@@ -116,19 +116,19 @@ export class Code implements ICode {
   async redeem() {
     this.redeemed = true;
 
-    trace('makeCode#redeem: saving redeemed code ', this.code);
+    trace("makeCode#redeem: saving redeemed code ", this.code);
     await dataStores[0]!.save(this);
 
     const redeemed = await findByCode(this.code);
     if (!redeemed) {
-      throw new Error('Could not redeem code');
+      throw new Error("Could not redeem code");
     }
 
     return redeemed;
   }
 }
 
-export async function findByCode(code: Code['code']) {
+export async function findByCode(code: Code["code"]) {
   async function findCodeByCode(dataStore: ICodes) {
     const c = await dataStore.findByCode(code);
     return c ? new Code(c) : undefined;
@@ -143,7 +143,7 @@ export async function save(c: ICode) {
   await dataStores[0]!.save(code);
   const saved = await findByCode(code.code);
   if (!saved) {
-    throw new Error('Could not save code');
+    throw new Error("Could not save code");
   }
 
   return saved;

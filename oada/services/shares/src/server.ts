@@ -15,29 +15,29 @@
  * limitations under the License.
  */
 
-import '@oada/pino-debug';
+import "@oada/pino-debug";
 
-import { config } from './config.js';
+import { config } from "./config.js";
 
-import '@oada/lib-prom';
+import "@oada/lib-prom";
 
-import { changes, users } from '@oada/lib-arangodb';
-import type { KafkaBase } from '@oada/lib-kafka';
-import { ReResponder } from '@oada/lib-kafka';
+import { changes, users } from "@oada/lib-arangodb";
+import type { KafkaBase } from "@oada/lib-kafka";
+import { ReResponder } from "@oada/lib-kafka";
 
-import type { WriteRequest, WriteResponse } from '@oada/write-handler';
+import type { WriteRequest, WriteResponse } from "@oada/write-handler";
 
-import debug from 'debug';
+import debug from "debug";
 
-const error = debug('shares:error');
-const trace = debug('shares:trace');
+const error = debug("shares:error");
+const trace = debug("shares:trace");
 
 // ---------------------------------------------------------
 // Kafka initializations:
 const responder = new ReResponder({
-  consumeTopic: config.get('kafka.topics.httpResponse'),
-  produceTopic: config.get('kafka.topics.writeRequest'),
-  group: 'shares',
+  consumeTopic: config.get("kafka.topics.httpResponse"),
+  produceTopic: config.get("kafka.topics.writeRequest"),
+  group: "shares",
 });
 
 export async function stopResp(): Promise<void> {
@@ -48,10 +48,10 @@ export async function stopResp(): Promise<void> {
  * Filter for successful write responses
  */
 function checkRequest(request: KafkaBase): request is WriteResponse {
-  return request?.msgtype === 'write-response' && request?.code === 'success';
+  return request?.msgtype === "write-response" && request?.code === "success";
 }
 
-responder.on<WriteRequest>('request', async function* (request) {
+responder.on<WriteRequest>("request", async function* (request) {
   if (!checkRequest(request)) {
     return;
   }
@@ -64,33 +64,33 @@ responder.on<WriteRequest>('request', async function* (request) {
     // Get user's /shares and add this
     const change = await changes.getChange(request.resource_id, request._rev);
     if (
-      change?.type === 'merge' &&
-      typeof change.body?._meta === 'object' &&
+      change?.type === "merge" &&
+      typeof change.body?._meta === "object" &&
       change.body._meta &&
-      '_permissions' in (change.body?._meta ?? {})
+      "_permissions" in (change.body?._meta ?? {})
     ) {
       const { _permissions: permissions } = change.body._meta as {
         _permissions: Record<string, unknown>;
       };
       for await (const id of Object.keys(permissions)) {
-        trace('Change made on user: %s', id);
+        trace("Change made on user: %s", id);
         const user = await users.findById(id);
         if (!user) {
-          error('Failed to find user by id %s', id);
+          error("Failed to find user by id %s", id);
           continue;
         }
 
-        trace('making a write request to /shares for user - %s %s', id, user);
+        trace("making a write request to /shares for user - %s %s", id, user);
         yield {
           resource_id: user.shares._id,
-          path_leftover: '',
+          path_leftover: "",
           //						'meta_id': req['meta_id'],
           user_id: user.sub,
           //					 'authorizationid': req.user.doc['authorizationid'],
           //			     'client_id': req.user.doc['client_id'],
-          contentType: 'application/vnd.oada.permission.1+json',
+          contentType: "application/vnd.oada.permission.1+json",
           body: {
-            [request.resource_id.replace(/^resources\//, '')]: {
+            [request.resource_id.replace(/^resources\//, "")]: {
               _id: request.resource_id,
             },
           },

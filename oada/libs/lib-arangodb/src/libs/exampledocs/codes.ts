@@ -15,19 +15,19 @@
  * limitations under the License.
  */
 
-import type { Code, CodeID } from '../codes.js';
+import type { Code, CodeID } from "../codes.js";
 
 export default [
   {
-    _id: 'codes/default:codes_xyz_123' as CodeID,
-    code: 'xyz',
+    _id: "codes/default:codes_xyz_123" as CodeID,
+    code: "xyz",
     scope: [],
-    nonce: '',
-    user: 'users/123frank',
+    nonce: "",
+    user: "users/123frank",
     createTime: 1_413_831_649_937,
     expiresIn: 60,
     redeemed: true,
-    clientId: 'jf93caauf3uzud7f308faesf3@provider.oada-dev.com',
-    redirectUri: 'http://client.oada-dev.com/redirect',
+    clientId: "jf93caauf3uzud7f308faesf3@provider.oada-dev.com",
+    redirectUri: "http://client.oada-dev.com/redirect",
   },
 ] as const satisfies Code[];

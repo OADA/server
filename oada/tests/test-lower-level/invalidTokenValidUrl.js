@@ -1,45 +1,27 @@
-/**
- * @license
- * Copyright 2021 Open Ag Data Alliance
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-'use strict';
-
 /*
   Testing script 1:
     - The scenario for invalid token + valid URL.
  */
 
-const config = require('../config');
+const config = require("../config");
 // Config.set('isTest', true);
 
-const debug = require('debug');
-const trace = debug('tests:trace');
-const info = debug('tests:info');
-const error = debug('tests:error');
-const debugMark = ' => ';
+const debug = require("debug");
+const trace = debug("tests:trace");
+const info = debug("tests:info");
+const error = debug("tests:error");
+const debugMark = " => ";
 
-const { expect } = require('chai');
-const axios = require('axios');
-const kf = require('kafka-node');
-const Promise = require('bluebird');
-const validator = require('validator');
+const { expect } = require("chai");
+const axios = require("axios");
+const kf = require("kafka-node");
+const Promise = require("bluebird");
+const validator = require("validator");
 
 // To test the token lookup, we need a dummy data base. Note that isTest has
 // been set to true in package.json so that oadalib will populate the database
 // according to exmpledocs for us.
-const oadaLib = require('@oada/lib-arangodb');
+const oadaLib = require("@oada/lib-arangodb");
 // Used to create the database and populate it with the default testing data.
 const setDatabaseP = oadaLib.init.run().catch((error_) => {
   error(error_);
@@ -47,33 +29,33 @@ const setDatabaseP = oadaLib.init.run().catch((error_) => {
 
 // Real tests.
 info(`${debugMark}Starting tests... (for invalidTokenValidUrl)`);
-const FOO_INVALID_TOKEN = 'fooInvalidToken-tests';
+const FOO_INVALID_TOKEN = "fooInvalidToken-tests";
 
 const tokenToUse = FOO_INVALID_TOKEN;
-const VALID_GET_REQ_URL = '/bookmarks/rocks/rocks-index/90j2klfdjss';
+const VALID_GET_REQ_URL = "/bookmarks/rocks/rocks-index/90j2klfdjss";
 const url = `http://proxy${VALID_GET_REQ_URL}`;
 
-describe('Invalid Token with Valid URL', () => {
+describe("Invalid Token with Valid URL", () => {
   // Get the Kafka consumers ready.
   const cs_token_request = new kf.ConsumerGroup(
     {
-      host: 'zookeeper:2181',
-      groupId: 'consume-group-tester-http-handler-token-request',
-      protocol: ['roundrobin'],
-      fromOffset: 'earliest', // Earliest | latest
+      host: "zookeeper:2181",
+      groupId: "consume-group-tester-http-handler-token-request",
+      protocol: ["roundrobin"],
+      fromOffset: "earliest", // Earliest | latest
       sessionTimeout: 15_000,
     },
-    ['token_request'],
+    ["token_request"],
   );
   const cs_http_res = new kf.ConsumerGroup(
     {
-      host: 'zookeeper:2181',
-      groupId: 'consume-group-tester-token-lookup-http-response',
-      protocol: ['roundrobin'],
-      fromOffset: 'earliest', // Earliest | latest
+      host: "zookeeper:2181",
+      groupId: "consume-group-tester-token-lookup-http-response",
+      protocol: ["roundrobin"],
+      fromOffset: "earliest", // Earliest | latest
       sessionTimeout: 15_000,
     },
-    ['http_response'],
+    ["http_response"],
   );
 
   // --------------------------------------------------
@@ -94,7 +76,7 @@ describe('Invalid Token with Valid URL', () => {
   let document = null;
 
   before((done) => {
-    cs_token_request.on('message', (message) => {
+    cs_token_request.on("message", (message) => {
       // To make sure only one message is consumed.
       cs_token_request.close();
 
@@ -107,7 +89,7 @@ describe('Invalid Token with Valid URL', () => {
       token_request = JSON.parse(token_request_string);
     });
 
-    cs_http_res.on('message', (message) => {
+    cs_http_res.on("message", (message) => {
       // To make sure only one message is consumed.
       cs_http_res.close();
 
@@ -152,74 +134,74 @@ describe('Invalid Token with Valid URL', () => {
   });
 
   // Tests for task 1.
-  describe('Task 1: HTTP-Handler', () => {
-    describe('token_request Kafka msg', () => {
-      it('should be a non-empty string', () => {
+  describe("Task 1: HTTP-Handler", () => {
+    describe("token_request Kafka msg", () => {
+      it("should be a non-empty string", () => {
         trace(`token_request_str:${token_request_string}`);
-        expect(token_request_string).to.be.a('String').that.is.not.empty;
+        expect(token_request_string).to.be.a("String").that.is.not.empty;
       });
-      it('should include the correct token', () => {
-        expect(token_request_string).to.contain('token');
+      it("should include the correct token", () => {
+        expect(token_request_string).to.contain("token");
         expect(token_request.token).to.equal(`Bearer ${tokenToUse}`);
       });
-      it('should have an integer resp_partition', () => {
-        expect(token_request_string).to.contain('resp_partition');
-        expect(token_request.resp_partition).to.be.a('number');
+      it("should have an integer resp_partition", () => {
+        expect(token_request_string).to.contain("resp_partition");
+        expect(token_request.resp_partition).to.be.a("number");
       });
-      it('should have a valid UUID connection id string', () => {
-        expect(token_request_string).to.contain('connection_id');
-        expect(token_request.connection_id).to.be.a('String');
+      it("should have a valid UUID connection id string", () => {
+        expect(token_request_string).to.contain("connection_id");
+        expect(token_request.connection_id).to.be.a("String");
         expect(validator.isUUID(token_request.connection_id)).to.be.true;
       });
     });
   });
 
   // Tests for task 2.
-  describe('Task 2: Token-Lookup', () => {
-    describe('http_response_str Kafka msg', () => {
-      it('should be a non-empty string', () => {
-        expect(http_response_string).to.be.a('String');
+  describe("Task 2: Token-Lookup", () => {
+    describe("http_response_str Kafka msg", () => {
+      it("should be a non-empty string", () => {
+        expect(http_response_string).to.be.a("String");
         expect(http_response_string).to.not.be.empty;
       });
-      it('should include the correct token', () => {
-        expect(http_response_string).to.contain('token');
+      it("should include the correct token", () => {
+        expect(http_response_string).to.contain("token");
         expect(http_response.token).to.equal(`Bearer ${tokenToUse}`);
       });
-      it('should indicate the token is invalid', () => {
-        expect(http_response).to.have.property('token_exists').that.is.false;
+      it("should indicate the token is invalid", () => {
+        expect(http_response).to.have.property("token_exists").that.is.false;
       });
       // It('should not repeat resp_partition or partition in the response', () => {
       //   expect(http_response).to.not.have.property('partition');
       //   expect(http_response).to.not.have.property('resp_partition');
       // });
-      it('should be from the partition specified by resp_partition', () => {
+      it("should be from the partition specified by resp_partition", () => {
         expect(http_response_partition).to.equal(token_request.resp_partition);
       });
-      it('should have the correct UUID connection id', () => {
-        expect(http_response_string).to.contain('connection_id');
+      it("should have the correct UUID connection id", () => {
+        expect(http_response_string).to.contain("connection_id");
         expect(http_response.connection_id).to.equal(
           token_request.connection_id,
         );
       });
       it('should have a "doc" field', () => {
-        expect(http_response_string).to.contain('doc');
+        expect(http_response_string).to.contain("doc");
       });
     });
 
     // More for task 2.
     describe('"doc" from the http_response_str Kafka msg', () => {
-      it('should have a null userid', () => {
-        expect(document).to.have.property('userid').that.is.null;
+      it("should have a null userid", () => {
+        expect(document).to.have.property("userid").that.is.null;
       });
-      it('should have a null clientid', () => {
-        expect(document).to.have.property('clientid').that.is.null;
+      it("should have a null clientid", () => {
+        expect(document).to.have.property("clientid").that.is.null;
       });
-      it('should have a null bookmarksid', () => {
-        expect(document).to.have.property('bookmarksid').that.is.null;
+      it("should have a null bookmarksid", () => {
+        expect(document).to.have.property("bookmarksid").that.is.null;
       });
-      it('should have an empty scope string', () => {
+      it("should have an empty scope string", () => {
         // Because the token is invalid, the scope string should be empty.
-        expect(document).to.have.property('scope').that.is.a('String').that.is
+        expect(document).to.have.property("scope").that.is.a("String").that.is
           .empty;
       });
     });
@@ -227,7 +209,7 @@ describe('Invalid Token with Valid URL', () => {
 
   after(() => {
     info(`config = ${config}`);
-    info(`config.isTest = ${config.get('isTest')}`);
+    info(`config.isTest = ${config.get("isTest")}`);
     return oadaLib.init.cleanup();
   });
 });

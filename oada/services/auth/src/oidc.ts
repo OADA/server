@@ -15,26 +15,26 @@
  * limitations under the License.
  */
 
-import { join } from 'node:path/posix';
+import { join } from "node:path/posix";
 
-import { config } from './config.js';
+import { config } from "./config.js";
 
-import type { FastifyPluginAsync } from 'fastify';
-import fastifyAccepts from '@fastify/accepts';
+import type { FastifyPluginAsync } from "fastify";
+import fastifyAccepts from "@fastify/accepts";
 
 import {
   Issuer,
   Strategy as OIDCStrategy,
   type StrategyVerifyCallbackUserInfo,
   errors,
-} from 'openid-client';
-import { type OAuth2Server, createServer } from 'oauth2orize';
-import { SignJWT, exportJWK } from 'jose';
-import oauth2orizeOpenId, { type IssueIDToken } from 'oauth2orize-openid';
+} from "openid-client";
+import { type OAuth2Server, createServer } from "oauth2orize";
+import { SignJWT, exportJWK } from "jose";
+import oauth2orizeOpenId, { type IssueIDToken } from "oauth2orize-openid";
 
-import memoize from 'p-memoize';
+import memoize from "p-memoize";
 
-import { plugin as wkj } from '@oada/well-known-json/plugin';
+import { plugin as wkj } from "@oada/well-known-json/plugin";
 
 import {
   type User,
@@ -42,14 +42,14 @@ import {
   findByOIDCUsername,
   register,
   update,
-} from './db/models/user.js';
-import { getKeyPair, jwksPublic as oauthJWKs } from './keys.js';
-import { issueCode, issueToken } from './oauth2.js';
-import type { Client } from './db/models/client.js';
-import type { JsonSchemaToTsProvider } from '@fastify/type-provider-json-schema-to-ts';
-import { createUserinfo } from './utils.js';
-import { fastifyPassport } from './auth.js';
-import { requestContext } from '@fastify/request-context';
+} from "./db/models/user.js";
+import { getKeyPair, jwksPublic as oauthJWKs } from "./keys.js";
+import { issueCode, issueToken } from "./oauth2.js";
+import type { Client } from "./db/models/client.js";
+import type { JsonSchemaToTsProvider } from "@fastify/type-provider-json-schema-to-ts";
+import { createUserinfo } from "./utils.js";
+import { fastifyPassport } from "./auth.js";
+import { requestContext } from "@fastify/request-context";
 
 export interface Options {
   oauth2server?: OAuth2Server;
@@ -59,24 +59,24 @@ export interface Options {
   };
 }
 
-declare module 'oauth2orize' {
+declare module "oauth2orize" {
   interface OAuth2Req {
     userinfo?: boolean;
   }
 }
 
-declare module 'openid-client' {
+declare module "openid-client" {
   interface TypeOfGenericClient {
     register(
-      metadata: Omit<ClientMetadata, 'client_id'>,
+      metadata: Omit<ClientMetadata, "client_id">,
       other?: RegisterOther & ClientOptions,
     ): Promise<BaseClient>;
   }
 }
 
-const idToken = config.get('auth.idToken');
+const idToken = config.get("auth.idToken");
 
-const kid = 'openid-1';
+const kid = "openid-1";
 
 // TODO: Support key rotation and stuff
 const { publicKey, privateKey } = await getKeyPair(
@@ -88,7 +88,7 @@ const jwksPublic = {
     {
       kid,
       alg: idToken.alg,
-      use: 'sig',
+      use: "sig",
       ...(await exportJWK(publicKey)),
     },
     ...oauthJWKs.keys,
@@ -115,7 +115,7 @@ export const issueIdToken: IssueIDToken<Client, User> = async (
     nonce: request.nonce,
   };
 
-  const issuer = requestContext.get('issuer')!;
+  const issuer = requestContext.get("issuer")!;
   const token = await new SignJWT(payload)
     .setProtectedHeader({ kid, alg: idToken.alg })
     .setIssuedAt()
@@ -135,7 +135,7 @@ const plugin: FastifyPluginAsync<Options> = async (
   f,
   {
     oauth2server = createServer(),
-    endpoints: { oidcLogin = 'oidc-login' } = {},
+    endpoints: { oidcLogin = "oidc-login" } = {},
   },
 ) => {
   // @ts-expect-error IDK
@@ -143,7 +143,7 @@ const plugin: FastifyPluginAsync<Options> = async (
 
   oauth2server.grant(oauth2orizeOpenId.extensions());
 
-  if (config.get('auth.oauth2.allowImplicitFlows')) {
+  if (config.get("auth.oauth2.allowImplicitFlows")) {
     // Implicit flow (id_token)
     oauth2server.grant(
       oauth2orizeOpenId.grant.idToken(
@@ -194,19 +194,19 @@ const plugin: FastifyPluginAsync<Options> = async (
         const redirect = `https://${join(encodeURIComponent(from), fastify.prefix, oidcLogin, encodeURIComponent(to))}`;
         const { metadata } = await issuer.Client.register(
           {
-            client_name: 'OADA Auth Server',
+            client_name: "OADA Auth Server",
             // Software_statement: domainConfig.software_statement,
             redirect_uris: [redirect],
-            id_token_signed_response_alg: 'HS256',
+            id_token_signed_response_alg: "HS256",
           },
           { jwks: jwksPrivate },
         );
         const client = new issuer.Client({
           ...metadata,
           // FIXME: Why does Auth0 need this?
-          id_token_signed_response_alg: 'HS256',
+          id_token_signed_response_alg: "HS256",
         });
-        fastify.log.debug({ client, from, to }, 'Registered client with OIDC');
+        fastify.log.debug({ client, from, to }, "Registered client with OIDC");
 
         const name = `oidc-${from}-${to}` as const;
         fastifyPassport.use(
@@ -215,15 +215,15 @@ const plugin: FastifyPluginAsync<Options> = async (
             {
               client,
               params: {
-                prompt: 'consent',
-                scope: 'openid profile email',
+                prompt: "consent",
+                scope: "openid profile email",
               },
             },
             (async (tokenSet, user, done) => {
               try {
                 fastify.log.debug(
                   { client, tokenSet, user },
-                  'OIDC user verify callback',
+                  "OIDC user verify callback",
                 );
                 const claims = tokenSet.claims();
                 let u =
@@ -236,8 +236,8 @@ const plugin: FastifyPluginAsync<Options> = async (
 
                 if (!u) {
                   if (
-                    !config.get('auth.oidc.enable') &&
-                    config.get('oidc.issuer') !== claims.iss
+                    !config.get("auth.oidc.enable") &&
+                    config.get("oidc.issuer") !== claims.iss
                   ) {
                     // We don't have a user with this sub or username,
                     // so they don't have an account
@@ -276,7 +276,7 @@ const plugin: FastifyPluginAsync<Options> = async (
     },
     {
       cacheKey(all) {
-        return all.join(',');
+        return all.join(",");
       },
     },
   );
@@ -288,14 +288,14 @@ const plugin: FastifyPluginAsync<Options> = async (
     {
       schema: {
         body: {
-          type: 'object',
+          type: "object",
           properties: {
             dest_domain: {
-              type: 'string',
-              format: 'uri',
+              type: "string",
+              format: "uri",
             },
           },
-          required: ['dest_domain'],
+          required: ["dest_domain"],
         },
       },
     },
@@ -306,18 +306,18 @@ const plugin: FastifyPluginAsync<Options> = async (
     },
   );
   fastify.get(
-    join(oidcLogin, '/:dest_domain'),
+    join(oidcLogin, "/:dest_domain"),
     {
       schema: {
         params: {
-          type: 'object',
+          type: "object",
           properties: {
             dest_domain: {
-              type: 'string',
-              format: 'uri',
+              type: "string",
+              format: "uri",
             },
           },
-          required: ['dest_domain'],
+          required: ["dest_domain"],
         },
       },
       async preValidation(request, reply) {
@@ -341,12 +341,12 @@ const plugin: FastifyPluginAsync<Options> = async (
               async (req, res, error, user, info, status) => {
                 const cause =
                   error ?? (info instanceof Error ? info : undefined);
-                request.log[cause ? 'error' : 'trace'](
+                request.log[cause ? "error" : "trace"](
                   { req, res, err: cause, error, user, info, status },
-                  'OIDC authenticate callback',
+                  "OIDC authenticate callback",
                 );
                 if (cause) {
-                  throw new Error('OIDC authentication failure', { cause });
+                  throw new Error("OIDC authentication failure", { cause });
                 }
               },
             )
@@ -357,17 +357,17 @@ const plugin: FastifyPluginAsync<Options> = async (
     },
     // eslint-disable-next-line @typescript-eslint/require-await
     async (request) =>
-      process.env.NODE_ENV === 'production' ? 'Logged in' : request.user,
+      process.env.NODE_ENV === "production" ? "Logged in" : request.user,
   );
 
   // eslint-disable-next-line @typescript-eslint/require-await
-  fastify.get(config.get('auth.endpoints.certs'), async () => jwksPublic);
+  fastify.get(config.get("auth.endpoints.certs"), async () => jwksPublic);
 
   fastify.get(
-    config.get('auth.endpoints.userinfo'),
+    config.get("auth.endpoints.userinfo"),
     {
       // @ts-expect-error type bs
-      preValidation: fastifyPassport.authenticate('bearer', { session: false }),
+      preValidation: fastifyPassport.authenticate("bearer", { session: false }),
     },
     async (request, reply) => {
       const userinfo = createUserinfo(
@@ -385,46 +385,46 @@ const plugin: FastifyPluginAsync<Options> = async (
 
   // TODO: Should this just be in the well-known service?
   const configuration = {
-    issuer: './', // Config.get('auth.server.publicUri'),
-    registration_endpoint: `.${join('/', fastify.prefix, config.get('auth.endpoints.register'))}`,
-    authorization_endpoint: `.${join('/', fastify.prefix, config.get('auth.endpoints.authorize'))}`,
-    token_endpoint: `.${join('/', fastify.prefix, config.get('auth.endpoints.token'))}`,
-    device_authorization_endpoint: `.${join('/', fastify.prefix, config.get('auth.endpoints.deviceAuthorization'))}`,
-    userinfo_endpoint: `.${join('/', fastify.prefix, config.get('auth.endpoints.userinfo'))}`,
-    jwks_uri: `.${join('/', fastify.prefix, config.get('auth.endpoints.certs'))}`,
+    issuer: "./", // Config.get('auth.server.publicUri'),
+    registration_endpoint: `.${join("/", fastify.prefix, config.get("auth.endpoints.register"))}`,
+    authorization_endpoint: `.${join("/", fastify.prefix, config.get("auth.endpoints.authorize"))}`,
+    token_endpoint: `.${join("/", fastify.prefix, config.get("auth.endpoints.token"))}`,
+    device_authorization_endpoint: `.${join("/", fastify.prefix, config.get("auth.endpoints.deviceAuthorization"))}`,
+    userinfo_endpoint: `.${join("/", fastify.prefix, config.get("auth.endpoints.userinfo"))}`,
+    jwks_uri: `.${join("/", fastify.prefix, config.get("auth.endpoints.certs"))}`,
     response_types_supported: [
-      ...(config.get('auth.oauth2.allowImplicitFlows')
-        ? (['token', 'id_token', 'id_token token'] as const)
+      ...(config.get("auth.oauth2.allowImplicitFlows")
+        ? (["token", "id_token", "id_token token"] as const)
         : []),
-      'code',
-      'code token',
-      'code id_token',
-      'code id_token token',
+      "code",
+      "code token",
+      "code id_token",
+      "code id_token token",
     ],
-    subject_types_supported: ['public'],
-    id_token_signing_alg_values_supported: [config.get('auth.idToken.alg')],
-    token_endpoint_auth_methods_supported: ['client_secret_post'],
+    subject_types_supported: ["public"],
+    id_token_signing_alg_values_supported: [config.get("auth.idToken.alg")],
+    token_endpoint_auth_methods_supported: ["client_secret_post"],
   } as const;
 
-  fastify.log.debug({ configuration }, 'Loaded OIDC configuration');
+  fastify.log.debug({ configuration }, "Loaded OIDC configuration");
 
   // Redirect other OIDC config endpoints to openid-configuration endpoint
   await fastify.register(
     // eslint-disable-next-line @typescript-eslint/require-await
     async (app) => {
-      app.all('/oada-configuration', {}, async (_request, reply) =>
-        reply.redirect('openid-configuration', 301),
+      app.all("/oada-configuration", {}, async (_request, reply) =>
+        reply.redirect("openid-configuration", 301),
       );
-      app.all('/oauth-authorization-server', {}, async (_request, reply) =>
-        reply.redirect('openid-configuration', 301),
+      app.all("/oauth-authorization-server", {}, async (_request, reply) =>
+        reply.redirect("openid-configuration", 301),
       );
     },
-    { prefix: '/.well-known/' },
+    { prefix: "/.well-known/" },
   );
 
   await fastify.register(wkj, {
     resources: {
-      'openid-configuration': configuration,
+      "openid-configuration": configuration,
     },
   });
 };

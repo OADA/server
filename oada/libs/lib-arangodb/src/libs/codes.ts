@@ -15,12 +15,12 @@
  * limitations under the License.
  */
 
-import type { Opaque } from 'type-fest';
-import { aql } from 'arangojs';
+import type { Opaque } from "type-fest";
+import { aql } from "arangojs";
 
-import { config } from '../config.js';
-import { db as database } from '../db.js';
-import { sanitizeResult } from '../util.js';
+import { config } from "../config.js";
+import { db as database } from "../db.js";
+import { sanitizeResult } from "../util.js";
 
 export type CodeID = Opaque<string, Code>;
 export interface Code {
@@ -42,7 +42,7 @@ export type DBCode = {
 } & Code;
 
 const codes = database.collection(
-  config.get('arangodb.collections.codes.name'),
+  config.get("arangodb.collections.codes.name"),
 );
 
 export async function findByCode(code: string): Promise<DBCode | undefined> {

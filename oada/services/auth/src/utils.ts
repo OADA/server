@@ -15,9 +15,9 @@
  * limitations under the License.
  */
 
-import { promisify } from 'node:util';
+import { promisify } from "node:util";
 
-import type { MiddlewareErrorFunction, MiddlewareFunction } from 'oauth2orize';
+import type { MiddlewareErrorFunction, MiddlewareFunction } from "oauth2orize";
 
 export function isArray(
   value: unknown,
@@ -48,7 +48,7 @@ export function createUserinfo(
 ) {
   const userinfo: Record<string, unknown> = {};
 
-  if (scopes.includes('profile')) {
+  if (scopes.includes("profile")) {
     Object.assign(userinfo, {
       sub: user.id,
       name: user.name,
@@ -68,7 +68,7 @@ export function createUserinfo(
     });
   }
 
-  if (scopes.includes('email')) {
+  if (scopes.includes("email")) {
     Object.assign(userinfo, {
       sub: user.id,
       email: user.email,
@@ -76,14 +76,14 @@ export function createUserinfo(
     });
   }
 
-  if (scopes.includes('address')) {
+  if (scopes.includes("address")) {
     Object.assign(userinfo, {
       sub: user.id,
       address: user.address,
     });
   }
 
-  if (scopes.includes('phone')) {
+  if (scopes.includes("phone")) {
     Object.assign(userinfo, {
       sub: user.id,
       phone_number: user.phone_number,

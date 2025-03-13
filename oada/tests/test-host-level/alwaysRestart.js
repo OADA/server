@@ -1,21 +1,3 @@
-/**
- * @license
- * Copyright 2021 Open Ag Data Alliance
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-'use strict';
-
 /*
   Note: This test requires monitoring over Docker containers, so it is not
   isolated in the tests container; Please run it on the host machine or using
@@ -28,31 +10,31 @@
   not.
  */
 
-describe('Components should be restarted after being killed', () => {
+describe("Components should be restarted after being killed", () => {
   // Config.set('isTest', true);
 
-  const debug = require('debug');
-  const trace = debug('tests:trace');
-  const info = debug('tests:info');
-  const error = debug('tests:error');
+  const debug = require("debug");
+  const trace = debug("tests:trace");
+  const info = debug("tests:info");
+  const error = debug("tests:error");
 
-  const { expect } = require('chai');
-  const Promise = require('bluebird');
+  const { expect } = require("chai");
+  const Promise = require("bluebird");
 
-  const { exec } = require('node-exec-promise');
+  const { exec } = require("node-exec-promise");
 
   const REQUIRED_CONTAINER_NAMES = [
-    'arangodb',
-    'auth',
-    'graph-lookup',
-    'http-handler',
-    'hitman',
-    'proxy',
-    'rev-graph-update',
-    'startup',
-    'token-lookup',
-    'well-known',
-    'write-handler',
+    "arangodb",
+    "auth",
+    "graph-lookup",
+    "http-handler",
+    "hitman",
+    "proxy",
+    "rev-graph-update",
+    "startup",
+    "token-lookup",
+    "well-known",
+    "write-handler",
   ];
 
   const containersAreRunning = Array.apply(
@@ -69,7 +51,7 @@ describe('Components should be restarted after being killed', () => {
         trace(
           `  execResult for ${containerName}: ${JSON.stringify(execResult)}`,
         );
-        const isRunning = execResult.stdout.includes('true');
+        const isRunning = execResult.stdout.includes("true");
         trace(`      isRunning: ${isRunning}`);
         containersAreRunning[index] = isRunning;
       });
@@ -86,12 +68,12 @@ describe('Components should be restarted after being killed', () => {
   });
 
   // Tests.
-  describe('containersAreRunning', () => {
+  describe("containersAreRunning", () => {
     trace(`    containersAreRunning: ${containersAreRunning}`);
     for (const [index, containerName] of REQUIRED_CONTAINER_NAMES.entries()) {
       describe(containerName, () => {
-        it('should be running', () => {
-          expect(containersAreRunning[index]).to.be.a('Boolean').equals.true;
+        it("should be running", () => {
+          expect(containersAreRunning[index]).to.be.a("Boolean").equals.true;
         });
       });
     }

@@ -17,10 +17,10 @@
 
 /* eslint-disable unicorn/no-null */
 
-import libConfig from '@oada/lib-config';
+import libConfig from "@oada/lib-config";
 
-import type { CreateCollectionOptions } from 'arangojs/collections';
-import type { EdgeDefinitionOptions } from 'arangojs/graphs';
+import type { CreateCollectionOptions } from "arangojs/collections";
+import type { EdgeDefinitionOptions } from "arangojs/graphs";
 
 export interface Collection {
   name: string;
@@ -48,102 +48,102 @@ export function collection(_value: unknown): asserts _value is Collection {}
 export const { config, schema } = await libConfig({
   arangodbImport: {
     connectionString: {
-      doc: 'URI for connecting to arangodb',
-      format: 'url',
+      doc: "URI for connecting to arangodb",
+      format: "url",
       // eslint-disable-next-line sonarjs/no-clear-text-protocols
-      default: 'http://arangodb:8529',
-      env: 'ARANGODB_IMPORT_URL',
-      arg: 'arangodb-import-url',
+      default: "http://arangodb:8529",
+      env: "ARANGODB_IMPORT_URL",
+      arg: "arangodb-import-url",
     },
     database: {
-      doc: 'database in arangodb to use',
+      doc: "database in arangodb to use",
       format: String,
-      default: 'oada',
-      env: 'ARANGODB_IMPORT_DATABASE',
-      arg: 'arangodb-import-database',
+      default: "oada",
+      env: "ARANGODB_IMPORT_DATABASE",
+      arg: "arangodb-import-database",
     },
     batchSize: {
-      format: 'nat',
+      format: "nat",
       default: 10,
-      env: 'ARANGODB_IMPORT_BATCH_SIZE',
-      arg: 'arangodb-import-batch-size',
+      env: "ARANGODB_IMPORT_BATCH_SIZE",
+      arg: "arangodb-import-batch-size",
     },
     batchThrottle: {
       limit: {
-        format: 'nat',
+        format: "nat",
         default: 1,
-        env: 'ARANGODB_IMPORT_BATCH_LIMIT',
-        arg: 'arangodb-import-batch-limit',
+        env: "ARANGODB_IMPORT_BATCH_LIMIT",
+        arg: "arangodb-import-batch-limit",
       },
       interval: {
-        doc: 'throttle interval in ms',
-        format: 'nat',
+        doc: "throttle interval in ms",
+        format: "nat",
         default: 1000,
-        env: 'ARANGODB_IMPORT_BATCH_INTERVAL',
-        arg: 'arangodb-import-batch-interval',
+        env: "ARANGODB_IMPORT_BATCH_INTERVAL",
+        arg: "arangodb-import-batch-interval",
       },
     },
     overwriteMode: {
-      format: ['replace', 'update', 'ignore'],
-      default: 'replace' as 'replace' | 'update' | 'ignore',
-      env: 'ARANGODB_IMPORT_OVERWRITE_MODE',
-      arg: 'arangodb-import-overwrite-mode',
+      format: ["replace", "update", "ignore"],
+      default: "replace" as "replace" | "update" | "ignore",
+      env: "ARANGODB_IMPORT_OVERWRITE_MODE",
+      arg: "arangodb-import-overwrite-mode",
     },
     auth: {
       username: {
-        doc: 'Username for arangodb authentication',
+        doc: "Username for arangodb authentication",
         format: String,
-        default: 'root',
-        env: 'ARANGODB_IMPORT_USERNAME',
-        arg: 'arangodb-import-username',
+        default: "root",
+        env: "ARANGODB_IMPORT_USERNAME",
+        arg: "arangodb-import-username",
       },
       password: {
-        doc: 'Password for arangodb authentication',
+        doc: "Password for arangodb authentication",
         format: String,
         sensitive: true,
-        default: '',
-        env: 'ARANGODB_IMPORT_PASSWORD',
-        arg: 'arangodb-import-password',
+        default: "",
+        env: "ARANGODB_IMPORT_PASSWORD",
+        arg: "arangodb-import-password",
       },
     },
   },
   arangodb: {
     ensureDefaults: {
-      doc: 'Ensure the default (i.e., debug) documents are loaded',
+      doc: "Ensure the default (i.e., debug) documents are loaded",
       format: Boolean,
       nullable: true,
       default: null,
       // This name is for historical reasons
-      env: 'arangodb__ensureDefaults',
+      env: "arangodb__ensureDefaults",
     },
     connectionString: {
-      doc: 'URI for connecting to arangodb',
-      format: 'url',
+      doc: "URI for connecting to arangodb",
+      format: "url",
       // eslint-disable-next-line sonarjs/no-clear-text-protocols
-      default: 'http://arangodb:8529',
-      env: 'ARANGODB_URL',
-      arg: 'arangodb-url',
+      default: "http://arangodb:8529",
+      env: "ARANGODB_URL",
+      arg: "arangodb-url",
     },
     database: {
-      doc: 'database in arangodb to use',
+      doc: "database in arangodb to use",
       format: String,
-      default: 'oada',
-      env: 'ARANGODB_DATABASE',
-      arg: 'arangodb-database',
+      default: "oada",
+      env: "ARANGODB_DATABASE",
+      arg: "arangodb-database",
     },
     auth: {
       username: {
-        doc: 'Username for arangodb authentication',
+        doc: "Username for arangodb authentication",
         format: String,
-        default: 'root',
-        env: 'ARANGODB_USERNAME',
+        default: "root",
+        env: "ARANGODB_USERNAME",
       },
       password: {
-        doc: 'Password for arangodb authentication',
+        doc: "Password for arangodb authentication",
         format: String,
         sensitive: true,
-        default: '',
-        env: 'ARANGODB_PASSWORD',
+        default: "",
+        env: "ARANGODB_PASSWORD",
       },
     },
 
@@ -151,99 +151,99 @@ export const { config, schema } = await libConfig({
       users: {
         format: Object, // Collection,
         default: {
-          name: 'users',
-          indexes: ['username', 'sub'],
-          defaults: './libs/exampledocs/users.js',
+          name: "users",
+          indexes: ["username", "sub"],
+          defaults: "./libs/exampledocs/users.js",
         },
       },
       clients: {
         format: Object, // Collection,
         default: {
-          name: 'clients',
-          indexes: ['clientId'],
-          defaults: './libs/exampledocs/clients.js',
+          name: "clients",
+          indexes: ["clientId"],
+          defaults: "./libs/exampledocs/clients.js",
         },
       },
       authorizations: {
         format: Object, // Collection,
         default: {
-          name: 'authorizations',
-          indexes: ['token', { name: 'user', unique: false }],
-          defaults: './libs/exampledocs/authorizations.js',
+          name: "authorizations",
+          indexes: ["token", { name: "user", unique: false }],
+          defaults: "./libs/exampledocs/authorizations.js",
         },
       },
       codes: {
         format: Object, // Collection,
         default: {
-          name: 'codes',
-          indexes: ['code'],
-          defaults: './libs/exampledocs/codes.js',
+          name: "codes",
+          indexes: ["code"],
+          defaults: "./libs/exampledocs/codes.js",
         },
       },
       deviceCodes: {
         format: Object, // Collection,
         default: {
-          name: 'deviceCodes',
-          indexes: ['deviceCode', 'userCode'],
+          name: "deviceCodes",
+          indexes: ["deviceCode", "userCode"],
           // Defaults: './libs/exampledocs/deviceCodes.js',
         },
       },
       resources: {
         format: Object, // Collection,
         default: {
-          name: 'resources',
+          name: "resources",
           indexes: [],
-          defaults: './libs/exampledocs/resources.js',
+          defaults: "./libs/exampledocs/resources.js",
         },
       },
       graphNodes: {
         format: Object, // Collection,
         default: {
-          name: 'graphNodes',
+          name: "graphNodes",
           indexes: [],
-          defaults: './libs/exampledocs/graphNodes.js',
+          defaults: "./libs/exampledocs/graphNodes.js",
         },
       },
       changes: {
         format: Object, // Collection,
         default: {
-          name: 'changes',
+          name: "changes",
           indexes: [],
-          defaults: './libs/exampledocs/changes.js',
+          defaults: "./libs/exampledocs/changes.js",
         },
       },
       changeEdges: {
         format: Object, // Collection,
         default: {
-          name: 'changeEdges',
-          indexes: [{ name: 'name', unique: false }],
-          defaults: './libs/exampledocs/changeEdges.js',
+          name: "changeEdges",
+          indexes: [{ name: "name", unique: false }],
+          defaults: "./libs/exampledocs/changeEdges.js",
           edgeCollection: true,
         },
       },
       edges: {
         format: Object, // Collection,
         default: {
-          name: 'edges',
-          indexes: [{ name: 'name', unique: false }],
-          defaults: './libs/exampledocs/edges.js',
+          name: "edges",
+          indexes: [{ name: "name", unique: false }],
+          defaults: "./libs/exampledocs/edges.js",
           edgeCollection: true,
         },
       },
       putBodies: {
         format: Object, // Collection,
         default: {
-          name: 'putBodies',
+          name: "putBodies",
           indexes: [],
-          defaults: './libs/exampledocs/putBodies.js',
+          defaults: "./libs/exampledocs/putBodies.js",
           createOptions: { isVolatile: false },
         },
       },
       remoteResources: {
         format: Object, // Collection,
         default: {
-          name: 'remoteResources',
-          indexes: [{ name: ['domain', 'resource_id'], unique: true }],
+          name: "remoteResources",
+          indexes: [{ name: ["domain", "resource_id"], unique: true }],
         },
       },
       // HACK: convict types don't understand assert
@@ -253,12 +253,12 @@ export const { config, schema } = await libConfig({
       resources: {
         format: Object, // Graph,
         default: {
-          name: 'resources',
+          name: "resources",
           edges: [
             {
-              collection: 'edges',
-              to: 'graphNodes',
-              from: 'graphNodes',
+              collection: "edges",
+              to: "graphNodes",
+              from: "graphNodes",
             },
           ],
         },
@@ -266,12 +266,12 @@ export const { config, schema } = await libConfig({
       changes: {
         format: Object, // Graph,
         default: {
-          name: 'changes',
+          name: "changes",
           edges: [
             {
-              collection: 'changeEdges',
-              to: 'changes',
-              from: 'changes',
+              collection: "changeEdges",
+              to: "changes",
+              from: "changes",
             },
           ],
         },
@@ -280,22 +280,22 @@ export const { config, schema } = await libConfig({
     retry: {
       deadlock: {
         retries: {
-          format: 'int',
+          format: "int",
           default: 10,
         },
         delay: {
-          format: 'int',
+          format: "int",
           default: 50,
         },
       },
     },
     aql: {
       profile: {
-        doc: 'Whether to profile all AQL queries',
-        format: 'int',
+        doc: "Whether to profile all AQL queries",
+        format: "int",
         default: 0 as 0 | 1 | 2,
-        env: 'PROFILE_AQL',
-        arg: 'profile-aql',
+        env: "PROFILE_AQL",
+        arg: "profile-aql",
       },
     },
     init: {
@@ -306,28 +306,28 @@ export const { config, schema } = await libConfig({
   },
   bcrypt: {
     saltRounds: {
-      doc: 'Number of rounds to use for bcrypt salt generation',
-      format: 'nat',
+      doc: "Number of rounds to use for bcrypt salt generation",
+      format: "nat",
       default: 10,
-      env: 'BCRYPT_SALT_ROUNDS',
-      arg: 'bcrypt-salt-rounds',
+      env: "BCRYPT_SALT_ROUNDS",
+      arg: "bcrypt-salt-rounds",
     },
     salt: {
-      doc: 'Predefined salt to use for bcrypt hashing',
+      doc: "Predefined salt to use for bcrypt hashing",
       format: String,
       sensitive: true,
       nullable: true,
       default: null as string | null,
-      env: 'BCRYPT_SALT',
+      env: "BCRYPT_SALT",
     },
   },
   isTest: {
     format: Boolean,
-    default: process.env.NODE_ENV === 'test',
+    default: process.env.NODE_ENV === "test",
   },
 });
 
-if (config.get('isTest')) {
-  const database = config.get('arangodb.database');
-  config.set('arangodb.database', `${database}-test`);
+if (config.get("isTest")) {
+  const database = config.get("arangodb.database");
+  config.set("arangodb.database", `${database}-test`);
 }

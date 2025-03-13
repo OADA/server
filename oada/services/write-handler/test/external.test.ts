@@ -15,22 +15,22 @@
  * limitations under the License.
  */
 
-import type { ExecutionContext } from 'ava';
-import test from 'ava';
+import type { ExecutionContext } from "ava";
+import test from "ava";
 
 // DO NOT include ../ because we are testing externally.  Including here will cause admin copy of it
 // to receive some of the kafka responses.
 
-import type { Change } from '@oada/client';
-import { connect } from '@oada/client';
+import type { Change } from "@oada/client";
+import { connect } from "@oada/client";
 
 const topID = `resources/WRITEHANDLERTEST_TOP1`;
 const middleID = `resources/WRITEHANDLERTEST_MIDDLE1`;
 const bottomID = `resources/WRITEHANDLERTEST_BOTTOM1`;
 
 const con = await connect({
-  domain: process.env.DOMAIN ?? 'localhost',
-  token: process.env.TOKEN ?? 'god',
+  domain: process.env.DOMAIN ?? "localhost",
+  token: process.env.TOKEN ?? "god",
 });
 
 test.beforeEach(async (t) => {
@@ -40,26 +40,26 @@ test.beforeEach(async (t) => {
 
 //    After(async () => cleanup());
 
-test('Should include the link key in the change document when deleting a link to a non-existent resource', async (t) => {
+test("Should include the link key in the change document when deleting a link to a non-existent resource", async (t) => {
   t.timeout(2000);
   await con.put({
     path: `/${topID}`,
-    data: { nonexistentlink: { _id: 'resources/DOESNOTEXIST', _rev: 0 } },
-    contentType: 'application/json',
+    data: { nonexistentlink: { _id: "resources/DOESNOTEXIST", _rev: 0 } },
+    contentType: "application/json",
   });
   const { data: firstrev } = await con.get({ path: `/${topID}/_rev` });
   try {
     await con.delete({ path: `/${topID}/nonexistentlink` });
   } catch (error: unknown) {
-    t.log(error, 'FAILED DELETE');
+    t.log(error, "FAILED DELETE");
   }
 
   const { data: changedocs } = (await con.get({
     path: `/${topID}/_meta/_changes/${Number(firstrev) + 1}`,
   })) as unknown as { data: Change[] };
-  const thechange = changedocs.find((c) => c.type === 'delete');
+  const thechange = changedocs.find((c) => c.type === "delete");
 
-  t.is(thechange?.type, 'delete');
+  t.is(thechange?.type, "delete");
   // eslint-disable-next-line unicorn/no-null
   t.is(thechange?.body?.nonexistentlink, null);
 });
@@ -68,21 +68,21 @@ async function buildTree(t: ExecutionContext) {
   try {
     await con.put({
       path: `/${bottomID}`,
-      data: { iam: 'bottom' },
-      contentType: 'application/json',
+      data: { iam: "bottom" },
+      contentType: "application/json",
     });
     await con.put({
       path: `/${middleID}`,
-      data: { iam: 'middle', bottom: { _id: bottomID, _rev: 0 } },
-      contentType: 'application/json',
+      data: { iam: "middle", bottom: { _id: bottomID, _rev: 0 } },
+      contentType: "application/json",
     });
     await con.put({
       path: `/${topID}`,
-      data: { iam: 'top', middle: { _id: middleID, _rev: 0 } },
-      contentType: 'application/json',
+      data: { iam: "top", middle: { _id: middleID, _rev: 0 } },
+      contentType: "application/json",
     });
   } catch (error: unknown) {
-    t.log(error, 'FAILED TO BUILD TREE');
+    t.log(error, "FAILED TO BUILD TREE");
     throw error;
   }
 }

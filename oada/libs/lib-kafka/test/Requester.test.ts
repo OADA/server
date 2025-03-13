@@ -15,24 +15,24 @@
  * limitations under the License.
  */
 
-import { config } from '../dist/config.js';
+import { config } from "../dist/config.js";
 
-import EventEmitter, { once } from 'node:events';
+import EventEmitter, { once } from "node:events";
 
-import test from 'ava';
+import test from "ava";
 
-import type { Consumer, Producer } from 'kafkajs';
-import { Kafka } from 'kafkajs';
-import { v4 as uuid } from 'uuid';
+import type { Consumer, Producer } from "kafkajs";
+import { Kafka } from "kafkajs";
+import { v4 as uuid } from "uuid";
 
-import { KafkaRequestTimeoutError, Requester } from '../dist/Requester.js';
-import type { KafkaBase } from '../src/Base.js';
+import { KafkaRequestTimeoutError, Requester } from "../dist/Requester.js";
+import type { KafkaBase } from "../src/Base.js";
 
-const REQ_TOPIC = 'test_requests';
-const RES_TOPIC = 'test_responses';
-const GROUP = 'test_group';
+const REQ_TOPIC = "test_requests";
+const RES_TOPIC = "test_responses";
+const GROUP = "test_group";
 
-const kafka = new Kafka({ brokers: config.get('kafka.broker') });
+const kafka = new Kafka({ brokers: config.get("kafka.broker") });
 
 let producer: Producer;
 test.before(async (t) => {
@@ -80,32 +80,32 @@ test.beforeEach(async () => {
     group,
   });
 
-  await once(request, 'ready');
+  await once(request, "ready");
 });
 
 test.afterEach(async () => {
   await request.disconnect();
 });
 
-test('should make a request', async () => {
+test("should make a request", async () => {
   const id = uuid();
-  const object: KafkaBase = { connection_id: id, msgtype: 'test' };
+  const object: KafkaBase = { connection_id: id, msgtype: "test" };
 
   const emitter = new EventEmitter();
   await cons.run({
     async eachMessage({ message: { value } }) {
       // Assume all messages are JSON
       const v: unknown = value && JSON.parse(value.toString());
-      emitter.emit('message', v);
+      emitter.emit("message", v);
 
       // @ts-expect-error stupid errors
       if (v.connection_id === id) {
-        emitter.emit('message', v);
+        emitter.emit("message", v);
       }
     },
   });
 
-  const message = once(emitter, 'message');
+  const message = once(emitter, "message");
   try {
     await request.send(object);
   } catch {
@@ -119,9 +119,9 @@ test('should make a request', async () => {
   return resp;
 });
 
-test('should receive a response', async () => {
+test("should receive a response", async () => {
   const id = uuid();
-  const object: KafkaBase = { connection_id: id, msgtype: 'test' };
+  const object: KafkaBase = { connection_id: id, msgtype: "test" };
 
   const emitter = new EventEmitter();
   await cons.run({
@@ -131,12 +131,12 @@ test('should receive a response', async () => {
 
       // @ts-expect-error stupid errors
       if (v.connection_id === id) {
-        emitter.emit('message', v);
+        emitter.emit("message", v);
       }
     },
   });
 
-  const message = once(emitter, 'message');
+  const message = once(emitter, "message");
   try {
     await request.send(object);
   } catch {
@@ -150,11 +150,11 @@ test('should receive a response', async () => {
   return resp;
 });
 
-test('should timeout when no response', async (t) => {
+test("should timeout when no response", async (t) => {
   t.timeout(10_000);
 
   const id = uuid();
-  const object: KafkaBase = { connection_id: id, msgtype: 'test' };
+  const object: KafkaBase = { connection_id: id, msgtype: "test" };
 
   await t.throwsAsync(request.send(object), {
     instanceOf: KafkaRequestTimeoutError,

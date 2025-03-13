@@ -15,32 +15,31 @@
  * limitations under the License.
  */
 
-import debug from 'debug';
+import debug from "debug";
 
-import { deviceCodes } from '@oada/lib-arangodb';
+import { deviceCodes } from "@oada/lib-arangodb";
 
-import type { DeviceCode, IDeviceCodes } from '../models/deviceCode.js';
+import type { DeviceCode, IDeviceCodes } from "../models/deviceCode.js";
 
-const trace = debug('arango:deviceCodes:trace');
+const trace = debug("arango:deviceCodes:trace");
 
-export const findByDeviceCode = async function (deviceCode) {
-  trace('findByCode: searching for code %s', deviceCode);
+export const findByDeviceCode = (async (deviceCode) => {
+  trace("findByCode: searching for code %s", deviceCode);
   return deviceCodes.findByDeviceCode(deviceCode);
-} satisfies IDeviceCodes['findByDeviceCode'];
+}) satisfies IDeviceCodes["findByDeviceCode"];
 
-export const findByUserCode = async function (userCode) {
-  trace('findByCode: searching for code %s', userCode);
+export const findByUserCode = (async (userCode) => {
+  trace("findByCode: searching for code %s", userCode);
   return deviceCodes.findByUserCode(userCode);
-} satisfies IDeviceCodes['findByUserCode'];
+}) satisfies IDeviceCodes["findByUserCode"];
 
-export const save = async function <C extends DeviceCode>(deviceCode: C) {
-  return (await deviceCodes.save(deviceCode)) as C;
-} satisfies IDeviceCodes['save'];
+export const save = (async <C extends DeviceCode>(deviceCode: C) =>
+  (await deviceCodes.save(deviceCode)) as C) satisfies IDeviceCodes["save"];
 
-export const redeem = async function (deviceCode) {
+export const redeem = (async (deviceCode) => {
   const { redeemed, code } = await deviceCodes.redeem(deviceCode);
   return {
     redeemed,
     code: code as DeviceCode,
   };
-} satisfies IDeviceCodes['redeem'];
+}) satisfies IDeviceCodes["redeem"];

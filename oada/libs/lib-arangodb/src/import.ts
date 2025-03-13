@@ -15,17 +15,17 @@
  * limitations under the License.
  */
 
-import { config } from './config.js';
+import { config } from "./config.js";
 
-import { Database, aql } from 'arangojs';
-import debug from 'debug';
-import pThrottle from 'p-throttle';
+import { Database, aql } from "arangojs";
+import debug from "debug";
+import pThrottle from "p-throttle";
 
-import { db as database } from './db.js';
+import { db as database } from "./db.js";
 
-const info = debug('@oada/lib-arangodb:import:info');
-const trace = debug('@oada/lib-arangodb:import:trace');
-const error = debug('@oada/lib-arangodb:import:error');
+const info = debug("@oada/lib-arangodb:import:info");
+const trace = debug("@oada/lib-arangodb:import:trace");
+const error = debug("@oada/lib-arangodb:import:error");
 
 const {
   auth,
@@ -33,7 +33,7 @@ const {
   database: databaseName,
   batchSize,
   batchThrottle,
-} = config.get('arangodbImport');
+} = config.get("arangodbImport");
 
 const collections = await database.collections();
 
@@ -98,7 +98,7 @@ for await (const { name } of Object.values(collections)) {
     let imported = 0;
     for await (const id of remainingIds) {
       const doc = await importCollection.document(id);
-      trace({ doc, imported, count: remainingIds.length }, 'importing doc');
+      trace({ doc, imported, count: remainingIds.length }, "importing doc");
       await collection.save(doc, {
         waitForSync: true,
       });

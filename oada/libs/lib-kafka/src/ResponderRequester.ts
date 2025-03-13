@@ -15,23 +15,23 @@
  * limitations under the License.
  */
 
-import type { EachMessagePayload } from 'kafkajs';
-import type { EventEmitter } from 'eventemitter3';
+import type { EachMessagePayload } from "kafkajs";
+import type { EventEmitter } from "eventemitter3";
 
-import { Base, DATA, type KafkaBase } from './Base.js';
+import { Base, DATA, type KafkaBase } from "./Base.js";
 import {
   Requester,
   type ConstructorOptions as RequesterOptions,
-} from './Requester.js';
+} from "./Requester.js";
 import {
   Responder,
   type ConstructorOptions as ResponderOptions,
   type Response,
-} from './Responder.js';
+} from "./Responder.js";
 
-import debug from 'debug';
+import debug from "debug";
 
-const trace = debug('@oada/lib-kafka:trace');
+const trace = debug("@oada/lib-kafka:trace");
 
 class DummyResponder extends Responder {
   constructor(options: ResponderOptions, ready: Promise<unknown>) {
@@ -56,7 +56,7 @@ class DummyRequester extends Requester {
 
 export type ConstructorOptions = Omit<
   ResponderOptions & RequesterOptions,
-  'consumeTopic' | 'produceTopic'
+  "consumeTopic" | "produceTopic"
 > & {
   respondOwn?: boolean;
   requestTopics: { consumeTopic: string; produceTopic: string };
@@ -109,9 +109,9 @@ export class ResponderRequester extends Base {
 
     // Mux the consumer between requester and responder
     this.on(DATA, (data: KafkaBase, payload, ...rest: unknown[]) => {
-      trace({ payload, data }, 'Received data');
+      trace({ payload, data }, "Received data");
       if (this.#requester.consumeTopics.includes(payload.topic)) {
-        trace('Muxing data to requester');
+        trace("Muxing data to requester");
         this.#requester.emit(DATA, data, payload, ...rest);
       }
 
@@ -121,7 +121,7 @@ export class ResponderRequester extends Base {
           return;
         }
 
-        trace('Muxing data to responder');
+        trace("Muxing data to responder");
         this.#responder.emit(DATA, data, payload, ...rest);
       }
     });
@@ -133,7 +133,7 @@ export class ResponderRequester extends Base {
    * @todo Maybe rearrange type parameters? Maybe make them class params?
    */
   override on<R, Request = KafkaBase>(
-    event: 'request',
+    event: "request",
     listener: (reg: Request & KafkaBase) => Response<R> | Promise<Response<R>>,
   ): this;
 
@@ -160,8 +160,8 @@ export class ResponderRequester extends Base {
     listener: (...arguments_: any[]) => unknown,
   ): this {
     switch (event) {
-      case 'ready': {
-        super.on('ready', listener);
+      case "ready": {
+        super.on("ready", listener);
         break;
       }
 
@@ -181,12 +181,12 @@ export class ResponderRequester extends Base {
   }
 
   // TODO: Is it better to just extend Requester?
-  async send(...rest: Parameters<Requester['send']>): Promise<KafkaBase> {
+  async send(...rest: Parameters<Requester["send"]>): Promise<KafkaBase> {
     return this.#requester.send(...rest);
   }
 
   async emitter(
-    ...rest: Parameters<Requester['emitter']>
+    ...rest: Parameters<Requester["emitter"]>
   ): Promise<EventEmitter & { close(): Promise<void> }> {
     return this.#requester.emitter(...rest);
   }

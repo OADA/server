@@ -15,27 +15,27 @@
  * limitations under the License.
  */
 
-import { config } from './config.js';
+import { config } from "./config.js";
 
 import {
   createPrivateKey,
   createPublicKey,
   createSecretKey,
-} from 'node:crypto';
+} from "node:crypto";
 
 import {
   createLocalJWKSet,
   exportJWK,
   generateKeyPair,
   generateSecret,
-} from 'jose';
+} from "jose";
 
-const tokenConfig = config.get('auth.token');
+const tokenConfig = config.get("auth.token");
 
 /**
  * @todo proper key/kid management/storage/rotation
  */
-export const kid = 'oauth2-1';
+export const kid = "oauth2-1";
 
 export async function getKeyPair(file: File | string | undefined, alg: string) {
   if (!file) {
@@ -44,7 +44,7 @@ export async function getKeyPair(file: File | string | undefined, alg: string) {
 
   // Assume file is a private key
   const privateKey = createPrivateKey(
-    typeof file === 'string' ? file : Buffer.from(await file.arrayBuffer()),
+    typeof file === "string" ? file : Buffer.from(await file.arrayBuffer()),
   );
   // Derive a public key from the private key
   const publicKey = createPublicKey(privateKey);
@@ -60,7 +60,7 @@ export async function getSymmetricKey(
   }
 
   const key =
-    typeof file === 'string' ? file : Buffer.from(await file.arrayBuffer());
+    typeof file === "string" ? file : Buffer.from(await file.arrayBuffer());
   return createSecretKey(key as NodeJS.ArrayBufferView);
 }
 
@@ -77,7 +77,7 @@ export const jwksPublic = {
     {
       kid,
       alg: tokenConfig.alg,
-      use: 'sig',
+      use: "sig",
       ...(await exportJWK(publicKey)),
     },
   ],

@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-import { domainConfigs } from './config.js';
+import { domainConfigs } from "./config.js";
 
-import type { FastifyPluginAsync } from 'fastify';
+import type { FastifyPluginAsync } from "fastify";
 
-import { fastifyPassport } from './auth.js';
+import { fastifyPassport } from "./auth.js";
 
 export interface Options {
   endpoints?: {
@@ -38,11 +38,11 @@ const plugin: FastifyPluginAsync<Options> = async (
   fastify,
   {
     endpoints: {
-      login = 'login',
-      oidcLogin = 'oidc-login',
-      logout = 'logout',
+      login = "login",
+      oidcLogin = "oidc-login",
+      logout = "logout",
     } = {},
-    views: { loginPage = 'login' } = {},
+    views: { loginPage = "login" } = {},
   },
   // eslint-disable-next-line @typescript-eslint/require-await
 ) => {
@@ -55,16 +55,16 @@ const plugin: FastifyPluginAsync<Options> = async (
     request.log.trace(
       `GET ${login}: setting X-Frame-Options=SAMEORIGIN before rendering login`,
     );
-    request.log.trace(request.session, 'login endpoint');
-    void reply.header('X-Frame-Options', 'SAMEORIGIN');
+    request.log.trace(request.session, "login endpoint");
+    void reply.header("X-Frame-Options", "SAMEORIGIN");
     // @ts-expect-error TODO: make types for auth bodies/queries
     const isError = Boolean(request.query.error ?? request.session.errormsg);
-    const errormsg = request.session.errormsg ?? 'Login failed.';
+    const errormsg = request.session.errormsg ?? "Login failed.";
     request.session.errormsg &&= undefined;
 
     // Load the login info for this domain from the public directory:
     const domainConfig =
-      domainConfigs.get(request.hostname) ?? domainConfigs.get('localhost')!;
+      domainConfigs.get(request.hostname) ?? domainConfigs.get("localhost")!;
     return reply.view(loginPage, {
       // Where should the local login form post:
       login_url: login,
@@ -73,17 +73,17 @@ const plugin: FastifyPluginAsync<Options> = async (
 
       // Domain-specific configs:
       // has .username, .password
-      hint: domainConfig.hint ?? { username: '', password: '' },
+      hint: domainConfig.hint ?? { username: "", password: "" },
       logo_url: `domains/${domainConfig.domain}/${domainConfig.logo}`,
       name: domainConfig.name,
       tagline: domainConfig.tagline,
-      color: domainConfig.color ?? '#FFFFFF',
+      color: domainConfig.color ?? "#FFFFFF",
       idService: domainConfig.idService, // Has .shortname, .longname
       iserror: isError,
       errormsg,
 
       // Domain_hint can be set when authorization server redirects to login
-      domain_hint: 'growersync.trellisfw.io', // Req.session.domain_hint || '',
+      domain_hint: "growersync.trellisfw.io", // Req.session.domain_hint || '',
     });
   });
 
@@ -93,8 +93,8 @@ const plugin: FastifyPluginAsync<Options> = async (
   fastify.post(
     login,
     {
-      preValidation: fastifyPassport.authenticate('local', {
-        successReturnToOrRedirect: '',
+      preValidation: fastifyPassport.authenticate("local", {
+        successReturnToOrRedirect: "",
         failureRedirect: `${login}?error=1`,
       }),
     },

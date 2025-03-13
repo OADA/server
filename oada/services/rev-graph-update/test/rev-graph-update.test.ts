@@ -15,30 +15,30 @@
  * limitations under the License.
  */
 
-import { once } from 'node:events';
+import { once } from "node:events";
 
-import test from 'ava';
+import test from "ava";
 
-import randomstring from 'randomstring';
+import randomstring from "randomstring";
 
-import { config } from '../dist/config.js';
+import { config } from "../dist/config.js";
 
-import { Requester } from '@oada/lib-kafka';
-import type { WriteRequest } from '@oada/write-handler';
-import { init } from '@oada/lib-arangodb';
+import { Requester } from "@oada/lib-kafka";
+import type { WriteRequest } from "@oada/write-handler";
+import { init } from "@oada/lib-arangodb";
 
-import { stopResp } from '../dist/index.js';
+import { stopResp } from "../dist/index.js";
 
-const { httpResponse, writeResponse } = config.get('kafka.topics');
+const { httpResponse, writeResponse } = config.get("kafka.topics");
 const requester = new Requester({
   consumeTopic: httpResponse,
   produceTopic: writeResponse,
-  group: 'rev-graph-update-test',
+  group: "rev-graph-update-test",
 });
 
 test.before(init.run);
 test.before(async () => {
-  await once(requester, 'ready');
+  await once(requester, "ready");
 });
 
 // -------------------------------------------------------
@@ -57,13 +57,13 @@ test.after(async (t) => {
 // --------------------------------------------------
 // The tests!
 // --------------------------------------------------
-test('should be able to produce a correct write_request message', async (t) => {
+test("should be able to produce a correct write_request message", async (t) => {
   t.timeout(10_000);
   // Make http_response message
   const r = {
-    msgtype: 'write-response',
-    code: 'success',
-    resource_id: '/resources:default:resources_rock_123',
+    msgtype: "write-response",
+    code: "success",
+    resource_id: "/resources:default:resources_rock_123",
     connection_id: `123abc${randomstring.generate(7)}`,
     _rev: randomstring.generate(7),
     doc: {
@@ -72,22 +72,22 @@ test('should be able to produce a correct write_request message', async (t) => {
     authorizationid: `tuco123${randomstring.generate(7)}`,
   };
 
-  t.log(r, 'http_response message');
+  t.log(r, "http_response message");
 
   // Now produce the message:
   // create the listener:
 
   const message = (await requester.send(r)) as WriteRequest;
-  t.log(message, 'received message');
+  t.log(message, "received message");
   // @ts-expect-error nonsense
-  t.is(message.type, 'write_request');
-  t.is(message.path_leftover, '/rocks-index/90j2klfdjss/_rev');
-  t.is(message.resource_id, 'resources/default:resources_rocks_123');
-  t.is(message.contentType, 'application/vnd.oada.rocks.1+json');
+  t.is(message.type, "write_request");
+  t.is(message.path_leftover, "/rocks-index/90j2klfdjss/_rev");
+  t.is(message.resource_id, "resources/default:resources_rocks_123");
+  t.is(message.contentType, "application/vnd.oada.rocks.1+json");
   t.is(message.user_id, r.doc.user_id);
   t.is(message.authorizationid, r.authorizationid);
   t.is(message.body, r._rev);
   t.is(message.connection_id, r.connection_id);
   // @ts-expect-error nonsense
-  t.is(message.url, '');
+  t.is(message.url, "");
 });

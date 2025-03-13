@@ -7,10 +7,7 @@
   "engines": {
     "node": ">=20.0.0"
   },
-  "files": [
-    "src/**/*",
-    "dist/**/*"
-  ],
+  "files": ["src/**/*", "dist/**/*"],
   "scripts": {
     "build": "yarn g:tsc",
     "clean": "yarn run build --clean",
@@ -40,7 +37,7 @@
   "devDependencies": {
     "@oada/write-handler": "workspace:^",
     "@types/debug": "^4.1.12",
-    "@types/node": "^22.13.9"
+    "@types/node": "^22.13.10"
   },
   "volta": {
     "node": "22.5.1"

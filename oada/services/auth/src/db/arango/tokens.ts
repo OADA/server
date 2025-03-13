@@ -15,16 +15,16 @@
  * limitations under the License.
  */
 
-import debug from 'debug';
+import debug from "debug";
 
-import { authorizations } from '@oada/lib-arangodb';
+import { authorizations } from "@oada/lib-arangodb";
 
-import type { ITokens, Token } from '../models/token.js';
+import type { ITokens, Token } from "../models/token.js";
 
-const trace = debug('arango:token:trace');
+const trace = debug("arango:token:trace");
 
-export const verify = async function (token: string) {
-  trace('findByToken: searching for token %s', token);
+export const verify = (async (token: string) => {
+  trace("findByToken: searching for token %s", token);
   const found = await authorizations.findByToken(token);
   if (!found) {
     throw new Error(`Token not found`);
@@ -49,16 +49,16 @@ export const verify = async function (token: string) {
   return {
     jti: t,
     client_id: clientId,
-    scope: scope.join(' '),
+    scope: scope.join(" "),
     iat: createTime,
     exp: expiresIn,
     sub: sub ?? _id,
     ...user,
     ...rest,
   };
-} satisfies ITokens['verify'];
+}) satisfies ITokens["verify"];
 
-export const create = async function ({
+export const create = (async ({
   jti,
   client_id,
   sub,
@@ -66,7 +66,7 @@ export const create = async function ({
   iat,
   exp,
   ...rest
-}: Token) {
+}: Token) => {
   const t = {
     ...rest,
     token: jti,
@@ -75,11 +75,11 @@ export const create = async function ({
       sub,
       _id: sub,
     },
-    scope: scope.split(' '),
+    scope: scope.split(" "),
     createTime: iat,
     expiresIn: exp,
   };
-  trace(t, 'save: saving token');
+  trace(t, "save: saving token");
   const { token } = await authorizations.save(t);
   return token;
-} satisfies ITokens['create'];
+}) satisfies ITokens["create"];

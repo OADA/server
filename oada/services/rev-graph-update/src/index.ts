@@ -15,46 +15,46 @@
  * limitations under the License.
  */
 
-import '@oada/pino-debug';
+import "@oada/pino-debug";
 
-import { config } from './config.js';
+import { config } from "./config.js";
 
-import '@oada/lib-prom';
+import "@oada/lib-prom";
 
-import { Requester, Responder } from '@oada/lib-kafka';
-import type { KafkaBase } from '@oada/lib-kafka';
-import { resources } from '@oada/lib-arangodb';
+import { Requester, Responder } from "@oada/lib-kafka";
+import type { KafkaBase } from "@oada/lib-kafka";
+import { resources } from "@oada/lib-arangodb";
 
 // Import message format from write-handler
-import type { WriteRequest, WriteResponse } from '@oada/write-handler';
+import type { WriteRequest, WriteResponse } from "@oada/write-handler";
 
-import Ajv from 'ajv/dist/jtd.js';
-import type { JTDSchemaType } from 'ajv/dist/jtd.js';
-import PQueue from 'p-queue';
-import type { SetRequired } from 'type-fest';
-import debug from 'debug';
+import Ajv from "ajv/dist/jtd.js";
+import type { JTDSchemaType } from "ajv/dist/jtd.js";
+import PQueue from "p-queue";
+import type { SetRequired } from "type-fest";
+import debug from "debug";
 
-const info = debug('rev-graph-update:info');
-const warn = debug('rev-graph-update:warn');
-const error = debug('rev-graph-update:error');
+const info = debug("rev-graph-update:info");
+const warn = debug("rev-graph-update:warn");
+const error = debug("rev-graph-update:error");
 
 // ---------------------------------------------------------
 // Batching
 // adjust concurrency as needed
 const requestPromises = new PQueue({ concurrency: 1 });
 // This map is used as a queue of pending write requests
-const requests = new Map<string, SetRequired<WriteRequest, 'from_change_id'>>();
+const requests = new Map<string, SetRequired<WriteRequest, "from_change_id">>();
 
 // ---------------------------------------------------------
 // Kafka initializations:
 const responder = new Responder<WriteResponse>({
-  consumeTopic: config.get('kafka.topics.httpResponse'),
-  group: 'rev-graph-update',
+  consumeTopic: config.get("kafka.topics.httpResponse"),
+  group: "rev-graph-update",
 });
 const requester = new Requester({
-  consumeTopic: config.get('kafka.topics.httpResponse'),
-  produceTopic: config.get('kafka.topics.writeRequest'),
-  group: 'rev-graph-update-batch',
+  consumeTopic: config.get("kafka.topics.httpResponse"),
+  produceTopic: config.get("kafka.topics.writeRequest"),
+  group: "rev-graph-update-batch",
 });
 
 export async function stopResp(): Promise<void> {
@@ -65,7 +65,7 @@ export async function stopResp(): Promise<void> {
  * Check for successful write request
  */
 function checkRequest(request: KafkaBase): request is WriteResponse {
-  return request?.msgtype === 'write-response' && request?.code === 'success';
+  return request?.msgtype === "write-response" && request?.code === "success";
 }
 
 // Create custom parser and serializer for causechain.
@@ -73,7 +73,7 @@ function checkRequest(request: KafkaBase): request is WriteResponse {
 // @ts-expect-error missing types
 const ajv = new Ajv();
 const causechainSchema: JTDSchemaType<string[]> = {
-  elements: { type: 'string' },
+  elements: { type: "string" },
 };
 const parse = ajv.compileParser(causechainSchema) as ((
   s: string,
@@ -82,7 +82,7 @@ const serialize = ajv.compileSerializer(causechainSchema) as (
   s: readonly string[],
 ) => string;
 
-responder.on<WriteRequest>('request', async (request) => {
+responder.on<WriteRequest>("request", async (request) => {
   if (!checkRequest(request)) {
     return; // Not a successful write-response message, ignore it
   }
@@ -96,11 +96,11 @@ responder.on<WriteRequest>('request', async (request) => {
   }
 
   if (request.user_id === undefined) {
-    warn('Received message does not have user_id');
+    warn("Received message does not have user_id");
   }
 
   if (request.authorizationid === undefined) {
-    warn('Received message does not have authorizationid');
+    warn("Received message does not have authorizationid");
   }
 
   // Real cycle detection: check the write-response's causechain
@@ -114,7 +114,7 @@ responder.on<WriteRequest>('request', async (request) => {
       causechain.push(...chain);
     } else {
       error(
-        'Error parsing req.causechain at %s: %s',
+        "Error parsing req.causechain at %s: %s",
         parse.position,
         parse.message,
       );
@@ -125,23 +125,23 @@ responder.on<WriteRequest>('request', async (request) => {
   causechain.push(request.resource_id);
 
   // Find resource's parents
-  info('finding parents for resource_id = %s', request.resource_id);
+  info("finding parents for resource_id = %s", request.resource_id);
   const parents = await resources.getParents(request.resource_id);
   for await (const parent of parents) {
     if (parent.resource_id === request.resource_id) {
-      error('%s is its own parent!', request.resource_id);
+      error("%s is its own parent!", request.resource_id);
       // Ignore this "parent"
       continue;
     }
 
     // Delete has null rev
-    const childrev = typeof request._rev === 'number' ? request._rev : 0;
+    const childrev = typeof request._rev === "number" ? request._rev : 0;
 
     // Do not update parent if it was already the cause of a rev update
     // on this chain (prevent cycles)
     if (causechain.includes(parent.resource_id)) {
       info(
-        'Parent %s exists in causechain, not scheduling for update',
+        "Parent %s exists in causechain, not scheduling for update",
         parent.resource_id,
       );
       continue;
@@ -153,7 +153,7 @@ responder.on<WriteRequest>('request', async (request) => {
       // Write request exists in the pending queue.
       // Add change ID to the request.
       info(
-        'Resource %s already queued for changes, adding to queue',
+        "Resource %s already queued for changes, adding to queue",
         uniqueKey,
       );
       if (request.change_id) {
@@ -163,7 +163,7 @@ responder.on<WriteRequest>('request', async (request) => {
       qRequest.body = request._rev;
     } else {
       info(
-        'Writing new child link rev (%d) to %s%s/_rev',
+        "Writing new child link rev (%d) to %s%s/_rev",
         childrev,
         parent.resource_id,
         parent.path,
@@ -172,18 +172,18 @@ responder.on<WriteRequest>('request', async (request) => {
       const message = {
         // eslint-disable-next-line unicorn/no-null
         connection_id: null as unknown as string,
-        type: 'write_request',
+        type: "write_request",
         resource_id: parent.resource_id,
         // eslint-disable-next-line unicorn/no-null
         path: null,
         contentType: parent.contentType,
         body: childrev,
-        url: '',
-        user_id: 'system/rev_graph_update',
+        url: "",
+        user_id: "system/rev_graph_update",
 
         // This is an array; new change IDs may be added later
         from_change_id: request.change_id ? [request.change_id] : [],
-        authorizationid: 'authorizations/rev_graph_update',
+        authorizationid: "authorizations/rev_graph_update",
         change_path: parent.path,
         path_leftover: `${parent.path}/_rev`,
         resourceExists: true,

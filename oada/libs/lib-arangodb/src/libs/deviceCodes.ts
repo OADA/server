@@ -15,11 +15,11 @@
  * limitations under the License.
  */
 
-import { aql } from 'arangojs';
+import { aql } from "arangojs";
 
-import { config } from '../config.js';
-import { db as database } from '../db.js';
-import { sanitizeResult } from '../util.js';
+import { config } from "../config.js";
+import { db as database } from "../db.js";
+import { sanitizeResult } from "../util.js";
 
 export interface DeviceCode {
   deviceCode: string;
@@ -27,7 +27,7 @@ export interface DeviceCode {
 }
 
 const deviceCodes = database.collection<DeviceCode>(
-  config.get('arangodb.collections.deviceCodes.name'),
+  config.get("arangodb.collections.deviceCodes.name"),
 );
 
 export async function findByDeviceCode(

@@ -15,12 +15,12 @@
  * limitations under the License.
  */
 
-declare module 'es-main' {
+declare module "es-main" {
   function esMain(meta: unknown): boolean;
   export = esMain;
 }
 
-declare module 'oauth2orize-openid' {
+declare module "oauth2orize-openid" {
   import type {
     IssueGrantCodeFunction,
     IssueGrantCodeFunctionArity4,
@@ -29,7 +29,7 @@ declare module 'oauth2orize-openid' {
     IssueGrantTokenFunction,
     MiddlewareFunction,
     OAuth2Req,
-  } from 'oauth2orize';
+  } from "oauth2orize";
   function extensions(): MiddlewareFunction;
   type IssueCode =
     | IssueGrantCodeFunction
@@ -131,19 +131,19 @@ declare module 'oauth2orize-openid' {
   }
 }
 
-declare module 'oauth2orize-pkce' {
-  import type { MiddlewareFunction } from 'oauth2orize';
+declare module "oauth2orize-pkce" {
+  import type { MiddlewareFunction } from "oauth2orize";
   export function extensions(): MiddlewareFunction;
-  declare module 'oauth2orize' {
+  declare module "oauth2orize" {
     interface OAuth2Req {
       codeChallenge?: string;
-      codeChallengeMethod: 'plain' | 'S256';
+      codeChallengeMethod: "plain" | "S256";
     }
   }
 }
 
-declare module 'passport-oauth2-jwt-bearer' {
-  import { Strategy } from 'passport';
+declare module "passport-oauth2-jwt-bearer" {
+  import { Strategy } from "passport";
   export interface Options {
     /** @default false */
     passReqToCallback?: boolean;
@@ -158,7 +158,7 @@ declare module 'passport-oauth2-jwt-bearer' {
     ) => void,
   ) => void;
   class OAuth2JWTBearerStrategy extends Strategy {
-    name: 'oauth2-jwt-bearer';
+    name: "oauth2-jwt-bearer";
 
     constructor(options: Options, verify: VerifyFunction);
 
@@ -167,15 +167,15 @@ declare module 'passport-oauth2-jwt-bearer' {
   export { OAuth2JWTBearerStrategy as Strategy };
 }
 
-declare module 'random-id-base36' {
+declare module "random-id-base36" {
   namespace RandomIdBase36 {
     function randId(digits: number, base = 36): string;
   }
   export = RandomIdBase36;
 }
 
-declare module 'oauth2orize-device-code' {
-  import type { MiddlewareFunction } from 'oauth2orize';
+declare module "oauth2orize-device-code" {
+  import type { MiddlewareFunction } from "oauth2orize";
 
   export class TokenError extends Error {
     constructor(message: string, code: string, uri?: string, status?: string);

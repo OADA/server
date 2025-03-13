@@ -15,11 +15,11 @@
  * limitations under the License.
  */
 
-import { type EventEmitter as NodeEventEmitter, once } from 'node:events';
-import { setTimeout } from 'node:timers/promises';
+import { type EventEmitter as NodeEventEmitter, once } from "node:events";
+import { setTimeout } from "node:timers/promises";
 
-import { EventEmitter } from 'eventemitter3';
-import ksuid from 'ksuid';
+import { EventEmitter } from "eventemitter3";
+import ksuid from "ksuid";
 
 import {
   Base,
@@ -29,7 +29,7 @@ import {
   type KafkaBase,
   REQ_ID_KEY,
   topicTimeout,
-} from './Base.js';
+} from "./Base.js";
 
 export class KafkaRequestTimeoutError extends Error {}
 
@@ -56,7 +56,7 @@ export class Requester extends Base {
     void this.connect();
 
     // Should this even be available?
-    super.on(DATA, (...rest) => super.emit('response', ...rest));
+    super.on(DATA, (...rest) => super.emit("response", ...rest));
   }
 
   // eslint-disable-next-line @typescript-eslint/ban-types
@@ -68,7 +68,7 @@ export class Requester extends Base {
     topic: string | undefined = this.produceTopic,
   ): Promise<KafkaBase> {
     if (!topic) {
-      throw new Error('Send called with no topic specified');
+      throw new Error("Send called with no topic specified");
     }
 
     const id = (request[REQ_ID_KEY] ?? ksuid.randomSync().string) as string;
@@ -81,7 +81,7 @@ export class Requester extends Base {
     ) as Promise<[KafkaBase]>;
     // TODO: Handle partitions?
     await this.produce({
-      mesg: { ...request, [REQ_ID_KEY]: id, resp_partition: '0' },
+      mesg: { ...request, [REQ_ID_KEY]: id, resp_partition: "0" },
       topic,
       // eslint-disable-next-line unicorn/no-null
       part: null,
@@ -102,7 +102,7 @@ export class Requester extends Base {
     topic: string | undefined = this.produceTopic,
   ): Promise<EventEmitter & { close(): Promise<void> }> {
     if (!topic) {
-      throw new Error('Emit called with no topic specified');
+      throw new Error("Emit called with no topic specified");
     }
 
     const emitter = new EventEmitter();
@@ -113,7 +113,7 @@ export class Requester extends Base {
     // TODO: Handle partitions?
     request.resp_partition = 0;
 
-    this.on(`response-${id}`, (response) => emitter.emit('response', response));
+    this.on(`response-${id}`, (response) => emitter.emit("response", response));
     const close = async () => {
       // Send cancel message to other end
       const mesg = {
@@ -138,8 +138,8 @@ export class Requester extends Base {
 
   async #timeout(timeout: number, message?: string): Promise<never> {
     await setTimeout(timeout);
-    throw new KafkaRequestTimeoutError(message ?? 'timeout');
+    throw new KafkaRequestTimeoutError(message ?? "timeout");
   }
 }
 
-export type { ConstructorOptions } from './Base.js';
+export type { ConstructorOptions } from "./Base.js";

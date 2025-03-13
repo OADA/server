@@ -15,22 +15,22 @@
  * limitations under the License.
  */
 
-import { ITokens, type Token } from '../models/token.js';
+import type { ITokens, Token } from "../models/token.js";
 // @ts-expect-error IDEK
-import tokens from './tokens.json';
+import tokens from "./tokens.json";
 
 const database = new Map(Object.entries(tokens as Record<string, Token>));
 
-export const verify = function (token: string) {
+export const verify = ((token: string) => {
   const found = structuredClone(database.get(token));
   if (!found) {
     throw new Error(`Token not found`);
   }
 
   return found;
-} satisfies ITokens['verify'];
+}) satisfies ITokens["verify"];
 
-export const create = function (token: Token) {
+export const create = ((token: Token) => {
   database.set(token.jti, token);
   return token.jti;
-} satisfies ITokens['create'];
+}) satisfies ITokens["create"];

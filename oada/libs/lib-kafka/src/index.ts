@@ -16,11 +16,11 @@
  */
 
 // @ts-expect-error the types are not correct
-export { KafkaJSError as KafkaError } from 'kafkajs/src/errors.js';
+export { KafkaJSError as KafkaError } from "kafkajs/src/errors.js";
 
-export * as init from './init.js';
-export type { KafkaBase } from './Base.js';
-export { Responder } from './Responder.js';
-export { ReResponder } from './ReResponder.js';
-export { Requester } from './Requester.js';
-export { ResponderRequester } from './ResponderRequester.js';
+export * as init from "./init.js";
+export type { KafkaBase } from "./Base.js";
+export { Responder } from "./Responder.js";
+export { ReResponder } from "./ReResponder.js";
+export { Requester } from "./Requester.js";
+export { ResponderRequester } from "./ResponderRequester.js";

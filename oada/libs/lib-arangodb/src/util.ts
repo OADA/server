@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-import { type Except } from 'type-fest';
+import type { Except } from "type-fest";
 
 export type Selector<T> = T extends { _id?: infer I } ? I | { _id: I } : never;
 
@@ -26,9 +26,9 @@ export function sanitizeResult<T>(
   result: T,
 ): Except<
   T & { _rev?: number; _key?: unknown; _oada_rev?: unknown },
-  '_key' | '_oada_rev'
+  "_key" | "_oada_rev"
 > {
-  if (!(result && typeof result === 'object')) {
+  if (!(result && typeof result === "object")) {
     // @ts-expect-error nonsense
     return result;
   }
@@ -42,6 +42,6 @@ export function sanitizeResult<T>(
   const rev = _oada_rev ?? _rev;
   return (rev ? { _rev: rev, ...rest } : rest) as unknown as Except<
     T & { _rev?: number; _key?: unknown; _oada_rev?: unknown },
-    '_key' | '_oada_rev'
+    "_key" | "_oada_rev"
   >;
 }

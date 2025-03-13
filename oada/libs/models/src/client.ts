@@ -17,22 +17,18 @@
 
 /* eslint-disable @typescript-eslint/naming-convention */
 
-import { randomBytes } from 'node:crypto';
+import { randomBytes } from "node:crypto";
 
-import {
-  type OmitIndexSignature,
-  type Opaque,
-  type ReadonlyDeep,
-} from 'type-fest';
+import type { OmitIndexSignature, Opaque, ReadonlyDeep } from "type-fest";
 
-import type Metadata from '@oada/types/oauth-dyn-reg/response.js';
-import { destructure } from './decorators.js';
-import { generate } from 'xksuid';
-import { makeClass } from '@qlever-llc/interface2class';
+import type Metadata from "@oada/types/oauth-dyn-reg/response.js";
+import { destructure } from "./decorators.js";
+import { generate } from "xksuid";
+import { makeClass } from "@qlever-llc/interface2class";
 
 export type ClientID = Opaque<string, Client>;
 
-export const DEFAULT_SCOPES = '';
+export const DEFAULT_SCOPES = "";
 
 /**
  * Representation of an API client within OADA
@@ -49,11 +45,11 @@ class Client extends makeClass<ReadonlyDeep<OmitIndexSignature<Metadata>>>() {
     override readonly client_id: ClientID,
     override readonly client_id_issued_at?: number,
     override readonly scope = DEFAULT_SCOPES,
-    override readonly grant_types: Metadata['grant_types'] = [
-      'authorization_code',
+    override readonly grant_types: Metadata["grant_types"] = [
+      "authorization_code",
     ],
-    override readonly response_types: Metadata['response_types'] = ['code'],
-    override readonly application_type: Metadata['application_type'] = 'web',
+    override readonly response_types: Metadata["response_types"] = ["code"],
+    override readonly application_type: Metadata["application_type"] = "web",
     readonly puc?: string,
     readonly licenses: ReadonlyArray<{ id: string; name: string }> = [],
     readonly trusted?: boolean,
@@ -69,8 +65,8 @@ class Client extends makeClass<ReadonlyDeep<OmitIndexSignature<Metadata>>>() {
     }
 
     // TODO: More client secret logic/configurability
-    if (this.application_type === 'native' && !client_secret) {
-      this.client_secret = randomBytes(256).toString('hex');
+    if (this.application_type === "native" && !client_secret) {
+      this.client_secret = randomBytes(256).toString("hex");
       this.client_secret_expires_at = 0;
     }
   }

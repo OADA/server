@@ -14,15 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-const Promise = require('bluebird');
-const { v4: uuid } = require('uuid');
-const WebSocket = require('ws');
+const Promise = require("bluebird");
+const { v4: uuid } = require("uuid");
+const WebSocket = require("ws");
 
 function websocket(url) {
   // Create the message queue
   let messages = [];
   // Create the socket
-  url = url.replace('https://', 'wss://').replace('http://', 'ws://');
+  url = url.replace("https://", "wss://").replace("http://", "ws://");
   //	Url = url.indexOf('ws') !== 0 ? url + 'wss://' : url;
   const socket = new WebSocket(url);
   let connected = false;
@@ -39,17 +39,17 @@ function websocket(url) {
   }
 
   return new Promise((resolve, _reject) => {
-    socket.addEventListener('open', () => {
+    socket.addEventListener("open", () => {
       connected = true;
       sendMessages();
       resolve(socket);
     });
 
-    socket.on('open', socket.onopen);
+    socket.on("open", socket.onopen);
 
-    socket.addEventListener('close', () => {});
-    socket.on('close', socket.onclose);
-    socket.onmessage = function (event) {
+    socket.addEventListener("close", () => {});
+    socket.on("close", socket.onclose);
+    socket.onmessage = (event) => {
       const response = JSON.parse(event.data);
       // Look for id in httpCallbacks
       if (response.requestId) {
@@ -75,7 +75,7 @@ function websocket(url) {
           delete httpCallbacks[response.requestId];
         } else if (watchCallbacks[response.requestId]) {
           if (watchCallbacks[response.requestId].resolve) {
-            if (response.status === 'success') {
+            if (response.status === "success") {
               // Successfully setup websocket, resolve promise
               watchCallbacks[response.requestId].resolve(response);
             } else {
@@ -92,7 +92,7 @@ function websocket(url) {
           } else {
             if (watchCallbacks[response.requestId].callback == undefined)
               throw new Error(
-                'The given watch function has an undefined callback:',
+                "The given watch function has an undefined callback:",
                 watchCallbacks[response.requestId],
               );
             watchCallbacks[response.requestId].callback(response);
@@ -101,13 +101,13 @@ function websocket(url) {
       }
     };
 
-    socket.on('message', socket.onclose);
+    socket.on("message", socket.onclose);
   }).then(() => {
     function _http(request) {
       // Do a HTTP request
       return new Promise((resolve, reject) => {
         if (request.url.indexOf(url) === 0)
-          request.url = request.url.replace(url, '');
+          request.url = request.url.replace(url, "");
         const message = {
           requestId: uuid(),
           method: request.method.toLowerCase(),
@@ -132,7 +132,7 @@ function websocket(url) {
       return new Promise((resolve, reject) => {
         const message = {
           requestId: uuid(),
-          method: 'watch',
+          method: "watch",
           path: request.url,
           headers: Object.entries(request.headers)
             .map(([key, value]) => ({ [key.toLowerCase()]: value }))

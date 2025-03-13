@@ -15,9 +15,9 @@
  * limitations under the License.
  */
 
-import '@oada/pino-debug';
+import "@oada/pino-debug";
 
-import { readFile } from 'node:fs/promises';
+import { readFile } from "node:fs/promises";
 
 import {
   array,
@@ -29,56 +29,56 @@ import {
   positional,
   run,
   string,
-} from 'cmd-ts';
-import { File } from 'cmd-ts/batteries/fs';
-import { Url } from 'cmd-ts/batteries/url';
+} from "cmd-ts";
+import { File } from "cmd-ts/batteries/fs";
+import { Url } from "cmd-ts/batteries/url";
 
-import { config } from '../config.js';
+import { config } from "../config.js";
 
-import type Metadata from '@oada/types/oauth-dyn-reg/metadata.js';
+import type Metadata from "@oada/types/oauth-dyn-reg/metadata.js";
 
-import YAML from 'yaml';
-import esMain from 'es-main';
+import YAML from "yaml";
+import esMain from "es-main";
 
 export const cmd = command({
-  name: 'client',
+  name: "client",
   args: {
     dataFile: positional({
       type: optional(File),
     }),
     yaml: option({
-      long: 'yaml',
-      short: 'y',
+      long: "yaml",
+      short: "y",
       type: optional(string),
     }),
     outFile: option({
-      long: 'out-file',
-      short: 'o',
+      long: "out-file",
+      short: "o",
       type: optional(string),
     }),
     iss: option({
-      long: 'issuer',
-      type: config.get('oidc.issuer') ? optional(Url) : Url,
+      long: "issuer",
+      type: config.get("oidc.issuer") ? optional(Url) : Url,
     }),
     name: option({
-      long: 'name',
-      short: 'n',
+      long: "name",
+      short: "n",
       type: optional(string),
     }),
     redirects: multioption({
-      long: 'redirect',
-      short: 'r',
+      long: "redirect",
+      short: "r",
       type: array(string),
       defaultValue() {
-        return ['https://localhost:3000/callback'];
+        return ["https://localhost:3000/callback"];
       },
     }),
   },
   async handler({ dataFile, yaml, redirects, iss, name, outFile }) {
-    const { Issuer, errors } = await import('openid-client');
+    const { Issuer, errors } = await import("openid-client");
     try {
       const issuer = await Issuer.discover(
-        iss ? `${iss}` : `${config.get('oidc.issuer')}`,
+        iss ? `${iss}` : `${config.get("oidc.issuer")}`,
       );
 
       const f = dataFile
@@ -87,22 +87,22 @@ export const cmd = command({
       const y = yaml ? (YAML.parse(yaml) as Partial<Metadata>) : undefined;
       const data = { ...f, ...y };
       const { metadata } = await issuer.Client.register({
-        application_type: 'native',
+        application_type: "native",
         client_name: name,
         ...data,
         redirect_uris: [...redirects, ...(data?.redirect_uris ?? [])],
-        id_token_signed_response_alg: 'HS256',
+        id_token_signed_response_alg: "HS256",
       } satisfies Partial<Metadata>);
 
       const client = new issuer.Client({
         ...metadata,
         // FIXME: Why does Auth0 need this?
-        id_token_signed_response_alg: 'HS256',
+        id_token_signed_response_alg: "HS256",
       });
 
       const out = { ...issuer.metadata, ...client };
       if (outFile) {
-        const { writeFile } = await import('node:fs/promises');
+        const { writeFile } = await import("node:fs/promises");
         await writeFile(outFile, JSON.stringify(out, undefined, 2));
       } else {
         console.dir(out);

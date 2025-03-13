@@ -15,11 +15,11 @@
  * limitations under the License.
  */
 
-import type { Except, OmitIndexSignature, Opaque } from 'type-fest';
-import type { Claims } from './oidc.js';
-import { destructure } from './decorators.js';
-import { generate } from 'xksuid';
-import { makeClass } from '@qlever-llc/interface2class';
+import type { Except, OmitIndexSignature, Opaque } from "type-fest";
+import type { Claims } from "./oidc.js";
+import { destructure } from "./decorators.js";
+import { generate } from "xksuid";
+import { makeClass } from "@qlever-llc/interface2class";
 
 export type UserID = Opaque<`users/${string}`, User>;
 
@@ -49,7 +49,7 @@ export type UserID = Opaque<`users/${string}`, User>;
  */
 export
 @destructure
-class User extends makeClass<Except<OmitIndexSignature<Claims>, 'sub'>>() {
+class User extends makeClass<Except<OmitIndexSignature<Claims>, "sub">>() {
   constructor(user?: Partial<User>);
 
   constructor(
@@ -59,7 +59,7 @@ class User extends makeClass<Except<OmitIndexSignature<Claims>, 'sub'>>() {
      */
     // @ts-expect-error deprecated field
     public readonly sub: string = user._id ? `${user._id}` : `${generate()}`,
-    public domain = 'localhost',
+    public domain = "localhost",
     public password?: string,
     /**
      * Record mapping OIDC domains to OIDC claims for this User
@@ -77,17 +77,17 @@ class User extends makeClass<Except<OmitIndexSignature<Claims>, 'sub'>>() {
     /**
      * Link to the resource of this User's /bookmarks
      */
-    public bookmarks: { _id: string } = { _id: '' },
+    public bookmarks: { _id: string } = { _id: "" },
     /**
      * Link to the resource of this User's /shares
      */
-    public shares: { _id: string } = { _id: '' },
+    public shares: { _id: string } = { _id: "" },
   ) {
     super(user);
   }
 }
 
-function usernameFromOIDC(oidc: User['oidc']) {
+function usernameFromOIDC(oidc: User["oidc"]) {
   for (const { sub, iss, preferred_username, email, nickname } of oidc) {
     const value = preferred_username ?? email ?? nickname ?? `${iss}|${sub}`;
     if (value) {
@@ -102,6 +102,6 @@ export type {
   EmailClaims,
   PhoneClaims,
   StandardClaims,
-} from './oidc.js';
+} from "./oidc.js";
 
 export default User;

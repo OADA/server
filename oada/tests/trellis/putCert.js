@@ -14,40 +14,40 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-const debug = require('debug');
-const trace = debug('oada-srvc-tests:trellis:putCert:trace');
+const debug = require("debug");
+const trace = debug("oada-srvc-tests:trellis:putCert:trace");
 
-const axios = require('axios');
-const { expect } = require('chai');
-const config = require('../config.js');
-config.set('isTest', true);
-trace('isTest', config.get('isTest'));
-trace('Using Database', config.get('arangodb:database'), 'for testing');
-const oadaLib = require('@oada/lib-arangodb');
-const md5 = require('md5');
-const AUDITOR_TOKEN = 'aaa';
-const GROWER_TOKEN = 'ggg';
-const baseUrl = 'https://proxy';
-process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
+const axios = require("axios");
+const { expect } = require("chai");
+const config = require("../config.js");
+config.set("isTest", true);
+trace("isTest", config.get("isTest"));
+trace("Using Database", config.get("arangodb:database"), "for testing");
+const oadaLib = require("@oada/lib-arangodb");
+const md5 = require("md5");
+const AUDITOR_TOKEN = "aaa";
+const GROWER_TOKEN = "ggg";
+const baseUrl = "https://proxy";
+process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
 
 let userid;
 let certsResourceId;
 
 describe(`A client shouldn't exist before adding one`, () => {
-  before('reset database', () => oadaLib.init.run());
+  before("reset database", () => oadaLib.init.run());
 
   it(`GET on bookmarks/trellisfw/clients/ should return an empty resource`, () =>
     axios({
-      method: 'GET',
+      method: "GET",
       url: `${baseUrl}/bookmarks/trellisfw/clients/`,
       headers: {
         Authorization: `Bearer ${AUDITOR_TOKEN}`,
       },
     }).then((response) => {
       expect(response.status).is.equal(200);
-      expect(response.data).to.have.keys(['_id', '_meta', '_rev', '_type']);
+      expect(response.data).to.have.keys(["_id", "_meta", "_rev", "_type"]);
       expect(response.data._type).to.equal(
-        'application/vnd.trellisfw.clients.1+json',
+        "application/vnd.trellisfw.clients.1+json",
       );
     }));
 });
@@ -55,7 +55,7 @@ describe(`A client shouldn't exist before adding one`, () => {
 describe(`The auditor should begin with no certifications resource`, () => {
   it(`GET on bookmarks/trellisfw/certifications/ should not exist`, () =>
     axios({
-      method: 'GET',
+      method: "GET",
       url: `${baseUrl}/bookmarks/trellisfw/certifications/`,
       headers: {
         Authorization: `Bearer ${AUDITOR_TOKEN}`,
@@ -65,49 +65,49 @@ describe(`The auditor should begin with no certifications resource`, () => {
     }));
 });
 
-describe('Trellis demo testing...', () => {
+describe("Trellis demo testing...", () => {
   let clientId;
-  const text = 'Grower Gary';
+  const text = "Grower Gary";
 
-  before('Create a new client with a certifications resource', function () {
+  before("Create a new client with a certifications resource", function () {
     this.timeout(10_000);
     return axios({
-      method: 'POST',
+      method: "POST",
       url: `${baseUrl}/resources`,
       headers: {
-        'Authorization': `Bearer ${AUDITOR_TOKEN}`,
-        'Content-Type': 'application/vnd.trellisfw.certifications.1+json',
+        Authorization: `Bearer ${AUDITOR_TOKEN}`,
+        "Content-Type": "application/vnd.trellisfw.certifications.1+json",
       },
       data: {
-        _type: 'application/vnd.trellisfw.certifications.1+json',
+        _type: "application/vnd.trellisfw.certifications.1+json",
         _context: { client: text },
       },
     }).then((response) =>
       axios({
-        method: 'POST',
+        method: "POST",
         url: `${baseUrl}/resources`,
         headers: {
-          'Authorization': `Bearer ${AUDITOR_TOKEN}`,
-          'Content-Type': 'application/vnd.trellisfw.client.1+json',
+          Authorization: `Bearer ${AUDITOR_TOKEN}`,
+          "Content-Type": "application/vnd.trellisfw.client.1+json",
         },
         data: {
-          _type: 'application/vnd.trellisfw.client.1+json',
+          _type: "application/vnd.trellisfw.client.1+json",
           name: text,
           certifications: {
-            _id: response.headers.location.replace(/^\//, ''),
+            _id: response.headers.location.replace(/^\//, ""),
             _rev: 0,
           },
         },
       }).then((res) => {
-        const id = res.headers.location.replace(/^\/resources\//, '');
+        const id = res.headers.location.replace(/^\/resources\//, "");
         clientId = id;
         // Link to bookmarks
         return axios({
-          method: 'PUT',
+          method: "PUT",
           url: `${baseUrl}/bookmarks/trellisfw/clients/${id}`,
           headers: {
-            'Authorization': `Bearer ${AUDITOR_TOKEN}`,
-            'Content-Type': 'application/vnd.trellisfw.client.1+json',
+            Authorization: `Bearer ${AUDITOR_TOKEN}`,
+            "Content-Type": "application/vnd.trellisfw.client.1+json",
           },
           data: {
             _id: `resources/${id}`,
@@ -120,7 +120,7 @@ describe('Trellis demo testing...', () => {
 
   it(`Should have a client now`, () =>
     axios({
-      method: 'GET',
+      method: "GET",
       url: `${baseUrl}/bookmarks/trellisfw/clients/${clientId}`,
       headers: {
         Authorization: `Bearer ${AUDITOR_TOKEN}`,
@@ -128,29 +128,29 @@ describe('Trellis demo testing...', () => {
     }).then((response) => {
       expect(response.status).is.equal(200);
       expect(response.data.name).is.equal(text);
-      expect(response.data).to.include.key('certifications');
-      expect(response.data.certifications).to.have.keys(['_id', '_rev']);
+      expect(response.data).to.include.key("certifications");
+      expect(response.data.certifications).to.have.keys(["_id", "_rev"]);
     }));
 });
 
-describe('Sharing a client with another user...', function () {
+describe("Sharing a client with another user...", function () {
   this.timeout(10_000);
   const oidc = {
-    username: 'bob@gmail.com',
-    iss: 'https://vip3.ecn.purdue.edu/',
+    username: "bob@gmail.com",
+    iss: "https://vip3.ecn.purdue.edu/",
   };
   const data = {
     username: md5(JSON.stringify(oidc)),
     oidc,
   };
 
-  it('POSTing a new user should be successful', () =>
+  it("POSTing a new user should be successful", () =>
     axios({
-      method: 'post',
+      method: "post",
       url: `${baseUrl}/users`,
       headers: {
-        'Content-Type': 'application/vnd.oada.user.1+json',
-        'Authorization': `Bearer ${AUDITOR_TOKEN}`,
+        "Content-Type": "application/vnd.oada.user.1+json",
+        Authorization: `Bearer ${AUDITOR_TOKEN}`,
       },
       data,
     }).then((response) => {
@@ -158,13 +158,13 @@ describe('Sharing a client with another user...', function () {
       expect(response.status).to.equal(201);
     }));
 
-  it('should return a useful error if the user already exists', () =>
+  it("should return a useful error if the user already exists", () =>
     axios({
-      method: 'post',
+      method: "post",
       url: `${baseUrl}/users`,
       headers: {
-        'Content-Type': 'application/vnd.oada.user.1+json',
-        'Authorization': `Bearer ${AUDITOR_TOKEN}`,
+        "Content-Type": "application/vnd.oada.user.1+json",
+        Authorization: `Bearer ${AUDITOR_TOKEN}`,
       },
       data,
     }).then((response) => {
@@ -175,37 +175,37 @@ describe('Sharing a client with another user...', function () {
     }));
 });
 
-describe('Read/write/owner permissions should apply accordingly', function () {
+describe("Read/write/owner permissions should apply accordingly", function () {
   this.timeout(10_000);
 
-  before('get a token for the new user', () => {});
+  before("get a token for the new user", () => {});
 
   it(`should not be accessible before sharing`, () =>
     axios({
-      method: 'get',
+      method: "get",
       url: `${baseUrl}/bookmarks/trellisfw/certifications/`,
       headers: {
         Authorization: `Bearer ${GROWER_TOKEN}`,
       },
     }).catch((error) => {
       expect(error.response.status).to.equal(404);
-      expect(error.response.statusText).to.equal('Not Found');
+      expect(error.response.statusText).to.equal("Not Found");
     }));
 });
 
-describe('Adding read permission', function () {
+describe("Adding read permission", function () {
   this.timeout(10_000);
-  trace('userid', userid);
+  trace("userid", userid);
   before(`add read permission to the client\'s certifications resource`, () =>
     axios({
-      method: 'put',
+      method: "put",
       url: `${baseUrl}/bookmarks/trellisfw/certifications/_meta/_permissions`,
       headers: {
-        'Content-Type': 'application/vnd.trellisfw.certifications.1+json',
-        'Authorization': `Bearer ${AUDITOR_TOKEN}`,
+        "Content-Type": "application/vnd.trellisfw.certifications.1+json",
+        Authorization: `Bearer ${AUDITOR_TOKEN}`,
       },
       data: {
-        'users/default:users_gary_growersync': {
+        "users/default:users_gary_growersync": {
           read: true,
           write: false,
           owner: false,
@@ -214,9 +214,9 @@ describe('Adding read permission', function () {
     }),
   );
 
-  it('The GROWER should have the same certifications resource as the AUDITOR in /shares', () =>
+  it("The GROWER should have the same certifications resource as the AUDITOR in /shares", () =>
     axios({
-      method: 'get',
+      method: "get",
       url: `${baseUrl}/bookmarks/trellisfw/certifications/`,
       headers: {
         Authorization: `Bearer ${AUDITOR_TOKEN}`,
@@ -224,11 +224,11 @@ describe('Adding read permission', function () {
     })
       .then((res) => {
         expect(res.status).to.equal(200);
-        certsResourceId = res.data._id.replace(/^resources\//, '');
+        certsResourceId = res.data._id.replace(/^resources\//, "");
       })
       .then(() =>
         axios({
-          method: 'get',
+          method: "get",
           url: `${baseUrl}/shares`,
           headers: {
             Authorization: `Bearer ${GROWER_TOKEN}`,
@@ -240,49 +240,49 @@ describe('Adding read permission', function () {
           })
           .then(() =>
             axios({
-              method: 'PUT',
+              method: "PUT",
               url: `${baseUrl}/shares/${certsResourceId}`,
               headers: {
                 Authorization: `Bearer ${GROWER_TOKEN}`,
               },
               data: {
-                testStuff: 'this should fail',
+                testStuff: "this should fail",
               },
             }).catch((error) => {
               expect(error.response.status).to.equal(403);
-              expect(error.response.statusText).to.equal('Forbidden');
+              expect(error.response.statusText).to.equal("Forbidden");
             }),
           ),
       ));
 });
 
-describe('Adding write permission', function () {
+describe("Adding write permission", function () {
   this.timeout(10_000);
   before(`add user permission to the client\'s certifications resource`, () =>
     axios({
-      method: 'put',
+      method: "put",
       url: `${baseUrl}/bookmarks/trellisfw/certifications/_meta/_permissions`,
       headers: {
-        'Content-Type': 'application/vnd.trellisfw.certifications.1+json',
-        'Authorization': `Bearer ${AUDITOR_TOKEN}`,
+        "Content-Type": "application/vnd.trellisfw.certifications.1+json",
+        Authorization: `Bearer ${AUDITOR_TOKEN}`,
       },
       data: {
-        'users/default:users_gary_growersync': {
+        "users/default:users_gary_growersync": {
           write: true,
         },
       },
     }),
   );
 
-  it('The GROWER should now have write permission to the certifications resource in their /shares', () =>
+  it("The GROWER should now have write permission to the certifications resource in their /shares", () =>
     axios({
-      method: 'PUT',
+      method: "PUT",
       url: `${baseUrl}/shares/${certsResourceId}`,
       headers: {
         Authorization: `Bearer ${GROWER_TOKEN}`,
       },
       data: {
-        testStuff: 'this should succeed',
+        testStuff: "this should succeed",
       },
     }).catch((error) => {
       expect(error.response.status).to.equal(200);
