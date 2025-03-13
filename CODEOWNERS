@@ -7,17 +7,12 @@
 
 .gitattributes @aultac
 
-# prettier
-.prettierignore @awlayton
-.prettierrc.json @awlayton
-
 # VS Code
 .vscode @awlayton
 *.code-workspace @awlayton
 
-# eslint
-**/.eslint* @awlayton
-**/eslint.* @awlayton
+# biome
+**/biome.json @awlayton
 
 # TypeScript
 **/tsconfig.* @awlayton
