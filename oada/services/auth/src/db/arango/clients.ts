@@ -15,15 +15,15 @@
  * limitations under the License.
  */
 
-import debug from 'debug';
+import debug from "debug";
 
-import { clients } from '@oada/lib-arangodb';
+import { clients } from "@oada/lib-arangodb";
 
-import type { Client, IClients } from '../models/client.js';
+import type { Client, IClients } from "../models/client.js";
 
-const trace = debug('arango:client:trace');
+const trace = debug("arango:client:trace");
 
-export const findById = async function (id: string) {
+export const findById = (async (id: string) => {
   trace('Retrieving client { client_id: "%s" }', id);
   const found = await clients.findById(id);
   if (!found) {
@@ -32,9 +32,9 @@ export const findById = async function (id: string) {
 
   const { _id, ...client } = found;
   return { ...client, id: _id as string };
-} satisfies IClients['findById'];
+}) satisfies IClients["findById"];
 
-export const save = async function (client: Client) {
-  trace('Saving clientId %s', client.client_id);
+export const save = (async (client: Client) => {
+  trace("Saving clientId %s", client.client_id);
   await clients.save(client);
-} satisfies IClients['save'];
+}) satisfies IClients["save"];

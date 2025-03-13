@@ -15,4 +15,4 @@
  * limitations under the License.
  */
 
-export default [{ _id: 'putBodies/default:putbody123', bodystr: '{}' }];
+export default [{ _id: "putBodies/default:putbody123", bodystr: "{}" }];

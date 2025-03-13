@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-declare module 'nstats' {
-  import type { Server as HTTPServer } from 'node:http';
+declare module "nstats" {
+  import type { Server as HTTPServer } from "node:http";
 
-  import type { Plugin } from 'fastify-plugin';
-  import type { Server as WSServer } from 'ws';
+  import type { Plugin } from "fastify-plugin";
+  import type { Server as WSServer } from "ws";
 
   export interface NStats {
     fastify(): Plugin;

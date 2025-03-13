@@ -15,17 +15,17 @@
  * limitations under the License.
  */
 
-import { join } from 'node:path/posix';
+import { join } from "node:path/posix";
 
-import { users } from '@oada/lib-arangodb';
+import { users } from "@oada/lib-arangodb";
 
-import type { User, UserRequest, UserResponse } from '@oada/users';
+import type { User, UserRequest, UserResponse } from "@oada/users";
 
-import { config } from './config.js';
-import requester from './requester.js';
+import { config } from "./config.js";
+import requester from "./requester.js";
 
-import type { FastifyPluginAsync, FastifyReply, FastifyRequest } from 'fastify';
-import ksuid from 'ksuid';
+import type { FastifyPluginAsync, FastifyReply, FastifyRequest } from "fastify";
+import ksuid from "ksuid";
 
 export interface Options {
   prefix: string;
@@ -57,12 +57,12 @@ async function requestUserWrite(request: FastifyRequest, id: string) {
       user: body,
       userid: id, // Need for PUT, ignored for POST
     } as UserRequest,
-    config.get('kafka.topics.userRequest'),
+    config.get("kafka.topics.userRequest"),
   )) as UserResponse;
 
   // eslint-disable-next-line sonarjs/no-small-switch
   switch (resp.code) {
-    case 'success': {
+    case "success": {
       return resp;
     }
 
@@ -76,9 +76,9 @@ async function requestUserWrite(request: FastifyRequest, id: string) {
 const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
   // Parse JSON content types
   fastify.addContentTypeParser(
-    ['json', '+json'],
+    ["json", "+json"],
     {
-      parseAs: 'string',
+      parseAs: "string",
       // 20 MB
       bodyLimit: 20 * 1_048_576,
     },
@@ -93,8 +93,8 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
     },
   );
 
-  fastify.post('/', async (request, reply) => {
-    request.log.trace({ body: request.body }, 'Users POST');
+  fastify.post("/", async (request, reply) => {
+    request.log.trace({ body: request.body }, "Users POST");
     // Note: if the username already exists, the ksuid() below will end up
     // silently discarded and replaced in the response with the real one.
     const { string: newID } = await ksuid.random(); // Generate a random string for ID
@@ -107,16 +107,16 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
     const resp = await requestUserWrite(request, newID);
     // TODO: Better status code choices?
     // if db didn't send back a user, it was an update so use id from URL
-    const id = resp?.user?.sub?.replace(/^users\//, '') ?? newID;
+    const id = resp?.user?.sub?.replace(/^users\//, "") ?? newID;
     // Return res.redirect(201, req.baseUrl + '/' + id)
-    void reply.header('content-location', join(options.prefix, id));
+    void reply.header("content-location", join(options.prefix, id));
     return reply.code(201).send();
   });
 
   // Update (merge) a user:
-  fastify.put('/:id', async (request, reply) => {
+  fastify.put("/:id", async (request, reply) => {
     const { id } = request.params as { id: string };
-    request.log.debug('Users PUT(id: %s), body = %O', id, request.body);
+    request.log.debug("Users PUT(id: %s), body = %O", id, request.body);
     // Generate an ID for this particular request
     if (!request.id) {
       const { string: rid } = await ksuid.random();
@@ -126,53 +126,53 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
     const resp = await requestUserWrite(request, id);
     // TODO: Better status code choices?
     // if db didn't send back a user, it was an update so use id from URL
-    const userid = resp?.user?.sub.replace(/^users\//, '') ?? id;
+    const userid = resp?.user?.sub.replace(/^users\//, "") ?? id;
     // Return res.redirect(201, req.baseUrl + '/' + id)
-    void reply.header('content-location', join(options.prefix, userid));
+    void reply.header("content-location", join(options.prefix, userid));
     return reply.code(201).send();
   });
 
   // Lookup a username, limited to tokens and users with oada.admin.user scope
-  fastify.get('/username-index/:uname', async (request, reply) => {
+  fastify.get("/username-index/:uname", async (request, reply) => {
     const { uname } = request.params as { uname: string };
     const authorization = request.user!;
 
     // Check token scope
     request.log.trace(
-      'username-index: Checking token scope, req.authorization.scope = %s',
+      "username-index: Checking token scope, req.authorization.scope = %s",
       authorization,
     );
     const havetokenscope = authorization.roles.find(
       (s: string) =>
-        s === 'oada.admin.user:read' || s === 'oada.admin.user:all',
+        s === "oada.admin.user:read" || s === "oada.admin.user:all",
     );
     if (!havetokenscope) {
       request.log.warn(
-        'Attempt to lookup user by username (username-index), but token does not have oada.admin.user:read or oada.admin.user:all scope!',
+        "Attempt to lookup user by username (username-index), but token does not have oada.admin.user:read or oada.admin.user:all scope!",
       );
       void reply.unauthorized(
-        'Token does not have required oada.admin.user scope',
+        "Token does not have required oada.admin.user scope",
       );
       return;
     }
 
     // Check user's scope
-    request.log.trace(authorization, 'username-index: Checking user scope');
+    request.log.trace(authorization, "username-index: Checking user scope");
     const haveuserscope = authorization.roles.find(
-      (s) => s === 'oada.admin.user:read' || s === 'oada.admin.user:all',
+      (s) => s === "oada.admin.user:read" || s === "oada.admin.user:all",
     );
     if (!haveuserscope) {
       request.log.warn(
-        'Attempt to lookup user by username (username-index), but USER does not have oada.admin.user:read or oada.admin.user:all scope!',
+        "Attempt to lookup user by username (username-index), but USER does not have oada.admin.user:read or oada.admin.user:all scope!",
       );
-      void reply.forbidden('USER does not have required oada.admin.user scope');
+      void reply.forbidden("USER does not have required oada.admin.user scope");
       return;
     }
 
     const u = sanitizeDatabaseResult(await users.findByUsername(uname));
     if (!u) {
       request.log.info(
-        '#username-index: 404: username %s does not exist',
+        "#username-index: 404: username %s does not exist",
         uname,
       );
       void reply.notFound(`Username ${uname} does not exist.`);
@@ -180,22 +180,22 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
     }
 
     request.log.info(
-      '#username-index: found user, returning info for userid %s',
+      "#username-index: found user, returning info for userid %s",
       u.sub,
     );
     return reply
-      .header('Content-Location', join(options.prefix, u.sub))
-      .type('application/vnd.oada.user.1+json')
+      .header("Content-Location", join(options.prefix, u.sub))
+      .type("application/vnd.oada.user.1+json")
       .status(200)
       .send(u);
   });
 
-  fastify.get('/me', async (request, reply) => {
+  fastify.get("/me", async (request, reply) => {
     await replyUser(request.user!.sub, reply);
   });
 
   // TODO: don't return stuff to anyone anytime
-  fastify.get('/:id', async (request, reply) => {
+  fastify.get("/:id", async (request, reply) => {
     const { id } = request.params as { id: string };
     await replyUser(id, reply);
   });
@@ -207,7 +207,7 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
       return reply.notFound;
     }
 
-    void reply.header('Content-Location', join(options.prefix, id));
+    void reply.header("Content-Location", join(options.prefix, id));
     return reply.send(user);
   }
 };

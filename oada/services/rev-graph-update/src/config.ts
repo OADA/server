@@ -16,14 +16,14 @@
  */
 
 // TODO: Publish this to npm instead?
-import libConfig from '@oada/lib-config';
+import libConfig from "@oada/lib-config";
 
 export const { config, schema } = await libConfig({
   kafka: {
     topics: {
       default: {
-        writeRequest: 'write_request',
-        httpResponse: 'http_response',
+        writeRequest: "write_request",
+        httpResponse: "http_response",
       } as Record<string, string>,
     },
   },

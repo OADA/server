@@ -15,17 +15,17 @@
  * limitations under the License.
  */
 
-import type { Client, IClients } from '../models/client.js';
+import type { Client, IClients } from "../models/client.js";
 
 // @ts-expect-error IDEK
-import clients from './clients.json';
+import clients from "./clients.json";
 
 const database = new Map(Object.entries(clients as Record<string, Client>));
 
-export const findById = function (id: string) {
-  return structuredClone(database.get(id)) ?? undefined;
-} satisfies IClients['findById'];
+export const findById = ((id: string) =>
+  structuredClone(database.get(id)) ??
+  undefined) satisfies IClients["findById"];
 
-export const save = function (client: Client) {
+export const save = ((client: Client) => {
   database.set(client.client_id, client);
-} satisfies IClients['save'];
+}) satisfies IClients["save"];

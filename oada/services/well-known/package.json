@@ -7,10 +7,7 @@
     "type": "git",
     "url": "git+https://github.com/oada/oada-srvc-well-known.git"
   },
-  "keywords": [
-    "oada",
-    "well-known"
-  ],
+  "keywords": ["oada", "well-known"],
   "author": "",
   "license": "Apache-2.0",
   "bugs": {
@@ -21,10 +18,7 @@
   "engines": {
     "node": ">=20.0.0"
   },
-  "files": [
-    "src/**/*",
-    "dist/**/*"
-  ],
+  "files": ["src/**/*", "dist/**/*"],
   "scripts": {
     "build": "yarn g:tsc",
     "clean": "yarn run build --clean",
@@ -40,7 +34,7 @@
     "@oada/lib-prom": "workspace:^",
     "@oada/pino-debug": "workspace:^",
     "@oada/well-known-json": "^4.0.2",
-    "allow-methods": "^6.2.1",
+    "allow-methods": "^7.0.0",
     "cors": "^2.8.5",
     "debug": "^4.4.0",
     "fastify": "^5.2.1",

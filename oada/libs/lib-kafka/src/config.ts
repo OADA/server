@@ -16,29 +16,29 @@
  */
 
 // TODO: Publish this to npm instead?
-import libConfig from '@oada/lib-config';
+import libConfig from "@oada/lib-config";
 
 export const { config, schema } = await libConfig({
   kafka: {
     healthInterval: {
-      format: 'duration',
+      format: "duration",
       default: 5 * 60 * 1000, // Ms
     },
     producer: {
       pollInterval: {
-        format: 'duration',
+        format: "duration",
         default: 500, // Ms
       },
     },
     broker: {
-      doc: 'Kafka broker(s) to use',
+      doc: "Kafka broker(s) to use",
       format: Array,
-      default: ['kafka:9092'],
-      env: 'KAFKA_BROKERS',
-      arg: 'brokers',
+      default: ["kafka:9092"],
+      env: "KAFKA_BROKERS",
+      arg: "brokers",
     },
     timeouts: {
-      doc: 'Mapping of topic to timeouts (ms)',
+      doc: "Mapping of topic to timeouts (ms)",
 
       default: {
         default: 5000,
@@ -47,16 +47,16 @@ export const { config, schema } = await libConfig({
       } as Record<string, number>,
     },
     topics: {
-      doc: 'Kafka topic names to use',
+      doc: "Kafka topic names to use",
 
       default: {
-        tokenRequest: 'token_request',
-        graphRequest: 'graph_request',
-        writeRequest: 'write_request',
-        websocketsRequest: 'websockets_request',
-        permissionsRequest: 'permissions_request',
-        permissionsResponse: 'permissions_response',
-        httpResponse: 'http_response',
+        tokenRequest: "token_request",
+        graphRequest: "graph_request",
+        writeRequest: "write_request",
+        websocketsRequest: "websockets_request",
+        permissionsRequest: "permissions_request",
+        permissionsResponse: "permissions_response",
+        httpResponse: "http_response",
       } as Record<string, string>,
     },
   },

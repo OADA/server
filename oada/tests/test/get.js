@@ -14,24 +14,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-const axios = require('axios');
-const { expect } = require('chai');
-process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
+const axios = require("axios");
+const { expect } = require("chai");
+process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
 
-describe('testing a simple GET request', () => {
-  it('will have a valid response', () =>
+describe("testing a simple GET request", () => {
+  it("will have a valid response", () =>
     axios({
-      url: 'https://proxy/bookmarks',
-      method: 'get',
+      url: "https://proxy/bookmarks",
+      method: "get",
       headers: {
-        Authorization: 'Bearer abc',
+        Authorization: "Bearer abc",
       },
     })
       .then((response) => {
         expect(response.status).to.equal(200);
       })
       .catch((error) => {
-        console.log('the get failed', error);
+        console.log("the get failed", error);
         throw error;
       }));
 });

@@ -15,40 +15,40 @@
  * limitations under the License.
  */
 
-import '@oada/pino-debug';
+import "@oada/pino-debug";
 
-import { config } from './config.js';
+import { config } from "./config.js";
 
-import '@oada/lib-prom';
+import "@oada/lib-prom";
 
-import { ArangoError, ArangoErrorCode, users } from '@oada/lib-arangodb';
-import { ResponderRequester } from '@oada/lib-kafka';
+import { ArangoError, ArangoErrorCode, users } from "@oada/lib-arangodb";
+import { ResponderRequester } from "@oada/lib-kafka";
 
-import debug from 'debug';
-import ksuid from 'ksuid';
+import debug from "debug";
+import ksuid from "ksuid";
 
-import type { SetRequired } from 'type-fest';
-import { User } from '@oada/models/user';
-export type * from '@oada/models/user';
+import type { SetRequired } from "type-fest";
+import { User } from "@oada/models/user";
+export type * from "@oada/models/user";
 
-const trace = debug('users:trace');
-const warn = debug('users:warn');
+const trace = debug("users:trace");
+const warn = debug("users:warn");
 
 const contentTypes = {
-  bookmarks: 'application/vnd.oada.bookmarks.1+json',
-  shares: 'application/vnd.oada.shares.1+json',
+  bookmarks: "application/vnd.oada.bookmarks.1+json",
+  shares: "application/vnd.oada.shares.1+json",
 } as const;
 
 const responder = new ResponderRequester({
   requestTopics: {
-    produceTopic: config.get('kafka.topics.writeRequest'),
-    consumeTopic: config.get('kafka.topics.httpResponse'),
+    produceTopic: config.get("kafka.topics.writeRequest"),
+    consumeTopic: config.get("kafka.topics.httpResponse"),
   },
   respondTopics: {
-    consumeTopic: config.get('kafka.topics.userRequest'),
-    produceTopic: config.get('kafka.topics.httpResponse'),
+    consumeTopic: config.get("kafka.topics.userRequest"),
+    produceTopic: config.get("kafka.topics.httpResponse"),
   },
-  group: 'user-handlers',
+  group: "user-handlers",
 });
 
 export async function stopResp(): Promise<void> {
@@ -59,14 +59,14 @@ export async function createNewUser(request: UserRequest): Promise<User> {
   const u = new User(request.user);
   const { password, ...user } = await users.create(u);
   // Create empty resources for user
-  for await (const resource of ['bookmarks', 'shares'] as const) {
+  for await (const resource of ["bookmarks", "shares"] as const) {
     // eslint-disable-next-line security/detect-object-injection
     if (!user[resource]?._id) {
       const { string: resourceId } = await ksuid.random();
       const resourceID = `resources/${resourceId}`;
 
       trace(
-        'Creating %s for %s of %s as _type = %s',
+        "Creating %s for %s of %s as _type = %s",
         resourceID,
         resource,
         user.sub,
@@ -74,10 +74,10 @@ export async function createNewUser(request: UserRequest): Promise<User> {
         contentTypes[resource],
       );
       const resp = await responder.send({
-        msgtype: 'write-request',
+        msgtype: "write-request",
         url: `/${resourceID}`,
         resource_id: `/${resourceID}`,
-        path_leftover: '',
+        path_leftover: "",
         meta_id: `${resourceID}/_meta`,
         user_id: user.sub,
         // TODO: What to put for these?
@@ -88,7 +88,7 @@ export async function createNewUser(request: UserRequest): Promise<User> {
         contentType: contentTypes[resource],
         body: {},
       });
-      if (resp?.code !== 'success') {
+      if (resp?.code !== "success") {
         // TODO: Clean up on failure?
         trace(resp.code);
         throw new Error(`Failed to create ${resource}`);
@@ -101,13 +101,13 @@ export async function createNewUser(request: UserRequest): Promise<User> {
 
   // Update the new user with the new bookmarks
   await users.update(user);
-  trace({ user }, 'Created user');
+  trace({ user }, "Created user");
 
   return { password, ...user };
 }
 
 export interface UserRequest {
-  user: SetRequired<Partial<User>, 'domain'>;
+  user: SetRequired<Partial<User>, "domain">;
   authorization?: {
     scope: string | readonly string[];
   };
@@ -118,7 +118,7 @@ export interface UserResponse {
   new: boolean;
   user?: User;
 }
-responder.on<UserResponse, UserRequest>('request', handleReq);
+responder.on<UserResponse, UserRequest>("request", handleReq);
 
 function isArray(value: unknown): value is unknown[] | readonly unknown[] {
   return Array.isArray(value);
@@ -126,32 +126,32 @@ function isArray(value: unknown): value is unknown[] | readonly unknown[] {
 
 export async function handleReq(request: UserRequest): Promise<UserResponse> {
   // TODO: Sanitize?
-  trace({ request }, 'User request');
+  trace({ request }, "User request");
   // While this could fit in permissions_handler, since users are not really resources (i.e. no graph),
   // we'll add a check here that the user has oada.admin.user:write or oada.admin.user:all scope
-  const authorization = structuredClone(request.authorization) ?? { scope: '' };
+  const authorization = structuredClone(request.authorization) ?? { scope: "" };
   const tokenscope = isArray(authorization.scope)
-    ? authorization.scope.join(' ')
+    ? authorization.scope.join(" ")
     : authorization.scope; // Force to space-separated string
   if (
     !/oada.admin.user:write/.test(tokenscope) &&
     !/oada.admin.user:all/.test(tokenscope)
   ) {
     warn(
-      'Attempted to create a user, but request does not have token with oada.admin.user:write or oada.admin.user:all scope',
+      "Attempted to create a user, but request does not have token with oada.admin.user:write or oada.admin.user:all scope",
     );
-    throw new Error('Token does not have required scope to create users.');
+    throw new Error("Token does not have required scope to create users.");
   }
 
   // First, check if the ID exists already:
   let currentUser: User | undefined;
   const userId = request.user.sub;
   if (userId) {
-    trace('Checking if user id %s exists.', userId);
+    trace("Checking if user id %s exists.", userId);
     currentUser = await users.findById(userId, { graceful: true });
   }
 
-  trace('Result of search for user with id %s: %O', userId, currentUser);
+  trace("Result of search for user with id %s: %O", userId, currentUser);
 
   // Make one if it doesn't exist already:
   let createUser = false;
@@ -168,10 +168,10 @@ export async function handleReq(request: UserRequest): Promise<UserResponse> {
         createUser = false;
         trace(
           { user: request.user },
-          'Tried to create user, but it already existed (same username). Returning as if we had created it',
+          "Tried to create user, but it already existed (same username). Returning as if we had created it",
         );
         const user = await users.findByUsername(request.user.username!);
-        trace({ user }, 'existing user found');
+        trace({ user }, "existing user found");
       } else {
         throw Object.assign(
           new Error(`Error creating user ${request.user.username}`, {
@@ -187,7 +187,7 @@ export async function handleReq(request: UserRequest): Promise<UserResponse> {
   if (!createUser) {
     const { sub } = currentUser ?? {};
     trace(
-      'We did not create a new user, so we are now updating user id %s',
+      "We did not create a new user, so we are now updating user id %s",
       sub,
     );
     currentUser = await users.update({
@@ -202,11 +202,11 @@ export async function handleReq(request: UserRequest): Promise<UserResponse> {
   if (trace.enabled && currentUser) {
     // Don't log passwords
     const { password, ...user } = currentUser;
-    trace({ user }, 'Finished with update, responding with success');
+    trace({ user }, "Finished with update, responding with success");
   }
 
   return {
-    code: 'success',
+    code: "success",
     new: createUser,
     // TODO: figure out what cur_user is supposed to be??
     user: currentUser,

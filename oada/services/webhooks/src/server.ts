@@ -15,30 +15,30 @@
  * limitations under the License.
  */
 
-import '@oada/pino-debug';
+import "@oada/pino-debug";
 
-import { config } from './config.js';
+import { config } from "./config.js";
 
-import '@oada/lib-prom';
+import "@oada/lib-prom";
 
-import { changes, resources } from '@oada/lib-arangodb';
-import type { KafkaBase } from '@oada/lib-kafka';
-import { Responder } from '@oada/lib-kafka';
+import { changes, resources } from "@oada/lib-arangodb";
+import type { KafkaBase } from "@oada/lib-kafka";
+import { Responder } from "@oada/lib-kafka";
 
-import type Resource from '@oada/types/oada/resource.js';
-import type { WriteResponse } from '@oada/write-handler';
+import type Resource from "@oada/types/oada/resource.js";
+import type { WriteResponse } from "@oada/write-handler";
 
-import debug from 'debug';
-import got from 'got';
+import debug from "debug";
+import got from "got";
 
-const trace = debug('webhooks:trace');
-const error = debug('webhooks:error');
+const trace = debug("webhooks:trace");
+const error = debug("webhooks:error");
 
 // ---------------------------------------------------------
 // Kafka initializations:
 const responder = new Responder({
-  consumeTopic: config.get('kafka.topics.httpResponse'),
-  group: 'webhooks',
+  consumeTopic: config.get("kafka.topics.httpResponse"),
+  group: "webhooks",
 });
 
 export async function stopResp(): Promise<void> {
@@ -49,45 +49,45 @@ export async function stopResp(): Promise<void> {
  * Check for successful write request
  */
 function checkRequest(request: KafkaBase): request is WriteResponse {
-  return request?.msgtype === 'write-response' && request?.code === 'success';
+  return request?.msgtype === "write-response" && request?.code === "success";
 }
 
 export interface Sync {
-  'url': string;
-  'headers': Record<string, string>;
-  'oada-put': boolean;
+  url: string;
+  headers: Record<string, string>;
+  "oada-put": boolean;
 }
 type Syncs = Record<string, Sync>;
 
-responder.on<void>('request', async (request) => {
+responder.on<void>("request", async (request) => {
   if (!checkRequest(request)) {
     return;
   }
 
   // TODO: Add AQL query for just syncs and newest change?
-  const meta = (await resources.getResource(request.resource_id, '/_meta')) as {
+  const meta = (await resources.getResource(request.resource_id, "/_meta")) as {
     _syncs?: Syncs;
     _changes: Record<number, { _id: string }>;
   };
   if (meta?._syncs) {
     return Promise.all(
       Object.values(meta._syncs).map(async (sync) => {
-        if (process.env.NODE_ENV !== 'production') {
+        if (process.env.NODE_ENV !== "production") {
           /**
            * If running in dev environment,
            * https://localhost webhooks should be directed to the proxy server.
            */
-          sync.url = sync.url.replace('localhost', 'proxy');
+          sync.url = sync.url.replace("localhost", "proxy");
         }
 
-        if (sync['oada-put']) {
+        if (sync["oada-put"]) {
           const change = await changes.getChange(
             request.resource_id,
             request._rev,
           );
           if (!change) {
             error(
-              'Failed to get change %d for %s',
+              "Failed to get change %d for %s",
               request._rev,
               request.resource_id,
             );
@@ -101,14 +101,14 @@ responder.on<void>('request', async (request) => {
             return;
           }
 
-          if (change.type === 'delete') {
+          if (change.type === "delete") {
             // Handle delete _changes
             const deletePath = [];
             let toDelete: unknown = body;
-            trace('Sending oada-put to: %s', sync.url);
+            trace("Sending oada-put to: %s", sync.url);
             while (
               toDelete &&
-              typeof toDelete === 'object' &&
+              typeof toDelete === "object" &&
               Object.keys(toDelete).length > 0
             ) {
               const key = Object.keys(toDelete)[0];
@@ -120,8 +120,8 @@ responder.on<void>('request', async (request) => {
               return;
             }
 
-            const deleteUrl = `${sync.url}/${deletePath.join('/')}`;
-            trace('Deleting: oada-put url changed to: %s', deleteUrl);
+            const deleteUrl = `${sync.url}/${deletePath.join("/")}`;
+            trace("Deleting: oada-put url changed to: %s", deleteUrl);
             await got.delete({
               url: deleteUrl,
               headers: sync.headers,
@@ -130,8 +130,8 @@ responder.on<void>('request', async (request) => {
           }
 
           // Handle merge _changes
-          trace('Sending oada-put to: %s', sync.url);
-          trace(body, 'oada-put body');
+          trace("Sending oada-put to: %s", sync.url);
+          trace(body, "oada-put body");
           await got.put({
             url: sync.url,
             json: body,
@@ -140,7 +140,7 @@ responder.on<void>('request', async (request) => {
           return;
         }
 
-        trace('Sending to: %s', sync.url);
+        trace("Sending to: %s", sync.url);
         await got(sync);
       }),
     );

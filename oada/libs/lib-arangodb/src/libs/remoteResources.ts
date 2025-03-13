@@ -15,16 +15,16 @@
  * limitations under the License.
  */
 
-import { config } from '../config.js';
-import { db as database } from '../db.js';
+import { config } from "../config.js";
+import { db as database } from "../db.js";
 
-import { aql } from 'arangojs';
-import debug from 'debug';
+import { aql } from "arangojs";
+import debug from "debug";
 
-const trace = debug('arangodb#remoteResources:trace');
+const trace = debug("arangodb#remoteResources:trace");
 
 const remoteResources = database.collection(
-  config.get('arangodb.collections.remoteResources.name'),
+  config.get("arangodb.collections.remoteResources.name"),
 );
 
 export interface RemoteID {
@@ -44,7 +44,7 @@ export async function getRemoteId(
 ): Promise<AsyncIterable<RemoteID>> {
   const ids = Array.isArray(id) ? id : [id];
 
-  trace('Looking up remote IDs for %s at %s', ids, domain);
+  trace("Looking up remote IDs for %s at %s", ids, domain);
   const rids = await database.query<RemoteID>(
     aql`
         FOR id IN ${ids}
@@ -60,7 +60,7 @@ export async function getRemoteId(
           }`,
   );
 
-  trace(rids, 'Found');
+  trace(rids, "Found");
   return rids;
 }
 
@@ -70,7 +70,7 @@ export async function addRemoteId(
 ): Promise<void> {
   const rids = Array.isArray(rid) ? rid : [rid];
 
-  trace('Adding remote IDs: %O', rids);
+  trace("Adding remote IDs: %O", rids);
   await database.query(aql`
     FOR rid IN ${rids}
       INSERT {
@@ -85,12 +85,12 @@ export async function addRemoteId(
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export const NotFoundError = {
-  name: 'ArangoError',
+  name: "ArangoError",
   errorNum: 1202,
 };
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export const UniqueConstraintError = {
-  name: 'ArangoError',
+  name: "ArangoError",
   errorNum: 1210,
 };

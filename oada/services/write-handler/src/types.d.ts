@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-declare module 'timed-cache' {
+declare module "timed-cache" {
   export = class Cache<T> {
     constructor(options: { defaultTtl: number });
 

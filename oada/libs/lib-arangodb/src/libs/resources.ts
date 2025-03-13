@@ -15,41 +15,41 @@
  * limitations under the License.
  */
 
-import type { Link } from '@oada/types/oada/link/v1.js';
-import type Resource from '@oada/types/oada/resource.js';
+import type { Link } from "@oada/types/oada/link/v1.js";
+import type Resource from "@oada/types/oada/resource.js";
 
-import { config } from '../config.js';
+import { config } from "../config.js";
 
-import type { OADAified } from '@oada/oadaify';
-import { oadaify } from '@oada/oadaify';
+import type { OADAified } from "@oada/oadaify";
+import { oadaify } from "@oada/oadaify";
 
-import { ArangoError } from './errors.js';
-import type { User } from '@oada/models/user';
-import { db as database } from '../db.js';
-import { sanitizeResult } from '../util.js';
+import { ArangoError } from "./errors.js";
+import type { User } from "@oada/models/user";
+import { db as database } from "../db.js";
+import { sanitizeResult } from "../util.js";
 
-import { JsonPointer, type PathSegments } from 'json-ptr';
-import { type JsonObject } from 'type-fest';
-import { aql } from 'arangojs';
-import debug from 'debug';
+import { JsonPointer, type PathSegments } from "json-ptr";
+import type { JsonObject } from "type-fest";
+import { aql } from "arangojs";
+import debug from "debug";
 
 type IResource = OADAified<Resource>;
 export type { IResource as Resource };
 
-const info = debug('arangodb#resources:info');
-const trace = debug('arangodb#resources:trace');
+const info = debug("arangodb#resources:info");
+const trace = debug("arangodb#resources:trace");
 
 const resources = database.collection(
-  config.get('arangodb.collections.resources.name'),
+  config.get("arangodb.collections.resources.name"),
 );
 const graphNodes = database.collection(
-  config.get('arangodb.collections.graphNodes.name'),
+  config.get("arangodb.collections.graphNodes.name"),
 );
 const edgesCollection = database.collection(
-  config.get('arangodb.collections.edges.name'),
+  config.get("arangodb.collections.edges.name"),
 );
 // HACK: Should use database.graph but there is a bug with aql template tags
-const resourceGraph = config.get('arangodb.graphs.resources.name');
+const resourceGraph = config.get("arangodb.graphs.resources.name");
 
 const MAX_DEPTH = 100; // TODO: Is this good?
 
@@ -70,16 +70,16 @@ export interface GraphLookup {
   resource_id: string;
   path_leftover: string;
   permissions: Partial<Permission>;
-  from?: Omit<GraphLookup, 'rev'>;
+  from?: Omit<GraphLookup, "rev">;
   resourceExists: boolean;
 }
 
 function normalizeUrl(user: User, url: string): string {
-  if (url.startsWith('/bookmarks')) {
+  if (url.startsWith("/bookmarks")) {
     return url.replace(/^\/bookmarks/, `/${user.bookmarks._id}`);
   }
 
-  if (url.startsWith('/shares')) {
+  if (url.startsWith("/shares")) {
     return url.replace(/^\/shares/, `/${user.shares._id}`);
   }
 
@@ -180,16 +180,16 @@ export async function lookupFromUrl(
   // Get rid of leading slash from json pointer
   let resourceId = JsonPointer.create(id.concat(pieces))
     .toString()
-    .replace(/^\//, '');
+    .replace(/^\//, "");
 
   let { rev, type, edges, vertices } = result;
   let resourceExists = true;
 
-  let pathLeftover = '';
+  let pathLeftover = "";
   let from;
 
   if (!result) {
-    trace('1 return resource id %s', resourceId);
+    trace("1 return resource id %s", resourceId);
     return {
       resourceExists: false,
       permissions: {},
@@ -248,8 +248,8 @@ export async function lookupFromUrl(
 
   // Check for a traversal that did not finish (aka not found)
   if (vertices[0] === null) {
-    trace('graph-lookup traversal did not finish');
-    trace('2 return resource id %s', resourceId);
+    trace("graph-lookup traversal did not finish");
+    trace("2 return resource id %s", resourceId);
 
     return {
       resource_id: resourceId,
@@ -267,7 +267,7 @@ export async function lookupFromUrl(
   // starting at this uncreated resource
   if (lastV) {
     resourceId = lastV.resource_id;
-    trace('graph-lookup traversal found resource %s', resourceId);
+    trace("graph-lookup traversal found resource %s", resourceId);
     const fromV = vertices.at(-2);
     const edge = edges.at(-1);
     // If the desired url has more pieces than the longest path, the
@@ -281,30 +281,30 @@ export async function lookupFromUrl(
         pieces.slice(lastResource - pieces.length),
       ).toString();
     } else {
-      pathLeftover = lastV.path ?? '';
+      pathLeftover = lastV.path ?? "";
     }
 
     from = {
       permissions,
       resourceExists: Boolean(fromV),
-      resource_id: fromV?.resource_id ?? '',
-      path_leftover: (fromV?.path ?? '') + (edge ? `/${edge.name}` : ''),
+      resource_id: fromV?.resource_id ?? "",
+      path_leftover: (fromV?.path ?? "") + (edge ? `/${edge.name}` : ""),
     };
   } else {
     const lastEdge = edges.at(-1)?._to;
-    pathLeftover = '';
+    pathLeftover = "";
     resourceId = `resources/${
-      lastEdge?.split('graphNodes/resources:')[1] ?? ''
+      lastEdge?.split("graphNodes/resources:")[1] ?? ""
     }`;
-    trace('graph-lookup traversal uncreated resource %s', resourceId);
+    trace("graph-lookup traversal uncreated resource %s", resourceId);
     rev = 0;
     const fromV = vertices.at(-2);
     const edge = edges.at(-1);
     from = {
       resourceExists: Boolean(fromV),
       permissions,
-      resource_id: fromV?.resource_id ?? '',
-      path_leftover: (fromV?.path ?? '') + (edge ? `/${edge.name}` : ''),
+      resource_id: fromV?.resource_id ?? "",
+      path_leftover: (fromV?.path ?? "") + (edge ? `/${edge.name}` : ""),
     };
     resourceExists = false;
   }
@@ -322,7 +322,7 @@ export async function lookupFromUrl(
 
 export async function getResource(
   id: string,
-  path?: '',
+  path?: "",
 ): Promise<IResource | undefined>;
 export async function getResource(
   id: string,
@@ -330,22 +330,22 @@ export async function getResource(
 ): Promise<Partial<IResource> | undefined>;
 export async function getResource(
   id: string,
-  path = '',
+  path = "",
 ): Promise<Partial<IResource> | undefined> {
   // TODO: Escaping stuff?
   const parts = JsonPointer.decode(path);
 
-  if (parts[0] === '_rev') {
+  if (parts[0] === "_rev") {
     // Get OADA rev, not arango one
-    parts[0] = '_oada_rev';
+    parts[0] = "_oada_rev";
   }
 
   const bindVariables = {
     ...Object.fromEntries(parts.map((part, index) => [`v${index}`, part])),
     id,
-    '@collection': resources.name,
+    "@collection": resources.name,
   };
-  const returnPath = parts.map((_, index) => `[@v${index}]`).join('');
+  const returnPath = parts.map((_, index) => `[@v${index}]`).join("");
 
   try {
     const result = await database.query<Resource>({
@@ -362,7 +362,7 @@ export async function getResource(
   } catch (error: unknown) {
     if (
       error instanceof ArangoError &&
-      error.message === 'invalid traversal depth (while instantiating plan)'
+      error.message === "invalid traversal depth (while instantiating plan)"
     ) {
       // Treat non-existing path as not-found
       return undefined;
@@ -394,12 +394,12 @@ export async function getResourceOwnerIdRev(
         }`);
 
     const object = (await result.next()) as OwnerIdRev | undefined;
-    trace('getResourceOwnerIdRev(%s): result = %O', id, object);
+    trace("getResourceOwnerIdRev(%s): result = %O", id, object);
     return object;
   } catch (error: unknown) {
     if (
       error instanceof ArangoError &&
-      error.message === 'invalid traversal depth (while instantiating plan)'
+      error.message === "invalid traversal depth (while instantiating plan)"
     ) {
       // Treat non-existing path as not-found
       return undefined;
@@ -415,7 +415,7 @@ export async function getParents(id: string) {
       aql`
         WITH ${graphNodes}, ${resources}
         FOR v, e IN 0..1
-          INBOUND ${`graphNodes/${id.replace(/\//, ':')}`}
+          INBOUND ${`graphNodes/${id.replace(/\//, ":")}`}
           GRAPH ${resourceGraph}
           FILTER e.versioned == true
           LET res = DOCUMENT(v.resource_id)
@@ -433,7 +433,7 @@ export async function getParents(id: string) {
   } catch (error: unknown) {
     if (
       error instanceof ArangoError &&
-      error.message === 'invalid traversal depth (while instantiating plan)'
+      error.message === "invalid traversal depth (while instantiating plan)"
     ) {
       // Treat non-existing path as no parents?
       return (async function* () {
@@ -507,12 +507,12 @@ export async function putResource(
 
   // TODO: Sanitize OADA keys?
   // _key is now an illegal document key
-  object._key = id.replace(/^\/?resources\//, '');
-  trace('Adding links for resource %s...', id);
+  object._key = id.replace(/^\/?resources\//, "");
+  trace("Adding links for resource %s...", id);
 
   const links = checkLinks ? await addLinks(object) : [];
-  info('Upserting resource %s', object._key);
-  trace({ links }, 'Upserting links');
+  info("Upserting resource %s", object._key);
+  trace({ links }, "Upserting links");
 
   // TODO: Should it check that graphNodes exist but are wrong?
   let q;
@@ -615,8 +615,8 @@ async function forLinks(
 ): Promise<void> {
   await Promise.all(
     Object.entries(resource).map(async ([key, value]) => {
-      if (value && typeof value === 'object') {
-        if ('_id' in value && key !== '_meta') {
+      if (value && typeof value === "object") {
+        if ("_id" in value && key !== "_meta") {
           // If it has _id and is not _meta, treat as a link
           await callback(value as Link, path.concat(key));
           return;
@@ -638,13 +638,13 @@ async function addLinks(resource: Record<string, unknown>) {
   const links: Link[] = [];
   await forLinks(resource, async (link, path) => {
     // Ignore _changes "link"?
-    if (path[0] === '_meta' && path[1] === '_changes') {
+    if (path[0] === "_meta" && path[1] === "_changes") {
       return;
     }
 
-    if ('_rev' in link) {
-      const rev = await getResource(link._id, '/_oada_rev');
-      link._rev = typeof rev === 'number' ? rev : 0;
+    if ("_rev" in link) {
+      const rev = await getResource(link._id, "/_oada_rev");
+      link._rev = typeof rev === "number" ? rev : 0;
     }
 
     links.push({ path, ...link });
@@ -673,7 +673,7 @@ export async function makeRemote<T extends Record<string, unknown>>(
 export async function deleteResource(id: string): Promise<number> {
   // TODO: fix this: for some reason, the id that came in started with
   /// resources, unlike everywhere else in this file
-  const key = id.replace(/^\/?resources\//, '');
+  const key = id.replace(/^\/?resources\//, "");
 
   // Query deletes resource, its nodes, and outgoing edges (but not incoming)
   const cursor = await database.query(
@@ -707,7 +707,7 @@ export async function deletePartialResource(
   inPath: string | PathSegments,
   { _rev: rev, ...document }: Partial<Resource> = {},
 ): Promise<number> {
-  const key = id.replace(/^resources\//, '');
+  const key = id.replace(/^resources\//, "");
   const pointer = new JsonPointer(inPath);
 
   const path = [...pointer.path];

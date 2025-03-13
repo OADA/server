@@ -15,13 +15,13 @@
  * limitations under the License.
  */
 
-import libConfig from '@oada/lib-config';
+import libConfig from "@oada/lib-config";
 
 export const { config, schema } = await libConfig({
   kafka: {
     topics: {
       default: {
-        httpResponse: 'http_response',
+        httpResponse: "http_response",
       },
     },
   },

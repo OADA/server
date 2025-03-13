@@ -26,13 +26,13 @@
 
 // TODO: Add more of the error codes from above link
 
-export { ArangoError } from 'arangojs/errors';
+export { ArangoError } from "arangojs/errors";
 
 /**
  * Error codes for ArangoErrorCode
  * @see errorNum
  */
-export const enum ArangoErrorCode {
+export enum ArangoErrorCode {
   /** General errors **/
   /**
    * No error has occurred

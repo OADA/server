@@ -15,38 +15,38 @@
  * limitations under the License.
  */
 
-import { config } from '../../config.js';
+import { config } from "../../config.js";
 
-import { randomBytes } from 'node:crypto';
+import { randomBytes } from "node:crypto";
 
-import type { Promisable, SetRequired } from 'type-fest';
-import base36 from 'random-id-base36';
+import type { Promisable, SetRequired } from "type-fest";
+import base36 from "random-id-base36";
 
-import { destructure } from '@oada/models/decorators';
+import { destructure } from "@oada/models/decorators";
 
-import { type Store, getDataStores, tryDataStores } from './index.js';
+import { type Store, getDataStores, tryDataStores } from "./index.js";
 
 export interface IDeviceCodes extends Store {
   findByDeviceCode(
-    deviceCode: DeviceCode['deviceCode'],
+    deviceCode: DeviceCode["deviceCode"],
   ): Promisable<Partial<DeviceCode> | undefined>;
   findByUserCode(
-    userCode: DeviceCode['userCode'],
+    userCode: DeviceCode["userCode"],
   ): Promisable<Partial<DeviceCode> | undefined>;
   save<C extends DeviceCode>(code: C): Promisable<C>;
   redeem(
-    code: DeviceCode['deviceCode'],
+    code: DeviceCode["deviceCode"],
   ): Promisable<{ redeemed: boolean; code?: DeviceCode }>;
 }
 
 const dataStores = await getDataStores<IDeviceCodes>(
-  config.get('auth.deviceCode.dataStore'),
-  'deviceCodes',
+  config.get("auth.deviceCode.dataStore"),
+  "deviceCodes",
 );
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 function _DeviceCode() {
-  return `${randomBytes(15).toString('base64')}_${randomBytes(15).toString('base64')}` as const;
+  return `${randomBytes(15).toString("base64")}_${randomBytes(15).toString("base64")}` as const;
 }
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -80,7 +80,7 @@ class DeviceCode {
   }
 }
 
-export async function findByDeviceCode(deviceCode: DeviceCode['deviceCode']) {
+export async function findByDeviceCode(deviceCode: DeviceCode["deviceCode"]) {
   async function findDeviceCodeByDeviceCode(dataStore: IDeviceCodes) {
     const c = await dataStore.findByDeviceCode(deviceCode);
     return c ? new DeviceCode(c) : undefined;
@@ -89,7 +89,7 @@ export async function findByDeviceCode(deviceCode: DeviceCode['deviceCode']) {
   return tryDataStores(dataStores, findDeviceCodeByDeviceCode);
 }
 
-export async function findByUserCode(userCode: DeviceCode['userCode']) {
+export async function findByUserCode(userCode: DeviceCode["userCode"]) {
   async function findDeviceCodeByUserCode(dataStore: IDeviceCodes) {
     const c = await dataStore.findByUserCode(userCode);
     return c ? new DeviceCode(c) : undefined;
@@ -104,23 +104,23 @@ export async function create(c: Partial<DeviceCode>) {
     const saved = await dataStores[0]!.save(code);
     return new DeviceCode(saved);
   } catch (error: unknown) {
-    throw new Error('Failed to create device code', { cause: error });
+    throw new Error("Failed to create device code", { cause: error });
   }
 }
 
 export async function activate(
-  deviceCode: SetRequired<DeviceCode, 'approved'>,
+  deviceCode: SetRequired<DeviceCode, "approved">,
 ) {
   try {
     await dataStores[0]!.save(deviceCode);
   } catch (error: unknown) {
-    throw new Error('Could not activate device code', { cause: error });
+    throw new Error("Could not activate device code", { cause: error });
   }
 }
 
 export async function redeem(
   clientId: string,
-  deviceCode: DeviceCode['deviceCode'],
+  deviceCode: DeviceCode["deviceCode"],
 ): Promise<{ redeemed: boolean; code?: DeviceCode }> {
   async function redeemDeviceCode(dataStore: IDeviceCodes) {
     const { redeemed, code } = await dataStore.redeem(deviceCode);
@@ -130,7 +130,7 @@ export async function redeem(
 
     const out = new DeviceCode(code);
     if (code.clientId !== clientId) {
-      throw new Error('Client does not match original client');
+      throw new Error("Client does not match original client");
     }
 
     return {

@@ -18,47 +18,47 @@
 import {
   Strategy as BearerStrategy,
   type VerifyFunctionWithRequest,
-} from 'passport-http-bearer';
+} from "passport-http-bearer";
 import {
   Strategy as JWTStrategy,
   type VerifyCallbackWithRequest,
-} from 'passport-jwt';
-import { type RSA_JWK, jwk2pem } from 'pem-jwk';
-import { Authenticator } from '@fastify/passport';
-import ClientPassword from 'passport-oauth2-client-password';
-import { Strategy as LocalStrategy } from 'passport-local';
-import debug from 'debug';
-import { decodeJwt } from 'jose';
+} from "passport-jwt";
+import { type RSA_JWK, jwk2pem } from "pem-jwk";
+import { Authenticator } from "@fastify/passport";
+import ClientPassword from "passport-oauth2-client-password";
+import { Strategy as LocalStrategy } from "passport-local";
+import debug from "debug";
+import { decodeJwt } from "jose";
 
-import { jwksUtils } from '@oada/certs';
+import { jwksUtils } from "@oada/certs";
 
 import {
   type User,
   findByUsernamePassword,
   findById as findUserById,
-} from './db/models/user.js';
-import type { FastifyRequest } from 'fastify';
-import { _defaultHack } from './index.js';
-import { findById } from './db/models/client.js';
-import { verifyToken } from './oauth2.js';
+} from "./db/models/user.js";
+import type { FastifyRequest } from "fastify";
+import { _defaultHack } from "./index.js";
+import { findById } from "./db/models/client.js";
+import { verifyToken } from "./oauth2.js";
 
 export const fastifyPassport = new Authenticator({
-  clearSessionOnLogin: process.env.NODE_ENV === 'development',
-  clearSessionIgnoreFields: ['returnTo'],
+  clearSessionOnLogin: process.env.NODE_ENV === "development",
+  clearSessionIgnoreFields: ["returnTo"],
 });
 
-const trace = debug('auth#auth:trace');
-const warn = debug('auth#auth:warn');
+const trace = debug("auth#auth:trace");
+const warn = debug("auth#auth:warn");
 
-declare module 'fastify' {
+declare module "fastify" {
   interface PassportUser extends User {}
 }
 
 // LocalStrategy is used for the /login screen
 fastifyPassport.use(
-  'local',
+  "local",
   new LocalStrategy(async (username, password, done) => {
-    trace('Looking up username %s in local strategy', username);
+    trace("Looking up username %s in local strategy", username);
     try {
       const user = await findByUsernamePassword(username, password);
       if (!user) {
@@ -77,16 +77,16 @@ fastifyPassport.use(
 
 // eslint-disable-next-line @typescript-eslint/require-await
 fastifyPassport.registerUserSerializer<User, string>(async (user) => {
-  trace('Serializing user by sub as %s', user.sub);
+  trace("Serializing user by sub as %s", user.sub);
   if (!user.sub) {
-    throw new TypeError('User has no sub/id');
+    throw new TypeError("User has no sub/id");
   }
 
   return user.sub;
 });
 
 fastifyPassport.registerUserDeserializer<string, User>(async (userid) => {
-  trace('deserializing user by userid: %s', userid);
+  trace("deserializing user by userid: %s", userid);
   const user = await findUserById(userid);
   if (!user) {
     throw new Error(`User not found for id: ${userid}`);
@@ -99,7 +99,7 @@ fastifyPassport.registerUserDeserializer<string, User>(async (userid) => {
  * @see {@link https://datatracker.ietf.org/doc/html/rfc7523}
  */
 fastifyPassport.use(
-  'oauth2-client-assertion',
+  "oauth2-client-assertion",
   new JWTStrategy(
     {
       passReqToCallback: true,
@@ -107,9 +107,9 @@ fastifyPassport.use(
         const { client_assertion_type, client_assertion } = body ?? {};
         if (
           client_assertion_type !==
-          'urn:ietf:params:oauth:client-assertion-type:jwt-bearer'
+          "urn:ietf:params:oauth:client-assertion-type:jwt-bearer"
         ) {
-          trace('Unknown client_assertion_type %s', client_assertion_type);
+          trace("Unknown client_assertion_type %s", client_assertion_type);
           // eslint-disable-next-line unicorn/no-null
           return null;
         }
@@ -127,7 +127,7 @@ fastifyPassport.use(
           const clientId = payload?.sub;
           const client = await findById(clientId!);
           if (!client) {
-            warn('Failed to find client by id %s', clientId);
+            warn("Failed to find client by id %s", clientId);
             throw new Error(`Client ${clientId} not found`);
           }
 
@@ -137,11 +137,11 @@ fastifyPassport.use(
           const jwk = await jwksUtils.jwkForSignature(`${jwt}`, hint);
 
           // Convert JWK to PEM
-          const key = jwk.kty === 'PEM' ? jwk.pem : jwk2pem(jwk as RSA_JWK);
+          const key = jwk.kty === "PEM" ? jwk.pem : jwk2pem(jwk as RSA_JWK);
           // eslint-disable-next-line unicorn/no-null
           done(null, key);
         } catch (error: unknown) {
-          warn({ error }, 'Failed to get secretOrKeyProvider');
+          warn({ error }, "Failed to get secretOrKeyProvider");
           // eslint-disable-next-line unicorn/no-null
           done(null);
         }
@@ -175,7 +175,7 @@ fastifyPassport.use(
 
 // ClientPassword used to verify client secret in Authorization flow
 fastifyPassport.use(
-  'oauth2-client-password',
+  "oauth2-client-password",
   new ClientPassword.Strategy(async (clientId, clientSecret, done) => {
     try {
       const client = await findById(clientId);
@@ -198,7 +198,7 @@ fastifyPassport.use(
         client.client_secret_expires_at &&
         client.client_secret_expires_at < Date.now()
       ) {
-        throw new Error('Client secret has expired');
+        throw new Error("Client secret has expired");
       }
 
       // eslint-disable-next-line unicorn/no-null
@@ -211,14 +211,14 @@ fastifyPassport.use(
 
 // BearerStrategy used to protect userinfo endpoint
 fastifyPassport.use(
-  'bearer',
+  "bearer",
   new BearerStrategy({}, (async (request, token, done) => {
     try {
       const issuer = `${request.protocol}://${request.hostname}/` as const;
       const payload = await verifyToken(issuer, token);
       (request as unknown as FastifyRequest).log.debug(
         { issuer, jwt: token, payload },
-        'JWT Bearer token verify',
+        "JWT Bearer token verify",
       );
 
       if (!payload) {

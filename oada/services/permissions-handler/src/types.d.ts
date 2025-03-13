@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-declare module 'es-main' {
+declare module "es-main" {
   function esMain(meta: unknown): boolean;
   export = esMain;
 }

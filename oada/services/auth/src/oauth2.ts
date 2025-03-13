@@ -15,22 +15,22 @@
  * limitations under the License.
  */
 
-import { config, domainConfigs } from './config.js';
+import { config, domainConfigs } from "./config.js";
 
-import type { ServerResponse } from 'node:http';
-import { createHash } from 'node:crypto';
-import { join } from 'node:path/posix';
-import { promisify } from 'node:util';
+import type { ServerResponse } from "node:http";
+import { createHash } from "node:crypto";
+import { join } from "node:path/posix";
+import { promisify } from "node:util";
 
-import type {} from '@fastify/formbody';
-import type { FastifyPluginAsync, FastifyReply, FastifyRequest } from 'fastify';
+import type {} from "@fastify/formbody";
+import type { FastifyPluginAsync, FastifyReply, FastifyRequest } from "fastify";
 
 import {
   EncryptJWT,
   type JWTDecryptResult,
   type JWTPayload,
   jwtDecrypt,
-} from 'jose';
+} from "jose";
 import oauth2orize, {
   AuthorizationError,
   type IssueExchangeCodeFunctionArity5,
@@ -42,40 +42,40 @@ import oauth2orize, {
   type OAuth2Server,
   TokenError,
   type ValidateFunctionArity2,
-} from 'oauth2orize';
+} from "oauth2orize";
 import oauth2orizeDeviceCode, {
   type ActivateDeviceCodeFunction,
   type ExchangeDeviceCodeFunction,
   type IssueDeviceCodeFunction,
-} from 'oauth2orize-device-code';
-import { extensions } from 'oauth2orize-pkce';
+} from "oauth2orize-device-code";
+import { extensions } from "oauth2orize-pkce";
 
-import { trustedCDP } from '@oada/lookup';
+import { trustedCDP } from "@oada/lookup";
 
-import { type Client, findById } from './db/models/client.js';
+import { type Client, findById } from "./db/models/client.js";
 import {
   type Token,
   create as createToken,
   verify,
-} from './db/models/token.js';
+} from "./db/models/token.js";
 import {
   activate as _activateDeviceCode,
   create as createDeviceCode,
   findByDeviceCode,
   // FindByUserCode,
   redeem,
-} from './db/models/deviceCode.js';
-import { Authorization } from '@oada/models/authorization';
-import type { User } from './db/models/user.js';
-import { fastifyPassport } from './auth.js';
-import { getSymmetricKey } from './keys.js';
-import { promisifyMiddleware } from './utils.js';
-import { requestContext } from '@fastify/request-context';
+} from "./db/models/deviceCode.js";
+import { Authorization } from "@oada/models/authorization";
+import type { User } from "./db/models/user.js";
+import { fastifyPassport } from "./auth.js";
+import { getSymmetricKey } from "./keys.js";
+import { promisifyMiddleware } from "./utils.js";
+import { requestContext } from "@fastify/request-context";
 
 // If the array of scopes contains ONLY openid OR openid and profile, auto-accept.
 // Better to handle this by asking only the first time, but this is quicker to get PoC working.
 function scopeIsOnlyOpenid(scopes: string | readonly string[]): boolean {
-  if (typeof scopes === 'string') {
+  if (typeof scopes === "string") {
     return scopeIsOnlyOpenid([scopes]);
   }
 
@@ -83,18 +83,18 @@ function scopeIsOnlyOpenid(scopes: string | readonly string[]): boolean {
     return false;
   }
 
-  if (scopes.length === 1 && scopes[0] === 'openid') {
+  if (scopes.length === 1 && scopes[0] === "openid") {
     return true;
   }
 
   return (
     scopes.length === 2 &&
-    scopes.includes('openid') &&
-    scopes.includes('profile')
+    scopes.includes("openid") &&
+    scopes.includes("profile")
   );
 }
 
-declare module 'oauth2orize' {
+declare module "oauth2orize" {
   // eslint-disable-next-line @typescript-eslint/no-shadow
   interface OAuth2Req {
     nonce?: string;
@@ -122,7 +122,7 @@ export interface Options {
   };
 }
 
-const tokenConfig = config.get('auth.token');
+const tokenConfig = config.get("auth.token");
 
 /**
  * Set of claims we include in our signed JWT bearer tokens
@@ -132,14 +132,14 @@ export type TokenClaims = Record<string, unknown> & Authorization & JWTPayload;
 export async function getToken(
   issuer: string,
   {
-    exp = config.get('auth.token.expiresIn') / 1000,
+    exp = config.get("auth.token.expiresIn") / 1000,
     ...claims
   }: Partial<Token>,
 ) {
   try {
     return await createToken({ ...claims, exp }, issuer);
   } catch (error: unknown) {
-    throw new Error('Failed to issue token', { cause: error });
+    throw new Error("Failed to issue token", { cause: error });
   }
 }
 
@@ -147,7 +147,7 @@ export async function verifyToken(issuer: string, token: string) {
   try {
     return await verify(token, issuer);
   } catch (error: unknown) {
-    throw new Error('Failed to verify token', { cause: error });
+    throw new Error("Failed to verify token", { cause: error });
   }
 }
 
@@ -158,8 +158,8 @@ export const issueToken = (async (
   done,
 ) => {
   try {
-    const issuer = requestContext.get('issuer')!;
-    const scope = request.scope.join(' ');
+    const issuer = requestContext.get("issuer")!;
+    const scope = request.scope.join(" ");
     // TODO: Fill out user info
     const token = await getToken(issuer, { scope, sub });
     // eslint-disable-next-line unicorn/no-null
@@ -171,11 +171,11 @@ export const issueToken = (async (
 
 interface CodePayload {
   issuer: string;
-  user: User['sub'];
+  user: User["sub"];
   scope: string;
 }
 
-const authCode = config.get('auth.code');
+const authCode = config.get("auth.code");
 const codeKey = await getSymmetricKey(await authCode.key, authCode.alg);
 export const issueCode: IssueGrantCodeFunctionArity6 = async (
   client: Client,
@@ -190,30 +190,30 @@ export const issueCode: IssueGrantCodeFunctionArity6 = async (
       /**
        * @see {@link https://datatracker.ietf.org/doc/html/rfc7636#section-4.4.1}
        */
-      throw new TokenError('Code challenge required', 'invalid_request');
+      throw new TokenError("Code challenge required", "invalid_request");
     }
 
     if (
       !authCode.pkce.allowPlainTransform &&
-      request.codeChallengeMethod === 'plain'
+      request.codeChallengeMethod === "plain"
     ) {
       /**
        * @see {@link https://datatracker.ietf.org/doc/html/rfc7636#section-4.4.1}
        */
       throw new TokenError(
-        'Plain transform algorithm not supported',
-        'invalid_request',
+        "Plain transform algorithm not supported",
+        "invalid_request",
       );
     }
 
-    const issuer = requestContext.get('issuer')!;
+    const issuer = requestContext.get("issuer")!;
     const payload = {
       user: user.sub,
       issuer,
-      scope: request.scope.join(' '),
+      scope: request.scope.join(" "),
     } as const satisfies CodePayload;
     const code = await new EncryptJWT(payload)
-      .setProtectedHeader({ alg: 'dir', enc: 'A128CBC-HS256' })
+      .setProtectedHeader({ alg: "dir", enc: "A128CBC-HS256" })
       .setSubject(redirectUri)
       .setAudience(client.client_id)
       .setIssuedAt()
@@ -239,15 +239,15 @@ export const exchangeCode: IssueExchangeCodeFunctionArity5<Client> = async (
       subject: redirectUri,
     })) as JWTDecryptResult & { payload?: CodePayload };
     if (!payload) {
-      throw new TokenError('Invalid code', 'invalid_code');
+      throw new TokenError("Invalid code", "invalid_code");
     }
 
     // Do PKCE check for the code
     if (payload.codeChallenge) {
       switch (payload.codeChallengeMethod) {
-        case 'plain': {
+        case "plain": {
           if (code_verifier !== payload.codeChallenge) {
-            throw new TokenError('Invalid code_verifier', 'invalid_grant');
+            throw new TokenError("Invalid code_verifier", "invalid_grant");
           }
 
           break;
@@ -256,13 +256,13 @@ export const exchangeCode: IssueExchangeCodeFunctionArity5<Client> = async (
         /**
          * @see {@link https://datatracker.ietf.org/doc/html/rfc7636#section-4.6}
          */
-        case 'S256': {
-          const sha256 = createHash('sha256');
+        case "S256": {
+          const sha256 = createHash("sha256");
           const hash = sha256
             .update(code_verifier as string)
-            .digest('base64url');
+            .digest("base64url");
           if (hash !== payload.codeChallenge) {
-            throw new TokenError('Invalid code_verifier', 'invalid_grant');
+            throw new TokenError("Invalid code_verifier", "invalid_grant");
           }
 
           break;
@@ -271,7 +271,7 @@ export const exchangeCode: IssueExchangeCodeFunctionArity5<Client> = async (
         default: {
           throw new TokenError(
             `Unknown code_challenge_method ${payload.codeChallengeMethod}`,
-            'invalid_grant',
+            "invalid_grant",
           );
         }
       }
@@ -301,17 +301,17 @@ export const exchangeCode: IssueExchangeCodeFunctionArity5<Client> = async (
   }
 };
 
-const deviceCodeExp = config.get('auth.deviceCode.expiresIn') / 1000;
+const deviceCodeExp = config.get("auth.deviceCode.expiresIn") / 1000;
 export const issueDeviceCode: IssueDeviceCodeFunction<Client> = async (
   client,
   scope,
   done,
 ) => {
   try {
-    const issuer = requestContext.get('issuer')!;
+    const issuer = requestContext.get("issuer")!;
     const { deviceCode, userCode } = await createDeviceCode({
       clientId: client.client_id,
-      scope: typeof scope === 'string' ? scope : scope.join(' '),
+      scope: typeof scope === "string" ? scope : scope.join(" "),
     });
 
     done(undefined, deviceCode, userCode, {
@@ -343,7 +343,7 @@ export const activateDeviceCode: ActivateDeviceCodeFunction<
     */
     const code = await findByDeviceCode(deviceCode);
     if (!code) {
-      throw new TokenError('Invalid device code', 'access_denied');
+      throw new TokenError("Invalid device code", "access_denied");
     }
 
     // TODO: Approval logic
@@ -360,11 +360,11 @@ export const exchangeDeviceCode: ExchangeDeviceCodeFunction<Client> = async (
   done,
 ) => {
   try {
-    const issuer = requestContext.get('issuer')!;
+    const issuer = requestContext.get("issuer")!;
     const { redeemed, code } = await redeem(client.client_id, deviceCode);
     if (!code) {
       // ??? What error to return here?
-      throw new TokenError('Invalid device code', 'access_denied');
+      throw new TokenError("Invalid device code", "access_denied");
     }
 
     /* TODO: Implement expiration
@@ -375,8 +375,8 @@ export const exchangeDeviceCode: ExchangeDeviceCodeFunction<Client> = async (
 
     if (!redeemed) {
       throw new TokenError(
-        'Device code not activated',
-        'authorization_pending',
+        "Device code not activated",
+        "authorization_pending",
       );
     }
 
@@ -384,8 +384,8 @@ export const exchangeDeviceCode: ExchangeDeviceCodeFunction<Client> = async (
     const { userId, scope, approved } = code;
     if (!approved) {
       throw new TokenError(
-        'User denied authorization request',
-        'access_denied',
+        "User denied authorization request",
+        "access_denied",
       );
     }
 
@@ -409,11 +409,11 @@ const plugin: FastifyPluginAsync<Options> = async (
   {
     oauth2server = oauth2orize.createServer(),
     endpoints: {
-      authorize = 'auth',
-      decision = 'decision',
-      token: tokenEndpoint = 'token',
-      deviceAuthorization = 'device-authorization',
-      activate = 'activate',
+      authorize = "auth",
+      decision = "decision",
+      token: tokenEndpoint = "token",
+      deviceAuthorization = "device-authorization",
+      activate = "activate",
     } = {},
   },
   // eslint-disable-next-line @typescript-eslint/require-await
@@ -423,15 +423,15 @@ const plugin: FastifyPluginAsync<Options> = async (
 
   // Device code flow
   oauth2server.grant(
-    'urn:ietf:params:oauth:grant-type:device_code',
+    "urn:ietf:params:oauth:grant-type:device_code",
     oauth2orizeDeviceCode.grant.deviceCode(activateDeviceCode),
   );
   oauth2server.exchange(
-    'urn:ietf:params:oauth:grant-type:device_code',
+    "urn:ietf:params:oauth:grant-type:device_code",
     oauth2orizeDeviceCode.exchange.deviceCode(exchangeDeviceCode),
   );
 
-  if (config.get('auth.oauth2.allowImplicitFlows')) {
+  if (config.get("auth.oauth2.allowImplicitFlows")) {
     // Implicit flow (token)
     oauth2server.grant(oauth2orize.grant.token(issueToken));
   }
@@ -443,17 +443,17 @@ const plugin: FastifyPluginAsync<Options> = async (
 
   // Decorate fastify reply for compatibility with connect response
   fastify.decorateReply(
-    'setHeader',
+    "setHeader",
     function (this: FastifyReply, name: string, value: unknown) {
       return this.header(name, value);
     },
   );
-  fastify.decorateReply('end', function (this: FastifyReply, payload: unknown) {
+  fastify.decorateReply("end", function (this: FastifyReply, payload: unknown) {
     return this.send(payload);
   });
 
   const doErrorHandlerIndirect = promisify(
-    oauth2server.errorHandler({ mode: 'indirect' }),
+    oauth2server.errorHandler({ mode: "indirect" }),
   );
 
   // OAuth2 authorization request (serve the authorization screen)
@@ -475,7 +475,7 @@ const plugin: FastifyPluginAsync<Options> = async (
         }
 
         fastify.log.trace(
-          'oauth2#authorize: redirect_uri from URL (%s) does not match any on client cert: %s',
+          "oauth2#authorize: redirect_uri from URL (%s) does not match any on client cert: %s",
           redirectURI,
           client.redirect_uris,
         );
@@ -504,8 +504,8 @@ const plugin: FastifyPluginAsync<Options> = async (
       await trustedCDP();
       // Load the login info for this domain from the public directory:
       const domainConfig =
-        domainConfigs.get(request.hostname) ?? domainConfigs.get('localhost')!;
-      return await reply.view(config.get('auth.views.approvePage'), {
+        domainConfigs.get(request.hostname) ?? domainConfigs.get("localhost")!;
+      return await reply.view(config.get("auth.views.approvePage"), {
         transactionID: oauth2.transactionID,
         client: oauth2.client,
         scope: oauth2.req.scope,
@@ -513,18 +513,18 @@ const plugin: FastifyPluginAsync<Options> = async (
         trusted: oauth2.client.trusted,
         decision_url: decision,
         user: {
-          name: user?.name ?? '',
-          username: user?.username ?? 'nobody',
+          name: user?.name ?? "",
+          username: user?.username ?? "nobody",
         },
         autoaccept: scopeIsOnlyOpenid(oauth2?.req.scope ?? []),
-        logout: config.get('auth.endpoints.logout'),
+        logout: config.get("auth.endpoints.logout"),
         name: domainConfig.name,
         logo_url: `domains/${domainConfig.domain}/${domainConfig.logo}`,
         tagline: domainConfig.tagline,
-        color: domainConfig.color ?? '#FFFFFF',
+        color: domainConfig.color ?? "#FFFFFF",
       });
     } catch (error: unknown) {
-      request.log.error(error, 'OAuth2 authorize error');
+      request.log.error(error, "OAuth2 authorize error");
       await doErrorHandlerIndirect(
         error as Error,
         request as unknown as MiddlewareRequest,
@@ -546,13 +546,13 @@ const plugin: FastifyPluginAsync<Options> = async (
 
         if (!validScope) {
           throw new AuthorizationError(
-            'Scope does not match original request',
-            'invalid_scope',
+            "Scope does not match original request",
+            "invalid_scope",
           );
         }
 
         fastify.log.trace(
-          'decision: allow = %s, scope = %s, nonce = %s',
+          "decision: allow = %s, scope = %s, nonce = %s",
           allow,
           scope,
           request.oauth2?.req.nonce,
@@ -576,7 +576,7 @@ const plugin: FastifyPluginAsync<Options> = async (
         reply as unknown as ServerResponse,
       );
     } catch (error: unknown) {
-      request.log.error(error, 'OAuth2 decision error');
+      request.log.error(error, "OAuth2 decision error");
       await doErrorHandlerIndirect(
         error as Error,
         request as unknown as MiddlewareRequest,
@@ -586,14 +586,14 @@ const plugin: FastifyPluginAsync<Options> = async (
   });
 
   const doErrorHandlerDirect = promisifyMiddleware(
-    oauth2server.errorHandler({ mode: 'direct' }),
+    oauth2server.errorHandler({ mode: "direct" }),
   );
   const doToken = promisifyMiddleware(oauth2server.token());
   fastify.post(
     tokenEndpoint,
     {
       preValidation: fastifyPassport.authenticate(
-        ['oauth2-client-password', 'oauth2-client-assertion'],
+        ["oauth2-client-password", "oauth2-client-assertion"],
         {
           session: false,
         },
@@ -603,19 +603,19 @@ const plugin: FastifyPluginAsync<Options> = async (
       try {
         request.log.trace(
           `${request.hostname}: token POST ${config.get(
-            'auth.endpoints.token',
+            "auth.endpoints.token",
           )}, storing reqdomain in req.user`,
         );
         const { user } = request as unknown as OAuth2Request;
         if (!user) {
           request.log.trace(
-            'oauth2#token: there is no req.user after passport.authenticate should have put the client there.',
+            "oauth2#token: there is no req.user after passport.authenticate should have put the client there.",
           );
           return;
         }
 
         const domainConfig = domainConfigs.get(request.hostname) ?? {
-          baseuri: 'https://localhost/',
+          baseuri: "https://localhost/",
         };
         // @ts-expect-error IDK
         user.reqdomain = domainConfig.baseuri;
@@ -625,7 +625,7 @@ const plugin: FastifyPluginAsync<Options> = async (
           reply as unknown as ServerResponse,
         );
       } catch (error: unknown) {
-        request.log.error(error, 'OAuth2 token error');
+        request.log.error(error, "OAuth2 token error");
         await doErrorHandlerDirect(
           error as Error,
           request as unknown as MiddlewareRequest,
@@ -645,7 +645,7 @@ const plugin: FastifyPluginAsync<Options> = async (
     deviceAuthorization,
     {
       preValidation: fastifyPassport.authenticate(
-        ['oauth2-client-password', 'oauth2-client-assertion'],
+        ["oauth2-client-password", "oauth2-client-assertion"],
         {
           session: false,
         },
@@ -658,7 +658,7 @@ const plugin: FastifyPluginAsync<Options> = async (
           reply as unknown as ServerResponse,
         );
       } catch (error: unknown) {
-        request.log.error(error, 'OAuth2 device authorization error');
+        request.log.error(error, "OAuth2 device authorization error");
         await doErrorHandlerDirect(
           error as Error,
           request as unknown as MiddlewareRequest,

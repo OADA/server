@@ -15,8 +15,8 @@
  * limitations under the License.
  */
 
-import path from 'node:path';
-import url from 'node:url';
+import path from "node:path";
+import url from "node:url";
 
 const dirname = path.dirname(url.fileURLToPath(import.meta.url));
 
@@ -31,7 +31,7 @@ export async function getDataStores<T extends Store>(
   const array = Array.isArray(stores) ? stores : [stores];
   const promises = array.map(async (dataStore) => {
     const store: unknown = await import(
-      path.join(dirname, '..', dataStore, `${item}.js`)
+      path.join(dirname, "..", dataStore, `${item}.js`)
     );
     return {
       name: dataStore,

@@ -17,7 +17,7 @@
 
 /* eslint-disable no-console */
 
-import '@oada/pino-debug';
+import "@oada/pino-debug";
 
 import {
   type Type,
@@ -31,18 +31,18 @@ import {
   optional,
   run,
   string,
-} from 'cmd-ts';
-import chalk from 'chalk';
+} from "cmd-ts";
+import chalk from "chalk";
 
-import { config } from '../config.js';
+import { config } from "../config.js";
 
-import { Requester } from '@oada/lib-kafka';
-import User from '@oada/models/user';
-import { users } from '@oada/lib-arangodb';
+import { Requester } from "@oada/lib-kafka";
+import User from "@oada/models/user";
+import { users } from "@oada/lib-arangodb";
 
-import type { UserRequest, UserResponse } from '../server.js';
+import type { UserRequest, UserResponse } from "../server.js";
 
-import esMain from 'es-main';
+import esMain from "es-main";
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 const UserType: Type<string, User> = {
@@ -53,37 +53,37 @@ const UserType: Type<string, User> = {
 };
 
 export const cmd = command({
-  name: 'useradd',
-  description: 'add a user to OADA',
+  name: "useradd",
+  description: "add a user to OADA",
   args: {
     user: option({
       type: UserType,
-      long: 'user',
-      short: 'u',
+      long: "user",
+      short: "u",
     }),
     password: option({
       type: string,
-      defaultValue: () => process.env.PASSWORD ?? '',
-      long: 'password',
-      short: 'p',
+      defaultValue: () => process.env.PASSWORD ?? "",
+      long: "password",
+      short: "p",
     }),
     admin: flag({
       type: optional(boolean),
-      long: 'admin',
-      short: 'a',
-      description: 'Admin role',
+      long: "admin",
+      short: "a",
+      description: "Admin role",
     }),
     roles: multioption({
       type: array(string),
-      long: 'roles',
-      short: 'r',
-      description: 'User roles to assign',
+      long: "roles",
+      short: "r",
+      description: "User roles to assign",
     }),
     domain: option({
       type: string,
-      long: 'domain',
-      defaultValue: () => process.env.DOMAIN ?? '',
-      short: 'd',
+      long: "domain",
+      defaultValue: () => process.env.DOMAIN ?? "",
+      short: "d",
     }),
   },
   async handler({ user: u, password, admin = false, roles = [], domain }) {
@@ -97,16 +97,16 @@ export const cmd = command({
     // Produce a request to the user service to create one for us:
     const kafkareq = new Requester({
       // Topic to look for final answer on (consume):
-      consumeTopic: config.get('kafka.topics.httpResponse'),
+      consumeTopic: config.get("kafka.topics.httpResponse"),
       // Topic to send request on (produce):
-      produceTopic: config.get('kafka.topics.userRequest'),
+      produceTopic: config.get("kafka.topics.userRequest"),
       // Group name
-      group: 'useradd',
+      group: "useradd",
     });
 
     try {
       if (admin) {
-        roles.push('oada.admin.user:all');
+        roles.push("oada.admin.user:all");
       }
 
       const user = {
@@ -117,16 +117,16 @@ export const cmd = command({
       } satisfies Partial<User>;
       const response = (await kafkareq.send({
         // @ts-expect-error secret prop
-        connection_id: 'useradd',
-        token: 'admin',
+        connection_id: "useradd",
+        token: "admin",
         authorization: {
-          scope: ['oada.admin.user:all'],
+          scope: ["oada.admin.user:all"],
         },
         // The "user" key is what goes into the DB
         user,
       } satisfies UserRequest)) as unknown as UserResponse;
 
-      if (response.code !== 'success') {
+      if (response.code !== "success") {
         throw new Error(`Creating user failed with code: ${response.code}`);
       }
 

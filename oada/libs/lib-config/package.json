@@ -7,10 +7,7 @@
   "engines": {
     "node": ">=20.0.0"
   },
-  "files": [
-    "src/**/*",
-    "dist/**/*"
-  ],
+  "files": ["src/**/*", "dist/**/*"],
   "scripts": {
     "build": "yarn g:tsc",
     "clean": "yarn run build --clean",
@@ -20,12 +17,7 @@
     "type": "git",
     "url": "git+https://github.com/oada/@oada/lib-config.git"
   },
-  "keywords": [
-    "oada",
-    "lib",
-    "config",
-    "convict"
-  ],
+  "keywords": ["oada", "lib", "config", "convict"],
   "author": "Alex Layton <alex@layton.in> (https://github.com/awlayton)",
   "license": "Apache-2.0",
   "bugs": {

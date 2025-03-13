@@ -15,15 +15,15 @@
  * limitations under the License.
  */
 
-declare module 'es-main' {
+declare module "es-main" {
   export default function esMain(meta: unknown): boolean;
 }
 
-declare module 'nstats' {
-  import type { Server as HTTPServer } from 'node:http';
+declare module "nstats" {
+  import type { Server as HTTPServer } from "node:http";
 
-  import type { Plugin } from 'fastify-plugin';
-  import type { Server as WSServer } from 'ws';
+  import type { Plugin } from "fastify-plugin";
+  import type { Server as WSServer } from "ws";
 
   export interface NStats {
     fastify(): Plugin;

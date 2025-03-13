@@ -15,25 +15,25 @@
  * limitations under the License.
  */
 
-import '@oada/pino-debug';
+import "@oada/pino-debug";
 
-import http from 'node:http';
+import http from "node:http";
 
-import { init as initArangoDB } from '@oada/lib-arangodb';
-import { init as initKafka } from '@oada/lib-kafka';
+import { init as initArangoDB } from "@oada/lib-arangodb";
+import { init as initKafka } from "@oada/lib-kafka";
 
-import debug from 'debug';
+import debug from "debug";
 
-const trace = debug('startup:trace');
-const info = debug('startup:info');
+const trace = debug("startup:trace");
+const info = debug("startup:info");
 
 const port = process.env.PORT ?? 8080;
 const exit = process.env.EXIT ?? false;
 
 try {
-  info('Startup is initializing ArangoDB and Kafka');
+  info("Startup is initializing ArangoDB and Kafka");
   await Promise.all([initArangoDB.run(), initKafka.run()]);
-  info('Initialization complete');
+  info("Initialization complete");
 
   if (exit) {
     // eslint-disable-next-line unicorn/no-process-exit, n/no-process-exit
@@ -41,12 +41,12 @@ try {
   }
 
   const server = http.createServer((request, response) => {
-    trace(request, 'Request received');
-    response.write('Hello');
+    trace(request, "Request received");
+    response.write("Hello");
     response.end();
   });
-  server.on('listening', () => {
-    info(server.address(), 'Startup finished, listening');
+  server.on("listening", () => {
+    info(server.address(), "Startup finished, listening");
   });
 
   server.listen(port);

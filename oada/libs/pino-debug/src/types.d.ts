@@ -15,8 +15,8 @@
  * limitations under the License.
  */
 
-declare module 'pino-debug' {
-  export type { Logger } from 'pino';
+declare module "pino-debug" {
+  export type { Logger } from "pino";
 
   export interface Options {
     /**

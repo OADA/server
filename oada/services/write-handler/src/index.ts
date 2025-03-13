@@ -15,11 +15,11 @@
  * limitations under the License.
  */
 
-import '@oada/pino-debug';
+import "@oada/pino-debug";
 
-import { config } from './config.js';
+import { config } from "./config.js";
 
-import '@oada/lib-prom';
+import "@oada/lib-prom";
 
 import {
   ArangoError,
@@ -27,23 +27,23 @@ import {
   changes,
   putBodies,
   resources,
-} from '@oada/lib-arangodb';
-import type { KafkaBase } from '@oada/lib-kafka';
-import { Responder } from '@oada/lib-kafka';
+} from "@oada/lib-arangodb";
+import type { KafkaBase } from "@oada/lib-kafka";
+import { Responder } from "@oada/lib-kafka";
 
-import type Resource from '@oada/types/oada/resource.js';
+import type Resource from "@oada/types/oada/resource.js";
 
-import Cache from 'timed-cache';
-import { JsonPointer } from 'json-ptr';
-import type { PathSegments } from 'json-ptr';
-import debug from 'debug';
-import objectAssignDeep from 'object-assign-deep';
+import Cache from "timed-cache";
+import { JsonPointer } from "json-ptr";
+import type { PathSegments } from "json-ptr";
+import debug from "debug";
+import objectAssignDeep from "object-assign-deep";
 
 type DeepPartial<T> = { [K in keyof T]?: DeepPartial<T[K]> };
 
-const error = debug('write-handler:error');
-const info = debug('write-handler:info');
-const trace = debug('write-handler:trace');
+const error = debug("write-handler:error");
+const info = debug("write-handler:info");
+const trace = debug("write-handler:trace");
 
 /**
  * Create reusable JSON pointers
@@ -52,44 +52,44 @@ const metaPointers = {
   /**
    * Reusable JSON Pointer to `/_meta/_rev`
    */
-  rev: JsonPointer.create('/_meta/_rev'),
+  rev: JsonPointer.create("/_meta/_rev"),
   /**
    * Reusable JSON Pointer to `/_meta/_type`
    */
-  type: JsonPointer.create('/_meta/_type'),
+  type: JsonPointer.create("/_meta/_type"),
   /**
    * Reusable JSON Pointer to `/_meta/_changes`
    */
-  changes: JsonPointer.create('/_meta/_changes'),
+  changes: JsonPointer.create("/_meta/_changes"),
   /**
    * Reusable JSON Pointer to `/_meta/modifiedBy`
    */
-  modifiedBy: JsonPointer.create('/_meta/modifiedBy'),
+  modifiedBy: JsonPointer.create("/_meta/modifiedBy"),
   /**
    * Reusable JSON Pointer to `/_meta/modified`
    */
-  modified: JsonPointer.create('/_meta/modified'),
+  modified: JsonPointer.create("/_meta/modified"),
 } as const;
 
 let counter = 0;
 
 const responder = new Responder<WriteRequest>({
-  consumeTopic: config.get('kafka.topics.writeRequest'),
-  produceTopic: config.get('kafka.topics.httpResponse'),
-  group: 'write-handlers',
+  consumeTopic: config.get("kafka.topics.writeRequest"),
+  produceTopic: config.get("kafka.topics.httpResponse"),
+  group: "write-handlers",
 });
 
 // Only run one write at a time?
 // Per-resource write locks/queues
 const locks = new Map<string, Promise<WriteResponse | void>>();
 const cache = new Cache<number | string>({ defaultTtl: 60 * 1000 });
-responder.on<WriteResponse>('request', async (request) => {
+responder.on<WriteResponse>("request", async (request) => {
   if (counter++ > 500) {
     counter = 0;
     globalThis.gc?.();
   }
 
-  const id = request.resource_id.replace(/^\//, '');
+  const id = request.resource_id.replace(/^\//, "");
   const ps = locks.get(id) ?? Promise.resolve();
 
   // Run once last write finishes (whether it worked or not)
@@ -146,71 +146,71 @@ interface WriteContext extends KafkaBase {
  * Interface for expected request objects
  */
 export interface WriteRequest extends WriteContext {
-  'source'?: string;
-  'rev'?: number;
+  source?: string;
+  rev?: number;
   /**
    * Wether the resource being written already exists
    */
-  'resourceExists'?: boolean;
+  resourceExists?: boolean;
   /**
    * ID for fetching write body from DB
    */
-  'bodyid'?: string;
+  bodyid?: string;
   /**
    * Write body value (instead of fetching one from DB)
    */
-  'body'?: unknown;
+  body?: unknown;
   /**
    * Wether to ignore any contained links in the write
    */
-  'ignoreLinks'?: boolean;
+  ignoreLinks?: boolean;
   /**
    * Rev which must match current rev before write
    */
-  'if-match'?: number[];
+  "if-match"?: number[];
   /**
    * Revs which must not match current rev before write
    */
-  'if-none-match'?: number[];
+  "if-none-match"?: number[];
   // Change stuff?...
   /**
    * @todo what is this?
    */
-  'change_path'?: string;
+  change_path?: string;
   /**
    * @todo what is this?
    */
-  'from_change_id'?: string[];
+  from_change_id?: string[];
 }
 
 /**
  * Response to a write request
  */
 export interface WriteResponse extends KafkaBase, WriteContext {
-  msgtype: 'write-response';
+  msgtype: "write-response";
   _rev: number;
   _orev?: number;
   change_id?: string;
 }
 
 async function checkPreconditions(request: WriteRequest) {
-  if (request['if-match']) {
+  if (request["if-match"]) {
     const rev = (await resources.getResource(
       request.resource_id,
-      '/_rev',
+      "/_rev",
     )) as unknown as number;
-    if (!request['if-match'].includes(rev)) {
-      throw new Error('if-match failed');
+    if (!request["if-match"].includes(rev)) {
+      throw new Error("if-match failed");
     }
   }
 
-  if (request['if-none-match']) {
+  if (request["if-none-match"]) {
     const rev = (await resources.getResource(
       request.resource_id,
-      '/_rev',
+      "/_rev",
     )) as unknown as number;
-    if (request['if-none-match'].includes(rev)) {
-      throw new Error('if-none-match failed');
+    if (request["if-none-match"].includes(rev)) {
+      throw new Error("if-none-match failed");
     }
   }
 
@@ -218,11 +218,11 @@ async function checkPreconditions(request: WriteRequest) {
     cache.get(request.resource_id) ??
     ((await resources.getResource(
       request.resource_id,
-      '/_rev',
+      "/_rev",
     )) as unknown as number);
 
   if (request.rev && rev !== request.rev) {
-    throw new Error('rev mismatch');
+    throw new Error("rev mismatch");
   }
 
   return rev;
@@ -250,10 +250,10 @@ async function doWrite(
   body: unknown,
 ): Promise<{ id: string; rev?: number; orev?: number; changeId?: string }> {
   const isDelete = body === undefined;
-  const changeType = isDelete ? 'delete' : 'merge';
-  const id = request.resource_id.replace(/^\//, '');
+  const changeType = isDelete ? "delete" : "merge";
+  const id = request.resource_id.replace(/^\//, "");
 
-  trace({ id, body }, 'Writing body');
+  trace({ id, body }, "Writing body");
   const cacheRev = await checkPreconditions(request);
 
   let path = JsonPointer.decode(request.path_leftover);
@@ -265,12 +265,12 @@ async function doWrite(
 
   // Perform delete
   if (isDelete) {
-    trace('Body is undefined, doing delete');
+    trace("Body is undefined, doing delete");
     if (path.length > 0) {
-      trace('Delete path = %s', path);
+      trace("Delete path = %s", path);
       // HACK: This is gross
       trace(
-        'Setting method = deletePartialResource(%s, %o, %O)',
+        "Setting method = deletePartialResource(%s, %o, %O)",
         id,
         path,
         object,
@@ -283,7 +283,7 @@ async function doWrite(
         return { id, rev: undefined, orev: undefined, changeId: undefined };
       }
 
-      trace('deleting resource altogether');
+      trace("deleting resource altogether");
       const orev = await resources.deleteResource(id);
       return { id, orev };
     }
@@ -293,13 +293,13 @@ async function doWrite(
   // FIXME: Sanitize keys?
 
   trace(
-    '%s: Checking if resource exists (req.resourceExists = %s)',
+    "%s: Checking if resource exists (req.resourceExists = %s)",
     request.resource_id,
     request.resourceExists,
   );
   if (request.resourceExists === false) {
     trace(
-      'initializing arango: resource_id = %s, path_leftover = %s',
+      "initializing arango: resource_id = %s, path_leftover = %s",
       request.resource_id,
       request.path_leftover,
     );
@@ -318,13 +318,13 @@ async function doWrite(
         },
       },
     });
-    trace({ resource: object }, 'Intializing resource');
+    trace({ resource: object }, "Intializing resource");
   }
 
   // Create object to recursively merge into the resource
-  trace({ path }, 'Recursively merging path into arango object');
+  trace({ path }, "Recursively merging path into arango object");
   mergeDeep(object, path, body);
-  trace({ body: object }, 'Setting body on arango object');
+  trace({ body: object }, "Setting body on arango object");
 
   // Increment rev number
   let rev = Number.parseInt((cacheRev || 0) as string, 10) + 1;
@@ -337,7 +337,7 @@ async function doWrite(
     if (changerev && changerev > 1) {
       rev = Number(changerev) + 1;
       trace(
-        'Found old changes (max rev %d) for new resource, setting initial _rev to %d include them',
+        "Found old changes (max rev %d) for new resource, setting initial _rev to %d include them",
         changerev,
         rev,
       );
@@ -361,16 +361,16 @@ async function doWrite(
   /**
    * ???: Error is body contains a non-matching `_id`
    */
-  if ('_id' in object && object._id !== id) {
+  if ("_id" in object && object._id !== id) {
     const tError = new Error(
       `Tried to write _id ${object._id} to resource with _id ${id}`,
     );
-    throw Object.assign(tError, { code: 'bad request' });
+    throw Object.assign(tError, { code: "bad request" });
   }
 
   // Compute new change
   const children = request.from_change_id ?? [];
-  trace({ change: object }, 'Putting change');
+  trace({ change: object }, "Putting change");
   const changeId = await changes.putChange({
     change: { ...object, _rev: rev },
     resId: id,
@@ -402,14 +402,14 @@ async function doWrite(
 export async function handleRequest(
   request: WriteRequest,
 ): Promise<WriteResponse> {
-  request.source ??= '';
+  request.source ??= "";
   // Fixes bug if this is undefined
   request.resourceExists ??= false;
-  const oid = request.resource_id.replace(/^\//, '');
+  const oid = request.resource_id.replace(/^\//, "");
 
   try {
     // Get body and check permission in parallel
-    info('Handling %s', oid);
+    info("Handling %s", oid);
     const body = request.bodyid
       ? await putBodies.getPutBody(request.bodyid)
       : request.body;
@@ -424,10 +424,10 @@ export async function handleRequest(
     }
 
     const response: WriteResponse = {
-      msgtype: 'write-response',
-      code: 'success',
+      msgtype: "write-response",
+      code: "success",
       resource_id: id,
-      _rev: typeof rev === 'number' ? rev : 0,
+      _rev: typeof rev === "number" ? rev : 0,
       _orev: orev,
       user_id: request.user_id,
       authorizationid: request.authorizationid,
@@ -444,11 +444,11 @@ export async function handleRequest(
 
     return response;
   } catch (cError: unknown) {
-    const { code, message = 'error' } =
+    const { code, message = "error" } =
       cError instanceof ArangoError &&
       (cError.errorNum as ArangoErrorCode) ===
         ArangoErrorCode.ARANGO_DOCUMENT_NOT_FOUND
-        ? { ...cError, code: 'not_found' }
+        ? { ...cError, code: "not_found" }
         : (cError as {
             code?: string;
             message?: string;
@@ -457,7 +457,7 @@ export async function handleRequest(
     error({ request, error: cError }, message);
 
     return {
-      msgtype: 'write-response',
+      msgtype: "write-response",
       code: code ?? message,
       error_message: message,
       user_id: request.user_id,

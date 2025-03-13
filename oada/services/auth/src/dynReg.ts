@@ -15,27 +15,27 @@
  * limitations under the License.
  */
 
-import { config } from './config.js';
+import { config } from "./config.js";
 
-import type { FastifyPluginAsync } from 'fastify';
+import type { FastifyPluginAsync } from "fastify";
 
 import {
   type default as Metadata,
   assert as assertMetadata,
   schema,
-} from '@oada/types/oauth-dyn-reg/metadata.js';
-import { validate } from '@oada/certs';
+} from "@oada/types/oauth-dyn-reg/metadata.js";
+import { validate } from "@oada/certs";
 
-import { save } from './db/models/client.js';
+import { save } from "./db/models/client.js";
 
 /**
  * @see {@link https://datatracker.ietf.org/doc/html/rfc7591#section-3.2.2}
  */
-export const enum RegistrationErrorCode {
-  InvalidRedirectURI = 'invalid_redirect_uri',
-  InvalidClientMetadata = 'invalid_client_metadata',
-  InvalidSoftwareStatement = 'invalid_software_statement',
-  UnapprovedSoftwareStatement = 'unapproved_software_statement',
+export enum RegistrationErrorCode {
+  InvalidRedirectURI = "invalid_redirect_uri",
+  InvalidClientMetadata = "invalid_client_metadata",
+  InvalidSoftwareStatement = "invalid_software_statement",
+  UnapprovedSoftwareStatement = "unapproved_software_statement",
 }
 
 /**
@@ -61,8 +61,8 @@ const {
   require: requireSS,
   mustInclude,
   mustTrust,
-} = config.get('auth.dynamicRegistration.softwareStatement');
-const timeout = config.get('auth.dynamicRegistration.trustedListLookupTimeout');
+} = config.get("auth.dynamicRegistration.softwareStatement");
+const timeout = config.get("auth.dynamicRegistration.trustedListLookupTimeout");
 
 async function getSoftwareStatement({
   software_statement: softwareStatement,
@@ -83,7 +83,7 @@ async function getSoftwareStatement({
   }
 
   const statements: unknown =
-    typeof payload === 'string' ? JSON.parse(payload) : payload;
+    typeof payload === "string" ? JSON.parse(payload) : payload;
   assertMetadata(statements);
   return {
     ...statements,
@@ -104,7 +104,7 @@ export interface Options {
  */
 const plugin: FastifyPluginAsync<Options> = async (
   fastify,
-  { endpoints: { register = 'register' } = {} },
+  { endpoints: { register = "register" } = {} },
   // eslint-disable-next-line @typescript-eslint/require-await
 ) => {
   fastify.post(
@@ -120,23 +120,23 @@ const plugin: FastifyPluginAsync<Options> = async (
         if (requireSS && !softwareStatement) {
           request.log.error(
             metadata,
-            'Request body does not have software_statement key. Did you remember content-type=application/json?',
+            "Request body does not have software_statement key. Did you remember content-type=application/json?",
           );
           throw new RegistrationError(
             // FIXME: What is the correct code here??
             RegistrationErrorCode.InvalidSoftwareStatement,
-            'Client registration MUST include a software_statement for this server',
+            "Client registration MUST include a software_statement for this server",
           );
         }
 
         if (mustTrust && !softwareStatement?.trusted) {
           request.log.error(
             metadata,
-            'Request body does not have a trusted software_statement',
+            "Request body does not have a trusted software_statement",
           );
           throw new RegistrationError(
             RegistrationErrorCode.UnapprovedSoftwareStatement,
-            'Client registration MUST include a software_statement for this server',
+            "Client registration MUST include a software_statement for this server",
           );
         }
 
@@ -155,29 +155,29 @@ const plugin: FastifyPluginAsync<Options> = async (
 
         // TODO: Allow generating client_secret for "confidential" clients?
         // ???: How to tell it is a confidential client?
-        if ('client_secret' in registrationData) {
+        if ("client_secret" in registrationData) {
           throw new Error(
-            'Client secret is not allowed in dynamic registration',
+            "Client secret is not allowed in dynamic registration",
           );
         }
 
         // ------------------------------------------
         // Save client to database, return client_id for their future OAuth2 requests
         request.log.trace(
-          'Saving client %s registration, trusted = %s',
+          "Saving client %s registration, trusted = %s",
           registrationData.client_name,
           registrationData.trusted,
         );
         const result = await save(registrationData);
         request.log.info(
-          'Saved new client ID %s to DB, client_name = %s',
+          "Saved new client ID %s to DB, client_name = %s",
           result.client_id,
           result.client_name,
         );
         void reply.code(201);
         return result;
       } catch (error: unknown) {
-        request.log.error(error, 'Failed to validate client registration');
+        request.log.error(error, "Failed to validate client registration");
         if (error instanceof RegistrationError) {
           void reply.code(400);
           return error;

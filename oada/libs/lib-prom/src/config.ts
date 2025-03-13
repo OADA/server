@@ -15,30 +15,30 @@
  * limitations under the License.
  */
 
-import libConfig from '@oada/lib-config';
+import libConfig from "@oada/lib-config";
 
 export const { config, schema } = await libConfig({
   prometheus: {
     port: {
-      doc: 'Port for exposing metrics endpoint',
-      format: 'port',
+      doc: "Port for exposing metrics endpoint",
+      format: "port",
       default: 3000,
-      env: 'PROM_PORT',
-      arg: 'prom-port',
+      env: "PROM_PORT",
+      arg: "prom-port",
     },
     endpoint: {
-      doc: 'Endpoint for exposing metrics',
+      doc: "Endpoint for exposing metrics",
       format: String,
-      default: '/metrics',
-      env: 'PROM_ENDPOINT',
-      arg: 'prom-endpoint',
+      default: "/metrics",
+      env: "PROM_ENDPOINT",
+      arg: "prom-endpoint",
     },
     host: {
-      doc: 'Bind host for exposing metrics endpoint',
+      doc: "Bind host for exposing metrics endpoint",
       format: String,
-      default: '0.0.0.0',
-      env: 'PROM_HOST',
-      arg: 'prom-host',
+      default: "0.0.0.0",
+      env: "PROM_HOST",
+      arg: "prom-host",
     },
   },
 });

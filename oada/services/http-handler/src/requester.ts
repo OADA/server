@@ -15,14 +15,14 @@
  * limitations under the License.
  */
 
-import { Requester } from '@oada/lib-kafka';
+import { Requester } from "@oada/lib-kafka";
 
-import { config } from './config.js';
+import { config } from "./config.js";
 
 // TODO: Is it better to have one requester per topic?
 const requester = new Requester({
-  consumeTopic: config.get('kafka.topics.httpResponse'),
-  group: 'http-handlers',
+  consumeTopic: config.get("kafka.topics.httpResponse"),
+  group: "http-handlers",
 });
 
 export default requester;

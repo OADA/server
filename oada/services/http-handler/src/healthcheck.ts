@@ -21,4 +21,4 @@
  * @packageDocumentation
  */
 
-import 'fastify-healthcheck/src/healthcheck';
+import "fastify-healthcheck/src/healthcheck";

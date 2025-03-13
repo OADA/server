@@ -15,32 +15,32 @@
  * limitations under the License.
  */
 
-import { config } from './config.js';
+import { config } from "./config.js";
 
-import { type EventEmitter as NodeEventEmitter, once } from 'node:events';
-import process from 'node:process';
+import { type EventEmitter as NodeEventEmitter, once } from "node:events";
+import process from "node:process";
 
-import type { Consumer, EachMessagePayload, Producer } from 'kafkajs';
-import { EventEmitter } from 'eventemitter3';
-import debug from 'debug';
+import type { Consumer, EachMessagePayload, Producer } from "kafkajs";
+import { EventEmitter } from "eventemitter3";
+import debug from "debug";
 
-import Kafka from './Kafka.js';
+import Kafka from "./Kafka.js";
 
 // Const info = debug('@oada/lib-kafka:info');
-const error = debug('@oada/lib-kafka:error');
+const error = debug("@oada/lib-kafka:error");
 
-const REQ_ID_KEY = 'connection_id';
-const CANCEL_KEY = 'cancel_request';
+const REQ_ID_KEY = "connection_id";
+const CANCEL_KEY = "cancel_request";
 
-const DATA = Symbol('kafka-lib-data');
+const DATA = Symbol("kafka-lib-data");
 
 function topicTimeout(topic: string): number {
-  let timeout = config.get('kafka.timeouts.default');
+  let timeout = config.get("kafka.timeouts.default");
 
-  const topics = config.get('kafka.topics');
+  const topics = config.get("kafka.topics");
   for (const [topicK, topicV] of Object.entries(topics)) {
     if (topicV === topic) {
-      timeout = config.get('kafka.timeouts')[topicK] ?? timeout;
+      timeout = config.get("kafka.timeouts")[topicK] ?? timeout;
     }
   }
 
@@ -50,7 +50,7 @@ function topicTimeout(topic: string): number {
 // Make it die on unhandled error
 // TODO: Figure out what is keeping node from dying on unhandled exception?
 function die(reason: Error) {
-  error({ error: reason }, 'Unhandled error');
+  error({ error: reason }, "Unhandled error");
   process.abort();
 }
 
@@ -91,7 +91,7 @@ function isArray(value: unknown): value is unknown[] | readonly unknown[] {
 }
 
 export class Base extends EventEmitter {
-  protected static done = Symbol('kafka-base-done');
+  protected static done = Symbol("kafka-base-done");
   readonly consumeTopics;
   readonly produceTopic;
   readonly group;
@@ -124,19 +124,19 @@ export class Base extends EventEmitter {
 
     // See: https://github.com/Blizzard/node-rdkafka/issues/222
     // says fixed, but seems to still be an issue for us.
-    process.on('uncaughtExceptionMonitor', async () => {
-      error('Disconnect kafka clients due to uncaught exception');
+    process.on("uncaughtExceptionMonitor", async () => {
+      error("Disconnect kafka clients due to uncaught exception");
       // Disconnect kafka clients on uncaught exception
       try {
         await this.consumer.disconnect();
       } catch (cError: unknown) {
-        error({ error: cError }, 'Kafka consumer disconnect error');
+        error({ error: cError }, "Kafka consumer disconnect error");
       }
 
       try {
         await this.producer.disconnect();
       } catch (cError: unknown) {
-        error({ error: cError }, 'Kafka producer disconnect error');
+        error({ error: cError }, "Kafka producer disconnect error");
       }
     });
 
@@ -164,9 +164,9 @@ export class Base extends EventEmitter {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     listener: (...arguments_: any[]) => unknown,
   ): this {
-    if (event === 'error') {
+    if (event === "error") {
       // Remove our default error handler?
-      super.removeListener('error', die);
+      super.removeListener("error", die);
     }
 
     return super.on(event, listener);
@@ -222,7 +222,7 @@ export class Base extends EventEmitter {
         },
       });
     } catch (error_: unknown) {
-      this.emit('error', error_);
+      this.emit("error", error_);
       return;
     }
 

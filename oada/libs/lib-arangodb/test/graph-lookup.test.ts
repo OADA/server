@@ -15,37 +15,37 @@
  * limitations under the License.
  */
 
-import test from 'ava';
+import test from "ava";
 
-import { lookupFromUrl } from '../dist/libs/resources.js';
-import { run } from '../dist/init.js';
+import { lookupFromUrl } from "../dist/libs/resources.js";
+import { run } from "../dist/init.js";
 
 // Library under test:
 
 // Tests for the arangodb driver:
 
-const userid = 'user/default:sam_123';
+const userid = "user/default:sam_123";
 
 const rockUrl =
-  '/resources/default:resources_bookmarks_123/rocks/rocks-index/90j2klfdjss';
-const rockResourceId = 'resources/default:resources_rock_123';
+  "/resources/default:resources_bookmarks_123/rocks/rocks-index/90j2klfdjss";
+const rockResourceId = "resources/default:resources_rock_123";
 
 const rocksIndexUrl =
-  '/resources/default:resources_bookmarks_123/rocks/rocks-index';
-const rocksIndexResourceId = 'resources/default:resources_rocks_123';
-const rocksIndexPathLeft = '/rocks-index';
+  "/resources/default:resources_bookmarks_123/rocks/rocks-index";
+const rocksIndexResourceId = "resources/default:resources_rocks_123";
+const rocksIndexPathLeft = "/rocks-index";
 
 const rockPickedUrl =
-  '/resources/default:resources_bookmarks_123/rocks/rocks-index/90j2klfdjss/picked_up';
-const rockPickedPathLeft = '/picked_up';
+  "/resources/default:resources_bookmarks_123/rocks/rocks-index/90j2klfdjss/picked_up";
+const rockPickedPathLeft = "/picked_up";
 
 test.before(async (t) => {
   // Create the test database (with necessary collections and dummy data)
   try {
     await run();
   } catch (error: unknown) {
-    t.log('FAILED to initialize graph-lookup tests by creating database');
-    t.log(error, 'The error');
+    t.log("FAILED to initialize graph-lookup tests by creating database");
+    t.log(error, "The error");
   }
 });
 
@@ -63,12 +63,12 @@ test.after(() => {
 // The tests!
 // --------------------------------------------------
 
-test('should be able to return the resource id from a url', async (t) => {
+test("should be able to return the resource id from a url", async (t) => {
   const result = await lookupFromUrl(rockUrl, userid);
   t.is(result.resource_id, rockResourceId);
 });
 
-test('should also return the leftover path for non-resource URLs', async (t) => {
+test("should also return the leftover path for non-resource URLs", async (t) => {
   const result = await lookupFromUrl(rockPickedUrl, userid);
   t.is(result.resource_id, rockResourceId);
   t.is(result.path_leftover, rockPickedPathLeft);

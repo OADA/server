@@ -23,24 +23,24 @@
 // internal requests to every internal service to retrieve the
 // latest well-known documents.
 
-import { join } from 'node:path/posix';
+import { join } from "node:path/posix";
 
-import '@oada/pino-debug';
+import "@oada/pino-debug";
 
-import { config } from './config.js';
+import { config } from "./config.js";
 
-import { nstats } from '@oada/lib-prom';
+import { nstats } from "@oada/lib-prom";
 
-import got from 'got';
+import got from "got";
 
-import { fastify as Fastify } from 'fastify';
-import { Issuer } from 'openid-client';
-import { default as accepts } from '@fastify/accepts';
-import { default as cors } from '@fastify/cors';
-import { default as helmet } from '@fastify/helmet';
+import { fastify as Fastify } from "fastify";
+import { Issuer } from "openid-client";
+import { default as accepts } from "@fastify/accepts";
+import { default as cors } from "@fastify/cors";
+import { default as helmet } from "@fastify/helmet";
 
-import { plugin as formats } from '@oada/formats-server';
-import { plugin as wkj } from '@oada/well-known-json';
+import { plugin as formats } from "@oada/formats-server";
+import { plugin as wkj } from "@oada/well-known-json";
 
 export async function discoverConfiguration(issuer: string | URL) {
   try {
@@ -58,18 +58,18 @@ export async function discoverConfiguration(issuer: string | URL) {
   }
 }
 
-const trustProxy = config.get('trustProxy');
+const trustProxy = config.get("trustProxy");
 
 // eslint-disable-next-line new-cap
 const fastify = Fastify({
   trustProxy,
 });
 
-fastify.log.info('Starting server for ./well-known/oada-configuration...');
+fastify.log.info("Starting server for ./well-known/oada-configuration...");
 
 await fastify.register(helmet, {
   crossOriginResourcePolicy: {
-    policy: 'cross-origin',
+    policy: "cross-origin",
   },
 });
 
@@ -79,10 +79,10 @@ await fastify.register(accepts);
 await fastify.register(cors, {
   strictPreflight: false,
   exposedHeaders: [
-    'x-oada-rev',
-    'x-oada-path-leftover',
-    'location',
-    'content-location',
+    "x-oada-rev",
+    "x-oada-path-leftover",
+    "location",
+    "content-location",
   ],
 });
 
@@ -95,14 +95,14 @@ app.get('/.well-known/oada-configuration', (_, response, next) => {
 */
 await fastify.register(formats);
 
-const issuer = config.get('oidc.issuer');
+const issuer = config.get("oidc.issuer");
 const configuration = await discoverConfiguration(issuer);
 fastify.log.debug({ configuration }, `Loaded OIDC configuration for ${issuer}`);
 
 const wellKnownOptions = {
   resources: {
-    'openid-configuration': {
-      ...config.get('wellKnown.openid-configuration'),
+    "openid-configuration": {
+      ...config.get("wellKnown.openid-configuration"),
       ...configuration,
     },
   },
@@ -110,57 +110,57 @@ const wellKnownOptions = {
 
 const subservices = new Set(
   config
-    .get('wellKnown.mergeSubServices')
-    .map((s) => (typeof s === 'string' ? s : join(s.base, s.addPrefix ?? ''))),
+    .get("wellKnown.mergeSubServices")
+    .map((s) => (typeof s === "string" ? s : join(s.base, s.addPrefix ?? ""))),
 );
 
 // Redirect other OIDC config endpoints to openid-configuration endpoint
 await fastify.register(
   // eslint-disable-next-line @typescript-eslint/require-await
   async (app) => {
-    app.all('/oada-configuration', {}, async (_request, reply) =>
-      reply.redirect('openid-configuration', 301),
+    app.all("/oada-configuration", {}, async (_request, reply) =>
+      reply.redirect("openid-configuration", 301),
     );
-    app.all('/oauth-authorization-server', {}, async (_request, reply) =>
-      reply.redirect('openid-configuration', 301),
+    app.all("/oauth-authorization-server", {}, async (_request, reply) =>
+      reply.redirect("openid-configuration", 301),
     );
   },
-  { prefix: '/.well-known/' },
+  { prefix: "/.well-known/" },
 );
 
 await fastify.register(
   async (app) => {
-    app.addHook('preSerialization', async (request, _reply, payload) => {
+    app.addHook("preSerialization", async (request, _reply, payload) => {
       // Parse out the '/.well-known' part of the URL, like
       // '/.well-known/oada-configuration' or '/.well-known/openid-configuration'
       //
       // /.well-known/oada-configuration
-      const whichdoc = request.url.replace(/^.*(\/.well-known\/.*$)/, '$1');
+      const whichdoc = request.url.replace(/^.*(\/.well-known\/.*$)/, "$1");
       // Oada-configuration
-      const resource = whichdoc.replace(/^\/.well-known\/(.*)$/, '$1');
+      const resource = whichdoc.replace(/^\/.well-known\/(.*)$/, "$1");
 
       // Reverse-proxy
       const proxy = got.extend({
         headers: {
-          'X-Forwarded-Host': request.hostname,
-          'X-Forwarded-Proto': request.protocol,
-          'X-Forwarded-For': [...(request.ips ?? []), request.ip],
+          "X-Forwarded-Host": request.hostname,
+          "X-Forwarded-Proto": request.protocol,
+          "X-Forwarded-For": [...(request.ips ?? []), request.ip],
         },
       });
       const rest = await Promise.all(
         Array.from(subservices, async (s) => {
           request.log.trace(
-            'Resource (%s) matches subservice entry (%o), retrieving',
+            "Resource (%s) matches subservice entry (%o), retrieving",
             resource,
             s,
           );
 
           // Request this resource from the subservice:
           const url = join(s, whichdoc);
-          request.log.trace('Requesting subservice URL: %s', url);
+          request.log.trace("Requesting subservice URL: %s", url);
           try {
             const body = await proxy.get(url).json();
-            request.log.trace({ whichdoc, body }, 'Merging in');
+            request.log.trace({ whichdoc, body }, "Merging in");
             return body;
           } catch (error: unknown) {
             // If failed to return, or json didn't parse:
@@ -187,13 +187,13 @@ await fastify.register(
 const stats = nstats();
 const plugin = stats.fastify();
 
-plugin[Symbol.for('plugin-meta')].fastify = '>=3.0.0';
+plugin[Symbol.for("plugin-meta")].fastify = ">=3.0.0";
 await fastify.register(plugin);
 
-const port = config.get('wellKnown.server.port');
+const port = config.get("wellKnown.server.port");
 await fastify.listen({
   port,
-  host: '::',
+  host: "::",
 });
 
-fastify.log.info('OADA well-known server started on port %d', port);
+fastify.log.info("OADA well-known server started on port %d", port);

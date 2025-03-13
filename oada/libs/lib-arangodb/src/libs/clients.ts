@@ -15,14 +15,14 @@
  * limitations under the License.
  */
 
-import { aql } from 'arangojs';
+import { aql } from "arangojs";
 
-import { config } from '../config.js';
-import { db as database } from '../db.js';
-import { sanitizeResult } from '../util.js';
+import { config } from "../config.js";
+import { db as database } from "../db.js";
+import { sanitizeResult } from "../util.js";
 
-import type { Client } from '@oada/models/client';
-import type { Opaque } from 'type-fest';
+import type { Client } from "@oada/models/client";
+import type { Opaque } from "type-fest";
 
 export type DBClientID = Opaque<string, DBClient>;
 export type DBClient = {
@@ -30,7 +30,7 @@ export type DBClient = {
 } & Client;
 
 const clients = database.collection<Client>(
-  config.get('arangodb.collections.clients.name'),
+  config.get("arangodb.collections.clients.name"),
 );
 
 export async function findById(id: string): Promise<DBClient | undefined> {

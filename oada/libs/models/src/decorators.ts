@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-import type { Class, Constructor } from 'type-fest';
+import type { Class, Constructor } from "type-fest";
 
 /**
  * Class decorator for automagically destructuring the constructor argument
@@ -30,6 +30,7 @@ export function destructure<T, R extends [...unknown[]]>(
   const properties = Object.getOwnPropertyNames(
     new Klass({}),
   ) as unknown as Array<keyof T>;
+  // biome-ignore format: type bs
   return class
     extends // @ts-expect-error classes as variables nonsense
     Klass

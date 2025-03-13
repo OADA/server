@@ -7,10 +7,7 @@
   "engines": {
     "node": ">=20.0.0"
   },
-  "files": [
-    "src/**/*",
-    "dist/**/*"
-  ],
+  "files": ["src/**/*", "dist/**/*"],
   "dependencies": {
     "@oada/tests": "file:",
     "axios": "^0.28.0",

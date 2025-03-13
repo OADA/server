@@ -15,16 +15,16 @@
  * limitations under the License.
  */
 
-import { config } from '../../config.js';
+import { config } from "../../config.js";
 
-import type { Promisable } from 'type-fest';
-import debug from 'debug';
+import type { Promisable } from "type-fest";
+import debug from "debug";
 
-import { Authorization as Token } from '@oada/models/authorization';
+import { Authorization as Token } from "@oada/models/authorization";
 
-import { type Store, getDataStores, tryDataStores } from './index.js';
+import { type Store, getDataStores, tryDataStores } from "./index.js";
 
-const log = debug('model-tokens');
+const log = debug("model-tokens");
 
 export interface ITokens extends Store {
   /**
@@ -39,8 +39,8 @@ export interface ITokens extends Store {
 }
 
 const dataStores = await getDataStores<ITokens>(
-  config.get('auth.token.dataStore'),
-  'tokens',
+  config.get("auth.token.dataStore"),
+  "tokens",
 );
 
 export async function verify(token: string, issuer?: string) {
@@ -54,15 +54,15 @@ export async function verify(token: string, issuer?: string) {
 
 export async function create(t: Partial<Token>, issuer?: string) {
   const token = t instanceof Token ? t : new Token({ ...t, iss: issuer });
-  log(token, 'save: saving token ');
+  log(token, "save: saving token ");
 
   // ???: Should it only save to first datastore?
   const saved = await dataStores[0]!.create(token);
   if (!saved) {
-    throw new Error('Could not save token');
+    throw new Error("Could not save token");
   }
 
   return saved;
 }
 
-export { Authorization as Token } from '@oada/models/authorization';
+export { Authorization as Token } from "@oada/models/authorization";

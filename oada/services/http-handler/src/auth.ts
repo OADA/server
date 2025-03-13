@@ -15,30 +15,30 @@
  * limitations under the License.
  */
 
-import { config } from './config.js';
+import { config } from "./config.js";
 
 import {
   type FastifyJwtJwksOptions,
   type Authenticate as JWTAuthenticate,
   fastifyJwtJwks,
-} from 'fastify-jwt-jwks';
-import type { FastifyPluginAsync, FastifyRequest } from 'fastify';
-import type { FastifyAuthFunction } from '@fastify/auth';
-import type { FastifyJWTOptions } from '@fastify/jwt';
-import { requestContext } from '@fastify/request-context';
+} from "fastify-jwt-jwks";
+import type { FastifyPluginAsync, FastifyRequest } from "fastify";
+import type { FastifyAuthFunction } from "@fastify/auth";
+import type { FastifyJWTOptions } from "@fastify/jwt";
+import { requestContext } from "@fastify/request-context";
 
-import { Issuer } from 'openid-client';
+import { Issuer } from "openid-client";
 
-import type { TokenClaims } from '@oada/auth';
+import type { TokenClaims } from "@oada/auth";
 
-import tokenLookup from './tokenLookup.js';
+import tokenLookup from "./tokenLookup.js";
 
 /**
  * Wether to check arango for bearer tokens
  */
-const allowLegacyTokens = [config.get('auth.token.dataStore')]
+const allowLegacyTokens = [config.get("auth.token.dataStore")]
   .flat()
-  .includes('arango');
+  .includes("arango");
 
 async function discoverConfiguration(uri: string | URL) {
   try {
@@ -60,38 +60,38 @@ async function discoverConfiguration(uri: string | URL) {
 const {
   metadata: { jwks_uri: jwksUrl },
   issuer,
-} = await discoverConfiguration(config.get('oidc.issuer'));
+} = await discoverConfiguration(config.get("oidc.issuer"));
 
 export { issuer };
 
-declare module 'fastify' {
+declare module "fastify" {
   interface FastifyInstance {
     [jwtAuthenticate]: JWTAuthenticate;
     [decoratorName]: JWTAuthenticate | FastifyAuthFunction;
   }
 }
 
-declare module '@fastify/jwt' {
+declare module "@fastify/jwt" {
   interface FastifyJWT {
     payload: TokenClaims;
     // User: { _id: string };
   }
 }
-declare module 'fastify-jwt-jwks' {
+declare module "fastify-jwt-jwks" {
   // eslint-disable-next-line @typescript-eslint/no-empty-object-type
   export interface FastifyJwtJwksOptions extends FastifyJWTOptions {}
 }
 
-export const decoratorName = 'authenticate';
+export const decoratorName = "authenticate";
 
-const jwtNamespace = 'jwt';
+const jwtNamespace = "jwt";
 const jwtAuthenticate = `${jwtNamespace}Authenticate`;
 
 /**
  * Fastify plugin for checking auth tokens
  */
 const plugin: FastifyPluginAsync = async (fastify) => {
-  fastify.log.debug({ issuer, jwksUrl }, 'Loaded OIDC configuration');
+  fastify.log.debug({ issuer, jwksUrl }, "Loaded OIDC configuration");
 
   await fastify.register(
     fastifyJwtJwks as FastifyPluginAsync<FastifyJwtJwksOptions>,
@@ -103,12 +103,12 @@ const plugin: FastifyPluginAsync = async (fastify) => {
 
         {
           test(value: string) {
-            return requestContext.get('issuer') === value;
+            return requestContext.get("issuer") === value;
           },
         } as RegExp,
       ],
       formatUser(claims) {
-        fastify.log.debug({ claims }, 'JWT claims');
+        fastify.log.debug({ claims }, "JWT claims");
         return claims;
       },
     } as const satisfies FastifyJwtJwksOptions,
@@ -118,7 +118,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     try {
       return await withLegacyAuth();
     } catch (error: unknown) {
-      fastify.log.error(error, 'Falling back to regular auth');
+      fastify.log.error(error, "Falling back to regular auth");
     }
   }
 
@@ -127,17 +127,17 @@ const plugin: FastifyPluginAsync = async (fastify) => {
 
   async function withLegacyAuth() {
     try {
-      const { fastifyAuth } = await import('@fastify/auth');
-      const { default: bearerAuth } = await import('@fastify/bearer-auth');
+      const { fastifyAuth } = await import("@fastify/auth");
+      const { default: bearerAuth } = await import("@fastify/bearer-auth");
 
       await fastify.register(fastifyAuth);
       // Check for old style bearer token
       await fastify.register(bearerAuth, {
         addHook: false,
         keys: [],
-        verifyErrorLogLevel: 'debug',
+        verifyErrorLogLevel: "debug",
         async auth(token: string, request: FastifyRequest) {
-          request.log.trace('Checking for legacy bearer token');
+          request.log.trace("Checking for legacy bearer token");
           try {
             const auth = await tokenLookup({
               token,
@@ -149,7 +149,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
               return true;
             }
           } catch (error: unknown) {
-            request.log.debug(error, 'Token error');
+            request.log.debug(error, "Token error");
           }
 
           return false;
@@ -162,12 +162,12 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         fastify.auth([fastify[jwtAuthenticate], fastify.verifyBearerAuth!]),
       );
     } catch (error: unknown) {
-      throw new Error('Failed enabling legacy auth tokens', { cause: error });
+      throw new Error("Failed enabling legacy auth tokens", { cause: error });
     }
   }
 };
 
 // @ts-expect-error Don't create a new scope for auth plugin
-plugin[Symbol.for('skip-override')] = true;
+plugin[Symbol.for("skip-override")] = true;
 
 export default plugin;

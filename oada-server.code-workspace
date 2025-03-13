@@ -222,10 +222,7 @@
     "eslint.useFlatConfig": true,
     "eslint.debug": true,
     "eslint.useESLintClass": true,
-    "eslint.validate": [
-      "typescript",
-      "javascript"
-    ],
+    "eslint.validate": ["typescript", "javascript"],
     "commitPro.enableDefaultCommitlintRulesDiagnostics": false,
     "npm.packageManager": "yarn",
     "cSpell.usePnP": true

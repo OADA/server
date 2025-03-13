@@ -15,12 +15,12 @@
  * limitations under the License.
  */
 
-import debug from 'debug';
+import debug from "debug";
 
-import Authorization from '@oada/models/authorization';
-import { authorizations } from '@oada/lib-arangodb';
+import Authorization from "@oada/models/authorization";
+import { authorizations } from "@oada/lib-arangodb";
 
-const warn = debug('token-lookup:warn');
+const warn = debug("token-lookup:warn");
 
 export interface TokenRequest {
   token: string;
@@ -32,11 +32,11 @@ export default async function tokenLookup(
   // Get token from db.
   // FIXME: We should speed this up by getting everything in one query.
   const found = await authorizations.findByToken(
-    request.token.trim().replace(/^Bearer /, ''),
+    request.token.trim().replace(/^Bearer /, ""),
   );
 
   if (!found) {
-    warn('Token %s does not exist.', request.token);
+    warn("Token %s does not exist.", request.token);
     return;
   }
 
@@ -59,7 +59,7 @@ export default async function tokenLookup(
   return new Authorization({
     jti: t,
     client_id: clientId,
-    scope: scope.join(' '),
+    scope: scope.join(" "),
     iat: createTime,
     exp: expiresIn,
     sub: sub ?? _id,

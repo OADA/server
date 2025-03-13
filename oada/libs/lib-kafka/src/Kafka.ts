@@ -15,16 +15,16 @@
  * limitations under the License.
  */
 
-import { config } from './config.js';
+import { config } from "./config.js";
 
-import { Kafka, type KafkaConfig, type logLevel } from 'kafkajs';
-import debug from 'debug';
+import { Kafka, type KafkaConfig, type logLevel } from "kafkajs";
+import debug from "debug";
 
 /**
  * Make kafkajs logging nicer?
  */
 type KafkajsDebug = Record<
-  keyof Omit<typeof logLevel, 'NOTHING'>,
+  keyof Omit<typeof logLevel, "NOTHING">,
   debug.Debugger
 >;
 const kafkajsDebugs = new Map<string, KafkajsDebug>();
@@ -50,7 +50,7 @@ function getKafkajsDebug(namespace: string): KafkajsDebug {
  */
 export default class IKafka extends Kafka {
   constructor({
-    brokers = config.get('kafka.broker'),
+    brokers = config.get("kafka.broker"),
     ...rest
   }: Partial<KafkaConfig> = {}) {
     super({

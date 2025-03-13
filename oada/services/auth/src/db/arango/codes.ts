@@ -15,16 +15,16 @@
  * limitations under the License.
  */
 
-import debug from 'debug';
+import debug from "debug";
 
-import { codes } from '@oada/lib-arangodb';
+import { codes } from "@oada/lib-arangodb";
 
-import type { ICode } from '../models/code.js';
+import type { ICode } from "../models/code.js";
 
-const trace = debug('arango:codes:trace');
+const trace = debug("arango:codes:trace");
 
 export async function findByCode(code: string): Promise<ICode | undefined> {
-  trace('findByCode: searching for code %s', code);
+  trace("findByCode: searching for code %s", code);
   const found = await codes.findByCode(code);
   if (!found) {
     return found;

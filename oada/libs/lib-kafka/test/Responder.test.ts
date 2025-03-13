@@ -15,24 +15,24 @@
  * limitations under the License.
  */
 
-import { config } from '../dist/config.js';
+import { config } from "../dist/config.js";
 
-import EventEmitter, { on, once } from 'node:events';
+import EventEmitter, { on, once } from "node:events";
 
-import test from 'ava';
+import test from "ava";
 
-import type { Consumer, Producer } from 'kafkajs';
-import { Kafka } from 'kafkajs';
-import { v4 as uuid } from 'uuid';
+import type { Consumer, Producer } from "kafkajs";
+import { Kafka } from "kafkajs";
+import { v4 as uuid } from "uuid";
 
-import type { KafkaBase } from '../src/Base.js';
-import { Responder } from '../dist/Responder.js';
+import type { KafkaBase } from "../src/Base.js";
+import { Responder } from "../dist/Responder.js";
 
-const REQ_TOPIC = 'test_requests';
-const RES_TOPIC = 'test_responses';
-const GROUP = 'test_group';
+const REQ_TOPIC = "test_requests";
+const RES_TOPIC = "test_responses";
+const GROUP = "test_group";
 
-const kafka = new Kafka({ brokers: config.get('kafka.broker') });
+const kafka = new Kafka({ brokers: config.get("kafka.broker") });
 
 let producer: Producer;
 test.before(async (t) => {
@@ -72,7 +72,7 @@ test.after(async (t) => {
 
 let responder: Responder;
 test.beforeEach(async (t) => {
-  t.log('start create responder');
+  t.log("start create responder");
   const group = `${GROUP}_${uuid()}`;
 
   responder = new Responder({
@@ -86,29 +86,29 @@ test.beforeEach(async (t) => {
 
 test.afterEach(async (t) => {
   try {
-    t.log('start destroy responder');
+    t.log("start destroy responder");
     await responder.disconnect();
   } finally {
-    t.log('finish destroy responder');
+    t.log("finish destroy responder");
   }
 });
 
-test('should receive a request', async (t) => {
+test("should receive a request", async (t) => {
   const object = {
     connection_id: uuid(),
-    foo: 'baz',
+    foo: "baz",
     time: Date.now(),
   };
   const value = JSON.stringify(object);
 
-  const request: Promise<unknown[]> = once(responder, 'request');
+  const request: Promise<unknown[]> = once(responder, "request");
   await producer.send({ topic: REQ_TOPIC, messages: [{ value }] });
 
   const [response] = await request;
   t.deepEqual(response, object);
 });
 
-test('should not receive timed-out requests', async (t) => {
+test("should not receive timed-out requests", async (t) => {
   const id1 = uuid();
   const id2 = uuid();
   const value1 = JSON.stringify({
@@ -120,7 +120,7 @@ test('should not receive timed-out requests', async (t) => {
     time: Date.now(),
   });
 
-  const requests = on(responder, 'request');
+  const requests = on(responder, "request");
 
   await producer.send({
     topic: REQ_TOPIC,
@@ -139,18 +139,18 @@ test('should not receive timed-out requests', async (t) => {
   }
 });
 
-test('should respond to a request', async (t) => {
-  const id = 'DEADBEEF';
-  const object = { foo: 'bar', connection_id: id };
+test("should respond to a request", async (t) => {
+  const id = "DEADBEEF";
+  const object = { foo: "bar", connection_id: id };
   const value = JSON.stringify(object);
 
-  responder.on('ready', () => {
-    t.log('responder ready');
+  responder.on("ready", () => {
+    t.log("responder ready");
   });
 
-  const rObject = { a: 'c' };
-  responder.on('request', (request) => {
-    t.log('request received');
+  const rObject = { a: "c" };
+  responder.on("request", (request) => {
+    t.log("request received");
     return Object.assign(request, rObject);
   });
 
@@ -159,11 +159,11 @@ test('should respond to a request', async (t) => {
     async eachMessage({ message: { value } }) {
       // Assume all messages are JSON
       const v: unknown = value && JSON.parse(value.toString());
-      emitter.emit('message', v);
+      emitter.emit("message", v);
     },
   });
 
-  const messages: AsyncIterable<KafkaBase> = on(emitter, 'message');
+  const messages: AsyncIterable<KafkaBase> = on(emitter, "message");
   await producer.send({ topic: REQ_TOPIC, messages: [{ value }] });
 
   for await (const message of messages) {
@@ -173,5 +173,5 @@ test('should respond to a request', async (t) => {
     }
   }
 
-  t.fail('message not received');
+  t.fail("message not received");
 });

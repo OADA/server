@@ -17,39 +17,39 @@
 
 /* eslint-disable unicorn/no-null */
 
-import { File } from 'node:buffer';
+import { File } from "node:buffer";
 // eslint-disable-next-line unicorn/import-style
-import { extname } from 'node:path';
-import { pathToFileURL } from 'node:url';
-import { readFileSync } from 'node:fs';
+import { extname } from "node:path";
+import { pathToFileURL } from "node:url";
+import { readFileSync } from "node:fs";
 
-import 'dotenv/config';
-import convict, { type Config, type Schema } from 'convict';
-import json5 from 'json5';
+import "dotenv/config";
+import convict, { type Config, type Schema } from "convict";
+import json5 from "json5";
 // @ts-expect-error no types for this
-import moment from 'convict-format-with-moment';
-import validator from 'convict-format-with-validator';
-import yaml from 'yaml';
+import moment from "convict-format-with-moment";
+import validator from "convict-format-with-validator";
+import yaml from "yaml";
 
-import '@oada/pino-debug';
-import log from 'debug';
+import "@oada/pino-debug";
+import log from "debug";
 
-const debug = log('@oada/lib-config:debug');
+const debug = log("@oada/lib-config:debug");
 
 // Builtin part of the config schema
 const defaults = {
   configfiles: {
-    doc: 'Optional list of config file(s) to load',
+    doc: "Optional list of config file(s) to load",
     format: Array,
     default: [] as string[],
-    env: 'CONFIG',
-    arg: 'config',
+    env: "CONFIG",
+    arg: "config",
   },
   // IDK what this is about but it was around before...
   isTest: {
     format: Boolean,
     default: false,
-    env: 'isTest',
+    env: "isTest",
   },
   /**
    * By default, this checks for NODE_ENV===production
@@ -59,18 +59,18 @@ const defaults = {
    */
   isProduction: {
     format: Boolean,
-    default: process.env.NODE_ENV === 'production',
-    env: 'isProduction',
+    default: process.env.NODE_ENV === "production",
+    env: "isProduction",
   },
   oidc: {
     issuer: {
-      doc: 'OpenID Connect/Oauth2.0 issuer to use for auth',
-      format: 'url',
+      doc: "OpenID Connect/Oauth2.0 issuer to use for auth",
+      format: "url",
 
       default: null as null | URL | string,
       nullable: true,
-      env: 'OIDC_ISSUER',
-      arg: 'oidc-issuer',
+      env: "OIDC_ISSUER",
+      arg: "oidc-issuer",
     },
   },
 };
@@ -100,26 +100,26 @@ function readFileUrl(url: URL) {
 function readDataUrl(url: URL) {
   const { groups } =
     /^(?<type>[^,;]*)(?:;(?<charset>[^,]*))?,(?<data>.*)$/.exec(url.pathname)!;
-  const { type = 'text/plain', charset = 'ascii', data } = groups!;
+  const { type = "text/plain", charset = "ascii", data } = groups!;
   const buffer = Buffer.from(data!, charset as BufferEncoding);
   return new File([buffer], url.pathname, { type });
 }
 
 convict.addFormat({
-  name: 'file-url',
+  name: "file-url",
   validate(value: unknown) {
     if (value instanceof File) {
       return;
     }
 
-    if (typeof value !== 'string') {
-      throw new TypeError('must be a string or File');
+    if (typeof value !== "string") {
+      throw new TypeError("must be a string or File");
     }
 
     const url = fileUrl(value);
     switch (url.protocol) {
-      case 'file:':
-      case 'data:': {
+      case "file:":
+      case "data:": {
         break;
       }
 
@@ -132,11 +132,11 @@ convict.addFormat({
   coerce(value: string) {
     const url = fileUrl(value);
     switch (url.protocol) {
-      case 'file:': {
+      case "file:": {
         return readFileUrl(url);
       }
 
-      case 'data:': {
+      case "data:": {
         return readDataUrl(url);
       }
 
@@ -150,9 +150,9 @@ convict.addFormat({
 // Add support for JSON, JSON5, and yaml config files
 convict.addParser([
   // { extension: 'js', parse: require },
-  { extension: 'json', parse: JSON.parse },
-  { extension: 'json5', parse: json5.parse },
-  { extension: ['yml', 'yaml'], parse: yaml.parse },
+  { extension: "json", parse: JSON.parse },
+  { extension: "json5", parse: json5.parse },
+  { extension: ["yml", "yaml"], parse: yaml.parse },
 ]);
 
 /**
@@ -171,11 +171,11 @@ export default async function loadConfig<S>(
     const config = convict({ ...defaults, ...inSchema });
 
     // Optionally load any config file(s)
-    const files = config.get('configfiles');
+    const files = config.get("configfiles");
     for await (const file of files) {
       // Allow requiring a js config?
       // FIXME: Probably remove this
-      if (['.js', '.mjs', '.cjs'].includes(extname(file))) {
+      if ([".js", ".mjs", ".cjs"].includes(extname(file))) {
         const configFile = (await import(file)) as { default?: unknown };
         config.load(configFile.default ?? configFile); // Nosemgrep: javascript.lang.security.detect-non-literal-require.detect-non-literal-require
       } else {
@@ -186,7 +186,7 @@ export default async function loadConfig<S>(
     // Ensure config is valid
     config.validate({
       // Allow extra items
-      allowed: 'warn',
+      allowed: "warn",
       // Do not actually output warnings about extra items?
       output() {},
     });
@@ -196,7 +196,7 @@ export default async function loadConfig<S>(
         {
           config: JSON.parse(`${config}`) as unknown,
         },
-        'Config loaded successfully',
+        "Config loaded successfully",
       );
     }
 
@@ -205,6 +205,6 @@ export default async function loadConfig<S>(
       schema: inSchema,
     };
   } catch (error: unknown) {
-    throw new Error('Failed to load config', { cause: error });
+    throw new Error("Failed to load config", { cause: error });
   }
 }

@@ -15,27 +15,27 @@
  * limitations under the License.
  */
 
-import { config } from '../../config.js';
+import { config } from "../../config.js";
 
-import type { Promisable } from 'type-fest';
+import type { Promisable } from "type-fest";
 
-import { User } from '@oada/models/user';
+import { User } from "@oada/models/user";
 
-import { type Store, getDataStores, tryDataStores } from './index.js';
+import { type Store, getDataStores, tryDataStores } from "./index.js";
 
 export interface IUsers extends Store {
   findById(id: string): Promisable<User | undefined>;
-  findByUsername(username: User['username']): Promisable<User | undefined>;
+  findByUsername(username: User["username"]): Promisable<User | undefined>;
   findByUsernamePassword(
-    username: User['username'],
-    password: User['password'],
+    username: User["username"],
+    password: User["password"],
   ): Promisable<User | undefined>;
   findByOIDCToken(token: {
     sub: string;
     iss: string;
   }): Promisable<User | undefined>;
   findByOIDCUsername(
-    username: User['username'],
+    username: User["username"],
     iss: string,
   ): Promisable<User | undefined>;
   update(user: User): Promisable<void>;
@@ -43,11 +43,11 @@ export interface IUsers extends Store {
 }
 
 const dataStores = await getDataStores<IUsers>(
-  config.get('auth.user.dataStore'),
-  'users',
+  config.get("auth.user.dataStore"),
+  "users",
 );
 
-export { User } from '@oada/models/user';
+export { User } from "@oada/models/user";
 
 export async function findById(id: string) {
   async function findUserById(dataStore: IUsers) {
@@ -58,7 +58,7 @@ export async function findById(id: string) {
   return tryDataStores(dataStores, findUserById);
 }
 
-export async function findByUsername(username: User['username']) {
+export async function findByUsername(username: User["username"]) {
   async function findUserByUsername(dataStore: IUsers) {
     const u = await dataStore.findByUsername(username);
     return u ? new User(u) : undefined;
@@ -68,8 +68,8 @@ export async function findByUsername(username: User['username']) {
 }
 
 export async function findByUsernamePassword(
-  username: User['username'],
-  password: User['password'],
+  username: User["username"],
+  password: User["password"],
 ) {
   async function findUserByUsernamePassword(dataStore: IUsers) {
     const u = await dataStore.findByUsernamePassword(username, password);
@@ -89,7 +89,7 @@ export async function findByOIDCToken(token: { sub: string; iss: string }) {
 }
 
 export async function findByOIDCUsername(
-  username: User['username'],
+  username: User["username"],
   iss: string,
 ) {
   async function findUserByOIDCUsername(dataStore: IUsers) {

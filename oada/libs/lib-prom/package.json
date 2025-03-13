@@ -7,10 +7,7 @@
   "engines": {
     "node": ">=20.0.0"
   },
-  "files": [
-    "src/**/*",
-    "dist/**/*"
-  ],
+  "files": ["src/**/*", "dist/**/*"],
   "scripts": {
     "build": "yarn g:tsc",
     "clean": "yarn run build --clean",
@@ -18,9 +15,7 @@
   },
   "ava": {
     "typescript": {
-      "extensions": [
-        "ts"
-      ],
+      "extensions": ["ts"],
       "rewritePaths": {
         "src/": "dist/",
         "test/": ".test/"
@@ -42,7 +37,7 @@
   "devDependencies": {
     "@ava/typescript": "^5.0.0",
     "@types/convict": "^6.1.6",
-    "@types/node": "^22.13.9",
+    "@types/node": "^22.13.10",
     "@types/ws": "^8.18.0",
     "ava": "6.2.0",
     "fastify-plugin": "^5.0.1"

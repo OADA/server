@@ -15,10 +15,10 @@
  * limitations under the License.
  */
 
-import type { FastifyPluginAsync, FastifyRequest } from 'fastify';
+import type { FastifyPluginAsync, FastifyRequest } from "fastify";
 
-import { authorizations, clients } from '@oada/lib-arangodb';
-import Authorization from '@oada/models/authorization';
+import { authorizations, clients } from "@oada/lib-arangodb";
+import Authorization from "@oada/models/authorization";
 
 export interface Options {
   prefix: string;
@@ -31,7 +31,7 @@ async function addClientToAuth(
 ) {
   if (auth?.clientId) {
     request.log.trace(
-      'GET /%s: authorization has a client, retrieving',
+      "GET /%s: authorization has a client, retrieving",
       auth._id,
     );
     try {
@@ -39,12 +39,12 @@ async function addClientToAuth(
       // Store client from db into authorization object
       return { client, ...auth };
     } catch (error: unknown) {
-      request.log.error({ error }, 'Authorization clientId not found in DB');
+      request.log.error({ error }, "Authorization clientId not found in DB");
       throw error;
     }
   } else {
     request.log.trace(
-      'GET /%s: authorization DOES NOT have a clientId',
+      "GET /%s: authorization DOES NOT have a clientId",
       auth?._id,
     );
     return auth;
@@ -55,20 +55,20 @@ async function addClientToAuth(
 const plugin: FastifyPluginAsync<Options> = async (fastify, _options) => {
   // Authorizations routes
   // TODO: How the heck should this work??
-  fastify.get('/', async (request, reply) => {
+  fastify.get("/", async (request, reply) => {
     const results = await authorizations.findByUser(request.user!.sub);
 
     const response: Record<string, authorizations.Authorization | undefined> =
       {};
     for await (const auth of results) {
-      const k = auth._id.replace(/^authorizations\//, '');
+      const k = auth._id.replace(/^authorizations\//, "");
       response[k] = await addClientToAuth(request, auth);
     }
 
     return reply.send(response);
   });
 
-  fastify.get('/:authId', async (request, reply) => {
+  fastify.get("/:authId", async (request, reply) => {
     const { authId } = request.params as { authId: string };
     const { sub } = request.user!;
 
@@ -87,9 +87,9 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, _options) => {
 
   // Parse JSON content types
   fastify.addContentTypeParser(
-    ['json', '+json'],
+    ["json", "+json"],
     {
-      parseAs: 'string',
+      parseAs: "string",
       // 20 MB
       bodyLimit: 20 * 1_048_576,
     },
@@ -104,7 +104,7 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, _options) => {
     },
   );
 
-  fastify.post('/', async (request, reply) => {
+  fastify.post("/", async (request, reply) => {
     // TODO: Most of this could be done inside an Arango query...
     // TODO: Check scope of current token
     const auth = new Authorization({
@@ -119,7 +119,7 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, _options) => {
     if (auth.sub !== request.user!.sub) {
       if (
         !request.user!.roles.some(
-          (s: string) => s === 'oada.admin.user:all' || 'oada.admin.user:write',
+          (s: string) => s === "oada.admin.user:all" || "oada.admin.user:write",
         )
       ) {
         void reply.forbidden();
@@ -128,7 +128,7 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, _options) => {
 
       // Otherwise, token has admin scope so allow it (check user too?)
       request.log.debug(
-        'Posted authorization for a different user, but token has admin.user scope so we are allowing it',
+        "Posted authorization for a different user, but token has admin.user scope so we are allowing it",
       );
     }
 
@@ -152,7 +152,7 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, _options) => {
   });
 
   // TODO: Should another microservice revoke authorizations?
-  fastify.delete('/:authId', async (request, reply) => {
+  fastify.delete("/:authId", async (request, reply) => {
     const { authId } = request.params as { authId: string };
 
     const auth = await authorizations.findById(authId);

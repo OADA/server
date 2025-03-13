@@ -15,25 +15,25 @@
  * limitations under the License.
  */
 
-import { config } from '../../config.js';
+import { config } from "../../config.js";
 
-import { Codes, OADAError } from '@oada/error';
-import type { Except, Promisable } from 'type-fest';
+import { Codes, OADAError } from "@oada/error";
+import type { Except, Promisable } from "type-fest";
 
-import { Client } from '@oada/models/client';
+import { Client } from "@oada/models/client";
 
-import { type Store, getDataStores, tryDataStores } from './index.js';
+import { type Store, getDataStores, tryDataStores } from "./index.js";
 
-export { Client } from '@oada/models/client';
+export { Client } from "@oada/models/client";
 
 export interface IClients extends Store {
   findById(id: string): Promisable<Client | undefined>;
-  save(client: Except<Client, 'client_id'>): Promisable<void>;
+  save(client: Except<Client, "client_id">): Promisable<void>;
 }
 
 const dataStores = await getDataStores<IClients>(
-  config.get('auth.client.dataStore'),
-  'clients',
+  config.get("auth.client.dataStore"),
+  "clients",
 );
 
 export async function findById(id: string) {
@@ -45,13 +45,13 @@ export async function findById(id: string) {
   return tryDataStores(dataStores, findClientById);
 }
 
-export async function save(c: Partial<Except<Client, 'client_id'>>) {
+export async function save(c: Partial<Except<Client, "client_id">>) {
   const client = new Client(c);
   if (await findById(client.client_id)) {
     throw new OADAError(
-      'Client Id already exists',
+      "Client Id already exists",
       Codes.BadRequest,
-      'There was a problem durring the login',
+      "There was a problem durring the login",
     );
   }
 
@@ -59,7 +59,7 @@ export async function save(c: Partial<Except<Client, 'client_id'>>) {
   await dataStores[0]!.save(client);
   const saved = await findById(client.client_id);
   if (!saved) {
-    throw new Error('Could not save client');
+    throw new Error("Could not save client");
   }
 
   return saved;

@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-import '@oada/pino-debug';
+import "@oada/pino-debug";
 
 import {
   type Type,
@@ -33,29 +33,29 @@ import {
   string,
   subcommands,
   union,
-} from 'cmd-ts';
-import { Url } from 'cmd-ts/batteries/url';
-import chalk from 'chalk';
+} from "cmd-ts";
+import { Url } from "cmd-ts/batteries/url";
+import chalk from "chalk";
 
-import { config } from '../config.js';
+import { config } from "../config.js";
 
-import type User from '@oada/models/user';
+import type User from "@oada/models/user";
 
-import esMain from 'es-main';
+import esMain from "es-main";
 
 async function getClient(iss: string) {
-  const { Issuer, errors } = await import('openid-client');
+  const { Issuer, errors } = await import("openid-client");
   try {
     const issuer = await Issuer.discover(iss);
     const issuerUrl = new URL(issuer.metadata.issuer);
     const { metadata } = await issuer.Client.register({
-      client_name: 'OADA Auth CLI',
-      application_type: 'native',
-      redirect_uris: ['https://localhost:3000/redirect'],
-      grant_types: ['urn:ietf:params:oauth:grant-type:device_code'],
+      client_name: "OADA Auth CLI",
+      application_type: "native",
+      redirect_uris: ["https://localhost:3000/redirect"],
+      grant_types: ["urn:ietf:params:oauth:grant-type:device_code"],
       ...// TODO: Figure out better place for issuer specific quirks?
-      (issuerUrl.hostname.endsWith('auth0.com')
-        ? { token_endpoint_auth_method: 'none' }
+      (issuerUrl.hostname.endsWith("auth0.com")
+        ? { token_endpoint_auth_method: "none" }
         : {}),
     });
     return new issuer.Client(metadata);
@@ -70,41 +70,41 @@ async function getClient(iss: string) {
 }
 
 const iss = option({
-  description: 'OIDC Issuer URL',
-  long: 'issuer',
-  type: config.get('oidc.issuer') ? optional(Url) : Url,
+  description: "OIDC Issuer URL",
+  long: "issuer",
+  type: config.get("oidc.issuer") ? optional(Url) : Url,
 });
 const scope = multioption({
-  description: 'Scope(s) to request for the token',
-  long: 'scope',
-  short: 's',
+  description: "Scope(s) to request for the token",
+  long: "scope",
+  short: "s",
   type: optional(array(string)),
 });
 
 export const get = command({
-  name: 'get',
-  description: 'Request a token using OAuth2.0/OIDC',
+  name: "get",
+  description: "Request a token using OAuth2.0/OIDC",
   args: {
     iss,
     scope,
     qr: flag({
-      description: 'Output QR code for user verification',
-      long: 'qrcode',
-      short: 'q',
+      description: "Output QR code for user verification",
+      long: "qrcode",
+      short: "q",
       type: optional(boolean),
     }),
   },
   // eslint-disable-next-line @typescript-eslint/no-shadow
   async handler({ scope = [], iss, qr }) {
     const client = await getClient(
-      iss ? `${iss}` : `${config.get('oidc.issuer')}`,
+      iss ? `${iss}` : `${config.get("oidc.issuer")}`,
     );
 
     const handle = await client.deviceAuthorization({
-      scope: scope.join(' '),
+      scope: scope.join(" "),
     });
 
-    console.group('User verification:');
+    console.group("User verification:");
     console.error(chalk.reset(`User Code: ${chalk.green(handle.user_code)}`));
     console.error(
       chalk.reset(`Verification URI: ${chalk.blue(handle.verification_uri)}`),
@@ -115,7 +115,7 @@ export const get = command({
       ),
     );
     if (qr !== false) {
-      const { default: qrcode } = await import('qrcode-terminal');
+      const { default: qrcode } = await import("qrcode-terminal");
       qrcode.generate(
         handle.verification_uri_complete,
         { small: true },
@@ -126,15 +126,15 @@ export const get = command({
     console.groupEnd();
 
     const token = await handle.poll();
-    console.log('%j', token);
+    console.log("%j", token);
   },
 });
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 const UserType: Type<string, User> = {
   async from(id) {
-    const { User } = await import('@oada/models/user');
-    const { findById, findByUsername } = await import('../db/models/user.js');
+    const { User } = await import("@oada/models/user");
+    const { findById, findByUsername } = await import("../db/models/user.js");
 
     const user = (await findById(id)) ?? (await findByUsername(id));
     if (!user) {
@@ -149,47 +149,47 @@ const UserType: Type<string, User> = {
  * @todo support other token storage??
  */
 export const create = command({
-  name: 'create',
-  aliases: ['issue', 'new'],
-  description: 'Create a token (only works when using local auth in arango)',
+  name: "create",
+  aliases: ["issue", "new"],
+  description: "Create a token (only works when using local auth in arango)",
   args: {
     iss,
     scope,
     user: option({
       type: UserType,
-      description: 'User ID or username',
-      long: 'user',
-      short: 'u',
+      description: "User ID or username",
+      long: "user",
+      short: "u",
     }),
     iat: option({
       type: optional(union([number, string])),
-      description: 'Creation time',
-      long: 'iat',
-      short: 't',
+      description: "Creation time",
+      long: "iat",
+      short: "t",
     }),
     exp: option({
       type: optional(union([number, string])),
-      description: 'Expiration time',
-      long: 'exp',
-      short: 'e',
+      description: "Expiration time",
+      long: "exp",
+      short: "e",
     }),
     jti: positional({
       type: optional(string),
-      displayName: 'token id',
-      description: 'Token to create',
+      displayName: "token id",
+      description: "Token to create",
     }),
   },
   // eslint-disable-next-line @typescript-eslint/no-shadow
   async handler({ iss, scope, user: { sub }, iat, exp, jti }) {
-    const { Authorization } = await import('@oada/models/authorization');
-    const { create: createToken } = await import('../db/arango/tokens.js');
+    const { Authorization } = await import("@oada/models/authorization");
+    const { create: createToken } = await import("../db/arango/tokens.js");
 
     const auth = new Authorization({
-      iss: iss ? `${iss}` : `${config.get('oidc.issuer')}`,
+      iss: iss ? `${iss}` : `${config.get("oidc.issuer")}`,
       sub,
       iat: iat as number,
       exp: exp as number,
-      scope: scope?.join(' '),
+      scope: scope?.join(" "),
       jti,
     });
     const token = await createToken(auth);
@@ -204,24 +204,24 @@ export const create = command({
  * @todo implement this
  */
 export const revoke = command({
-  name: 'revoke',
-  aliases: ['disable'],
-  description: 'Revoke a token',
+  name: "revoke",
+  aliases: ["disable"],
+  description: "Revoke a token",
   args: {
     iss,
     token: positional({
-      displayName: 'token',
+      displayName: "token",
       type: string,
-      description: 'Token to revoke',
+      description: "Token to revoke",
     }),
   },
   handler() {
-    throw new Error('Not yet implemented');
+    throw new Error("Not yet implemented");
   },
 });
 
 export const cmd = subcommands({
-  name: 'token',
+  name: "token",
   cmds: {
     get,
     create,

@@ -15,23 +15,23 @@
  * limitations under the License.
  */
 
-import { config } from './config.js';
+import { config } from "./config.js";
 
-import { createServer } from 'node:http';
+import { createServer } from "node:http";
 
 import {
   Gauge,
   type MetricConfiguration,
   collectDefaultMetrics,
   register,
-} from 'prom-client';
-import type NStats from 'nstats';
+} from "prom-client";
+import type NStats from "nstats";
 
 collectDefaultMetrics({ register });
 
 let stats: NStats.NStats | undefined;
 
-const nstatsOptional = await import('nstats');
+const nstatsOptional = await import("nstats");
 export const nstats: typeof NStats = (...parameters) => {
   stats = nstatsOptional.default(...parameters);
   return stats;
@@ -46,11 +46,11 @@ export const nstats: typeof NStats = (...parameters) => {
 export const server = createServer(async (_, response) => {
   try {
     const metrics = await register.metrics();
-    response.writeHead(200, { 'Content-Type': register.contentType });
+    response.writeHead(200, { "Content-Type": register.contentType });
 
     if (stats) {
       response.write(stats.toPrometheus());
-      response.write('\n');
+      response.write("\n");
     }
 
     response.end(metrics);
@@ -62,17 +62,17 @@ export const server = createServer(async (_, response) => {
 });
 
 // Automatically start server to expose metrics
-const { port, host } = config.get('prometheus');
+const { port, host } = config.get("prometheus");
 server.listen({ host, port });
 
-export * from 'prom-client';
+export * from "prom-client";
 
 export interface PseudoMetricConfiguration<T extends string> {
   name: `${string}_info`;
   help: string;
   labels?: Record<T, string>;
   collect?: (this: PseudoMetric<T>) => void | Promise<void>;
-  registers?: MetricConfiguration<T>['registers'];
+  registers?: MetricConfiguration<T>["registers"];
 }
 
 /**
@@ -97,7 +97,7 @@ export class PseudoMetric<T extends string = string> {
     this.#gauge = new Gauge<T>({
       name,
       help,
-      aggregator: 'first',
+      aggregator: "first",
       registers,
       collect: () => collect.call(this),
     });

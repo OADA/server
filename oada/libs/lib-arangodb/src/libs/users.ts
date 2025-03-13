@@ -15,18 +15,18 @@
  * limitations under the License.
  */
 
-import type { ReadDocumentOptions } from 'arangojs/documents';
-import { aql } from 'arangojs';
-import bcrypt from 'bcryptjs';
-import debug from 'debug';
+import type { ReadDocumentOptions } from "arangojs/documents";
+import { aql } from "arangojs";
+import bcrypt from "bcryptjs";
+import debug from "debug";
 
-import type { Selector } from '../util.js';
-import { config } from '../config.js';
-import { db as database } from '../db.js';
-import { sanitizeResult } from '../util.js';
+import type { Selector } from "../util.js";
+import { config } from "../config.js";
+import { db as database } from "../db.js";
+import { sanitizeResult } from "../util.js";
 
-import type { User as IUser } from '@oada/models/user';
-import type { SetRequired } from 'type-fest';
+import type { User as IUser } from "@oada/models/user";
+import type { SetRequired } from "type-fest";
 
 export interface User extends IUser {
   /** @deprecated use sub/_key instead */
@@ -34,14 +34,14 @@ export interface User extends IUser {
   _key?: string;
 }
 
-const info = debug('arangodb#resources:info');
+const info = debug("arangodb#resources:info");
 
 const users = database.collection<User>(
-  config.get('arangodb.collections.users.name'),
+  config.get("arangodb.collections.users.name"),
 );
 
 const roundsOrSalt =
-  config.get('bcrypt.saltRounds') || config.get('bcrypt.salt');
+  config.get("bcrypt.saltRounds") || config.get("bcrypt.salt");
 
 export async function findById(
   sub: string,
@@ -133,7 +133,7 @@ export async function findByUsernamePassword(
  * @throws if user already exists
  */
 export async function create(user: User): Promise<User> {
-  info({ user }, 'Create user was called');
+  info({ user }, "Create user was called");
 
   user.password &&= await hashPw(user.password);
 
@@ -155,9 +155,9 @@ export async function remove(u: Selector<User>): Promise<void> {
 }
 
 export async function update(
-  user: SetRequired<Partial<User>, 'sub'>,
+  user: SetRequired<Partial<User>, "sub">,
 ): Promise<User> {
-  info({ user }, 'Update user was called');
+  info({ user }, "Update user was called");
   user.password &&= await hashPw(user.password);
 
   const u = await users.update({ _key: user.sub }, user, {

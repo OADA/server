@@ -15,52 +15,52 @@
  * limitations under the License.
  */
 
-import { randomBytes } from 'node:crypto';
+import { randomBytes } from "node:crypto";
 
-import { SignJWT, jwtVerify } from 'jose';
-import debug from 'debug';
+import { SignJWT, jwtVerify } from "jose";
+import debug from "debug";
 
-import type { ITokens, Token } from '../models/token.js';
-import { JWKS, kid, privateKey } from '../../keys.js';
-import type { TokenClaims } from '../../index.js';
-import { config } from '../../config.js';
+import type { ITokens, Token } from "../models/token.js";
+import { JWKS, kid, privateKey } from "../../keys.js";
+import type { TokenClaims } from "../../index.js";
+import { config } from "../../config.js";
 
-const tokenConfig = config.get('auth.token');
+const tokenConfig = config.get("auth.token");
 
-const trace = debug('arango:token:trace');
+const trace = debug("arango:token:trace");
 
-export const verify = async function (token: string, issuer: string) {
-  trace('findByToken: searching for token %s', token);
+export const verify = (async (token: string, issuer: string) => {
+  trace("findByToken: searching for token %s", token);
   const { payload } = await jwtVerify<TokenClaims>(token, JWKS, {
     issuer,
     audience: issuer,
   });
   if (!payload) {
-    throw new TypeError('Invalid token, no JWT payload');
+    throw new TypeError("Invalid token, no JWT payload");
   }
 
   const { _id, ...t } = payload;
 
   return t;
-} satisfies ITokens['verify'];
+}) satisfies ITokens["verify"];
 
-export const create = async function (
+export const create = (async (
   { sub, iat, exp, nbf, ...claims }: Token,
   issuer?: string,
-) {
+) => {
   try {
     const iss = issuer ?? claims.iss;
     if (!iss) {
-      throw new TypeError('Issuer not provided');
+      throw new TypeError("Issuer not provided");
     }
 
     const jwt = new SignJWT(claims)
       .setProtectedHeader({
         alg: tokenConfig.alg,
         kid,
-        jku: config.get('auth.endpoints.certs'),
+        jku: config.get("auth.endpoints.certs"),
       })
-      .setJti(randomBytes(16).toString('hex'))
+      .setJti(randomBytes(16).toString("hex"))
       .setIssuedAt(iat)
       .setIssuer(iss)
       // ???: Should the audience be something different?
@@ -77,6 +77,6 @@ export const create = async function (
 
     return await jwt.sign(privateKey);
   } catch (error: unknown) {
-    throw new Error('Failed to issue token', { cause: error });
+    throw new Error("Failed to issue token", { cause: error });
   }
-} satisfies ITokens['create'];
+}) satisfies ITokens["create"];

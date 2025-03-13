@@ -15,21 +15,18 @@
  * limitations under the License.
  */
 
-import type { IUsers, User } from '../models/user.js';
+import type { IUsers, User } from "../models/user.js";
 
 // @ts-expect-error IDEK
-import users from './users.json';
+import users from "./users.json";
 
 const database = new Map(Object.entries(users as Record<string, User>));
 
-export const findByUsername = function (username: string) {
-  return structuredClone(database.get(username)) ?? undefined;
-} satisfies IUsers['findByUsername'];
+export const findByUsername = ((username: string) =>
+  structuredClone(database.get(username)) ??
+  undefined) satisfies IUsers["findByUsername"];
 
-export const findByUsernamePassword = function (
-  username: string,
-  password: string,
-) {
+export const findByUsernamePassword = ((username: string, password: string) => {
   const user = database.get(username);
   return user?.password === password ? structuredClone(user) : undefined;
-} satisfies IUsers['findByUsernamePassword'];
+}) satisfies IUsers["findByUsernamePassword"];

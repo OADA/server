@@ -15,25 +15,25 @@
  * limitations under the License.
  */
 
-import { setTimeout } from 'node:timers/promises';
+import { setTimeout } from "node:timers/promises";
 
-import { config } from './config.js';
+import { config } from "./config.js";
 
-import { ArangoError, ArangoErrorCode } from './libs/errors.js';
+import { ArangoError, ArangoErrorCode } from "./libs/errors.js";
 
-import type { AqlQuery } from 'arangojs/aql';
-import { Database } from 'arangojs';
-import type { QueryOptions } from 'arangojs/queries';
-import debug from 'debug';
+import type { AqlQuery } from "arangojs/aql";
+import { Database } from "arangojs";
+import type { QueryOptions } from "arangojs/queries";
+import debug from "debug";
 
-const error = debug('arangodb#aql:error');
-const warn = debug('arangodb#aql:warn');
-const trace = debug('arangodb#aql:trace');
+const error = debug("arangodb#aql:error");
+const warn = debug("arangodb#aql:warn");
+const trace = debug("arangodb#aql:trace");
 
-const { profile } = config.get('arangodb.aql');
-const deadlockRetries = config.get('arangodb.retry.deadlock.retries');
-const deadlockDelay = config.get('arangodb.retry.deadlock.delay');
-const auth = config.get('arangodb.auth');
+const { profile } = config.get("arangodb.aql");
+const deadlockRetries = config.get("arangodb.retry.deadlock.retries");
+const deadlockDelay = config.get("arangodb.retry.deadlock.delay");
+const auth = config.get("arangodb.auth");
 
 class DatabaseWrapper extends Database {
   // @ts-expect-error nonsense
@@ -70,7 +70,7 @@ class DatabaseWrapper extends Database {
           continue;
         }
 
-        const err = new Error('AQL Query error', { cause: cError });
+        const err = new Error("AQL Query error", { cause: cError });
         const { query: aql, ...rest } = query;
         error({ error: err, ...rest }, `Failed AQL query:\n${aql}`);
 
@@ -83,10 +83,10 @@ class DatabaseWrapper extends Database {
 }
 
 const database = new DatabaseWrapper({
-  url: config.get('arangodb.connectionString'),
+  url: config.get("arangodb.connectionString"),
   auth,
-  databaseName: config.get('arangodb.database'),
-  precaptureStackTraces: process.env.NODE_ENV !== 'production',
+  databaseName: config.get("arangodb.database"),
+  precaptureStackTraces: process.env.NODE_ENV !== "production",
 });
 
 export { database as db };

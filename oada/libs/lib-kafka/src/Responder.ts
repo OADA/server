@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-import util from 'node:util';
+import util from "node:util";
 
 import {
   Base,
@@ -25,16 +25,16 @@ import {
   type KafkaBase,
   REQ_ID_KEY,
   topicTimeout,
-} from './Base.js';
+} from "./Base.js";
 
-import type { EachMessagePayload } from 'kafkajs';
-import debug from 'debug';
-import ksuid from 'ksuid';
-import rTracer from 'cls-rtracer';
+import type { EachMessagePayload } from "kafkajs";
+import debug from "debug";
+import ksuid from "ksuid";
+import rTracer from "cls-rtracer";
 
-const trace = debug('@oada/lib-kafka:trace');
-const warn = debug('@oada/lib-kafka:warn');
-const error = debug('@oada/lib-kafka:error');
+const trace = debug("@oada/lib-kafka:trace");
+const warn = debug("@oada/lib-kafka:warn");
+const error = debug("@oada/lib-kafka:error");
 
 export type Response<R = KafkaBase> = R | Iterable<R> | AsyncIterable<R> | void;
 
@@ -43,7 +43,7 @@ function isIterable<T>(
 ): value is Iterable<T> | AsyncIterable<T> {
   return (
     value &&
-    typeof value === 'object' &&
+    typeof value === "object" &&
     (Symbol.iterator in value || Symbol.asyncIterator in value)
   );
 }
@@ -78,7 +78,7 @@ export class Responder<Request extends KafkaBase = KafkaBase> extends Base {
    * @todo Maybe rearrange type parameters? Maybe make them class params?
    */
   override on<R>(
-    event: 'request',
+    event: "request",
     listener: (
       reg: Request,
       data: EachMessagePayload,
@@ -96,7 +96,7 @@ export class Responder<Request extends KafkaBase = KafkaBase> extends Base {
     event: string | symbol,
     listener: L,
   ): this {
-    if (event === 'request') {
+    if (event === "request") {
       // FIXME: Probably a better way to handle this event...
       return super.on(DATA, async (request, data) => {
         await this.#handleRequest(request as Request, data, listener);
@@ -117,13 +117,13 @@ export class Responder<Request extends KafkaBase = KafkaBase> extends Base {
       data: EachMessagePayload,
     ) => Response<R> | Promise<Response<R>>,
   ) {
-    const { [REQ_ID_KEY]: id = '', time } = request;
+    const { [REQ_ID_KEY]: id = "", time } = request;
     await rTracer.runWithId(async () => {
-      trace(request, 'Received request');
+      trace(request, "Received request");
 
       // Check for old messages
       if (!this.#old && Date.now() - time! >= this.#timeout) {
-        warn('Ignoring timed-out request');
+        warn("Ignoring timed-out request");
         return;
       }
 
@@ -134,7 +134,7 @@ export class Responder<Request extends KafkaBase = KafkaBase> extends Base {
           | undefined;
         this.requests.delete(id);
 
-        if (typeof gen?.return === 'function') {
+        if (typeof gen?.return === "function") {
           // Stop generator
           gen.return();
         }
@@ -149,7 +149,7 @@ export class Responder<Request extends KafkaBase = KafkaBase> extends Base {
         await this.#respond(request, resp);
       } catch (cError: unknown) {
         // Catch and communicate errors over kafka?
-        error({ error: cError }, 'Error in listener');
+        error({ error: cError }, "Error in listener");
         const { code } = (cError ?? {}) as { code?: string };
         await this.#respond(request, {
           code: code ?? `${cError}`,
@@ -164,7 +164,7 @@ export class Responder<Request extends KafkaBase = KafkaBase> extends Base {
    * Send response(s) back to the original request
    */
   async #respond(
-    { [REQ_ID_KEY]: id = '', domain, group, resp_partition: part = 0 }: Request,
+    { [REQ_ID_KEY]: id = "", domain, group, resp_partition: part = 0 }: Request,
     resp: Response,
   ) {
     if (!resp) {
@@ -175,7 +175,7 @@ export class Responder<Request extends KafkaBase = KafkaBase> extends Base {
     this.requests.set(id, it as Generator<KafkaBase, void>);
 
     for await (const r of it) {
-      trace(r, 'received response');
+      trace(r, "received response");
 
       if (r[REQ_ID_KEY] === null) {
         // FIXME: Remove once everything migrated
@@ -183,17 +183,17 @@ export class Responder<Request extends KafkaBase = KafkaBase> extends Base {
 
         r[REQ_ID_KEY] = newId;
 
-        util.deprecate(() => {}, 'Please use ReResponder instead')();
+        util.deprecate(() => {}, "Please use ReResponder instead")();
       } else {
         r[REQ_ID_KEY] = id;
         // Check for cancelled requests
         if (!this.requests.has(id)) {
-          throw new Error('Request cancelled');
+          throw new Error("Request cancelled");
         }
       }
 
       const mesg = { ...r, domain, group };
-      trace(mesg, 'responding');
+      trace(mesg, "responding");
       await this.produce({
         mesg,
         part,

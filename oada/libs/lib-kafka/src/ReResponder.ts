@@ -15,10 +15,10 @@
  * limitations under the License.
  */
 
-import { DATA, REQ_ID_KEY } from './Base.js';
-import { Responder } from './Responder.js';
+import { DATA, REQ_ID_KEY } from "./Base.js";
+import { Responder } from "./Responder.js";
 
-import ksuid from 'ksuid';
+import ksuid from "ksuid";
 
 // Class for generate new requests in response to others
 // (without needing the answer)
