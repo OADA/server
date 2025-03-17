@@ -63,7 +63,6 @@
     "@fastify/view": "^10.0.2",
     "@oada/certs": "^4.1.1",
     "@oada/error": "^2.0.1",
-    "@oada/formats": "^4.1.0",
     "@oada/lib-arangodb": "workspace:^",
     "@oada/lib-config": "workspace:^",
     "@oada/lib-prom": "workspace:^",
