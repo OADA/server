@@ -5,17 +5,6 @@ __metadata:
   version: 8
   cacheKey: 10
 
-"@apidevtools/json-schema-ref-parser@npm:^11.5.4":
-  version: 11.7.3
-  resolution: "@apidevtools/json-schema-ref-parser@npm:11.7.3"
-  dependencies:
-    "@jsdevtools/ono": "npm:^7.1.3"
-    "@types/json-schema": "npm:^7.0.15"
-    js-yaml: "npm:^4.1.0"
-  checksum: 10/ab496d84f8deca4e5e3ab4adb28825fb1e90655561cf7b70b6dc7b8cf95e49ea9fa3440c265d1d115a43e673b94a79005af05b5d76f77a8934ed1c2fae6762c9
-  languageName: node
-  linkType: hard
-
 "@arcanis/slice-ansi@npm:^1.1.1":
   version: 1.1.1
   resolution: "@arcanis/slice-ansi@npm:1.1.1"
@@ -689,13 +678,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@jsdevtools/ono@npm:^7.1.3":
-  version: 7.1.3
-  resolution: "@jsdevtools/ono@npm:7.1.3"
-  checksum: 10/d4a036ccb9d2b21b7e4cec077c59a5a83fad58adacbce89e7e6b77a703050481ff5b6d813aef7f5ff0a8347a85a0eedf599e2e6bb5784a971a93e53e43b10157
-  languageName: node
-  linkType: hard
-
 "@jsep-plugin/assignment@npm:^1.3.0":
   version: 1.3.0
   resolution: "@jsep-plugin/assignment@npm:1.3.0"
@@ -793,7 +775,6 @@ __metadata:
     "@fastify/view": "npm:^10.0.2"
     "@oada/certs": "npm:^4.1.1"
     "@oada/error": "npm:^2.0.1"
-    "@oada/formats": "npm:^4.1.0"
     "@oada/lib-arangodb": "workspace:^"
     "@oada/lib-config": "workspace:^"
     "@oada/lib-prom": "workspace:^"
@@ -951,22 +932,6 @@ __metadata:
     fastify:
       optional: true
   checksum: 10/8f80c5575fe8aa33461faa26921625e95cd861215e70504bfc64e8faefd7a98ee3ed787578920525a274c9cbd9a32b772f31c21aef0111b48b36329e67f2d383
-  languageName: node
-  linkType: hard
-
-"@oada/formats@npm:^4.1.0":
-  version: 4.1.0
-  resolution: "@oada/formats@npm:4.1.0"
-  dependencies:
-    "@apidevtools/json-schema-ref-parser": "npm:^11.5.4"
-    "@oada/media-types": "npm:^4.0.0"
-    "@oada/schemas": "npm:^4.0.0"
-    ajv: "npm:^8.12.0"
-    ajv-formats: "npm:^3.0.1"
-    ajv-formats-draft2019: "npm:^1.6.1"
-    axios: "npm:^1.6.8"
-    tslib: "npm:^2.6.2"
-  checksum: 10/84335319e2cd51855dd4898e8df6547b125f50198080242267fcbc81067c60319de7469db1f0e68f70999675ee2a05f684681c7aba20061f77249fb0fc2b3834
   languageName: node
   linkType: hard
 
@@ -1230,7 +1195,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@oada/schemas@npm:^4.0.0, @oada/schemas@npm:^4.0.3":
+"@oada/schemas@npm:^4.0.3":
   version: 4.0.3
   resolution: "@oada/schemas@npm:4.0.3"
   dependencies:
@@ -1788,13 +1753,6 @@ __metadata:
   version: 1.0.34
   resolution: "@types/json-pointer@npm:1.0.34"
   checksum: 10/7ecfa30d0b92819819c8dfefa27118dd4798cf415c60fe9d17c3ba667af420bfe36b8a38f46b8bd90f59bccf438819878f7371dcb9f814b60ed043c35a9daa0a
-  languageName: node
-  linkType: hard
-
-"@types/json-schema@npm:^7.0.15":
-  version: 7.0.15
-  resolution: "@types/json-schema@npm:7.0.15"
-  checksum: 10/1a3c3e06236e4c4aab89499c428d585527ce50c24fe8259e8b3926d3df4cfbbbcf306cfc73ddfb66cbafc973116efd15967020b0f738f63e09e64c7d260519e7
   languageName: node
   linkType: hard
 
@@ -2566,17 +2524,6 @@ __metadata:
     "@fastify/error": "npm:^4.0.0"
     fastq: "npm:^1.17.1"
   checksum: 10/4bc7c0ac1b9e3a814db4bc5b89fd6a38b082614677d9a4e2d2b9c11bc830deac81dd0e5bdae4ba31b1e165c19de9f2772564fd3b840b3bfa5048f757bb6a4eda
-  languageName: node
-  linkType: hard
-
-"axios@npm:^1.6.8":
-  version: 1.8.3
-  resolution: "axios@npm:1.8.3"
-  dependencies:
-    follow-redirects: "npm:^1.15.6"
-    form-data: "npm:^4.0.0"
-    proxy-from-env: "npm:^1.1.0"
-  checksum: 10/050f911cadd6d47a38ddbf91d2f8da2c34661dda8077e7ad6546e8178701125366fddbba07211a648b6815cf6c2c3c91c0a65d8b968e3d1a6054a21141ff9c01
   languageName: node
   linkType: hard
 
@@ -4118,16 +4065,6 @@ __metadata:
   bin:
     flat: cli.js
   checksum: 10/c7a5f2e7e3ba0bec28b9c3aca27e68ff74df446df15cdb77ddef9e3d4fd0e9321ca52e49ca8b861c46157215006666b0dad25457f231083fc7bd2f7fcb67d7eb
-  languageName: node
-  linkType: hard
-
-"follow-redirects@npm:^1.15.6":
-  version: 1.15.9
-  resolution: "follow-redirects@npm:1.15.9"
-  peerDependenciesMeta:
-    debug:
-      optional: true
-  checksum: 10/e3ab42d1097e90d28b913903841e6779eb969b62a64706a3eb983e894a5db000fbd89296f45f08885a0e54cd558ef62e81be1165da9be25a6c44920da10f424c
   languageName: node
   linkType: hard
 
@@ -6622,13 +6559,6 @@ __metadata:
     "@opentelemetry/api": "npm:^1.4.0"
     tdigest: "npm:^0.1.1"
   checksum: 10/eba75e15ab896845d39359e3a4d6f7913ea05339b3122d8dde8c8c374669ad1a1d1ab2694ab2101c420bd98086a564e4f2a18aa29018fc14a4732e57c1c19aec
-  languageName: node
-  linkType: hard
-
-"proxy-from-env@npm:^1.1.0":
-  version: 1.1.0
-  resolution: "proxy-from-env@npm:1.1.0"
-  checksum: 10/f0bb4a87cfd18f77bc2fba23ae49c3b378fb35143af16cc478171c623eebe181678f09439707ad80081d340d1593cd54a33a0113f3ccb3f4bc9451488780ee23
   languageName: node
   linkType: hard
 
