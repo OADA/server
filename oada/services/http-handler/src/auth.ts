@@ -17,15 +17,15 @@
 
 import { config } from "./config.js";
 
+import type { FastifyAuthFunction } from "@fastify/auth";
+import type { FastifyJWTOptions } from "@fastify/jwt";
+import { requestContext } from "@fastify/request-context";
+import type { FastifyPluginAsync, FastifyRequest } from "fastify";
 import {
   type FastifyJwtJwksOptions,
   type Authenticate as JWTAuthenticate,
   fastifyJwtJwks,
 } from "fastify-jwt-jwks";
-import type { FastifyPluginAsync, FastifyRequest } from "fastify";
-import type { FastifyAuthFunction } from "@fastify/auth";
-import type { FastifyJWTOptions } from "@fastify/jwt";
-import { requestContext } from "@fastify/request-context";
 
 import { Issuer } from "openid-client";
 

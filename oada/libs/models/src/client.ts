@@ -22,9 +22,9 @@ import { randomBytes } from "node:crypto";
 import type { OmitIndexSignature, Opaque, ReadonlyDeep } from "type-fest";
 
 import type Metadata from "@oada/types/oauth-dyn-reg/response.js";
-import { destructure } from "./decorators.js";
-import { generate } from "xksuid";
 import { makeClass } from "@qlever-llc/interface2class";
+import { generate } from "xksuid";
+import { destructure } from "./decorators.js";
 
 export type ClientID = Opaque<string, Client>;
 
@@ -40,6 +40,7 @@ class Client extends makeClass<ReadonlyDeep<OmitIndexSignature<Metadata>>>() {
   constructor(client?: Partial<Client>);
 
   constructor(
+    // biome-ignore lint/style/useDefaultParameterLast: <explanation>
     rest: Partial<Client> = {},
 
     override readonly client_id: ClientID,

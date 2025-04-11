@@ -19,8 +19,8 @@ import { config } from "../../config.js";
 
 import { randomBytes } from "node:crypto";
 
-import type { Promisable, SetRequired } from "type-fest";
 import base36 from "random-id-base36";
+import type { Promisable, SetRequired } from "type-fest";
 
 import { destructure } from "@oada/models/decorators";
 

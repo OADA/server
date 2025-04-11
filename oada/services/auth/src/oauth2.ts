@@ -17,8 +17,8 @@
 
 import { config, domainConfigs } from "./config.js";
 
-import type { ServerResponse } from "node:http";
 import { createHash } from "node:crypto";
+import type { ServerResponse } from "node:http";
 import { join } from "node:path/posix";
 import { promisify } from "node:util";
 
@@ -52,12 +52,10 @@ import { extensions } from "oauth2orize-pkce";
 
 import { trustedCDP } from "@oada/lookup";
 
+import { requestContext } from "@fastify/request-context";
+import { Authorization } from "@oada/models/authorization";
+import { fastifyPassport } from "./auth.js";
 import { type Client, findById } from "./db/models/client.js";
-import {
-  type Token,
-  create as createToken,
-  verify,
-} from "./db/models/token.js";
 import {
   activate as _activateDeviceCode,
   create as createDeviceCode,
@@ -65,12 +63,14 @@ import {
   // FindByUserCode,
   redeem,
 } from "./db/models/deviceCode.js";
-import { Authorization } from "@oada/models/authorization";
+import {
+  type Token,
+  create as createToken,
+  verify,
+} from "./db/models/token.js";
 import type { User } from "./db/models/user.js";
-import { fastifyPassport } from "./auth.js";
 import { getSymmetricKey } from "./keys.js";
 import { promisifyMiddleware } from "./utils.js";
-import { requestContext } from "@fastify/request-context";
 
 // If the array of scopes contains ONLY openid OR openid and profile, auto-accept.
 // Better to handle this by asking only the first time, but this is quicker to get PoC working.

@@ -21,12 +21,12 @@ import { config } from "./config.js";
 
 import "@oada/lib-prom";
 
-import { URL } from "node:url";
 import { join } from "node:path/posix";
+import { URL } from "node:url";
 
 import { remoteResources, resources } from "@oada/lib-arangodb";
-import type { KafkaBase } from "@oada/lib-kafka";
 import type { Resource } from "@oada/lib-arangodb/dist/libs/resources.js";
+import type { KafkaBase } from "@oada/lib-kafka";
 import { Responder } from "@oada/lib-kafka";
 
 import type { WriteResponse } from "@oada/write-handler";

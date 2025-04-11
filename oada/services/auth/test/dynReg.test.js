@@ -19,16 +19,16 @@
 
 import url from "node:url";
 
-import { jwk2pem, pem2jwk } from "pem-jwk";
-import {
-  createRequest as mockRequest,
-  createResponse as mockResponse,
-} from "node-mocks-http";
 import chai from "chai";
 import debug from "debug";
 import jwt from "jsonwebtoken";
 import keypair from "keypair";
 import nock from "nock";
+import {
+  createRequest as mockRequest,
+  createResponse as mockResponse,
+} from "node-mocks-http";
+import { jwk2pem, pem2jwk } from "pem-jwk";
 import { v4 as uuid } from "uuid";
 
 chai.use(require("chai-as-promised"));

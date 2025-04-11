@@ -19,9 +19,9 @@ import { mixins } from "@oada/pino-debug";
 
 import { config } from "./config.js";
 
+import { users as userDatabase } from "@oada/lib-arangodb";
 import { KafkaError } from "@oada/lib-kafka";
 import { nstats } from "@oada/lib-prom";
-import { users as userDatabase } from "@oada/lib-arangodb";
 
 import { plugin as formats } from "@oada/formats-server";
 
@@ -32,28 +32,28 @@ import resources from "./resources.js";
 import users from "./users.js";
 import websockets from "./websockets.js";
 
+import fastifyAccepts from "@fastify/accepts";
+import cors from "@fastify/cors";
+import helmet from "@fastify/helmet";
+import type { RateLimitPluginOptions } from "@fastify/rate-limit";
+import {
+  fastifyRequestContext,
+  requestContext,
+} from "@fastify/request-context";
+import fastifySensible from "@fastify/sensible";
+import type { TokenClaims } from "@oada/auth";
 import {
   fastify as Fastify,
   type FastifyReply,
   type FastifyRequest,
 } from "fastify";
-import {
-  fastifyRequestContext,
-  requestContext,
-} from "@fastify/request-context";
-import type { RateLimitPluginOptions } from "@fastify/rate-limit";
-import type { TokenClaims } from "@oada/auth";
-import cors from "@fastify/cors";
-import fastifyAccepts from "@fastify/accepts";
 import fastifyGracefulShutdown from "fastify-graceful-shutdown";
 import fastifyHealthcheck from "fastify-healthcheck";
-import fastifySensible from "@fastify/sensible";
-import helmet from "@fastify/helmet";
 
-import type { HTTPVersion, Handler } from "find-my-way";
-import type { UserRequest, UserResponse } from "@oada/users";
 import User from "@oada/models/user";
+import type { UserRequest, UserResponse } from "@oada/users";
 import esMain from "es-main";
+import type { HTTPVersion, Handler } from "find-my-way";
 
 declare module "fastify" {
   // eslint-disable-next-line @typescript-eslint/no-shadow

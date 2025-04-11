@@ -21,8 +21,8 @@ import { config } from "./config.js";
 
 import { ArangoError, ArangoErrorCode } from "./libs/errors.js";
 
-import type { AqlQuery } from "arangojs/aql";
 import { Database } from "arangojs";
+import type { AqlQuery } from "arangojs/aql";
 import type { QueryOptions } from "arangojs/queries";
 import debug from "debug";
 

@@ -20,9 +20,9 @@ import { config } from "./config.js";
 import { type EventEmitter as NodeEventEmitter, once } from "node:events";
 import process from "node:process";
 
-import type { Consumer, EachMessagePayload, Producer } from "kafkajs";
-import { EventEmitter } from "eventemitter3";
 import debug from "debug";
+import { EventEmitter } from "eventemitter3";
+import type { Consumer, EachMessagePayload, Producer } from "kafkajs";
 
 import Kafka from "./Kafka.js";
 

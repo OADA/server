@@ -26,18 +26,18 @@ import {
 } from "@oada/permissions-handler";
 import type { WriteRequest, WriteResponse } from "@oada/write-handler";
 
-import { _meta } from "@oada/oadaify";
 import { handleResponse } from "@oada/formats-server";
+import { _meta } from "@oada/oadaify";
 
-import { EnsureLink } from "./server.js";
 import { config } from "./config.js";
 import requester from "./requester.js";
+import { EnsureLink } from "./server.js";
 
-import type { FastifyPluginAsync, FastifyReply, FastifyRequest } from "fastify";
 import type { Link } from "@oada/types/oada/link/v1.js";
 import cacache from "cacache";
-import { is } from "type-is";
+import type { FastifyPluginAsync, FastifyReply, FastifyRequest } from "fastify";
 import ksuid from "ksuid";
+import { is } from "type-is";
 
 const CACHE_PATH = config.get("storage.binary.cacache");
 

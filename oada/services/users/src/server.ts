@@ -27,8 +27,8 @@ import { ResponderRequester } from "@oada/lib-kafka";
 import debug from "debug";
 import ksuid from "ksuid";
 
-import type { SetRequired } from "type-fest";
 import { User } from "@oada/models/user";
+import type { SetRequired } from "type-fest";
 export type * from "@oada/models/user";
 
 const trace = debug("users:trace");

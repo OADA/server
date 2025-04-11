@@ -21,11 +21,24 @@ import { config, domainConfigs } from "./config.js";
 
 import "@oada/lib-prom";
 
-import { join } from "node:path/posix";
-import path from "node:path";
 import { randomBytes } from "node:crypto";
+import path from "node:path";
+import { join } from "node:path/posix";
 import url from "node:url";
 
+import cors from "@fastify/cors";
+import fastifyFormbody from "@fastify/formbody";
+import helmet from "@fastify/helmet";
+import type FastifyRateLimit from "@fastify/rate-limit";
+import {
+  fastifyRequestContext,
+  requestContext,
+} from "@fastify/request-context";
+import fastifySecureSession from "@fastify/secure-session";
+import fastifySensible from "@fastify/sensible";
+import fastifyStatic from "@fastify/static";
+import fastifyView from "@fastify/view";
+import ejs from "ejs";
 import {
   fastify as Fastify,
   type FastifyError,
@@ -33,22 +46,9 @@ import {
   type FastifyReply,
   type FastifyRequest,
 } from "fastify";
-import {
-  fastifyRequestContext,
-  requestContext,
-} from "@fastify/request-context";
-import type FastifyRateLimit from "@fastify/rate-limit";
 import _fastifyGracefulShutdown from "fastify-graceful-shutdown";
-import cors from "@fastify/cors";
-import { createServer } from "oauth2orize";
-import ejs from "ejs";
-import fastifyFormbody from "@fastify/formbody";
 import fastifyHealthcheck from "fastify-healthcheck";
-import fastifySecureSession from "@fastify/secure-session";
-import fastifySensible from "@fastify/sensible";
-import fastifyStatic from "@fastify/static";
-import fastifyView from "@fastify/view";
-import helmet from "@fastify/helmet";
+import { createServer } from "oauth2orize";
 
 import esMain from "es-main";
 import qs from "qs";
@@ -56,9 +56,9 @@ import { serializeError } from "serialize-error";
 
 import loadSchemas from "@oada/schemas";
 
+import { fastifyPassport } from "./auth.js";
 import { type Client, findById } from "./db/models/client.js";
 import dynReg from "./dynReg.js";
-import { fastifyPassport } from "./auth.js";
 import login from "./login.js";
 
 /**

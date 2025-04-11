@@ -7,10 +7,7 @@
   "engines": {
     "node": ">=20.0.0"
   },
-  "files": [
-    "src/**/*",
-    "dist/**/*"
-  ],
+  "files": ["src/**/*", "dist/**/*"],
   "scripts": {
     "build": "yarn g:tsc",
     "clean": "yarn run build --clean",
@@ -19,9 +16,7 @@
   },
   "mocha": {
     "require": "ts-node/register",
-    "extension": [
-      "ts"
-    ]
+    "extension": ["ts"]
   },
   "author": "",
   "license": "Apache-2.0",
@@ -32,7 +27,7 @@
     "@oada/lib-prom": "workspace:^",
     "@oada/pino-debug": "workspace:^",
     "debug": "^4.4.0",
-    "got": "^14.4.6",
+    "got": "^14.4.7",
     "tslib": "2.8.1"
   },
   "devDependencies": {

@@ -17,8 +17,8 @@
 
 import test from "ava";
 
-import { lookupFromUrl } from "../dist/libs/resources.js";
 import { run } from "../dist/init.js";
+import { lookupFromUrl } from "../dist/libs/resources.js";
 
 // Library under test:
 

@@ -15,8 +15,8 @@
  * limitations under the License.
  */
 
-import type { EachMessagePayload } from "kafkajs";
 import type { EventEmitter } from "eventemitter3";
+import type { EachMessagePayload } from "kafkajs";
 
 import { Base, DATA, type KafkaBase } from "./Base.js";
 import {

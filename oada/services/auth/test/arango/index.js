@@ -15,8 +15,8 @@
  * limitations under the License.
  */
 
-import { expect } from "chai";
 import oadaLib from "@oada/lib-arangodb";
+import { expect } from "chai";
 const libs = {
   users: require("../../db/arango/users"),
   codes: require("../../db/arango/codes"),

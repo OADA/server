@@ -15,14 +15,14 @@
  * limitations under the License.
  */
 
-import type { ReadDocumentOptions } from "arangojs/documents";
 import { aql } from "arangojs";
+import type { ReadDocumentOptions } from "arangojs/documents";
 import bcrypt from "bcryptjs";
 import debug from "debug";
 
-import type { Selector } from "../util.js";
 import { config } from "../config.js";
 import { db as database } from "../db.js";
+import type { Selector } from "../util.js";
 import { sanitizeResult } from "../util.js";
 
 import type { User as IUser } from "@oada/models/user";

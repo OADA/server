@@ -17,13 +17,13 @@
 
 import { randomBytes } from "node:crypto";
 
-import { SignJWT, jwtVerify } from "jose";
 import debug from "debug";
+import { SignJWT, jwtVerify } from "jose";
 
-import type { ITokens, Token } from "../models/token.js";
-import { JWKS, kid, privateKey } from "../../keys.js";
-import type { TokenClaims } from "../../index.js";
 import { config } from "../../config.js";
+import type { TokenClaims } from "../../index.js";
+import { JWKS, kid, privateKey } from "../../keys.js";
+import type { ITokens, Token } from "../models/token.js";
 
 const tokenConfig = config.get("auth.token");
 
