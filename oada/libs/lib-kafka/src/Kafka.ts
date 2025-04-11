@@ -17,8 +17,8 @@
 
 import { config } from "./config.js";
 
-import { Kafka, type KafkaConfig, type logLevel } from "kafkajs";
 import debug from "debug";
+import { Kafka, type KafkaConfig, type logLevel } from "kafkajs";
 
 /**
  * Make kafkajs logging nicer?

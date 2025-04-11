@@ -18,17 +18,17 @@
 /* eslint-disable unicorn/no-null */
 
 import { File } from "node:buffer";
+import { readFileSync } from "node:fs";
 // eslint-disable-next-line unicorn/import-style
 import { extname } from "node:path";
 import { pathToFileURL } from "node:url";
-import { readFileSync } from "node:fs";
 
 import "dotenv/config";
 import convict, { type Config, type Schema } from "convict";
-import json5 from "json5";
 // @ts-expect-error no types for this
 import moment from "convict-format-with-moment";
 import validator from "convict-format-with-validator";
+import json5 from "json5";
 import yaml from "yaml";
 
 import "@oada/pino-debug";

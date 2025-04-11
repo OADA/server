@@ -17,6 +17,7 @@
 
 import "@oada/pino-debug";
 
+import chalk from "chalk";
 import {
   type Type,
   array,
@@ -35,7 +36,6 @@ import {
   union,
 } from "cmd-ts";
 import { Url } from "cmd-ts/batteries/url";
-import chalk from "chalk";
 
 import { config } from "../config.js";
 

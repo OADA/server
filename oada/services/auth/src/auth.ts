@@ -15,6 +15,9 @@
  * limitations under the License.
  */
 
+import { Authenticator } from "@fastify/passport";
+import debug from "debug";
+import { decodeJwt } from "jose";
 import {
   Strategy as BearerStrategy,
   type VerifyFunctionWithRequest,
@@ -23,23 +26,20 @@ import {
   Strategy as JWTStrategy,
   type VerifyCallbackWithRequest,
 } from "passport-jwt";
-import { type RSA_JWK, jwk2pem } from "pem-jwk";
-import { Authenticator } from "@fastify/passport";
-import ClientPassword from "passport-oauth2-client-password";
 import { Strategy as LocalStrategy } from "passport-local";
-import debug from "debug";
-import { decodeJwt } from "jose";
+import ClientPassword from "passport-oauth2-client-password";
+import { type RSA_JWK, jwk2pem } from "pem-jwk";
 
 import { jwksUtils } from "@oada/certs";
 
+import type { FastifyRequest } from "fastify";
+import { findById } from "./db/models/client.js";
 import {
   type User,
   findByUsernamePassword,
   findById as findUserById,
 } from "./db/models/user.js";
-import type { FastifyRequest } from "fastify";
 import { _defaultHack } from "./index.js";
-import { findById } from "./db/models/client.js";
 import { verifyToken } from "./oauth2.js";
 
 export const fastifyPassport = new Authenticator({

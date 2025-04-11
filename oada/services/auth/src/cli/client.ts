@@ -37,8 +37,8 @@ import { config } from "../config.js";
 
 import type Metadata from "@oada/types/oauth-dyn-reg/metadata.js";
 
-import YAML from "yaml";
 import esMain from "es-main";
+import YAML from "yaml";
 
 export const cmd = command({
   name: "client",

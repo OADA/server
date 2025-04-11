@@ -19,12 +19,12 @@ import { config } from "./config.js";
 
 import type { FastifyPluginAsync } from "fastify";
 
+import { validate } from "@oada/certs";
 import {
   type default as Metadata,
   assert as assertMetadata,
   schema,
 } from "@oada/types/oauth-dyn-reg/metadata.js";
-import { validate } from "@oada/certs";
 
 import { save } from "./db/models/client.js";
 

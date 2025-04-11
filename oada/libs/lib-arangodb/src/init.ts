@@ -51,7 +51,7 @@ export async function run(): Promise<void> {
   try {
     const ensureDefaults = config.get("arangodb.ensureDefaults");
     trace(
-      `ensureDefaults = %s` +
+      "ensureDefaults = %s" +
         "==> false means it will delete default doc._id's from all collections if they exist, " +
         "and true means it will add them if they do not exist",
       ensureDefaults,

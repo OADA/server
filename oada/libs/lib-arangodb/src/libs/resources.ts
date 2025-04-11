@@ -23,15 +23,15 @@ import { config } from "../config.js";
 import type { OADAified } from "@oada/oadaify";
 import { oadaify } from "@oada/oadaify";
 
-import { ArangoError } from "./errors.js";
 import type { User } from "@oada/models/user";
 import { db as database } from "../db.js";
 import { sanitizeResult } from "../util.js";
+import { ArangoError } from "./errors.js";
 
-import { JsonPointer, type PathSegments } from "json-ptr";
-import type { JsonObject } from "type-fest";
 import { aql } from "arangojs";
 import debug from "debug";
+import { JsonPointer, type PathSegments } from "json-ptr";
+import type { JsonObject } from "type-fest";
 
 type IResource = OADAified<Resource>;
 export type { IResource as Resource };

@@ -27,10 +27,10 @@ import {
   topicTimeout,
 } from "./Base.js";
 
-import type { EachMessagePayload } from "kafkajs";
-import debug from "debug";
-import ksuid from "ksuid";
 import rTracer from "cls-rtracer";
+import debug from "debug";
+import type { EachMessagePayload } from "kafkajs";
+import ksuid from "ksuid";
 
 const trace = debug("@oada/lib-kafka:trace");
 const warn = debug("@oada/lib-kafka:warn");

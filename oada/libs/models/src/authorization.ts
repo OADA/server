@@ -17,13 +17,13 @@
 
 import { randomBytes } from "node:crypto";
 
-import type { OmitIndexSignature, Opaque } from "type-fest";
 import type { JWTPayload } from "jose";
+import type { OmitIndexSignature, Opaque } from "type-fest";
 
 import { makeClass } from "@qlever-llc/interface2class";
 
-import type { Claims } from "./oidc.js";
 import { destructure } from "./decorators.js";
+import type { Claims } from "./oidc.js";
 
 export type AuthorizationID = Opaque<string, Authorization>;
 
@@ -40,6 +40,7 @@ class Authorization extends makeClass<
   constructor(authorization?: Partial<Authorization>);
 
   constructor(
+    // biome-ignore lint/style/useDefaultParameterLast: <explanation>
     rest: Partial<Authorization> = {},
     override readonly sub: string,
     override readonly jti = randomBytes(16).toString("hex"),

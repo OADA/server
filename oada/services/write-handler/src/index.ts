@@ -33,11 +33,11 @@ import { Responder } from "@oada/lib-kafka";
 
 import type Resource from "@oada/types/oada/resource.js";
 
-import Cache from "timed-cache";
+import debug from "debug";
 import { JsonPointer } from "json-ptr";
 import type { PathSegments } from "json-ptr";
-import debug from "debug";
 import objectAssignDeep from "object-assign-deep";
+import Cache from "timed-cache";
 
 type DeepPartial<T> = { [K in keyof T]?: DeepPartial<T[K]> };
 

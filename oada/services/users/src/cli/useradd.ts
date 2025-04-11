@@ -19,6 +19,7 @@
 
 import "@oada/pino-debug";
 
+import chalk from "chalk";
 import {
   type Type,
   array,
@@ -32,13 +33,12 @@ import {
   run,
   string,
 } from "cmd-ts";
-import chalk from "chalk";
 
 import { config } from "../config.js";
 
+import { users } from "@oada/lib-arangodb";
 import { Requester } from "@oada/lib-kafka";
 import User from "@oada/models/user";
-import { users } from "@oada/lib-arangodb";
 
 import type { UserRequest, UserResponse } from "../server.js";
 

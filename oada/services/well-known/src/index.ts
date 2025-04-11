@@ -33,11 +33,11 @@ import { nstats } from "@oada/lib-prom";
 
 import got from "got";
 
-import { fastify as Fastify } from "fastify";
-import { Issuer } from "openid-client";
 import { default as accepts } from "@fastify/accepts";
 import { default as cors } from "@fastify/cors";
 import { default as helmet } from "@fastify/helmet";
+import { fastify as Fastify } from "fastify";
+import { Issuer } from "openid-client";
 
 import { plugin as formats } from "@oada/formats-server";
 import { plugin as wkj } from "@oada/well-known-json";

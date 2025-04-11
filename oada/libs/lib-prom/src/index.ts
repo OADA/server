@@ -19,13 +19,13 @@ import { config } from "./config.js";
 
 import { createServer } from "node:http";
 
+import type NStats from "nstats";
 import {
   Gauge,
   type MetricConfiguration,
   collectDefaultMetrics,
   register,
 } from "prom-client";
-import type NStats from "nstats";
 
 collectDefaultMetrics({ register });
 

@@ -17,8 +17,8 @@
 
 import debug from "debug";
 
-import Authorization from "@oada/models/authorization";
 import { authorizations } from "@oada/lib-arangodb";
+import Authorization from "@oada/models/authorization";
 
 const warn = debug("token-lookup:warn");
 

@@ -22,16 +22,16 @@ import path from "node:path";
 // !!! This needs to be imported before _anything_ using pino or debug
 import pinoDebug from "pino-debug";
 
+import rTracer from "cls-rtracer";
+import debug from "debug";
+import isInteractive from "is-interactive";
 import _pino, {
   type ChildLoggerOptions,
   type Logger,
   type LoggerOptions,
 } from "pino";
-import debug from "debug";
-import isInteractive from "is-interactive";
 import pinoCaller from "pino-caller";
 import type pinoLoki from "pino-loki";
-import rTracer from "cls-rtracer";
 
 export type { Logger } from "pino";
 const interactive = isInteractive();

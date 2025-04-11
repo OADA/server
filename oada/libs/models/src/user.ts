@@ -15,11 +15,11 @@
  * limitations under the License.
  */
 
-import type { Except, OmitIndexSignature, Opaque } from "type-fest";
-import type { Claims } from "./oidc.js";
-import { destructure } from "./decorators.js";
-import { generate } from "xksuid";
 import { makeClass } from "@qlever-llc/interface2class";
+import type { Except, OmitIndexSignature, Opaque } from "type-fest";
+import { generate } from "xksuid";
+import { destructure } from "./decorators.js";
+import type { Claims } from "./oidc.js";
 
 export type UserID = Opaque<`users/${string}`, User>;
 

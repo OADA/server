@@ -15,9 +15,9 @@
  * limitations under the License.
  */
 
-import { JsonPointer } from "json-ptr";
 import { aql } from "arangojs";
 import debug from "debug";
+import { JsonPointer } from "json-ptr";
 
 import {
   type Change,
@@ -148,7 +148,7 @@ export async function getChange(
   };
   let path = "";
   for (let index = 0; index < result.vertices.length - 1; index++) {
-    path += result.edges[Number(index)]!.path;
+    path += result.edges[Number(index)]?.path;
     if (change.body) {
       const { body } = result.vertices[index + 1] ?? {};
       JsonPointer.set(change.body, path, body);

@@ -21,18 +21,18 @@ import { config } from "./config.js";
 
 import "@oada/lib-prom";
 
+import { resources } from "@oada/lib-arangodb";
 import { Requester, Responder } from "@oada/lib-kafka";
 import type { KafkaBase } from "@oada/lib-kafka";
-import { resources } from "@oada/lib-arangodb";
 
 // Import message format from write-handler
 import type { WriteRequest, WriteResponse } from "@oada/write-handler";
 
 import Ajv from "ajv/dist/jtd.js";
 import type { JTDSchemaType } from "ajv/dist/jtd.js";
+import debug from "debug";
 import PQueue from "p-queue";
 import type { SetRequired } from "type-fest";
-import debug from "debug";
 
 const info = debug("rev-graph-update:info");
 const warn = debug("rev-graph-update:warn");

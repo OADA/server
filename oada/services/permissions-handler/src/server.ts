@@ -21,13 +21,13 @@ import { config } from "./config.js";
 
 import "@oada/lib-prom";
 
-import { URL } from "node:url";
 import fs from "node:fs/promises";
+import { URL } from "node:url";
 
 import scopeTypes from "./scopes.js";
 
-import esMain from "es-main";
 import libDebug from "debug";
+import esMain from "es-main";
 import typeIs from "type-is";
 
 const warn = libDebug("permissions-handler:warn");

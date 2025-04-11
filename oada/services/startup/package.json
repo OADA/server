@@ -7,10 +7,7 @@
   "engines": {
     "node": ">=20.0.0"
   },
-  "files": [
-    "src/**/*",
-    "dist/**/*"
-  ],
+  "files": ["src/**/*", "dist/**/*"],
   "scripts": {
     "build": "yarn g:tsc",
     "clean": "yarn run build --clean",
@@ -21,11 +18,7 @@
     "type": "git",
     "url": "git+https://github.com/oada/oada-srvc-startup.git"
   },
-  "keywords": [
-    "oada",
-    "startup",
-    "docker"
-  ],
+  "keywords": ["oada", "startup", "docker"],
   "author": "Aaron Ault",
   "license": "Apache-2.0",
   "bugs": {
@@ -41,7 +34,7 @@
   },
   "devDependencies": {
     "@types/debug": "^4.1.12",
-    "@types/node": "^22.13.10"
+    "@types/node": "^22.14.0"
   },
   "volta": {
     "node": "22.5.1"

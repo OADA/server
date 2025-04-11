@@ -17,8 +17,8 @@
 
 import { config } from "../../config.js";
 
-import type { Promisable } from "type-fest";
 import debug from "debug";
+import type { Promisable } from "type-fest";
 
 import { Authorization as Token } from "@oada/models/authorization";
 

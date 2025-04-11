@@ -15,8 +15,8 @@
  * limitations under the License.
  */
 
-import type { Opaque } from "type-fest";
 import { aql } from "arangojs";
+import type { Opaque } from "type-fest";
 
 import { config } from "../config.js";
 import { db as database } from "../db.js";

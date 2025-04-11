@@ -51,7 +51,7 @@ before("Open up a websocket", () =>
 describe(`A client shouldn't exist before adding one`, () => {
   before("reset database", () => oadaLib.init.run());
 
-  it(`GET on bookmarks/trellisfw/clients/ should return an empty resource`, () =>
+  it("GET on bookmarks/trellisfw/clients/ should return an empty resource", () =>
     socket
       .http({
         method: "GET",
@@ -68,7 +68,7 @@ describe(`A client shouldn't exist before adding one`, () => {
         );
       }));
 
-  it(`GET on bookmarks/trellisfw/client/X/certifications/ should not exist`, () =>
+  it("GET on bookmarks/trellisfw/client/X/certifications/ should not exist", () =>
     socket
       .http({
         method: "GET",
@@ -136,7 +136,7 @@ describe("Trellis demo testing...", () => {
       );
   });
 
-  it(`Should have a client now`, () =>
+  it("Should have a client now", () =>
     socket
       .http({
         method: "GET",
@@ -203,7 +203,7 @@ describe("Creating new users...", function () {
 describe("Read/write/owner permissions should apply accordingly", function () {
   this.timeout(10_000);
 
-  it(`should not be accessible before sharing`, () =>
+  it("should not be accessible before sharing", () =>
     socket
       .http({
         method: "get",

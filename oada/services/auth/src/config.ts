@@ -22,8 +22,8 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import url from "node:url";
 
-import URI from "urijs";
 import debug from "debug";
+import URI from "urijs";
 
 import type { jwksUtils as jwku } from "@oada/certs";
 

@@ -10,10 +10,7 @@
   "engines": {
     "node": ">=20.0.0"
   },
-  "files": [
-    "src/**/*",
-    "dist/**/*"
-  ],
+  "files": ["src/**/*", "dist/**/*"],
   "contributors": [
     "Alex Layton <alex@layton.in> (https://github.com/awlayton)",
     "Andrew Balmos <andrew@balmos.org> (https://github.com/abalmos)"
@@ -28,11 +25,7 @@
     "url": "https://github.com/OADA/@oada/lib-arangodb/issues"
   },
   "homepage": "https://github.com/OADA/@oada/lib-arangodb#readme",
-  "keywords": [
-    "oada",
-    "arangodb",
-    "lib"
-  ],
+  "keywords": ["oada", "arangodb", "lib"],
   "scripts": {
     "build": "yarn g:tsc",
     "clean": "yarn run build --clean",
@@ -40,13 +33,9 @@
     "test": "yarn run build test && ava"
   },
   "ava": {
-    "files": [
-      "**/*.test.ts"
-    ],
+    "files": ["**/*.test.ts"],
     "typescript": {
-      "extensions": [
-        "ts"
-      ],
+      "extensions": ["ts"],
       "rewritePaths": {
         "src/": "dist/",
         "test/": ".test/"
@@ -70,15 +59,15 @@
   },
   "devDependencies": {
     "@ava/typescript": "^5.0.0",
-    "@types/bcryptjs": "^2.4.6",
+    "@types/bcryptjs": "^3.0.0",
     "@types/convict": "^6.1.6",
     "@types/debug": "^4.1.12",
     "@types/deep-equal": "^1.0.4",
     "@types/flat": "^5.0.5",
     "@types/json-pointer": "^1.0.34",
-    "@types/node": "^22.13.10",
+    "@types/node": "^22.14.0",
     "ava": "6.2.0",
-    "type-fest": "^4.37.0"
+    "type-fest": "^4.39.1"
   },
   "volta": {
     "node": "22.5.1"
