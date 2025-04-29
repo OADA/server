@@ -10,7 +10,10 @@
   "engines": {
     "node": ">=20.0.0"
   },
-  "files": ["src/**/*", "dist/**/*"],
+  "files": [
+    "src/**/*",
+    "dist/**/*"
+  ],
   "scripts": {
     "build": "yarn g:tsc",
     "clean": "yarn run build --clean",
@@ -35,7 +38,7 @@
   },
   "devDependencies": {
     "@types/debug": "^4.1.12",
-    "type-fest": "^4.39.1"
+    "type-fest": "^4.40.1"
   },
   "volta": {
     "node": "22.5.1"
