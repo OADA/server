@@ -42,14 +42,14 @@
     "@oada/well-known-json": "^4.0.2",
     "allow-methods": "^7.0.0",
     "cors": "^2.8.5",
-    "debug": "^4.4.0",
-    "fastify": "^5.3.2",
+    "debug": "^4.4.1",
+    "fastify": "^5.3.3",
     "got": "^14.4.7",
     "openid-client": "^5.7.1",
     "tslib": "2.8.1"
   },
   "devDependencies": {
-    "@types/cors": "^2.8.17",
+    "@types/cors": "^2.8.18",
     "@types/debug": "^4.1.12",
     "fastify-plugin": "^5.0.1"
   },
