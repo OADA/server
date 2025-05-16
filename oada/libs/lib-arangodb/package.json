@@ -61,7 +61,7 @@
     "@oada/types": "^4.0.0",
     "arangojs": "^10.1.1",
     "bcryptjs": "^3.0.2",
-    "debug": "^4.4.0",
+    "debug": "^4.4.1",
     "deep-equal": "^2.2.3",
     "flat": "^6.0.1",
     "json-ptr": "^3.1.1",
@@ -76,9 +76,9 @@
     "@types/deep-equal": "^1.0.4",
     "@types/flat": "^5.0.5",
     "@types/json-pointer": "^1.0.34",
-    "@types/node": "^22.15.3",
-    "ava": "6.2.0",
-    "type-fest": "^4.40.1"
+    "@types/node": "^22.15.18",
+    "ava": "6.3.0",
+    "type-fest": "^4.41.0"
   },
   "volta": {
     "node": "22.5.1"
