@@ -40,7 +40,7 @@
   "devDependencies": {
     "@oada/write-handler": "workspace:^",
     "@types/debug": "^4.1.12",
-    "@types/node": "^22.15.18"
+    "@types/node": "^22.15.32"
   },
   "volta": {
     "node": "22.5.1"
