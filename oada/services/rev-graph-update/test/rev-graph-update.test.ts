@@ -16,16 +16,12 @@
  */
 
 import { once } from "node:events";
-
-import test from "ava";
-
-import randomstring from "randomstring";
-
-import { config } from "../dist/config.js";
-
 import { init } from "@oada/lib-arangodb";
 import { Requester } from "@oada/lib-kafka";
 import type { WriteRequest } from "@oada/write-handler";
+import test from "ava";
+import randomstring from "randomstring";
+import { config } from "../dist/config.js";
 
 import { stopResp } from "../dist/index.js";
 

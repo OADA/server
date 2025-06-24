@@ -15,20 +15,18 @@
  * limitations under the License.
  */
 
-import { config } from "./config.js";
-
 import {
   createPrivateKey,
   createPublicKey,
   createSecretKey,
 } from "node:crypto";
-
 import {
   createLocalJWKSet,
   exportJWK,
   generateKeyPair,
   generateSecret,
 } from "jose";
+import { config } from "./config.js";
 
 const tokenConfig = config.get("auth.token");
 

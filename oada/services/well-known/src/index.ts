@@ -27,20 +27,16 @@ import { join } from "node:path/posix";
 
 import "@oada/pino-debug";
 
-import { config } from "./config.js";
-
-import { nstats } from "@oada/lib-prom";
-
-import got from "got";
-
 import { default as accepts } from "@fastify/accepts";
 import { default as cors } from "@fastify/cors";
 import { default as helmet } from "@fastify/helmet";
-import { fastify as Fastify } from "fastify";
-import { Issuer } from "openid-client";
-
 import { plugin as formats } from "@oada/formats-server";
+import { nstats } from "@oada/lib-prom";
 import { plugin as wkj } from "@oada/well-known-json";
+import { fastify as Fastify } from "fastify";
+import got from "got";
+import { Issuer } from "openid-client";
+import { config } from "./config.js";
 
 export async function discoverConfiguration(issuer: string | URL) {
   try {

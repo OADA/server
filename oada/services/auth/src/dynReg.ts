@@ -15,16 +15,14 @@
  * limitations under the License.
  */
 
-import { config } from "./config.js";
-
-import type { FastifyPluginAsync } from "fastify";
-
 import { validate } from "@oada/certs";
 import {
-  type default as Metadata,
   assert as assertMetadata,
+  type default as Metadata,
   schema,
 } from "@oada/types/oauth-dyn-reg/metadata.js";
+import type { FastifyPluginAsync } from "fastify";
+import { config } from "./config.js";
 
 import { save } from "./db/models/client.js";
 

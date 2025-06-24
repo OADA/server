@@ -17,9 +17,9 @@
 
 import "@oada/pino-debug";
 
+import type User from "@oada/models/user";
 import chalk from "chalk";
 import {
-  type Type,
   array,
   binary,
   boolean,
@@ -33,15 +33,12 @@ import {
   run,
   string,
   subcommands,
+  type Type,
   union,
 } from "cmd-ts";
 import { Url } from "cmd-ts/batteries/url";
-
-import { config } from "../config.js";
-
-import type User from "@oada/models/user";
-
 import esMain from "es-main";
+import { config } from "../config.js";
 
 async function getClient(iss: string) {
   const { Issuer, errors } = await import("openid-client");

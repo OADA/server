@@ -18,7 +18,7 @@
 import { randomBytes } from "node:crypto";
 
 import debug from "debug";
-import { SignJWT, jwtVerify } from "jose";
+import { jwtVerify, SignJWT } from "jose";
 
 import { config } from "../../config.js";
 import type { TokenClaims } from "../../index.js";

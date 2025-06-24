@@ -15,23 +15,6 @@
  * limitations under the License.
  */
 
-import { mixins } from "@oada/pino-debug";
-
-import { config } from "./config.js";
-
-import { users as userDatabase } from "@oada/lib-arangodb";
-import { KafkaError } from "@oada/lib-kafka";
-import { nstats } from "@oada/lib-prom";
-
-import { plugin as formats } from "@oada/formats-server";
-
-import auth, { issuer } from "./auth.js";
-import authorizations from "./authorizations.js";
-import requester from "./requester.js";
-import resources from "./resources.js";
-import users from "./users.js";
-import websockets from "./websockets.js";
-
 import fastifyAccepts from "@fastify/accepts";
 import cors from "@fastify/cors";
 import helmet from "@fastify/helmet";
@@ -42,6 +25,14 @@ import {
 } from "@fastify/request-context";
 import fastifySensible from "@fastify/sensible";
 import type { TokenClaims } from "@oada/auth";
+import { plugin as formats } from "@oada/formats-server";
+import { users as userDatabase } from "@oada/lib-arangodb";
+import { KafkaError } from "@oada/lib-kafka";
+import { nstats } from "@oada/lib-prom";
+import User from "@oada/models/user";
+import { mixins } from "@oada/pino-debug";
+import type { UserRequest, UserResponse } from "@oada/users";
+import esMain from "es-main";
 import {
   fastify as Fastify,
   type FastifyReply,
@@ -49,11 +40,14 @@ import {
 } from "fastify";
 import fastifyGracefulShutdown from "fastify-graceful-shutdown";
 import fastifyHealthcheck from "fastify-healthcheck";
-
-import User from "@oada/models/user";
-import type { UserRequest, UserResponse } from "@oada/users";
-import esMain from "es-main";
-import type { HTTPVersion, Handler } from "find-my-way";
+import type { Handler, HTTPVersion } from "find-my-way";
+import auth, { issuer } from "./auth.js";
+import authorizations from "./authorizations.js";
+import { config } from "./config.js";
+import requester from "./requester.js";
+import resources from "./resources.js";
+import users from "./users.js";
+import websockets from "./websockets.js";
 
 declare module "fastify" {
   // eslint-disable-next-line @typescript-eslint/no-shadow

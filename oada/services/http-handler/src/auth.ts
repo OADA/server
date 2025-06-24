@@ -15,21 +15,19 @@
  * limitations under the License.
  */
 
-import { config } from "./config.js";
-
 import type { FastifyAuthFunction } from "@fastify/auth";
 import type { FastifyJWTOptions } from "@fastify/jwt";
 import { requestContext } from "@fastify/request-context";
+import type { TokenClaims } from "@oada/auth";
 import type { FastifyPluginAsync, FastifyRequest } from "fastify";
 import {
   type FastifyJwtJwksOptions,
-  type Authenticate as JWTAuthenticate,
   fastifyJwtJwks,
+  type Authenticate as JWTAuthenticate,
 } from "fastify-jwt-jwks";
 
 import { Issuer } from "openid-client";
-
-import type { TokenClaims } from "@oada/auth";
+import { config } from "./config.js";
 
 import tokenLookup from "./tokenLookup.js";
 

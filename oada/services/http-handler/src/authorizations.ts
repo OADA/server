@@ -15,10 +15,9 @@
  * limitations under the License.
  */
 
-import type { FastifyPluginAsync, FastifyRequest } from "fastify";
-
 import { authorizations, clients } from "@oada/lib-arangodb";
 import Authorization from "@oada/models/authorization";
+import type { FastifyPluginAsync, FastifyRequest } from "fastify";
 
 export interface Options {
   prefix: string;

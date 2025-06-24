@@ -24,7 +24,7 @@ const database = new Map(Object.entries(tokens as Record<string, Token>));
 export const verify = ((token: string) => {
   const found = structuredClone(database.get(token));
   if (!found) {
-    throw new Error(`Token not found`);
+    throw new Error("Token not found");
   }
 
   return found;

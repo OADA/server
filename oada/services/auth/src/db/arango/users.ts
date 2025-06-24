@@ -15,9 +15,8 @@
  * limitations under the License.
  */
 
-import debug from "debug";
-
 import { users } from "@oada/lib-arangodb";
+import debug from "debug";
 
 import type { IUsers, User } from "../models/user.js";
 
@@ -41,10 +40,7 @@ export const findByUsernamePassword = (async (
   return users.findByUsernamePassword(username, password);
 }) satisfies IUsers["findByUsernamePassword"];
 
-export const findByOIDCToken = (async (token: {
-  sub: string;
-  iss: string;
-}) => {
+export const findByOIDCToken = (async (token: { sub: string; iss: string }) => {
   trace(
     "findByOIDCToken: searching for oidc token sub=%s, iss=%s",
     token.sub,

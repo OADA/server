@@ -17,10 +17,9 @@
 
 /* eslint-disable sonarjs/no-duplicate-string */
 
-import { config } from "./dist/config.js";
-
 import { Database } from "arangojs";
 import debug from "debug";
+import { config } from "./dist/config.js";
 
 import users from "./dist/users.js";
 

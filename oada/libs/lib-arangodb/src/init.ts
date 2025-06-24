@@ -22,12 +22,11 @@
  * with `yarn run init`.
  */
 
-import { config } from "./config.js";
-import { hashPw } from "./libs/users.js";
-
 import { Database } from "arangojs";
 import debug from "debug";
 import equal from "deep-equal";
+import { config } from "./config.js";
+import { hashPw } from "./libs/users.js";
 
 const trace = debug("arango:init:trace");
 const warn = debug("arango:init:warn");

@@ -16,7 +16,10 @@
  */
 
 import util from "node:util";
-
+import rTracer from "cls-rtracer";
+import debug from "debug";
+import type { EachMessagePayload } from "kafkajs";
+import ksuid from "ksuid";
 import {
   Base,
   type ConstructorOptions as BaseConstructorOptions,
@@ -26,11 +29,6 @@ import {
   REQ_ID_KEY,
   topicTimeout,
 } from "./Base.js";
-
-import rTracer from "cls-rtracer";
-import debug from "debug";
-import type { EachMessagePayload } from "kafkajs";
-import ksuid from "ksuid";
 
 const trace = debug("@oada/lib-kafka:trace");
 const warn = debug("@oada/lib-kafka:warn");

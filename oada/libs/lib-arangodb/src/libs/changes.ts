@@ -15,14 +15,13 @@
  * limitations under the License.
  */
 
+import {
+  assert as assertChangeArray,
+  type Change,
+} from "@oada/types/oada/change/v2.js";
 import { aql } from "arangojs";
 import debug from "debug";
 import { JsonPointer } from "json-ptr";
-
-import {
-  type Change,
-  assert as assertChangeArray,
-} from "@oada/types/oada/change/v2.js";
 
 import { config } from "../config.js";
 import { db as database } from "../db.js";

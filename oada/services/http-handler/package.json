@@ -80,7 +80,7 @@
     "@types/cacache": "^17.0.2",
     "@types/debug": "^4.1.12",
     "@types/ioredis": "^5.0.0",
-    "@types/node": "^22.15.32",
+    "@types/node": "^22.15.33",
     "@types/type-is": "^1.6.7",
     "@types/uuid": "^10.0.0",
     "@types/ws": "^8.18.1",

@@ -22,14 +22,13 @@ import { config } from "./config.js";
 import "@oada/lib-prom";
 
 import { resources } from "@oada/lib-arangodb";
-import { Requester, Responder } from "@oada/lib-kafka";
 import type { KafkaBase } from "@oada/lib-kafka";
+import { Requester, Responder } from "@oada/lib-kafka";
 
 // Import message format from write-handler
 import type { WriteRequest, WriteResponse } from "@oada/write-handler";
-
-import Ajv from "ajv/dist/jtd.js";
 import type { JTDSchemaType } from "ajv/dist/jtd.js";
+import Ajv from "ajv/dist/jtd.js";
 import debug from "debug";
 import PQueue from "p-queue";
 import type { SetRequired } from "type-fest";

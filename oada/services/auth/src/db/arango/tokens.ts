@@ -15,9 +15,8 @@
  * limitations under the License.
  */
 
-import debug from "debug";
-
 import { authorizations } from "@oada/lib-arangodb";
+import debug from "debug";
 
 import type { ITokens, Token } from "../models/token.js";
 
@@ -27,7 +26,7 @@ export const verify = (async (token: string) => {
   trace("findByToken: searching for token %s", token);
   const found = await authorizations.findByToken(token);
   if (!found) {
-    throw new Error(`Token not found`);
+    throw new Error("Token not found");
   }
 
   const {

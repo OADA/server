@@ -15,11 +15,10 @@
  * limitations under the License.
  */
 
-import { config } from "../dist/config.js";
+import { Database } from "arangojs";
 
 import test from "ava";
-
-import { Database } from "arangojs";
+import { config } from "../dist/config.js";
 
 import { cleanup, run } from "../dist/init.js";
 

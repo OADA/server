@@ -24,9 +24,9 @@ import test from "ava";
 import type { Change } from "@oada/client";
 import { connect } from "@oada/client";
 
-const topID = `resources/WRITEHANDLERTEST_TOP1`;
-const middleID = `resources/WRITEHANDLERTEST_MIDDLE1`;
-const bottomID = `resources/WRITEHANDLERTEST_BOTTOM1`;
+const topID = "resources/WRITEHANDLERTEST_TOP1";
+const middleID = "resources/WRITEHANDLERTEST_MIDDLE1";
+const bottomID = "resources/WRITEHANDLERTEST_BOTTOM1";
 
 const con = await connect({
   domain: process.env.DOMAIN ?? "localhost",

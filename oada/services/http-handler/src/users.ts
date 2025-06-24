@@ -20,12 +20,10 @@ import { join } from "node:path/posix";
 import { users } from "@oada/lib-arangodb";
 
 import type { User, UserRequest, UserResponse } from "@oada/users";
-
-import { config } from "./config.js";
-import requester from "./requester.js";
-
 import type { FastifyPluginAsync, FastifyReply, FastifyRequest } from "fastify";
 import ksuid from "ksuid";
+import { config } from "./config.js";
+import requester from "./requester.js";
 
 export interface Options {
   prefix: string;

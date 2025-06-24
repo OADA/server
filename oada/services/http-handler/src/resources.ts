@@ -17,27 +17,22 @@
 
 import { join } from "node:path/posix";
 import { pipeline } from "node:stream/promises";
-
-import { changes, putBodies, resources } from "@oada/lib-arangodb";
-
-import {
-  type Scope,
-  handleRequest as permissionsRequest,
-} from "@oada/permissions-handler";
-import type { WriteRequest, WriteResponse } from "@oada/write-handler";
-
 import { handleResponse } from "@oada/formats-server";
+import { changes, putBodies, resources } from "@oada/lib-arangodb";
 import { _meta } from "@oada/oadaify";
-
-import { config } from "./config.js";
-import requester from "./requester.js";
-import { EnsureLink } from "./server.js";
-
+import {
+  handleRequest as permissionsRequest,
+  type Scope,
+} from "@oada/permissions-handler";
 import type { Link } from "@oada/types/oada/link/v1.js";
+import type { WriteRequest, WriteResponse } from "@oada/write-handler";
 import cacache from "cacache";
 import type { FastifyPluginAsync, FastifyReply, FastifyRequest } from "fastify";
 import ksuid from "ksuid";
 import { is } from "type-is";
+import { config } from "./config.js";
+import requester from "./requester.js";
+import { EnsureLink } from "./server.js";
 
 const CACHE_PATH = config.get("storage.binary.cacache");
 
@@ -214,7 +209,8 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
         if (!request.oadaGraph.resource_id) {
           // PUTing non-existant resource
           break;
-        } else if (!response.permissions.owner && !response.permissions.write) {
+        }
+        if (!response.permissions.owner && !response.permissions.write) {
           request.log.warn(
             "%s tried to PUT resource without proper permissions",
             request.user!.sub,
@@ -429,7 +425,7 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
   );
   fastify.addContentTypeParser(
     // application/*+json
-    /^application\/([\w\.-]+)\+json(\;|$)/,
+    /^application\/([\w.-]+)\+json(;|$)/,
     {
       // FIXME: Stream process the body instead
       parseAs: "string",

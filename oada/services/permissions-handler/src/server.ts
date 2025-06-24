@@ -23,12 +23,10 @@ import "@oada/lib-prom";
 
 import fs from "node:fs/promises";
 import { URL } from "node:url";
-
-import scopeTypes from "./scopes.js";
-
 import libDebug from "debug";
 import esMain from "es-main";
 import typeIs from "type-is";
+import scopeTypes from "./scopes.js";
 
 const warn = libDebug("permissions-handler:warn");
 const debug = libDebug("permissions-handler:debug");

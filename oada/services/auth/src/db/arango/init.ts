@@ -18,11 +18,10 @@
 // This file exports a function which can be used to initialize the database
 // with `npm run init` in oada-ref-auth-js
 
+import type { User } from "@oada/models/user";
 import { Database } from "arangojs";
 import bcrypt from "bcryptjs";
 import debug from "debug";
-
-import type { User } from "@oada/models/user";
 import { config } from "../../config.js";
 import { findByUsername } from "./users.js";
 

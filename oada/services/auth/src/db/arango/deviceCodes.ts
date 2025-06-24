@@ -15,9 +15,8 @@
  * limitations under the License.
  */
 
-import debug from "debug";
-
 import { deviceCodes } from "@oada/lib-arangodb";
+import debug from "debug";
 
 import type { DeviceCode, IDeviceCodes } from "../models/deviceCode.js";
 

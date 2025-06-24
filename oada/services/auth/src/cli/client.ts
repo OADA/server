@@ -18,7 +18,7 @@
 import "@oada/pino-debug";
 
 import { readFile } from "node:fs/promises";
-
+import type Metadata from "@oada/types/oauth-dyn-reg/metadata.js";
 import {
   array,
   binary,
@@ -32,13 +32,9 @@ import {
 } from "cmd-ts";
 import { File } from "cmd-ts/batteries/fs";
 import { Url } from "cmd-ts/batteries/url";
-
-import { config } from "../config.js";
-
-import type Metadata from "@oada/types/oauth-dyn-reg/metadata.js";
-
 import esMain from "es-main";
 import YAML from "yaml";
+import { config } from "../config.js";
 
 export const cmd = command({
   name: "client",

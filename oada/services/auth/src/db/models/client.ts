@@ -15,14 +15,12 @@
  * limitations under the License.
  */
 
+import { Codes, OADAError } from "@oada/error";
+import { Client } from "@oada/models/client";
+import type { Except, Promisable } from "type-fest";
 import { config } from "../../config.js";
 
-import { Codes, OADAError } from "@oada/error";
-import type { Except, Promisable } from "type-fest";
-
-import { Client } from "@oada/models/client";
-
-import { type Store, getDataStores, tryDataStores } from "./index.js";
+import { getDataStores, type Store, tryDataStores } from "./index.js";
 
 export { Client } from "@oada/models/client";
 

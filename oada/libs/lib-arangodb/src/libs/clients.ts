@@ -15,14 +15,12 @@
  * limitations under the License.
  */
 
+import type { Client } from "@oada/models/client";
 import { aql } from "arangojs";
-
+import type { Opaque } from "type-fest";
 import { config } from "../config.js";
 import { db as database } from "../db.js";
 import { sanitizeResult } from "../util.js";
-
-import type { Client } from "@oada/models/client";
-import type { Opaque } from "type-fest";
 
 export type DBClientID = Opaque<string, DBClient>;
 export type DBClient = {

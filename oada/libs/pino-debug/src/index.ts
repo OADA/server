@@ -18,10 +18,6 @@
 /* eslint-disable unicorn/prefer-module */
 
 import path from "node:path";
-
-// !!! This needs to be imported before _anything_ using pino or debug
-import pinoDebug from "pino-debug";
-
 import rTracer from "cls-rtracer";
 import debug from "debug";
 import isInteractive from "is-interactive";
@@ -31,9 +27,12 @@ import _pino, {
   type LoggerOptions,
 } from "pino";
 import pinoCaller from "pino-caller";
+// !!! This needs to be imported before _anything_ using pino or debug
+import pinoDebug from "pino-debug";
 import type pinoLoki from "pino-loki";
 
 export type { Logger } from "pino";
+
 const interactive = isInteractive();
 
 // Needed because the options type is not exported from pino-loki

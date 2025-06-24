@@ -16,35 +16,29 @@
  */
 
 import { join } from "node:path/posix";
-
-import { config } from "./config.js";
-
 import fastifyAccepts from "@fastify/accepts";
+import { requestContext } from "@fastify/request-context";
+import type { JsonSchemaToTsProvider } from "@fastify/type-provider-json-schema-to-ts";
+import { plugin as wkj } from "@oada/well-known-json/plugin";
 import type { FastifyPluginAsync } from "fastify";
-
-import { SignJWT, exportJWK } from "jose";
-import { type OAuth2Server, createServer } from "oauth2orize";
+import { exportJWK, SignJWT } from "jose";
+import { createServer, type OAuth2Server } from "oauth2orize";
 import oauth2orizeOpenId, { type IssueIDToken } from "oauth2orize-openid";
 import {
+  errors,
   Issuer,
   Strategy as OIDCStrategy,
   type StrategyVerifyCallbackUserInfo,
-  errors,
 } from "openid-client";
-
 import memoize from "p-memoize";
-
-import { plugin as wkj } from "@oada/well-known-json/plugin";
-
-import { requestContext } from "@fastify/request-context";
-import type { JsonSchemaToTsProvider } from "@fastify/type-provider-json-schema-to-ts";
 import { fastifyPassport } from "./auth.js";
+import { config } from "./config.js";
 import type { Client } from "./db/models/client.js";
 import {
-  type User,
   findByOIDCToken,
   findByOIDCUsername,
   register,
+  type User,
   update,
 } from "./db/models/user.js";
 import { getKeyPair, jwksPublic as oauthJWKs } from "./keys.js";

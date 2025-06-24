@@ -15,11 +15,10 @@
  * limitations under the License.
  */
 
-import { config } from "./config.js";
-
-import { Database, aql } from "arangojs";
+import { aql, Database } from "arangojs";
 import debug from "debug";
 import pThrottle from "p-throttle";
+import { config } from "./config.js";
 
 import { db as database } from "./db.js";
 

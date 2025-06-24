@@ -14,11 +14,9 @@
  * limitations under the License.
  */
 
-import { domainConfigs } from "./config.js";
-
 import type { FastifyPluginAsync } from "fastify";
-
 import { fastifyPassport } from "./auth.js";
+import { domainConfigs } from "./config.js";
 
 export interface Options {
   endpoints?: {

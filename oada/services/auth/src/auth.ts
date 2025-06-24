@@ -16,7 +16,9 @@
  */
 
 import { Authenticator } from "@fastify/passport";
+import { jwksUtils } from "@oada/certs";
 import debug from "debug";
+import type { FastifyRequest } from "fastify";
 import { decodeJwt } from "jose";
 import {
   Strategy as BearerStrategy,
@@ -28,16 +30,12 @@ import {
 } from "passport-jwt";
 import { Strategy as LocalStrategy } from "passport-local";
 import ClientPassword from "passport-oauth2-client-password";
-import { type RSA_JWK, jwk2pem } from "pem-jwk";
-
-import { jwksUtils } from "@oada/certs";
-
-import type { FastifyRequest } from "fastify";
+import { jwk2pem, type RSA_JWK } from "pem-jwk";
 import { findById } from "./db/models/client.js";
 import {
-  type User,
   findByUsernamePassword,
   findById as findUserById,
+  type User,
 } from "./db/models/user.js";
 import { _defaultHack } from "./index.js";
 import { verifyToken } from "./oauth2.js";

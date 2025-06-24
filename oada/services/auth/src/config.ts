@@ -21,15 +21,11 @@ import type { File } from "node:buffer";
 import fs from "node:fs/promises";
 import path from "node:path";
 import url from "node:url";
-
+import type { jwksUtils as jwku } from "@oada/certs";
+import { schema as arangoSchema } from "@oada/lib-arangodb/dist/config.js";
+import libConfig, { addFormats } from "@oada/lib-config";
 import debug from "debug";
 import URI from "urijs";
-
-import type { jwksUtils as jwku } from "@oada/certs";
-
-import libConfig, { addFormats } from "@oada/lib-config";
-
-import { schema as arangoSchema } from "@oada/lib-arangodb/dist/config.js";
 
 const trace = debug("auth#config:trace");
 const warn = debug("auth#config:warn");
