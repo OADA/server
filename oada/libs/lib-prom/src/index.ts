@@ -15,17 +15,15 @@
  * limitations under the License.
  */
 
-import { config } from "./config.js";
-
 import { createServer } from "node:http";
-
 import type NStats from "nstats";
 import {
+  collectDefaultMetrics,
   Gauge,
   type MetricConfiguration,
-  collectDefaultMetrics,
   register,
 } from "prom-client";
+import { config } from "./config.js";
 
 collectDefaultMetrics({ register });
 

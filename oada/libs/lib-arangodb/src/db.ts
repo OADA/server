@@ -16,15 +16,12 @@
  */
 
 import { setTimeout } from "node:timers/promises";
-
-import { config } from "./config.js";
-
-import { ArangoError, ArangoErrorCode } from "./libs/errors.js";
-
 import { Database } from "arangojs";
 import type { AqlQuery } from "arangojs/aql";
 import type { QueryOptions } from "arangojs/queries";
 import debug from "debug";
+import { config } from "./config.js";
+import { ArangoError, ArangoErrorCode } from "./libs/errors.js";
 
 const error = debug("arangodb#aql:error");
 const warn = debug("arangodb#aql:warn");

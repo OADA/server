@@ -23,9 +23,8 @@
 // your entire database if it gets run over and over again.  That way
 // it will work as a default script to run on every startup.
 
-import { config } from "./config.js";
-
 import debug from "debug";
+import { config } from "./config.js";
 
 const log = debug("init");
 

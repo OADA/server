@@ -15,16 +15,14 @@
  * limitations under the License.
  */
 
-import { config } from "../../config.js";
-
 import { randomBytes } from "node:crypto";
+import { destructure } from "@oada/models/decorators";
 
 import base36 from "random-id-base36";
 import type { Promisable, SetRequired } from "type-fest";
+import { config } from "../../config.js";
 
-import { destructure } from "@oada/models/decorators";
-
-import { type Store, getDataStores, tryDataStores } from "./index.js";
+import { getDataStores, type Store, tryDataStores } from "./index.js";
 
 export interface IDeviceCodes extends Store {
   findByDeviceCode(

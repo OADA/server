@@ -36,7 +36,7 @@ let certsResourceId;
 describe(`A client shouldn't exist before adding one`, () => {
   before("reset database", () => oadaLib.init.run());
 
-  it(`GET on bookmarks/trellisfw/clients/ should return an empty resource`, () =>
+  it("GET on bookmarks/trellisfw/clients/ should return an empty resource", () =>
     axios({
       method: "GET",
       url: `${baseUrl}/bookmarks/trellisfw/clients/`,
@@ -52,8 +52,8 @@ describe(`A client shouldn't exist before adding one`, () => {
     }));
 });
 
-describe(`The auditor should begin with no certifications resource`, () => {
-  it(`GET on bookmarks/trellisfw/certifications/ should not exist`, () =>
+describe("The auditor should begin with no certifications resource", () => {
+  it("GET on bookmarks/trellisfw/certifications/ should not exist", () =>
     axios({
       method: "GET",
       url: `${baseUrl}/bookmarks/trellisfw/certifications/`,
@@ -118,7 +118,7 @@ describe("Trellis demo testing...", () => {
     );
   });
 
-  it(`Should have a client now`, () =>
+  it("Should have a client now", () =>
     axios({
       method: "GET",
       url: `${baseUrl}/bookmarks/trellisfw/clients/${clientId}`,
@@ -180,7 +180,7 @@ describe("Read/write/owner permissions should apply accordingly", function () {
 
   before("get a token for the new user", () => {});
 
-  it(`should not be accessible before sharing`, () =>
+  it("should not be accessible before sharing", () =>
     axios({
       method: "get",
       url: `${baseUrl}/bookmarks/trellisfw/certifications/`,

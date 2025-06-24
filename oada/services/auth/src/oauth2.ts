@@ -15,16 +15,15 @@
  * limitations under the License.
  */
 
-import { config, domainConfigs } from "./config.js";
-
 import { createHash } from "node:crypto";
 import type { ServerResponse } from "node:http";
 import { join } from "node:path/posix";
 import { promisify } from "node:util";
-
 import type {} from "@fastify/formbody";
+import { requestContext } from "@fastify/request-context";
+import { trustedCDP } from "@oada/lookup";
+import { Authorization } from "@oada/models/authorization";
 import type { FastifyPluginAsync, FastifyReply, FastifyRequest } from "fastify";
-
 import {
   EncryptJWT,
   type JWTDecryptResult,
@@ -49,12 +48,8 @@ import oauth2orizeDeviceCode, {
   type IssueDeviceCodeFunction,
 } from "oauth2orize-device-code";
 import { extensions } from "oauth2orize-pkce";
-
-import { trustedCDP } from "@oada/lookup";
-
-import { requestContext } from "@fastify/request-context";
-import { Authorization } from "@oada/models/authorization";
 import { fastifyPassport } from "./auth.js";
+import { config, domainConfigs } from "./config.js";
 import { type Client, findById } from "./db/models/client.js";
 import {
   activate as _activateDeviceCode,
@@ -64,8 +59,8 @@ import {
   redeem,
 } from "./db/models/deviceCode.js";
 import {
-  type Token,
   create as createToken,
+  type Token,
   verify,
 } from "./db/models/token.js";
 import type { User } from "./db/models/user.js";

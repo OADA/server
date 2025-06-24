@@ -18,11 +18,9 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 
 import { randomBytes } from "node:crypto";
-
-import type { OmitIndexSignature, Opaque, ReadonlyDeep } from "type-fest";
-
 import type Metadata from "@oada/types/oauth-dyn-reg/response.js";
 import { makeClass } from "@qlever-llc/interface2class";
+import type { OmitIndexSignature, Opaque, ReadonlyDeep } from "type-fest";
 import { generate } from "xksuid";
 import { destructure } from "./decorators.js";
 

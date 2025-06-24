@@ -38,7 +38,9 @@ import fastifySecureSession from "@fastify/secure-session";
 import fastifySensible from "@fastify/sensible";
 import fastifyStatic from "@fastify/static";
 import fastifyView from "@fastify/view";
+import loadSchemas from "@oada/schemas";
 import ejs from "ejs";
+import esMain from "es-main";
 import {
   fastify as Fastify,
   type FastifyError,
@@ -49,12 +51,8 @@ import {
 import _fastifyGracefulShutdown from "fastify-graceful-shutdown";
 import fastifyHealthcheck from "fastify-healthcheck";
 import { createServer } from "oauth2orize";
-
-import esMain from "es-main";
 import qs from "qs";
 import { serializeError } from "serialize-error";
-
-import loadSchemas from "@oada/schemas";
 
 import { fastifyPassport } from "./auth.js";
 import { type Client, findById } from "./db/models/client.js";

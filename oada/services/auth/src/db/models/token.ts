@@ -15,14 +15,13 @@
  * limitations under the License.
  */
 
-import { config } from "../../config.js";
+import { Authorization as Token } from "@oada/models/authorization";
 
 import debug from "debug";
 import type { Promisable } from "type-fest";
+import { config } from "../../config.js";
 
-import { Authorization as Token } from "@oada/models/authorization";
-
-import { type Store, getDataStores, tryDataStores } from "./index.js";
+import { getDataStores, type Store, tryDataStores } from "./index.js";
 
 const log = debug("model-tokens");
 

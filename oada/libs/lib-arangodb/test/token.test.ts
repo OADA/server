@@ -16,15 +16,12 @@
  */
 
 import test from "ava";
-
-import type { UserID } from "../src/libs/users.js";
-
 import { authorizations, init } from "../dist/index.js";
-
 // TODO: Would be nice to just expose these examples on oadaLib itself --- feel
 // like we will want them for all of the microservice tests
 import exampleTokens from "../dist/libs/exampledocs/authorizations.js";
 import exampleUsers from "../dist/libs/exampledocs/users.js";
+import type { UserID } from "../src/libs/users.js";
 
 test.before(init.run);
 

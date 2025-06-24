@@ -18,14 +18,13 @@
 export { db as arango } from "./db.js";
 
 export * as init from "./init.js";
-export * as users from "./libs/users.js";
-export * as resources from "./libs/resources.js";
+export * as authorizations from "./libs/authorizations.js";
 export * as changes from "./libs/changes.js";
-export * as remoteResources from "./libs/remoteResources.js";
 export * as clients from "./libs/clients.js";
 export * as codes from "./libs/codes.js";
 export * as deviceCodes from "./libs/deviceCodes.js";
-export * as authorizations from "./libs/authorizations.js";
-export * as putBodies from "./libs/putBodies.js";
-
 export { ArangoError, ArangoErrorCode } from "./libs/errors.js";
+export * as putBodies from "./libs/putBodies.js";
+export * as remoteResources from "./libs/remoteResources.js";
+export * as resources from "./libs/resources.js";
+export * as users from "./libs/users.js";

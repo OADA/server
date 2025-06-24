@@ -15,18 +15,16 @@
  * limitations under the License.
  */
 
+import type { User as IUser } from "@oada/models/user";
 import { aql } from "arangojs";
 import type { ReadDocumentOptions } from "arangojs/documents";
 import bcrypt from "bcryptjs";
 import debug from "debug";
-
+import type { SetRequired } from "type-fest";
 import { config } from "../config.js";
 import { db as database } from "../db.js";
 import type { Selector } from "../util.js";
 import { sanitizeResult } from "../util.js";
-
-import type { User as IUser } from "@oada/models/user";
-import type { SetRequired } from "type-fest";
 
 export interface User extends IUser {
   /** @deprecated use sub/_key instead */

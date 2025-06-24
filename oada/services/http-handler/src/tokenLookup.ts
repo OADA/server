@@ -15,10 +15,9 @@
  * limitations under the License.
  */
 
-import debug from "debug";
-
 import { authorizations } from "@oada/lib-arangodb";
 import Authorization from "@oada/models/authorization";
+import debug from "debug";
 
 const warn = debug("token-lookup:warn");
 

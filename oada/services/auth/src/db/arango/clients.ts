@@ -15,9 +15,8 @@
  * limitations under the License.
  */
 
-import debug from "debug";
-
 import { clients } from "@oada/lib-arangodb";
+import debug from "debug";
 
 import type { Client, IClients } from "../models/client.js";
 

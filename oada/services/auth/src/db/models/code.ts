@@ -15,13 +15,12 @@
  * limitations under the License.
  */
 
-import { config } from "../../config.js";
-
-import debug from "debug";
-
 import type { CodeID } from "@oada/lib-arangodb/dist/libs/codes.js";
 
-import { type Store, getDataStores, tryDataStores } from "./index.js";
+import debug from "debug";
+import { config } from "../../config.js";
+
+import { getDataStores, type Store, tryDataStores } from "./index.js";
 
 const trace = debug("model-codes:trace");
 

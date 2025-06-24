@@ -15,15 +15,12 @@
  * limitations under the License.
  */
 
-import { config } from "../dist/config.js";
-
 import EventEmitter, { on, once } from "node:events";
-
 import test from "ava";
-
 import type { Consumer, Producer } from "kafkajs";
 import { Kafka } from "kafkajs";
 import { v4 as uuid } from "uuid";
+import { config } from "../dist/config.js";
 
 import { Responder } from "../dist/Responder.js";
 import type { KafkaBase } from "../src/Base.js";

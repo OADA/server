@@ -15,9 +15,9 @@
  * limitations under the License.
  */
 
+import debug from "debug";
 import type { EventEmitter } from "eventemitter3";
 import type { EachMessagePayload } from "kafkajs";
-
 import { Base, DATA, type KafkaBase } from "./Base.js";
 import {
   Requester,
@@ -28,8 +28,6 @@ import {
   type ConstructorOptions as ResponderOptions,
   type Response,
 } from "./Responder.js";
-
-import debug from "debug";
 
 const trace = debug("@oada/lib-kafka:trace");
 

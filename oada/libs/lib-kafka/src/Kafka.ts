@@ -15,10 +15,9 @@
  * limitations under the License.
  */
 
-import { config } from "./config.js";
-
 import debug from "debug";
 import { Kafka, type KafkaConfig, type logLevel } from "kafkajs";
+import { config } from "./config.js";
 
 /**
  * Make kafkajs logging nicer?

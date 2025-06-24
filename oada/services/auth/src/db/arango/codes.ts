@@ -15,9 +15,8 @@
  * limitations under the License.
  */
 
-import debug from "debug";
-
 import { codes } from "@oada/lib-arangodb";
+import debug from "debug";
 
 import type { ICode } from "../models/code.js";
 

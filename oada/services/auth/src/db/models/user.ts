@@ -15,13 +15,12 @@
  * limitations under the License.
  */
 
-import { config } from "../../config.js";
-
-import type { Promisable } from "type-fest";
-
 import { User } from "@oada/models/user";
 
-import { type Store, getDataStores, tryDataStores } from "./index.js";
+import type { Promisable } from "type-fest";
+import { config } from "../../config.js";
+
+import { getDataStores, type Store, tryDataStores } from "./index.js";
 
 export interface IUsers extends Store {
   findById(id: string): Promisable<User | undefined>;

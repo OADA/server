@@ -19,9 +19,11 @@
 
 import "@oada/pino-debug";
 
+import { users } from "@oada/lib-arangodb";
+import { Requester } from "@oada/lib-kafka";
+import User from "@oada/models/user";
 import chalk from "chalk";
 import {
-  type Type,
   array,
   binary,
   boolean,
@@ -32,17 +34,11 @@ import {
   optional,
   run,
   string,
+  type Type,
 } from "cmd-ts";
-
-import { config } from "../config.js";
-
-import { users } from "@oada/lib-arangodb";
-import { Requester } from "@oada/lib-kafka";
-import User from "@oada/models/user";
-
-import type { UserRequest, UserResponse } from "../server.js";
-
 import esMain from "es-main";
+import { config } from "../config.js";
+import type { UserRequest, UserResponse } from "../server.js";
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 const UserType: Type<string, User> = {

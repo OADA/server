@@ -34,8 +34,8 @@ import { Responder } from "@oada/lib-kafka";
 import type Resource from "@oada/types/oada/resource.js";
 
 import debug from "debug";
-import { JsonPointer } from "json-ptr";
 import type { PathSegments } from "json-ptr";
+import { JsonPointer } from "json-ptr";
 import objectAssignDeep from "object-assign-deep";
 import Cache from "timed-cache";
 

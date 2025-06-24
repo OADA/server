@@ -157,7 +157,7 @@ describe("GETs (Valid Token with Valid URLs)", () => {
             it("should have fields that agree with the original resources", () => {
               const keys = [];
               for (const key in expectedObject) {
-                if (expectedObject.hasOwnProperty(key)) {
+                if (Object.hasOwn(expectedObject, key)) {
                   keys.push(key);
                 }
               }

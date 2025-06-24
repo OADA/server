@@ -15,14 +15,13 @@
  * limitations under the License.
  */
 
+import { aql } from "arangojs";
+import debug from "debug";
+import type { Except, Opaque } from "type-fest";
 import { config } from "../config.js";
 import { db as database } from "../db.js";
 import { sanitizeResult } from "../util.js";
 import { findById as findUserById } from "./users.js";
-
-import { aql } from "arangojs";
-import debug from "debug";
-import type { Except, Opaque } from "type-fest";
 
 const trace = debug("@oada/lib-arangodb#authorizations:trace");
 

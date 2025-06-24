@@ -15,23 +15,19 @@
  * limitations under the License.
  */
 
-import type { Link } from "@oada/types/oada/link/v1.js";
-import type Resource from "@oada/types/oada/resource.js";
-
-import { config } from "../config.js";
-
+import type { User } from "@oada/models/user";
 import type { OADAified } from "@oada/oadaify";
 import { oadaify } from "@oada/oadaify";
-
-import type { User } from "@oada/models/user";
-import { db as database } from "../db.js";
-import { sanitizeResult } from "../util.js";
-import { ArangoError } from "./errors.js";
-
+import type { Link } from "@oada/types/oada/link/v1.js";
+import type Resource from "@oada/types/oada/resource.js";
 import { aql } from "arangojs";
 import debug from "debug";
 import { JsonPointer, type PathSegments } from "json-ptr";
 import type { JsonObject } from "type-fest";
+import { config } from "../config.js";
+import { db as database } from "../db.js";
+import { sanitizeResult } from "../util.js";
+import { ArangoError } from "./errors.js";
 
 type IResource = OADAified<Resource>;
 export type { IResource as Resource };
@@ -91,7 +87,7 @@ export async function lookupFromUrl(
   user: User,
 ): Promise<GraphLookup> {
   if (!user) {
-    throw new TypeError(`No user given`);
+    throw new TypeError("No user given");
   }
 
   const url = normalizeUrl(user, path);

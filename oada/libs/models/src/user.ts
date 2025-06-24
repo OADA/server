@@ -98,9 +98,9 @@ function usernameFromOIDC(oidc: User["oidc"]) {
 
 export type {
   Claims,
-  ProfileClaims,
   EmailClaims,
   PhoneClaims,
+  ProfileClaims,
   StandardClaims,
 } from "./oidc.js";
 
