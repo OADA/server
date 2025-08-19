@@ -36,7 +36,7 @@ export type { Logger } from "pino";
 const interactive = isInteractive();
 
 // Needed because the options type is not exported from pino-loki
-type PinoLokiOptions = Parameters<typeof pinoLoki.default>[0];
+type PinoLokiOptions = Parameters<typeof pinoLoki>[0];
 
 /**
  * Default mappings of debug namespaces to pino levels
@@ -91,32 +91,29 @@ export const mixins: Array<() => Record<string, unknown>> = [
  */
 function createRootLogger(): Logger {
   const development = process.env.NODE_ENV === "development";
-  const redact =
-    process.env.PINO_REDACT?.split(",") ??
-    (interactive
-      ? []
-      : [
-          "password",
-          "*.password",
-          "*.*.password",
-          "token",
-          "*.token",
-          "*.*.token",
-          "access_token",
-          "*.access_token",
-          "*.*.access_token",
-          "jti",
-          "*.jti",
-          "*.*.jti",
-          "client_secret",
-          "client.client_secret",
-          "*.client.client_secret",
-        ]);
+  const redact = process.env.PINO_REDACT?.split(",") ??
+    (interactive ? [] : [
+      "password",
+      "*.password",
+      "*.*.password",
+      "token",
+      "*.token",
+      "*.*.token",
+      "access_token",
+      "*.access_token",
+      "*.*.access_token",
+      "jti",
+      "*.jti",
+      "*.*.jti",
+      "client_secret",
+      "client.client_secret",
+      "*.client.client_secret",
+    ]);
   const level = logLevel();
   const loki: PinoLokiOptions | undefined = process.env.PINO_LOKI
     ? { host: process.env.PINO_LOKI }
     : undefined;
-  const log = _pino.default({
+  const log = _pino({
     name: process.env.npm_package_name ?? process.argv[1],
     level,
     transport: {
@@ -132,12 +129,12 @@ function createRootLogger(): Logger {
         // Use pino-loki if configured
         ...(loki
           ? [
-              {
-                target: "pino-loki",
-                options: loki,
-                level: process.env.PINO_LOKI_LEVEL,
-              },
-            ]
+            {
+              target: "pino-loki",
+              options: loki,
+              level: process.env.PINO_LOKI_LEVEL,
+            },
+          ]
           : []),
       ],
     },

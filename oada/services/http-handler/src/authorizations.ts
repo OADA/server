@@ -25,7 +25,6 @@ export interface Options {
 
 async function addClientToAuth(
   request: FastifyRequest,
-
   auth: authorizations.Authorization | undefined,
 ) {
   if (auth?.clientId) {
@@ -44,7 +43,7 @@ async function addClientToAuth(
   } else {
     request.log.trace(
       "GET /%s: authorization DOES NOT have a clientId",
-      auth?._id,
+      auth?._id!,
     );
     return auth;
   }

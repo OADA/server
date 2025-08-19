@@ -114,11 +114,15 @@ const subservices = new Set(
 await fastify.register(
   // eslint-disable-next-line @typescript-eslint/require-await
   async (app) => {
-    app.all("/oada-configuration", {}, async (_request, reply) =>
-      reply.redirect("openid-configuration", 301),
+    app.all(
+      "/oada-configuration",
+      {},
+      async (_request, reply) => reply.redirect("openid-configuration", 301),
     );
-    app.all("/oauth-authorization-server", {}, async (_request, reply) =>
-      reply.redirect("openid-configuration", 301),
+    app.all(
+      "/oauth-authorization-server",
+      {},
+      async (_request, reply) => reply.redirect("openid-configuration", 301),
     );
   },
   { prefix: "/.well-known/" },
@@ -144,15 +148,14 @@ await fastify.register(
         },
       });
       const rest = await Promise.all(
-        Array.from(subservices, async (s) => {
+        Array.from(subservices, async (subservice) => {
           request.log.trace(
-            "Resource (%s) matches subservice entry (%o), retrieving",
-            resource,
-            s,
+            { resource, subservice },
+            "Resource matches subservice entry, retrieving",
           );
 
           // Request this resource from the subservice:
-          const url = join(s, whichdoc);
+          const url = join(subservice, whichdoc);
           request.log.trace("Requesting subservice URL: %s", url);
           try {
             const body = await proxy.get(url).json();

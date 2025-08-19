@@ -114,7 +114,7 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
   // Update (merge) a user:
   fastify.put("/:id", async (request, reply) => {
     const { id } = request.params as { id: string };
-    request.log.debug("Users PUT(id: %s), body = %O", id, request.body);
+    request.log.debug({ id, body: request.body }, "Users PUT");
     // Generate an ID for this particular request
     if (!request.id) {
       const { string: rid } = await ksuid.random();
@@ -137,8 +137,8 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
 
     // Check token scope
     request.log.trace(
-      "username-index: Checking token scope, req.authorization.scope = %s",
-      authorization,
+      { authorization },
+      "username-index: Checking token scope, req.authorization.scope",
     );
     const havetokenscope = authorization.roles.find(
       (s: string) =>

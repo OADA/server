@@ -59,7 +59,7 @@
     "@oada/models": "workspace:^",
     "@oada/oadaify": "^2.1.0",
     "@oada/types": "^4.0.0",
-    "arangojs": "^10.1.1",
+    "arangojs": "^10.1.2",
     "bcryptjs": "^3.0.2",
     "debug": "^4.4.1",
     "deep-equal": "^2.2.3",
@@ -76,8 +76,8 @@
     "@types/deep-equal": "^1.0.4",
     "@types/flat": "^5.0.5",
     "@types/json-pointer": "^1.0.34",
-    "@types/node": "^22.15.33",
-    "ava": "6.4.0",
+    "@types/node": "^22.17.2",
+    "ava": "6.4.1",
     "type-fest": "^4.41.0"
   },
   "volta": {
