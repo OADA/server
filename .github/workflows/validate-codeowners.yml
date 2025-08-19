@@ -18,7 +18,7 @@ jobs:
 
     steps:
       # Check out repo to be validated in enxt stop
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
         # Ensure that the owners file is valid
         # https://github.com/marketplace/actions/github-codeowners-validator
