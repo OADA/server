@@ -29,16 +29,16 @@
     "@oada/lib-prom": "workspace:^",
     "@oada/models": "workspace:^",
     "@oada/pino-debug": "workspace:^",
-    "chalk": "^5.6.0",
-    "cmd-ts": "^0.13.0",
-    "debug": "^4.4.1",
+    "chalk": "^5.6.2",
+    "cmd-ts": "^0.14.1",
+    "debug": "^4.4.3",
     "es-main": "^1.4.0",
     "ksuid": "^3.0.0",
     "tslib": "2.8.1"
   },
   "devDependencies": {
     "@types/debug": "^4.1.12",
-    "type-fest": "^4.41.0"
+    "type-fest": "^5.0.0"
   },
   "volta": {
     "node": "22.5.1"
