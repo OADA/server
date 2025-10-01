@@ -20,7 +20,7 @@
 import { randomBytes } from "node:crypto";
 import type Metadata from "@oada/types/oauth-dyn-reg/response.js";
 import { makeClass } from "@qlever-llc/interface2class";
-import type { OmitIndexSignature, Opaque, ReadonlyDeep } from "type-fest";
+import type { OmitIndexSignature, Opaque } from "type-fest";
 import { generate } from "xksuid";
 import { destructure } from "./decorators.js";
 
@@ -33,7 +33,7 @@ export const DEFAULT_SCOPES = "";
  */
 export
 @destructure
-class Client extends makeClass<ReadonlyDeep<OmitIndexSignature<Metadata>>>() {
+class Client extends makeClass<OmitIndexSignature<Metadata>>() {
   // @ts-expect-error HACK
   constructor(client?: Partial<Client>);
 

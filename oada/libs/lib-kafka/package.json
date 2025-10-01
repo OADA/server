@@ -48,8 +48,8 @@
     "@ava/typescript": "^6.0.0",
     "@types/convict": "^6.1.6",
     "@types/debug": "^4.1.12",
-    "@types/node": "^24.4.0",
-    "@types/uuid": "^10.0.0",
+    "@types/node": "^24.6.0",
+    "@types/uuid": "^11.0.0",
     "ava": "6.4.1"
   },
   "volta": {

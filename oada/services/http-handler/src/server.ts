@@ -100,7 +100,8 @@ const serializers = {
 // logger.serializers = serializers;
 
 mixins.push(() => ({
-  reqId: requestContext.get("id"),
+  "#id": requestContext.get("id"),
+  reqId: requestContext.get("requestId"),
 }));
 
 const trustProxy = config.get("trustProxy");
@@ -161,8 +162,8 @@ if (process.env.NODE_ENV !== "production") {
 }
 
 // Add request id header for tracing/debugging purposes
-fastify.addHook("onSend", async (request, reply, payload) => {
-  void reply.header("X-Request-Id", request.headers["x-request-id"]);
+fastify.addHook("onSend", async (_request, reply, payload) => {
+  void reply.header("X-Request-Id", requestContext.get("requestId"));
   return payload;
 });
 
@@ -177,7 +178,8 @@ export async function start(): Promise<void> {
 
 declare module "@fastify/request-context" {
   interface RequestContextData {
-    id: string;
+    "#id": string;
+    requestId: string | string[];
     domain: string;
     issuer: string;
   }
@@ -223,6 +225,10 @@ await fastify.register(fastifyRequestContext, {
 // eslint-disable-next-line @typescript-eslint/require-await
 fastify.addHook("onRequest", async (request) => {
   requestContext.set("id", request.id);
+  requestContext.set(
+    "requestId",
+    request.headers?.["x-request-id"] ?? request.id,
+  );
   requestContext.set("domain", request.hostname);
   requestContext.set(
     "issuer",
