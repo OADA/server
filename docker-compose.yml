@@ -12,7 +12,7 @@ services:
       - arangodb
     expose:
       # expose only internally, not on host
-      - '8080'
+      - "8080"
     environment:
       # set RESETDATABASE to "yes" if you want to drop database on startup and recreate
       RESETDATABASE: ${RESETDATABASE-no}
@@ -31,7 +31,7 @@ services:
       http_net: {}
     expose:
       # expose only internally, not on host
-      - '8080'
+      - "8080"
 
   # http-handler is in charge of maintaining connectiongs to clients and starting
   # the first message for a request into Kafka
@@ -44,14 +44,14 @@ services:
       args:
         OADA_SERVICE: http-handler
     healthcheck:
-      test: [ CMD, yarn, healthcheck ]
+      test: [CMD, yarn, healthcheck]
     depends_on:
       - startup
     networks:
       http_net: {}
     expose:
       # expose only internally, not on host
-      - '8080'
+      - "8080"
     ports:
       # Expose node inspect port
       - 9230:9229
@@ -76,7 +76,6 @@ services:
       http_net: {}
     environment:
       IGNORE_SCOPE:
-
 
   write-handler:
     extends:
@@ -128,7 +127,7 @@ services:
       http_net: {}
     expose:
       # expose only internally, not on host
-      - '8080'
+      - "8080"
 
   webhooks:
     extends:
@@ -175,22 +174,22 @@ services:
       PROPAGATION: #optional
       DUCKDNSTOKEN: #optional
       EMAIL: #optional
-      ONLY_SUBDOMAINS: 'false' #optional
+      ONLY_SUBDOMAINS: "false" #optional
       EXTRA_DOMAINS: #optional
-      STAGING: 'true' #optional (set false for release)
+      STAGING: "true" #optional (set false for release)
       MAXMINDDB_LICENSE_KEY: #optional
     volumes:
       - proxy_config:/config
       # Hack in self-signed ssl for localhost
       - ./support/proxy/selfsigned:/config/keys/letsencrypt:ro
     ports:
-      - '${BIND:-0.0.0.0}:${PORT_HTTPS:-443}:443'
-      - '${BIND:-0.0.0.0}:${PORT_HTTP:-80}:80'
+      - "${BIND:-0.0.0.0}:${PORT_HTTPS:-443}:443"
+      - "${BIND:-0.0.0.0}:${PORT_HTTP:-80}:80"
     restart: unless-stopped
 
   # Arango is the main backend where core data and graph is stored
   arangodb:
-    image: arangodb:3.9.3
+    image: docker.io/arangodb:3.9.3
     restart: unless-stopped
     networks:
       arango_net: {}
@@ -199,16 +198,16 @@ services:
       - arangodb_apps_data:/var/lib/arangodb3-apps
     expose:
       # expose only internally, not on host
-      - '8529'
+      - "8529"
     environment:
       # - ARANGO_RANDOM_ROOT_PASSWORD=1
       ARANGO_NO_AUTH: 1
       ARANGO_STORAGE_ENGINE: rocksdb
-    command: [ arangod, --server.statistics=false ]
+    command: [arangod, --server.statistics=false]
 
   # Redpanda is API compatible with kafka.
   redpanda:
-    image: vectorized/redpanda:v22.2.5
+    image: docker.io/redpandadata/redpanda:v22.2.5
     restart: unless-stopped
     networks:
       kafka_net:
@@ -224,14 +223,14 @@ services:
       - -c
       # Configure then run redpanda?
       - |
-        rpk redpanda mode $$REDPANDA_MODE &&
-        rpk $$@
+          rpk redpanda mode $$REDPANDA_MODE &&
+          rpk $$@
       - rpk
     command:
       - redpanda
       - start
       - --smp
-      - '1'
+      - "1"
       - --reserve-memory
       - 0M
       - --overprovisioned
@@ -240,16 +239,16 @@ services:
       - --rpc-addr
       - 0.0.0.0:33145
       - --node-id
-      - '0'
+      - "0"
       - --advertise-kafka-addr
       - PLAINTEXT://kafka:9092
     expose:
       # Kafka API port
-      - '9092'
+      - "9092"
       # Internal RPC port
-      - '33145'
+      - "33145"
       # Prometheus/HTTP Admin port
-      - '9644'
+      - "9644"
 
   pino-pretty:
     deploy:
@@ -273,7 +272,7 @@ services:
       grafana_net: {}
       kafka_net: {}
     expose:
-      - '9090'
+      - "9090"
     #ports:
     #  - '9090:9090'
     volumes:
@@ -296,8 +295,8 @@ services:
       - -c
     command:
       - |
-        echo -n "scrape_configs:" > /etc/prometheus/prometheus.yml &&
-        rpk generate --seed-addr=redpanda prometheus-config >> /etc/prometheus/prometheus.yml
+          echo -n "scrape_configs:" > /etc/prometheus/prometheus.yml &&
+          rpk generate --seed-addr=redpanda prometheus-config >> /etc/prometheus/prometheus.yml
 
   grafana:
     image: grafana/grafana
@@ -335,15 +334,15 @@ services:
       - -c
     command:
       - |
-        echo '
-        apiVersion: 1
-        providers:
-          - name: "dashboard provider"
-            type: file
-            options:
-              path: /var/lib/grafana/dashboards
-              foldersFromFileStructure: true
-        ' > /etc/grafana/provisioning/dashboards/dashboards.yml
+          echo '
+          apiVersion: 1
+          providers:
+            - name: "dashboard provider"
+              type: file
+              options:
+                path: /var/lib/grafana/dashboards
+                foldersFromFileStructure: true
+          ' > /etc/grafana/provisioning/dashboards/dashboards.yml
 
   # Provision our prometheus instance as a grafana datasource
   grafana-provision-prometheus:
@@ -359,16 +358,16 @@ services:
       - -c
     command:
       - |
-        echo '
-        apiVersion: 1
-        deleteDatasources:
-          - name: Prometheus
-        datasources:
-          - name: Prometheus
-            type: prometheus
-            access: proxy
-            url: http://prometheus:9090
-        ' > /etc/grafana/provisioning/datasources/prometheus.yml
+          echo '
+          apiVersion: 1
+          deleteDatasources:
+            - name: Prometheus
+          datasources:
+            - name: Prometheus
+              type: prometheus
+              access: proxy
+              url: http://prometheus:9090
+          ' > /etc/grafana/provisioning/datasources/prometheus.yml
 
   # Generate dashboard for our redpanda with our prometheus instance
   rpk-grafana-dashboard:
@@ -386,11 +385,11 @@ services:
       - -c
     command:
       - |
-        mkdir -p /var/lib/grafana/dashboards/
-        rpk generate grafana-dashboard \
-          --datasource Prometheus \
-          --prometheus-url redpanda:9644/metrics \
-          > /var/lib/grafana/dashboards/redpanda.json
+          mkdir -p /var/lib/grafana/dashboards/
+          rpk generate grafana-dashboard \
+            --datasource Prometheus \
+            --prometheus-url redpanda:9644/metrics \
+            > /var/lib/grafana/dashboards/redpanda.json
 
 volumes:
   arangodb_data:
@@ -403,7 +402,6 @@ volumes:
   prometheus_config:
   grafana_data:
   grafana_prov:
-
 
 networks:
   arango_net: {}
