@@ -14,13 +14,15 @@
    * See the License for the specific language governing permissions and
    * limitations under the License.
    */}}
+{{- $name := print "binary-data-" $.Release.Name -}}
+{{- if empty (lookup "v1" "PersistentVolumeClaim" $.Release.Namespace $name) }}
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   annotations:
     helm.sh/resource-policy: keep
   namespace: {{ .Release.Namespace }}
-  name: binary-data-{{ .Release.Name }}
+  name: {{ $name }}
   labels:
     app.kubernetes.io/component: binary-data
     {{- include "oada.chart.labels" . | nindent 4 }}
@@ -30,3 +32,5 @@ spec:
   resources:
     requests:
       storage: 100Mi
+{{- end -}}
+

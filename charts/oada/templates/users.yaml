@@ -34,7 +34,7 @@ stringData:
     Authorization: Bearer {{ $token }}
 {{- end }}
 ---
-{{- $jobName := print "user-add-" .name "-" $.Release.Name -}}
+{{ $jobName := print "user-add-" .name "-" $.Release.Name -}}
 apiVersion: batch/v1
 kind: Job
 metadata:
