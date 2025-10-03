@@ -80,9 +80,8 @@ async function getSoftwareStatement({
     );
   }
 
-  const statements: unknown = typeof payload === "string"
-    ? JSON.parse(payload)
-    : payload;
+  const statements: unknown =
+    typeof payload === "string" ? JSON.parse(payload) : payload;
   assertMetadata(statements);
   return {
     ...statements,
@@ -162,15 +161,9 @@ const plugin: FastifyPluginAsync<Options> = async (
 
         // ------------------------------------------
         // Save client to database, return client_id for their future OAuth2 requests
-        request.log.trace(
-          registrationData,
-          "Saving client registration",
-        );
+        request.log.trace(registrationData, "Saving client registration");
         const result = await save(registrationData);
-        request.log.info(
-          result,
-          "Saved new client ID to DB",
-        );
+        request.log.info(result, "Saved new client ID to DB");
         void reply.code(201);
         return result;
       } catch (error: unknown) {

@@ -114,15 +114,11 @@ const subservices = new Set(
 await fastify.register(
   // eslint-disable-next-line @typescript-eslint/require-await
   async (app) => {
-    app.all(
-      "/oada-configuration",
-      {},
-      async (_request, reply) => reply.redirect("openid-configuration", 301),
+    app.all("/oada-configuration", {}, async (_request, reply) =>
+      reply.redirect("openid-configuration", 301),
     );
-    app.all(
-      "/oauth-authorization-server",
-      {},
-      async (_request, reply) => reply.redirect("openid-configuration", 301),
+    app.all("/oauth-authorization-server", {}, async (_request, reply) =>
+      reply.redirect("openid-configuration", 301),
     );
   },
   { prefix: "/.well-known/" },

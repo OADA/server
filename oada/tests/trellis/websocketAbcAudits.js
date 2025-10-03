@@ -221,7 +221,7 @@ describe("Read/write/owner permissions should apply accordingly", function () {
 
 describe("Adding read permission", function () {
   this.timeout(10_000);
-  before(`add read permission to the client\'s certifications resource`, () =>
+  before(`add read permission to the client's certifications resource`, () =>
     socket.http({
       method: "put",
       url: `${baseUrl}/bookmarks/trellisfw/clients/${clientId}/certifications/_meta/_permissions`,
@@ -288,7 +288,7 @@ describe("Adding read permission", function () {
 
 describe("Adding write permission", function () {
   this.timeout(10_000);
-  before(`add user permission to the client\'s certifications resource`, () =>
+  before(`add user permission to the client's certifications resource`, () =>
     socket.http({
       method: "put",
       url: `${baseUrl}/bookmarks/trellisfw/clients/${clientId}/certifications/_meta/_permissions`,
@@ -437,7 +437,7 @@ describe("now add a second client, share with a second user, and check that the 
   });
 
   before(
-    `add SECOND_GROWER to permissions of the client\'s certifications resource`,
+    `add SECOND_GROWER to permissions of the client's certifications resource`,
     () =>
       socket.http({
         method: "put",

@@ -196,7 +196,7 @@ describe("Read/write/owner permissions should apply accordingly", function () {
 describe("Adding read permission", function () {
   this.timeout(10_000);
   trace("userid", userid);
-  before(`add read permission to the client\'s certifications resource`, () =>
+  before(`add read permission to the client's certifications resource`, () =>
     axios({
       method: "put",
       url: `${baseUrl}/bookmarks/trellisfw/certifications/_meta/_permissions`,
@@ -258,7 +258,7 @@ describe("Adding read permission", function () {
 
 describe("Adding write permission", function () {
   this.timeout(10_000);
-  before(`add user permission to the client\'s certifications resource`, () =>
+  before(`add user permission to the client's certifications resource`, () =>
     axios({
       method: "put",
       url: `${baseUrl}/bookmarks/trellisfw/certifications/_meta/_permissions`,

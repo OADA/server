@@ -149,10 +149,11 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
       options.prefixPath(request),
     );
     const { string: id } = await ksuid.random();
-    const path = request.method === "POST"
-      // Treat POST as PUT put append random id
-      ? join(url, id)
-      : url.replace(/\/$/, "");
+    const path =
+      request.method === "POST"
+        ? // Treat POST as PUT put append random id
+          join(url, id)
+        : url.replace(/\/$/, "");
     request.oadaPath = path;
   });
 
@@ -564,17 +565,18 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
       );
 
       request.log.trace(`Resource exists: ${request.resourceExists}`);
-      const ignoreLinks = (
-        (request.headers["x-oada-ignore-links"] ?? "") as string
-      ).toLowerCase() === "true";
+      const ignoreLinks =
+        (
+          (request.headers["x-oada-ignore-links"] ?? "") as string
+        ).toLowerCase() === "true";
       const ifMatch = parseETags(request.headers["if-match"])
         ?.filter(({ id }) =>
-          [undefined, request.oadaGraph.resource_id].includes(id)
+          [undefined, request.oadaGraph.resource_id].includes(id),
         )
         .map(({ rev }) => rev);
       const ifNoneMatch = parseETags(request.headers["if-none-match"])
         ?.filter(({ id }) =>
-          [undefined, request.oadaGraph.resource_id].includes(id)
+          [undefined, request.oadaGraph.resource_id].includes(id),
         )
         .map(({ rev }) => rev);
       const writeRequest = {

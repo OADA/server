@@ -15,7 +15,8 @@
  * limitations under the License.
  */
 
-/* eslint-disable unicorn/prefer-module */
+// biome-ignore assist/source/organizeImports: NOTE: This needs to be imported before _anything_ using pino or debug
+import pinoDebug from "pino-debug";
 
 import path from "node:path";
 import rTracer from "cls-rtracer";
@@ -27,8 +28,6 @@ import _pino, {
   type LoggerOptions,
 } from "pino";
 import pinoCaller from "pino-caller";
-// !!! This needs to be imported before _anything_ using pino or debug
-import pinoDebug from "pino-debug";
 import type pinoLoki from "pino-loki";
 
 export type { Logger } from "pino";
@@ -91,24 +90,27 @@ export const mixins: Array<() => Record<string, unknown>> = [
  */
 function createRootLogger(): Logger {
   const development = process.env.NODE_ENV === "development";
-  const redact = process.env.PINO_REDACT?.split(",") ??
-    (interactive ? [] : [
-      "password",
-      "*.password",
-      "*.*.password",
-      "token",
-      "*.token",
-      "*.*.token",
-      "access_token",
-      "*.access_token",
-      "*.*.access_token",
-      "jti",
-      "*.jti",
-      "*.*.jti",
-      "client_secret",
-      "client.client_secret",
-      "*.client.client_secret",
-    ]);
+  const redact =
+    process.env.PINO_REDACT?.split(",") ??
+    (interactive
+      ? []
+      : [
+          "password",
+          "*.password",
+          "*.*.password",
+          "token",
+          "*.token",
+          "*.*.token",
+          "access_token",
+          "*.access_token",
+          "*.*.access_token",
+          "jti",
+          "*.jti",
+          "*.*.jti",
+          "client_secret",
+          "client.client_secret",
+          "*.client.client_secret",
+        ]);
   const level = logLevel();
   const loki: PinoLokiOptions | undefined = process.env.PINO_LOKI
     ? { host: process.env.PINO_LOKI }
@@ -129,12 +131,12 @@ function createRootLogger(): Logger {
         // Use pino-loki if configured
         ...(loki
           ? [
-            {
-              target: "pino-loki",
-              options: loki,
-              level: process.env.PINO_LOKI_LEVEL,
-            },
-          ]
+              {
+                target: "pino-loki",
+                options: loki,
+                level: process.env.PINO_LOKI_LEVEL,
+              },
+            ]
           : []),
       ],
     },

@@ -26,9 +26,9 @@ import { Authorization } from "@oada/models/authorization";
 import type { FastifyPluginAsync, FastifyReply, FastifyRequest } from "fastify";
 import {
   EncryptJWT,
-  jwtDecrypt,
   type JWTDecryptResult,
   type JWTPayload,
+  jwtDecrypt,
 } from "jose";
 import oauth2orize, {
   AuthorizationError,
@@ -316,8 +316,7 @@ export const issueDeviceCode: IssueDeviceCodeFunction<Client> = async (
         return {
           ...this,
           verification_uri: `${verificationUri}`,
-          verification_uri_complete:
-            `${verificationUri}?user_code=${this.user_code}`,
+          verification_uri_complete: `${verificationUri}?user_code=${this.user_code}`,
         };
       },
     });
@@ -454,34 +453,32 @@ const plugin: FastifyPluginAsync<Options> = async (
 
   // OAuth2 authorization request (serve the authorization screen)
   const doAuthorize = promisifyMiddleware(
-    oauth2server.authorize(
-      (async ({ clientID, redirectURI }, done) => {
-        try {
-          const client = await findById(clientID);
-          if (!client) {
-            // eslint-disable-next-line unicorn/no-null
-            done(null, false);
-            return;
-          }
-
-          // Compare the given redirectUrl to all the clients redirectUrls
-          if (client.redirect_uris?.includes(redirectURI)) {
-            // eslint-disable-next-line unicorn/no-null
-            done(null, client, redirectURI);
-            return;
-          }
-
-          fastify.log.trace(
-            client,
-            `oauth2#authorize: redirect_uri from URL ${redirectURI} does not match any on client cert`,
-          );
+    oauth2server.authorize((async ({ clientID, redirectURI }, done) => {
+      try {
+        const client = await findById(clientID);
+        if (!client) {
           // eslint-disable-next-line unicorn/no-null
           done(null, false);
-        } catch (error: unknown) {
-          done(error as Error);
+          return;
         }
-      }) as ValidateFunctionArity2,
-    ),
+
+        // Compare the given redirectUrl to all the clients redirectUrls
+        if (client.redirect_uris?.includes(redirectURI)) {
+          // eslint-disable-next-line unicorn/no-null
+          done(null, client, redirectURI);
+          return;
+        }
+
+        fastify.log.trace(
+          client,
+          `oauth2#authorize: redirect_uri from URL ${redirectURI} does not match any on client cert`,
+        );
+        // eslint-disable-next-line unicorn/no-null
+        done(null, false);
+      } catch (error: unknown) {
+        done(error as Error);
+      }
+    }) as ValidateFunctionArity2),
   );
   fastify.get(authorize, async (request, reply) => {
     try {
@@ -500,8 +497,8 @@ const plugin: FastifyPluginAsync<Options> = async (
 
       await trustedCDP();
       // Load the login info for this domain from the public directory:
-      const domainConfig = domainConfigs.get(request.hostname) ??
-        domainConfigs.get("localhost")!;
+      const domainConfig =
+        domainConfigs.get(request.hostname) ?? domainConfigs.get("localhost")!;
       return await reply.view(config.get("auth.views.approvePage"), {
         transactionID: oauth2.transactionID,
         client: oauth2.client,
@@ -538,7 +535,7 @@ const plugin: FastifyPluginAsync<Options> = async (
           allow?: unknown;
         };
         const validScope = scope?.every((element) =>
-          request.oauth2?.req.scope.includes(element)
+          request.oauth2?.req.scope.includes(element),
         );
 
         if (!validScope) {
@@ -601,11 +598,9 @@ const plugin: FastifyPluginAsync<Options> = async (
     async (request, reply) => {
       try {
         request.log.trace(
-          `${request.hostname}: token POST ${
-            config.get(
-              "auth.endpoints.token",
-            )
-          }, storing reqdomain in req.user`,
+          `${request.hostname}: token POST ${config.get(
+            "auth.endpoints.token",
+          )}, storing reqdomain in req.user`,
         );
         const { user } = request as unknown as OAuth2Request;
         if (!user) {
