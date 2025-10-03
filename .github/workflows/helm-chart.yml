@@ -19,7 +19,7 @@ permissions: read-all
 on:
   push:
     branches:
-      - master
+      - main
 
 jobs:
   release:
@@ -40,13 +40,13 @@ jobs:
       - name: Install Helm
         uses: azure/setup-helm@v4
         env:
-          GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
+          GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
         with:
           version: v3.8.1
 
       - name: Run chart-releaser
         uses: helm/chart-releaser-action@v1.7.0
         env:
-          CR_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
-          CR_RELEASE_NAME_TEMPLATE: '{{ .Name }}-chart-v{{ .Version }}'
+          CR_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+          CR_RELEASE_NAME_TEMPLATE: "{{ .Name }}-chart-v{{ .Version }}"
           CR_MAKE_RELEASE_LATEST: false
