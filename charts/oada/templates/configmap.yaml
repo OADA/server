@@ -56,12 +56,12 @@ data:
   WELLKNOWN_SUBSERVICES: ''
   {{ else -}}
   # Use our internal Auth server
-  OIDC_ISSUER: http://auth-{{ .Release.Name }}/oadaauth
+  OIDC_ISSUER: http://auth-{{ .Release.Name }}.{{ .Release.Namespace }}.svc/oadaauth
   AUTH_TOKEN_DATA_STORE: {{ .Values.oada.dataStores.tokens | toJson | trimAll "[]" | replace "\"" "" }}
   AUTH_CODE_DATA_STORE: {{ .Values.oada.dataStores.auth.codes | toJson | trimAll "[]" | replace "\"" "" }}
   AUTH_DEVICE_CODE_DATA_STORE: {{ .Values.oada.dataStores.auth.deviceCodes | toJson | trimAll "[]" | replace "\"" "" }}
   AUTH_PREFIX: /oadaauth/
-  WELLKNOWN_SUBSERVICES: http://auth-{{ .Release.Name }}/oadaauth/
+  WELLKNOWN_SUBSERVICES: http://auth-{{ .Release.Name }}.{{ .Release.Namespace }}.svc/oadaauth/
   {{- end }}
   {{ if .Values.global.development -}}
   NODE_ENV: development
