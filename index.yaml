@@ -9,6 +9,33 @@ entries:
         - url: https://artifacthub.io/packages/helm/ingress-nginx/ingress-nginx
     apiVersion: v2
     appVersion: 4.0.0
+    created: "2025-10-03T16:10:43.028312812Z"
+    description: A Helm chart for the OADA API server
+    digest: a71f3e0bec4ec4509bfe94d0243d53968a904da822072fe36f08f0c060047498
+    icon: https://avatars.githubusercontent.com/u/6750653
+    keywords:
+    - api
+    - oauth 2.0
+    - oidc
+    - oada
+    maintainers:
+    - email: alex@layton.in
+      name: awlayton
+    name: oada
+    sources:
+    - https://github.com/OADA/server
+    type: application
+    urls:
+    - https://github.com/OADA/server/releases/download/oada-chart-v5.0.4/oada-5.0.4.tgz
+    version: 5.0.4
+  - annotations:
+      artifacthub.io/recommendations: |
+        - url: https://artifacthub.io/packages/helm/cert-manager/cert-manager
+        - url: https://artifacthub.io/packages/helm/redpanda-data/operator
+        - url: https://github.com/arangodb/kube-arangodb#installation-of-latest-release-using-helm
+        - url: https://artifacthub.io/packages/helm/ingress-nginx/ingress-nginx
+    apiVersion: v2
+    appVersion: 4.0.0
     created: "2025-10-03T04:22:48.568485472Z"
     description: A Helm chart for the OADA API server
     digest: e168f413e0b7d71ac1aee56a897c022faf4e6cf15356acd071c352a8baacdc1e
@@ -561,4 +588,4 @@ entries:
     urls:
     - https://github.com/OADA/server/releases/download/oada-0.1.0/oada-0.1.0.tgz
     version: 0.1.0
-generated: "2025-10-03T04:22:48.5686345Z"
+generated: "2025-10-03T16:10:43.028623776Z"
