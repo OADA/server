@@ -73,6 +73,7 @@ spec:
             {{- end }}
           image: {{ print $v.image ":" $v.tag }}
           imagePullPolicy: IfNotPresent
+          {{/*
           # TODO: Better liveness checks
           livenessProbe:
             httpGet:
@@ -84,6 +85,7 @@ spec:
             # runAsUser: 1000 # run as user node (uid 1000)
             allowPrivilegeEscalation: false
             readOnlyRootFilesystem: true
+          */}}
           name: {{ $name }}
           resources:
             {{- toYaml $.Values.oada.resources | nindent 12 }}
