@@ -16,6 +16,7 @@
  */
 
 import { createServer } from "node:http";
+
 import type NStats from "nstats";
 import {
   collectDefaultMetrics,
@@ -23,16 +24,27 @@ import {
   type MetricConfiguration,
   register,
 } from "prom-client";
+
 import { config } from "./config.js";
 
 collectDefaultMetrics({ register });
 
 let stats: NStats.NStats | undefined;
 
-const nstatsOptional = await import("nstats");
+async function tryImport<T extends string>(name: T) {
+  try {
+    const { default: mod } = await import(name);
+    return mod;
+  } catch {
+    return;
+  }
+}
+
+const nstatsOptional = await tryImport("nstats")!;
+
 export const nstats: typeof NStats = (...parameters) => {
-  stats = nstatsOptional.default(...parameters);
-  return stats;
+  stats = nstatsOptional(...parameters);
+  return stats!;
 };
 
 /**
