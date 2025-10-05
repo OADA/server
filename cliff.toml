@@ -79,8 +79,8 @@ postprocessors = [
 #output = "CHANGELOG.md"
 
 [git]
-# Only count semver tags
-count_tags = "^v"
+# Release semver tags
+tag_pattern = '^v\d+\.\d+\.\d+$'
 # Parse commits according to the conventional commits specification.
 # See https://www.conventionalcommits.org
 conventional_commits = true
