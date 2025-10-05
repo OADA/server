@@ -24,7 +24,7 @@ permissions:
 
 jobs:
   changelog:
-    name: Generate changelog
+    name: Generate release changes
     runs-on: ubuntu-latest
     outputs:
       release_body: ${{ steps.git-cliff.outputs.content }}
@@ -34,7 +34,13 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Generate a changelog
+      - name: Install typos-cli from crates.io
+        uses: baptiste0928/cargo-install@v3.3.2
+        with:
+          crate: typos-cli
+          version: "^1.37.2" # optional semver range (defaults to latest)
+
+      - name: Generate changelog file
         uses: orhun/git-cliff-action@v4
         id: git-cliff
         with:
@@ -44,7 +50,7 @@ jobs:
           OUTPUT: CHANGES.md
           GITHUB_REPO: ${{ github.repository }}
 
-      - name: update release
+      - name: Update release body
         id: update_release
         uses: tubone24/update_release@v1.3.1
         env:
