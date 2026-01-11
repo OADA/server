@@ -58,7 +58,7 @@ export default async function tokenLookup(
   return new Authorization({
     jti: t,
     client_id: clientId,
-    scope: scope.join(" "),
+    scope: Array.isArray(scope) ? scope.join(" ") : `${scope}`,
     iat: createTime,
     exp: expiresIn,
     sub: sub ?? _id,

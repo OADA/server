@@ -191,12 +191,13 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
    * @todo Should this just be in each methods implenting function?
    */
   fastify.addHook("preHandler", async (request, reply) => {
+    const scope = request.user?.scope;
     const response = permissionsRequest({
       // Connection_id: request.id,
       // domain: request.headers.host,
       oadaGraph: request.oadaGraph,
       user_id: request.user!.sub,
-      scope: request.user!.scope!.split(" ") as Scope[],
+      scope: (Array.isArray(scope) ? scope.split(" ") : scope) as Scope[],
       contentType: request.headers["content-type"],
       // RequestType: request.method.toLowerCase(),
     });
