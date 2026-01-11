@@ -197,7 +197,7 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
       // domain: request.headers.host,
       oadaGraph: request.oadaGraph,
       user_id: request.user!.sub,
-      scope: (Array.isArray(scope) ? scope.split(" ") : scope) as Scope[],
+      scope: (Array.isArray(scope) ? scope : scope?.split(" ") ?? []) as Scope[],
       contentType: request.headers["content-type"],
       // RequestType: request.method.toLowerCase(),
     });
