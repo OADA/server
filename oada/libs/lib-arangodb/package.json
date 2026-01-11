@@ -60,12 +60,12 @@
     "@oada/oadaify": "^2.1.0",
     "@oada/types": "^4.0.0",
     "arangojs": "^10.1.2",
-    "bcryptjs": "^3.0.2",
+    "bcryptjs": "^3.0.3",
     "debug": "^4.4.3",
     "deep-equal": "^2.2.3",
     "flat": "^6.0.1",
     "json-ptr": "^3.1.1",
-    "p-throttle": "^8.0.0",
+    "p-throttle": "^8.1.0",
     "tslib": "2.8.1"
   },
   "devDependencies": {
@@ -76,9 +76,9 @@
     "@types/deep-equal": "^1.0.4",
     "@types/flat": "^5.0.5",
     "@types/json-pointer": "^1.0.34",
-    "@types/node": "^24.6.0",
+    "@types/node": "^24.10.6",
     "ava": "6.4.1",
-    "type-fest": "^5.0.1"
+    "type-fest": "^5.3.1"
   },
   "volta": {
     "node": "22.5.1"

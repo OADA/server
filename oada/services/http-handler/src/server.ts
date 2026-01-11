@@ -30,7 +30,7 @@ import { users as userDatabase } from "@oada/lib-arangodb";
 import { KafkaError } from "@oada/lib-kafka";
 import { nstats } from "@oada/lib-prom";
 import User from "@oada/models/user";
-import { mixins } from "@oada/pino-debug";
+import { mixins, pino } from "@oada/pino-debug";
 import type { UserRequest, UserResponse } from "@oada/users";
 import esMain from "es-main";
 import {
@@ -106,13 +106,14 @@ mixins.push(() => ({
 
 const trustProxy = config.get("trustProxy");
 
+const logger = pino({
+  serializers
+});
+
 // eslint-disable-next-line new-cap
 export const fastify = Fastify({
   trustProxy,
-  logger: {
-    // @ts-expect-error fastify types bs
-    serializers,
-  },
+  logger,
   ignoreTrailingSlash: true,
   constraints: {
     oadaEnsureLink: {
@@ -155,6 +156,7 @@ if (process.env.NODE_ENV !== "production") {
   fastify.setErrorHandler((error, request, reply) => {
     // @ts-expect-error stuff
     const res = error.response;
+    // @ts-expect-error stuff
     const code = error.statusCode ?? 500;
     request.log.error({ err: error, res });
     void reply.code(code).send(res?.body ?? res);
@@ -264,12 +266,11 @@ await fastify.register(fastifyHealthcheck, {
  */
 const { errorHandler } = fastify;
 fastify.setErrorHandler(async (error, request, reply) => {
-  // @ts-expect-error fastify types bs
   errorHandler(error, request, reply);
   // TODO: Make kafka plugin for server?
   if (error instanceof KafkaError) {
     // Kill the server on Kafka Errors?
-    await close(error);
+    await close(error as Error);
   }
 });
 

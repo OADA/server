@@ -42,7 +42,7 @@
   "devDependencies": {
     "@ava/typescript": "^6.0.0",
     "@types/convict": "^6.1.6",
-    "@types/node": "^24.6.0",
+    "@types/node": "^24.10.6",
     "@types/ws": "^8.18.1",
     "ava": "6.4.1",
     "fastify-plugin": "^5.1.0"
@@ -51,6 +51,6 @@
     "node": "22.5.1"
   },
   "optionalDependencies": {
-    "nstats": "^7.0.0"
+    "nstats": "^7.1.1"
   }
 }

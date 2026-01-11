@@ -38,14 +38,14 @@
     "convict-format-with-moment": "^6.2.0",
     "convict-format-with-validator": "^6.2.0",
     "debug": "^4.4.3",
-    "dotenv": "^17.2.2",
+    "dotenv": "^17.2.3",
     "json5": "^2.2.3",
     "tslib": "2.8.1",
-    "yaml": "^2.8.1"
+    "yaml": "^2.8.2"
   },
   "devDependencies": {
     "@types/convict": "^6.1.6",
-    "@types/convict-format-with-validator": "^6.0.5",
+    "@types/convict-format-with-validator": "^6.0.6",
     "@types/debug": "^4.1.12"
   },
   "volta": {

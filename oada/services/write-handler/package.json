@@ -60,7 +60,7 @@
     "@oada/types": "^4.0.0",
     "@types/debug": "^4.1.12",
     "@types/json-pointer": "^1.0.34",
-    "@types/node": "^24.6.0",
+    "@types/node": "^24.10.6",
     "@types/object-assign-deep": "^0.4.3",
     "ava": "6.4.1"
   },

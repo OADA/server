@@ -32,8 +32,8 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
-    "@fastify/accepts": "^5.0.3",
-    "@fastify/cors": "^11.1.0",
+    "@fastify/accepts": "^5.0.4",
+    "@fastify/cors": "^11.2.0",
     "@fastify/helmet": "^13.0.2",
     "@oada/formats-server": "^4.0.0",
     "@oada/lib-config": "workspace:^",
@@ -43,8 +43,8 @@
     "allow-methods": "^7.1.0",
     "cors": "^2.8.5",
     "debug": "^4.4.3",
-    "fastify": "^5.6.1",
-    "got": "^14.4.9",
+    "fastify": "^5.6.2",
+    "got": "^14.6.6",
     "openid-client": "^5.7.1",
     "tslib": "2.8.1"
   },

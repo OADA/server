@@ -30,7 +30,7 @@
     "@oada/models": "workspace:^",
     "@oada/pino-debug": "workspace:^",
     "chalk": "^5.6.2",
-    "cmd-ts": "^0.14.2",
+    "cmd-ts": "^0.14.3",
     "debug": "^4.4.3",
     "es-main": "^1.4.0",
     "ksuid": "^3.0.0",
@@ -38,7 +38,7 @@
   },
   "devDependencies": {
     "@types/debug": "^4.1.12",
-    "type-fest": "^5.0.1"
+    "type-fest": "^5.3.1"
   },
   "volta": {
     "node": "22.5.1"
