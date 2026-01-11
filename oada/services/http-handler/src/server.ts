@@ -30,7 +30,7 @@ import { users as userDatabase } from "@oada/lib-arangodb";
 import { KafkaError } from "@oada/lib-kafka";
 import { nstats } from "@oada/lib-prom";
 import User from "@oada/models/user";
-import { mixins, pino } from "@oada/pino-debug";
+import { logLevel, mixins } from "@oada/pino-debug";
 import type { UserRequest, UserResponse } from "@oada/users";
 import esMain from "es-main";
 import {
@@ -106,14 +106,14 @@ mixins.push(() => ({
 
 const trustProxy = config.get("trustProxy");
 
-const logger = pino({
-  serializers
-});
-
 // eslint-disable-next-line new-cap
 export const fastify = Fastify({
   trustProxy,
-  logger,
+  logger: {
+    level: logLevel(),
+    // @ts-expect-error type bs
+    serializers,
+  },
   ignoreTrailingSlash: true,
   constraints: {
     oadaEnsureLink: {
@@ -266,6 +266,7 @@ await fastify.register(fastifyHealthcheck, {
  */
 const { errorHandler } = fastify;
 fastify.setErrorHandler(async (error, request, reply) => {
+  // @ts-expect-error type bs
   errorHandler(error, request, reply);
   // TODO: Make kafka plugin for server?
   if (error instanceof KafkaError) {
