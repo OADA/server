@@ -75,11 +75,11 @@ spec:
           imagePullPolicy: IfNotPresent
           {{/*
           # TODO: Better liveness checks
-          livenessProbe:
-            httpGet:
-              port: prometheus
-            initialDelaySeconds: 10
-            periodSeconds: 10
+          #livenessProbe:
+          #  httpGet:
+          #    port: prometheus
+          #  initialDelaySeconds: 10
+          #  periodSeconds: 10
           securityContext:
             runAsNonRoot: true
             # runAsUser: 1000 # run as user node (uid 1000)
