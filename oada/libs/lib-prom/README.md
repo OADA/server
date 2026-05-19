@@ -1,16 +1,22 @@
 # OADA Prometheus client
 
 [![Version](https://img.shields.io/npm/v/@oada/lib-prom.svg)](https://npmjs.org/package/@oada/lib-prom)
-[![code style: prettier](https://img.shields.io/badge/code_style-prettier-ff69b4.svg)](https://github.com/prettier/prettier)
+[![code style: prettier](https://img.shields.io/badge/code_style-prettier-ff69b4.svg)](https://github.com/prettier/prettier)
 [![License](https://img.shields.io/github/license/OADA/server)](LICENSE)
 
-A high-level Prometheus client using [prom-client][].
-It automatically handles initializing a client for you and exposing the metrics over HTTP.
+A high-level Prometheus client using [prom-client][prom-client].
+It automatically handles initializing a client for you and exposing the metrics
+over HTTP.
 
 Default metrics recommended by Prometheus are automatically registered.
 You can, and likely should, register your own additional [metrics][].
 
 ## Usage
+
+Run package scripts from `oada/`:
+
+- `yarn workspace @oada/lib-prom run build`
+- `yarn workspace @oada/lib-prom run test`
 
 ```typescript
 // See prom-client README for details on available metric types

@@ -1,16 +1,20 @@
 # @oada/pino-debug
 
 [![Version](https://img.shields.io/npm/v/@oada/pino-debug.svg)](https://npmjs.org/package/@oada/pino-debug)
-[![code style: prettier](https://img.shields.io/badge/code_style-prettier-ff69b4.svg)](https://github.com/prettier/prettier)
+[![code style: prettier](https://img.shields.io/badge/code_style-prettier-ff69b4.svg)](https://github.com/prettier/prettier)
 [![License](https://img.shields.io/github/license/OADA/server)](LICENSE)
 
-A library for handle making
-[debug.js][] work automatically with [pino][].
+A library for handle making [debug.js][debug.js] work automatically with
+[pino][pino].
+
+Run package scripts from `oada/`:
+
+- `yarn workspace @oada/pino-debug run build`
+- `yarn workspace @oada/pino-debug run start`
 
 ## Usage
 
-Import this library,
-then just use [debug.js][] as normal.
+Import this library, then just use [debug.js][]as normal.
 
 ```typescript
 // You probably want this to be your first import in your main file
@@ -22,12 +26,12 @@ import debug from 'debug';
 const info = debug('example:info');
 
 // Pass a context object and a message string
-info({/* ...context */});, 'Hello world!');
+info({ /* ...context */ }, 'Hello world!');
 ```
 
 ### Advanced Usage
 
-The [pino][] API can still be accessed too.
+The [pino][]API can still be accessed too.
 
 ```typescript
 // If you want to access pino, it is exported by this lib
