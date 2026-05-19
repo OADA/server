@@ -36,21 +36,21 @@
   "license": "Apache-2.0",
   "dependencies": {
     "@oada/lib-config": "workspace:^",
-    "cls-rtracer": "^2.6.3",
+    "cls-rtracer": "^2.6.4",
     "debug": "^4.4.3",
-    "eventemitter3": "^5.0.1",
+    "eventemitter3": "^5.0.4",
     "kafkajs": "^2.2.4",
     "ksuid": "^3.0.0",
     "tslib": "2.8.1",
-    "uuid": "^13.0.0"
+    "uuid": "^14.0.0"
   },
   "devDependencies": {
     "@ava/typescript": "^6.0.0",
     "@types/convict": "^6.1.6",
-    "@types/debug": "^4.1.12",
-    "@types/node": "^24.10.6",
+    "@types/debug": "^4.1.13",
+    "@types/node": "^24.12.4",
     "@types/uuid": "^11.0.0",
-    "ava": "6.4.1"
+    "ava": "7.0.0"
   },
   "volta": {
     "node": "22.5.1"

@@ -21,4 +21,5 @@
  * @packageDocumentation
  */
 
+// @ts-expect-error no types for this script
 import "fastify-healthcheck/src/healthcheck";

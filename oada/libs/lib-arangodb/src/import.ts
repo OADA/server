@@ -143,32 +143,32 @@ for await (const { name } of Object.values(collections)) {
       } catch (err: unknown) {
         error(err, "Error in batch import, attempting one at a time");
         */
-        try {
-          for await (const batch of all.batches) {
-            const docs = await importCollection.documents(batch);
-            trace({ docs, imported, count: all.count }, "importing docs");
-            await collection.import(docs, {
-              complete: true,
-              onDuplicate: overwriteMode,
-              // waitForSync: true,
-            });
-            imported += batch.length;
-            await throttled();
-          }
-        } catch (err: unknown) {
-          error(err, "Error in batch import, attempting one at a time");
-          for await (const id of all) {
-            const doc = await importCollection.document(id);
-            trace({ doc, imported, count: all.count }, "importing doc");
-            await collection.save(doc, {
-              overwriteMode,
-              // waitForSync: true,
-            });
-            imported += 1;
-            await throttled();
-          }
+      try {
+        for await (const batch of all.batches) {
+          const docs = await importCollection.documents(batch);
+          trace({ docs, imported, count: all.count }, "importing docs");
+          await collection.import(docs, {
+            complete: true,
+            onDuplicate: overwriteMode,
+            // waitForSync: true,
+          });
+          imported += batch.length;
+          await throttled();
+        }
+      } catch (err: unknown) {
+        error(err, "Error in batch import, attempting one at a time");
+        for await (const id of all) {
+          const doc = await importCollection.document(id);
+          trace({ doc, imported, count: all.count }, "importing doc");
+          await collection.save(doc, {
+            overwriteMode,
+            // waitForSync: true,
+          });
+          imported += 1;
+          await throttled();
         }
       }
+    }
     //}
 
     info(`${imported} documents imported from collection ${name}`);

@@ -37,7 +37,6 @@ import {
   findById as findUserById,
   type User,
 } from "./db/models/user.js";
-import { _defaultHack } from "./index.js";
 import { verifyToken } from "./oauth2.js";
 
 export const fastifyPassport = new Authenticator({

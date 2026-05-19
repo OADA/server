@@ -1,8 +1,10 @@
 {
-  "extends": "@tsconfig/node22",
+  "extends": ["@tsconfig/node24", "@tsconfig/node-ts"],
   "compilerOptions": {
+    "types": ["node"],
     "module": "nodenext",
     "moduleResolution": "nodenext",
+    "erasableSyntaxOnly": false,
     "allowSyntheticDefaultImports": true,
     "removeComments": true,
     "importHelpers": true,

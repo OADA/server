@@ -223,9 +223,8 @@ responder.on<WriteResponse>("request", async (request) => {
           });
 
           // TODO: Support DELETE
-          const put = got({
+          const put = got(join(apiroot, rid), {
             method: "put",
-            url: join(apiroot, rid),
             body,
             headers: {
               "content-type": `${type}`,

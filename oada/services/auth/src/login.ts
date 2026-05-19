@@ -94,7 +94,7 @@ const plugin: FastifyPluginAsync<Options> = async (
       preValidation: fastifyPassport.authenticate("local", {
         successReturnToOrRedirect: "",
         failureRedirect: `${login}?error=1`,
-      }),
+      }) as any,
     },
     // eslint-disable-next-line @typescript-eslint/require-await
     async ({ user }) => `Logged in as ${user?.name} (${user?.username})`,

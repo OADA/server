@@ -30,6 +30,7 @@ import { sanitizeResult } from "../util.js";
 import { ArangoError } from "./errors.js";
 
 type IResource = OADAified<Resource>;
+
 export type { IResource as Resource };
 
 const info = debug("arangodb#resources:info");

@@ -593,7 +593,7 @@ const plugin: FastifyPluginAsync<Options> = async (
         {
           session: false,
         },
-      ),
+      ) as any,
     },
     async (request, reply) => {
       try {
@@ -645,7 +645,7 @@ const plugin: FastifyPluginAsync<Options> = async (
         {
           session: false,
         },
-      ),
+      ) as any,
     },
     async (request, reply) => {
       try {

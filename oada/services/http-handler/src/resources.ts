@@ -394,15 +394,14 @@ const plugin: FastifyPluginAsync<Options> = async (fastify, options) => {
         }
 
         // Look up file size before streaming
-        const { integrity, size } = await cacache.get.info(
-          CACHE_PATH,
-          request.oadaGraph.resource_id,
-        );
+        const { integrity, size } =
+          (await cacache.get.info(CACHE_PATH, request.oadaGraph.resource_id)) ??
+          {};
 
         // Stream file to client
         // deepcode ignore ContentLengthInCode: this is server-side
         void reply.header("Content-Length", size);
-        return cacache.get.stream.byDigest(CACHE_PATH, integrity);
+        return cacache.get.stream.byDigest(CACHE_PATH, integrity!);
       }
     },
   });

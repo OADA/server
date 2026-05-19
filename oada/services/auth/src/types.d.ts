@@ -30,6 +30,7 @@ declare module "oauth2orize-openid" {
     MiddlewareFunction,
     OAuth2Req,
   } from "oauth2orize";
+
   function extensions(): MiddlewareFunction;
   type IssueCode =
     | IssueGrantCodeFunction
@@ -164,6 +165,7 @@ declare module "passport-oauth2-jwt-bearer" {
 
     constructor(verify: VerifyFunction);
   }
+
   export { OAuth2JWTBearerStrategy as Strategy };
 }
 

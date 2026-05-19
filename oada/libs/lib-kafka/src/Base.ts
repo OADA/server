@@ -228,4 +228,4 @@ export class Base extends EventEmitter {
   }
 }
 
-export { REQ_ID_KEY, CANCEL_KEY, topicTimeout, DATA };
+export { CANCEL_KEY, DATA, REQ_ID_KEY, topicTimeout };

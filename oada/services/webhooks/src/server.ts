@@ -122,8 +122,7 @@ responder.on<void>("request", async (request) => {
 
             const deleteUrl = `${sync.url}/${deletePath.join("/")}`;
             trace("Deleting: oada-put url changed to: %s", deleteUrl);
-            await got.delete({
-              url: deleteUrl,
+            await got.delete(deleteUrl, {
               headers: sync.headers,
             });
             return;
@@ -132,8 +131,7 @@ responder.on<void>("request", async (request) => {
           // Handle merge _changes
           trace("Sending oada-put to: %s", sync.url);
           trace(body, "oada-put body");
-          await got.put({
-            url: sync.url,
+          await got.put(sync.url, {
             json: body,
             headers: sync.headers,
           });
