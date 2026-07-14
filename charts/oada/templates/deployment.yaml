@@ -196,6 +196,17 @@ spec:
       {{- include "oada.chart.selectorLabels" $ | nindent 6 }}
   podMetricsEndpoints:
   - port: prometheus
+    # Keep only app.kubernetes.io/* pod labels as metric labels.
+    # Kubernetes SD exposes these as __meta_kubernetes_pod_label_app_kubernetes_io_*.
+    # Limiting the scope helps reduce Prometheus cardinality growth.
+    relabelings:
+    - action: labelmap
+      regex: __meta_kubernetes_pod_label_app_kubernetes_io_(.+)
+      replacement: app_kubernetes_io_${1}
+    - action: replace
+      sourceLabels:
+      - __meta_kubernetes_pod_name
+      targetLabel: instance
   namespaceSelector:
     any: false
 {{- end }}

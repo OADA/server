@@ -38,6 +38,14 @@ Install the Helm chart:
 
 See the [default values](values.yaml) for various configuration options.
 
+## Bundled Grafana dashboards
+
+When `grafana.enabled` is true, this chart ships dashboard ConfigMaps from
+`grafana/*-dashboard.json`, including:
+
+- `oada-prod-up-dashboard.json` for `up{app_kubernetes_io_part_of=~"oada"}`
+  availability across OADA deployments.
+
 [cert manager]: https://artifacthub.io/packages/helm/cert-manager/cert-manager
 [redpanda operator]: https://artifacthub.io/packages/helm/redpanda/redpanda-operator
 [arangodb operator]: https://artifacthub.io/packages/helm/source-field/kube-arangodb
