@@ -15,6 +15,7 @@
       "git fetch*": "allow",
       "git pull*": "allow",
       "yarn *": "allow",
+      "npm *": "allow",
       "git reset --hard*": "deny",
       "git checkout --*": "deny",
       "rm -rf *": "deny",
