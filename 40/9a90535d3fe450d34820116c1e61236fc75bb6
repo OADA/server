@@ -1,0 +1,19 @@
+oada/package.json
+  s_39c0afbc4382ad::t_40722b1c5c8c7e 40-41
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.20",
+  "base_commit_sha": "409a90535d3fe450d34820116c1e61236fc75bb6",
+  "prompts": {},
+  "sessions": {
+    "s_39c0afbc4382ad": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_041ae3835ffeXkciV1AUJvDeaS",
+        "model": "gpt-5.3-codex"
+      },
+      "human_author": "Alex Layton <alex@qlever.io>"
+    }
+  }
+}
