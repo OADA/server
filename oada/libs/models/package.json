@@ -28,10 +28,10 @@
   "author": "Alex Layton <alex@layton.in> (https://github.com/awlayton)",
   "license": "Apache-2.0",
   "dependencies": {
-    "@oada/types": "^4.1.1",
+    "@oada/types": "^4.1.2",
     "@qlever-llc/interface2class": "^1.1.0",
     "tslib": "2.8.1",
-    "type-fest": "^5.6.0",
+    "type-fest": "^5.8.0",
     "xksuid": "^0.0.4"
   },
   "peerDependencies": {
@@ -41,6 +41,6 @@
     "node": "22.5.1"
   },
   "devDependencies": {
-    "jose": "^6.2.3"
+    "jose": "^6.2.7"
   }
 }
