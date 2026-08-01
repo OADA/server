@@ -59,7 +59,7 @@
     "@fastify/request-context": "^6.2.1",
     "@fastify/secure-session": "^8.3.0",
     "@fastify/sensible": "^6.0.4",
-    "@fastify/static": "^9.3.0",
+    "@fastify/static": "^10.1.2",
     "@fastify/view": "^11.1.1",
     "@oada/certs": "^4.1.1",
     "@oada/error": "^2.0.1",
