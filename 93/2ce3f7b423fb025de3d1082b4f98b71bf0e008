@@ -1,0 +1,14 @@
+opencode.json
+  h_b011b099858fe3 18
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.20",
+  "base_commit_sha": "932ce3f7b423fb025de3d1082b4f98b71bf0e008",
+  "prompts": {},
+  "humans": {
+    "h_b011b099858fe3": {
+      "author": "Alex Layton <alex@qlever.io>"
+    }
+  }
+}
