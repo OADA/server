@@ -1,4 +1,3 @@
-{{/* vim: set ft=helm : */}}
 {{/*
    * Copyright 2022 Open Ag Data Alliance
    *
@@ -54,7 +53,7 @@ spec:
       serviceAccountName: service-account-{{ $.Release.Name }}
       initContainers:
         - name: wait-for-init
-          image: {{ $.Values.k8sWaitFor.image }}:{{ $.Values.k8sWaitFor.tag }}
+          image: "{{ $.Values.k8sWaitFor.image }}:{{ $.Values.k8sWaitFor.tag }}"
           args:
             - job
             - init-{{ $.Release.Name }}
@@ -195,18 +194,7 @@ spec:
       app.kubernetes.io/component: {{ $k }}
       {{- include "oada.chart.selectorLabels" $ | nindent 6 }}
   podMetricsEndpoints:
-  - port: prometheus
-    # Keep only app.kubernetes.io/* pod labels as metric labels.
-    # Kubernetes SD exposes these as __meta_kubernetes_pod_label_app_kubernetes_io_*.
-    # Limiting the scope helps reduce Prometheus cardinality growth.
-    relabelings:
-    - action: labelmap
-      regex: __meta_kubernetes_pod_label_app_kubernetes_io_(.+)
-      replacement: app_kubernetes_io_${1}
-    - action: replace
-      sourceLabels:
-      - __meta_kubernetes_pod_name
-      targetLabel: instance
+  {{- include "oada.podmonitor.endpoints" $ | nindent 2 }}
   namespaceSelector:
     any: false
 {{- end }}

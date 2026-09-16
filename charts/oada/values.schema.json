@@ -199,6 +199,23 @@
     "prometheus": {
       "type": ["string", "null"]
     },
+    "podmonitor": {
+      "type": "object",
+      "properties": {
+        "interval": {
+          "type": "string",
+          "default": "30s"
+        },
+        "relabelings": {
+          "type": "array",
+          "items": { "type": "object" }
+        },
+        "metricRelabelings": {
+          "type": "array",
+          "items": { "type": "object" }
+        }
+      }
+    },
     "nameOverride": {
       "type": ["string", "null"]
     },

@@ -46,7 +46,7 @@ spec:
       initContainers:
         {{ if eq (include "oada.arango.deploy" .) "true" -}}
         - name: wait-for-arangodb
-          image: {{ .Values.k8sWaitFor.image }}:{{ .Values.k8sWaitFor.tag }}
+          image: "{{ .Values.k8sWaitFor.image }}:{{ .Values.k8sWaitFor.tag }}"
           args:
             - service
             - arangodb-{{ .Release.Name }}
@@ -59,7 +59,7 @@ spec:
         {{- end }}
         {{ if eq (include "oada.kafka.deploy" .) "true" -}}
         - name: wait-for-redpanda
-          image: {{ .Values.k8sWaitFor.image }}:{{ .Values.k8sWaitFor.tag }}
+          image: "{{ .Values.k8sWaitFor.image }}:{{ .Values.k8sWaitFor.tag }}"
           args:
             - service
             - redpanda-{{ .Release.Name }}
@@ -97,7 +97,7 @@ spec:
             - name: inspect
               containerPort: 9229
           {{- end }}
-          image: {{ .Values.oada.namespace }}startup:{{ $tag }}
+          image: "{{ .Values.oada.namespace }}startup:{{ $tag }}"
           imagePullPolicy: {{ .Values.oada.imagePullPolicy }}
           resources:
             limits: {{- toYaml $.Values.oada.resources.limits | nindent 14 }}

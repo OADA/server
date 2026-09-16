@@ -65,7 +65,7 @@ spec:
       serviceAccountName: service-account-{{ $.Release.Name }}
       initContainers:
         - name: wait-for-init
-          image: {{ $.Values.k8sWaitFor.image }}:{{ $.Values.k8sWaitFor.tag }}
+          image: "{{ $.Values.k8sWaitFor.image }}:{{ $.Values.k8sWaitFor.tag }}"
           args:
             - job
             - init-{{ $.Release.Name }}
@@ -77,7 +77,7 @@ spec:
             allowPrivilegeEscalation: false
             readOnlyRootFilesystem: true
         - name: wait-for-users
-          image: {{ $.Values.k8sWaitFor.image }}:{{ $.Values.k8sWaitFor.tag }}
+          image: "{{ $.Values.k8sWaitFor.image }}:{{ $.Values.k8sWaitFor.tag }}"
           args:
             - pod
             - '-l app.kubernetes.io/component=users,app.kubernetes.io/instance={{ $.Release.Name }}'
@@ -111,7 +111,7 @@ spec:
             - name: inspect
               containerPort: 9229
           {{- end }}
-          image: {{ $.Values.oada.namespace }}users:{{ $tag }}
+          image: "{{ $.Values.oada.namespace }}users:{{ $tag }}"
           #imagePullPolicy: {{ $.Values.global.development | ternary "Always" "IfNotPresent" }}
           command:
             - /usr/bin/dumb-init
@@ -164,7 +164,7 @@ spec:
             - name: inspect
               containerPort: 9229
           {{- end }}
-          image: {{ $.Values.oada.namespace }}auth:{{ $tag }}
+          image: "{{ $.Values.oada.namespace }}auth:{{ $tag }}"
           imagePullPolicy: {{ $.Values.oada.imagePullPolicy }}
           command: ["/usr/bin/dumb-init", "--rewrite", "15:2", "--", "/bin/sh"]
           args:

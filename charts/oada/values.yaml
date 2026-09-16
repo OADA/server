@@ -137,6 +137,19 @@ k8sWaitFor:
 # prometheus is whether to add prometheus monitors for oada
 prometheus: ~
 
+# podmonitor configures the per-component PodMonitors emitted when
+# `prometheus` is truthy. Each OADA service PodMonitor will carry these
+# settings on top of the chart defaults.
+podmonitor:
+  # podmonitor.interval is the scrape interval applied to each endpoint.
+  interval: 30s
+  # podmonitor.relabelings are extra relabeling rules appended after the
+  # default `deployment`/`service` relabels. Use to add or override labels.
+  relabelings: []
+  # podmonitor.metricRelabelings are post-scrape rules. Use to drop noisy
+  # series (e.g. `go_*`, `process_*`) or rename/keep labels.
+  metricRelabelings: [] 
+
 grafana:
   enabled: true
   dashboards:

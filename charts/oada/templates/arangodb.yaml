@@ -24,7 +24,7 @@ metadata:
     app.kubernetes.io/component: arangodb
     {{- include "oada.chart.labels" . | nindent 4 }}
 spec:
-  image: {{ .Values.arangodb.image }}:{{ .Values.arangodb.tag }}
+  image: "{{ .Values.arangodb.image }}:{{ .Values.arangodb.tag }}"
   mode: Single
   single:
     volumeClaimTemplate:
