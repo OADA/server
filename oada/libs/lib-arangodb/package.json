@@ -74,7 +74,7 @@
     "@types/convict": "^6.1.6",
     "@types/debug": "^4.1.13",
     "@types/deep-equal": "^1.0.4",
-    "@types/flat": "^5.0.5",
+    "@types/flat": "^6.0.1",
     "@types/json-pointer": "^1.0.34",
     "@types/node": "^24.19.2",
     "ava": "8.0.1",

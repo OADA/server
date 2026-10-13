@@ -472,13 +472,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@fastify/formbody@npm:^8.0.2":
-  version: 8.0.2
-  resolution: "@fastify/formbody@npm:8.0.2"
+"@fastify/formbody@npm:^9.0.1":
+  version: 9.0.1
+  resolution: "@fastify/formbody@npm:9.0.1"
   dependencies:
     fast-querystring: "npm:^1.1.2"
-    fastify-plugin: "npm:^5.0.0"
-  checksum: 10/2c11fb9d1f7fe201bbd457d9fa4151c921d7e0623eecee82ba8709dc65bd3a2d8c47fb7e49fea32f38aa24257e8f82aeb8827351dcd7b7599b73454318f9e2a5
+    fastify-plugin: "npm:^6.0.0"
+  checksum: 10/6236d8e59bb3d3af968a94d480b06c2738a8f341e80478eb34cbeaf2856d663138377932bf5ebcdccdf5b3f9fbae83dbcdc408b5051b1066e59485cb61d7d43b
   languageName: node
   linkType: hard
 
@@ -521,13 +521,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@fastify/passport@npm:^3.0.2":
-  version: 3.0.2
-  resolution: "@fastify/passport@npm:3.0.2"
+"@fastify/passport@npm:^4.0.4":
+  version: 4.0.4
+  resolution: "@fastify/passport@npm:4.0.4"
   dependencies:
     "@fastify/flash": "npm:^6.0.0"
-    fastify-plugin: "npm:^5.0.0"
-  checksum: 10/c2fee366cc77937f7b64081e2a3d062b0ef21aba8ed8ef13900c9c0b9ddae5615b3b5f98db9def8276454abdcd12e225a26b242d9a8390eedfe86920bfb45875
+    fastify-plugin: "npm:^6.0.0"
+  checksum: 10/391493d799b5bee3a27267fde8b5b3514ffed2fba6c08b07c7cb7cd56043dc1eb743a0d6b08ca989b87aa5731e4ffebff696d4908d9c80b6966129e7d6ffd2cd
   languageName: node
   linkType: hard
 
@@ -541,23 +541,24 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@fastify/rate-limit@npm:^10.3.0":
-  version: 10.3.0
-  resolution: "@fastify/rate-limit@npm:10.3.0"
+"@fastify/rate-limit@npm:^11.2.1":
+  version: 11.2.1
+  resolution: "@fastify/rate-limit@npm:11.2.1"
   dependencies:
     "@lukeed/ms": "npm:^2.0.2"
-    fastify-plugin: "npm:^5.0.0"
+    fastify-plugin: "npm:^6.0.0"
+    ip-address: "npm:^10.2.0"
     toad-cache: "npm:^3.7.0"
-  checksum: 10/aadcf5ab0c80e46a07aa8c59062e56dc9791d93487b2e91fc9a817b599e6df5e7d973d2dd762b2fba0c5f69cef8e5f3764ef877f95c2a542e6c6fd183b042f82
+  checksum: 10/8501a1c86bc9a79e3a77db6f6868c25cf4072677ed29816e2f1f273301b20805e0022e838079f413007e79b0bf66dc0f23806ca7f8ec9118df36976afd23a864
   languageName: node
   linkType: hard
 
-"@fastify/request-context@npm:^6.2.1":
-  version: 6.2.1
-  resolution: "@fastify/request-context@npm:6.2.1"
+"@fastify/request-context@npm:^7.0.2":
+  version: 7.0.2
+  resolution: "@fastify/request-context@npm:7.0.2"
   dependencies:
-    fastify-plugin: "npm:^5.0.0"
-  checksum: 10/dd2ea24d84c28488e73983f75f1dca8e1143385d36fb5042d90cf29859b5a67ff71bd5bfc2696caadc291aacf9c48c45659b8e123e60a49994e1af8068256991
+    fastify-plugin: "npm:^6.0.0"
+  checksum: 10/0a439410879c9d85ece554795062ac502c6e326dadc02ded3dce567d9d6375351d99bab3a8558c8bd61e556304b76b08d2a0abe96764bad9bab5a58da070e649
   languageName: node
   linkType: hard
 
@@ -636,13 +637,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@fastify/view@npm:^11.1.1":
-  version: 11.1.1
-  resolution: "@fastify/view@npm:11.1.1"
+"@fastify/view@npm:^12.0.1":
+  version: 12.0.1
+  resolution: "@fastify/view@npm:12.0.1"
   dependencies:
-    fastify-plugin: "npm:^5.0.0"
+    fastify-plugin: "npm:^6.0.0"
     toad-cache: "npm:^3.7.0"
-  checksum: 10/6b540dfb17d6845f0d941825e2b66088227c9096939a4f72c2ecd6a994b3a38be59fcdf694f093dd9f4739507f4525540cd437d7c564ba9f40e7404607789ad9
+  checksum: 10/4ce77f645b317f81c000a92978df2ddc7c44af075e192edb3b063d2cc1815d4b2796d15bb0b1cdfca49ed049bb6727859d0ff2a15c7347a9c7d28fd621df7d64
   languageName: node
   linkType: hard
 
@@ -802,17 +803,17 @@ __metadata:
   dependencies:
     "@fastify/accepts": "npm:^5.0.7"
     "@fastify/cors": "npm:^11.3.1"
-    "@fastify/formbody": "npm:^8.0.2"
+    "@fastify/formbody": "npm:^9.0.1"
     "@fastify/helmet": "npm:^13.2.0"
     "@fastify/jwt": "npm:^10.2.4"
-    "@fastify/passport": "npm:^3.0.2"
-    "@fastify/rate-limit": "npm:^10.3.0"
-    "@fastify/request-context": "npm:^6.2.1"
+    "@fastify/passport": "npm:^4.0.4"
+    "@fastify/rate-limit": "npm:^11.2.1"
+    "@fastify/request-context": "npm:^7.0.2"
     "@fastify/secure-session": "npm:^8.4.1"
     "@fastify/sensible": "npm:^6.0.7"
     "@fastify/static": "npm:^10.1.6"
     "@fastify/type-provider-json-schema-to-ts": "npm:^5.0.1"
-    "@fastify/view": "npm:^11.1.1"
+    "@fastify/view": "npm:^12.0.1"
     "@oada/certs": "npm:^4.1.1"
     "@oada/error": "npm:^2.0.1"
     "@oada/lib-arangodb": "workspace:^"
@@ -847,7 +848,7 @@ __metadata:
     chalk: "npm:^6.0.1"
     cmd-ts: "npm:^0.15.0"
     debug: "npm:^4.4.3"
-    ejs: "npm:^6.0.1"
+    ejs: "npm:^7.0.1"
     es-main: "npm:^1.4.0"
     fastify: "npm:^5.12.7"
     fastify-graceful-shutdown: "npm:^5.0.0"
@@ -985,8 +986,8 @@ __metadata:
     "@fastify/cors": "npm:^11.3.1"
     "@fastify/helmet": "npm:^13.2.0"
     "@fastify/jwt": "npm:^10.2.4"
-    "@fastify/rate-limit": "npm:^10.3.0"
-    "@fastify/request-context": "npm:^6.2.1"
+    "@fastify/rate-limit": "npm:^11.2.1"
+    "@fastify/request-context": "npm:^7.0.2"
     "@fastify/sensible": "npm:^6.0.7"
     "@fastify/websocket": "npm:^11.3.4"
     "@oada/auth": "workspace:^"
@@ -1045,7 +1046,7 @@ __metadata:
     "@types/convict": "npm:^6.1.6"
     "@types/debug": "npm:^4.1.13"
     "@types/deep-equal": "npm:^1.0.4"
-    "@types/flat": "npm:^5.0.5"
+    "@types/flat": "npm:^6.0.1"
     "@types/json-pointer": "npm:^1.0.34"
     "@types/node": "npm:^24.19.2"
     arangojs: "npm:^10.5.0"
@@ -1415,7 +1416,7 @@ __metadata:
     "@oada/well-known-json": "npm:^4.0.2"
     "@types/cors": "npm:^2.8.19"
     "@types/debug": "npm:^4.1.13"
-    allow-methods: "npm:^7.1.0"
+    allow-methods: "npm:^8.1.0"
     cors: "npm:^2.8.6"
     debug: "npm:^4.4.3"
     fastify: "npm:^5.12.7"
@@ -1760,10 +1761,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/flat@npm:^5.0.5":
-  version: 5.0.5
-  resolution: "@types/flat@npm:5.0.5"
-  checksum: 10/4a61064dc7c226292c9917aafe91fa141004f26b56ae6326c3e1795281c2e4353509c0f98be1716ec5561902b71dc76679ef890f097e9b3852a2116ba12ccc09
+"@types/flat@npm:^6.0.1":
+  version: 6.0.1
+  resolution: "@types/flat@npm:6.0.1"
+  dependencies:
+    flat: "npm:*"
+  checksum: 10/4cb762be368b8d700dba49d6e942822e2323c6596f76493b7e87bf47e89c63a1fa69ee4f118f9abd095dda18a23e697127ba643fecb2e72d06283ad00343bbc9
   languageName: node
   linkType: hard
 
@@ -2366,10 +2369,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"allow-methods@npm:^7.1.0":
-  version: 7.1.0
-  resolution: "allow-methods@npm:7.1.0"
-  checksum: 10/7ad8d3e8fa7ef9ad46f4a83e575d7381903579af2c0912d69e5b66485b03307bc672ba0d3a8cccce7ac266620a4a5401593a228052102f3bbb2eec2ae32c5554
+"allow-methods@npm:^8.1.0":
+  version: 8.1.0
+  resolution: "allow-methods@npm:8.1.0"
+  checksum: 10/c233f68342b73763d13ef064663de0d3598917cd601cbf43cf9cb18d9810c6c15254ca14d77a3238e760121fb114d9ee254936d03085b9012b02e775bc06626c
   languageName: node
   linkType: hard
 
@@ -3679,12 +3682,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ejs@npm:^6.0.1":
-  version: 6.0.1
-  resolution: "ejs@npm:6.0.1"
+"ejs@npm:^7.0.1":
+  version: 7.0.1
+  resolution: "ejs@npm:7.0.1"
   bin:
     ejs: bin/cli.js
-  checksum: 10/16ff6a9073256c6854607e8e5669f8b96b5b6e43e40dd58c6c85d43a13c4b0423ae1a78326fef2626777410b553b9c2071ab6fe07e14564345c493bc532f4714
+  checksum: 10/2171e0c243bf0630c085b3af3900f13b8781f2406935c8f19d8df88233bacc6174b19dde2d18a23bf30a246ddd375a057b3bdddbca61a2f049a26870e8d42540
   languageName: node
   linkType: hard
 
@@ -4233,7 +4236,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"flat@npm:^6.0.1":
+"flat@npm:*, flat@npm:^6.0.1":
   version: 6.0.1
   resolution: "flat@npm:6.0.1"
   bin:
@@ -4698,6 +4701,13 @@ __metadata:
     redis-errors: "npm:1.2.0"
     standard-as-callback: "npm:2.1.0"
   checksum: 10/afd383b034ff8fdf9d1fed0b4b4524e7d73bc0d0f5cad9ad93d2787d0b70f025ed0170eceab19a4d37f460eb7f2edfc544e86936492779149f1e5ec0e94f0910
+  languageName: node
+  linkType: hard
+
+"ip-address@npm:^10.2.0":
+  version: 10.7.4
+  resolution: "ip-address@npm:10.7.4"
+  checksum: 10/89375f1fa00e5bb4e724498886e06d870c1cc0abbfa9df8cb5ce80f3f179ee49feb0ca96ec54a1512c2303302719975a2ad96e3a8fcc13b4fd836d7f461d3d95
   languageName: node
   linkType: hard
 
