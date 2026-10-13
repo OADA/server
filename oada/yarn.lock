@@ -2797,11 +2797,11 @@ __metadata:
   linkType: hard
 
 "brace-expansion@npm:^5.0.5":
-  version: 5.0.9
-  resolution: "brace-expansion@npm:5.0.9"
+  version: 5.0.12
+  resolution: "brace-expansion@npm:5.0.12"
   dependencies:
     balanced-match: "npm:^4.0.2"
-  checksum: 10/d8683d612919212c7cf298861acd1c15101e7e2ad186e7ae9747390e5b3fc9e9b55ce71107570d32985784d9d88fbbe438d725863aed7b0f3d08d5f080535eec
+  checksum: 10/65b550f1836e3b43f512f12afbc3be96616eee5c353e16d70181b7dffec8c08beabffb51d69a3bbdb27d675840725cbab025fda9d10716b5cda7dd864dc7bc4a
   languageName: node
   linkType: hard
 
@@ -3922,9 +3922,9 @@ __metadata:
   linkType: hard
 
 "fast-copy@npm:^4.0.0":
-  version: 4.0.3
-  resolution: "fast-copy@npm:4.0.3"
-  checksum: 10/1e74e8b18a83f125b697b0dc7d802b4c73ec2aba7b181458e5e72d46a261faefcdee22ad9fa682c77f4606133451342f95de9835c2c804c481472585fa6ded26
+  version: 4.1.2
+  resolution: "fast-copy@npm:4.1.2"
+  checksum: 10/4198167e409f9e82796db958a6445d94be776721124e5b2eebc91c3cf321840ae700695c356d3f69d9c2fcbe6d19e49eb38ce0d27f39396d2ed39c45064b0a79
   languageName: node
   linkType: hard
 
@@ -3998,15 +3998,15 @@ __metadata:
   linkType: hard
 
 "fast-jwt@npm:^6.2.4":
-  version: 6.3.1
-  resolution: "fast-jwt@npm:6.3.1"
+  version: 6.3.4
+  resolution: "fast-jwt@npm:6.3.4"
   dependencies:
     "@lukeed/ms": "npm:^2.0.2"
     asn1.js: "npm:^5.4.1"
     ecdsa-sig-formatter: "npm:^1.0.11"
     mnemonist: "npm:^0.40.0"
     safe-regex2: "npm:^5.1.0"
-  checksum: 10/6f7efd414ab11c3285c8774fdaaf40be16b90fa6afd044608d9825d52ede3cc518582b5fceff8ec9d2751ff69f8f1e745ce5a3cd55e86b4998196f9f8a292c83
+  checksum: 10/0dd800d20544b8fe4d0e7af09efabb90955fdd06be48f46ddd8221b47ec96903382efc470fa9f5060395e90dc1917f4227c574d5c722157c66ec608fb6fee7d6
   languageName: node
   linkType: hard
 
@@ -5641,9 +5641,9 @@ __metadata:
   linkType: hard
 
 "moment@npm:^2.29.1":
-  version: 2.30.1
-  resolution: "moment@npm:2.30.1"
-  checksum: 10/ae42d876d4ec831ef66110bdc302c0657c664991e45cf2afffc4b0f6cd6d251dde11375c982a5c0564ccc0fa593fc564576ddceb8c8845e87c15f58aa6baca69
+  version: 2.31.0
+  resolution: "moment@npm:2.31.0"
+  checksum: 10/fd3708d46f820c64fe1e064a60747533a55ee0aefd944490e18f08b2a83a5b6418bb4f42e1de47ef1f1a29f450c7ac41edd1fa6f940db30ded247c9717301b9f
   languageName: node
   linkType: hard
 
@@ -7354,9 +7354,9 @@ __metadata:
   linkType: hard
 
 "undici@npm:^8.5.0":
-  version: 8.9.0
-  resolution: "undici@npm:8.9.0"
-  checksum: 10/dfad3e233087eafdf1d361acd17c4d45a9590d5db9400458f1c03f47d8f1ef68647e2109ebb982c862e50c227093abd2d5f44b154904fc0b3d22576b6e95cfe7
+  version: 8.11.2
+  resolution: "undici@npm:8.11.2"
+  checksum: 10/a6d851b0a41a94ee11d351457a818f86094ab009af59d82c1e3c38a89cfbb3910f9dbccdef442b156b9d500490f05e9ef9acf312f1a4690a41fac4941a440b8e
   languageName: node
   linkType: hard
 
