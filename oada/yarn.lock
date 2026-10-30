@@ -4036,10 +4036,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"fast-uri@npm:^4.1.5":
-  version: 4.2.2
-  resolution: "fast-uri@npm:4.2.2"
-  checksum: 10/09bf80e898ace481b833e96cbb4e5f284694c6c033918599899539037da87252389093f9b4c3f7d05180e4ceb5d992f96ea1a9f1d5165fa7070edc86a1a7e177
+"fast-uri@npm:^4.2.3":
+  version: 4.2.3
+  resolution: "fast-uri@npm:4.2.3"
+  checksum: 10/1da9df2a03f02601aa9237d4c465da788dd8f4e6c5e12b251f520437d5ef4562d6ab24916193c56ff2181c70382e3c774c19c3011cba77460534ad980f16ab4f
   languageName: node
   linkType: hard
 
